@@ -109,3 +109,22 @@ html body #museaiDrawer > div:first-child{background:var(--m-card) !important;}
 
 /* 12 · Header details ---------------------------------------------------- */
 html body .role-switch-label{white-space:nowrap !important;font-size:12px !important;font-weight:600 !important;letter-spacing:normal !important;text-transform:none !important;color:var(--m-text-2) !important;}
+
+/* 13 · Left nav footer sits in the layout (no overlap with scrolling items) */
+#navRail .nav-rail-scroll{padding-bottom:12px !important;}
+#navRail .nav-rail-foot{position:relative !important;left:auto !important;right:auto !important;bottom:auto !important;flex:0 0 auto;
+  background:var(--m-card) !important;border-top:1px solid var(--m-line) !important;border-radius:0 !important;
+  padding:10px 0 max(12px,env(safe-area-inset-bottom,0px)) !important;gap:6px !important;}
+body.nav-rail-expanded #navRail .nav-rail-foot{padding:10px 8px max(12px,env(safe-area-inset-bottom,0px)) !important;}
+#navRail .nav-rail-foot::before{display:none !important;}
+#navRail .nav-rail-top{background:var(--m-card) !important;}
+
+/* 14 · Weather band — a calm Meta card, not a blue slab */
+html body .wx-band{background:var(--m-card) !important;border:0 !important;border-radius:12px !important;box-shadow:var(--m-shadow) !important;}
+html body .wx-tile{background:var(--m-bg) !important;border:0 !important;border-radius:10px !important;box-shadow:none !important;transition:background-color .15s ease;}
+html body .wx-tile:hover{background:var(--m-hover) !important;}
+html.dark body .wx-tile{background:#3A3B3C !important;}
+html.dark body .wx-tile:hover{background:#4E4F50 !important;}
+html body .wx-tile-sev{background:#FDE7EA !important;}
+html.dark body .wx-tile-sev{background:#3D1219 !important;}
+html body .wx-tile-hi{color:var(--m-text) !important;}

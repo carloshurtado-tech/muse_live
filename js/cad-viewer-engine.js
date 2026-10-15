@@ -1,7 +1,7 @@
 /**
- * NBC Pulse — CAD Viewer Engine v1.0
+ * Muse Live — CAD Viewer Engine v1.0
  * Read-only 2D / 3D model viewer + collaborative note dots (no geometry edit).
- * Supported: DXF, DWG (via pulseDwgToDxf), OBJ, STL, images/PDF raster.
+ * Supported: DXF, DWG (via museDwgToDxf), OBJ, STL, images/PDF raster.
  * Unsupported (honest skip): DWF, STEP, Parasolid (.x_t), Vectorworks (.vwx).
  */
 (function (global) {
@@ -27,7 +27,7 @@
   function syncPhonePortrait() {
     var portrait = (window.innerHeight || 0) > (window.innerWidth || 0) + 24;
     try {
-      document.documentElement.classList.toggle('pulse-phone-portrait', !!portrait);
+      document.documentElement.classList.toggle('muse-phone-portrait', !!portrait);
     } catch (e) {}
     return portrait;
   }
@@ -39,8 +39,8 @@
   }
   function lockLandscape(on) {
     try {
-      document.documentElement.classList.toggle('pulse-cv-land', !!on);
-      document.body.classList.toggle('pulse-cv-land', !!on);
+      document.documentElement.classList.toggle('muse-cv-land', !!on);
+      document.body.classList.toggle('muse-cv-land', !!on);
     } catch (e0) {}
     if (on) {
       syncPhonePortrait();
@@ -50,7 +50,7 @@
         window.addEventListener('orientationchange', onLandResize);
       }
     } else {
-      try { document.documentElement.classList.remove('pulse-phone-portrait'); } catch (e2) {}
+      try { document.documentElement.classList.remove('muse-phone-portrait'); } catch (e2) {}
     }
     try {
       var so = screen.orientation;
@@ -91,31 +91,31 @@
   function ensureShell() {
     if (el) return;
     el = document.createElement('div');
-    el.id = 'pulseCadView';
+    el.id = 'museCadView';
     el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#0b0e12;font-family:Inter,system-ui,sans-serif;color:#e6edf3';
     el.innerHTML =
       '<style>' +
-      '#pulseCadView .cvb{padding:6px 11px;background:#1c2330;border:1px solid #2d3748;color:#c9d1d9;border-radius:8px;font:700 11px Inter,sans-serif;cursor:pointer;white-space:nowrap}' +
-      '#pulseCadView .cvb:hover{background:#2a3444;color:#fff}' +
-      '#pulseCadView .cvb.on{background:#2563eb;border-color:#2563eb;color:#fff}' +
-      '#pulseCadView .cvb.note{border-color:#f59e0b}' +
-      '#pulseCadView .cvb.note.on{background:#f59e0b;border-color:#f59e0b;color:#0d1117}' +
-      '#pulseCadView .cvb.ok{background:#238636;border-color:#2ea043;color:#fff}' +
-      '#pulseCadView .cvb.bad{background:#3d1117;border-color:#5c2027;color:#ff9b9b}' +
-      '#pulseCadView .ndot{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.55);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
-      '#pulseCadView .ndot:hover{transform:translate(-50%,-50%) scale(1.25)}' +
-      '#pulseCadView .ndot.sel{box-shadow:0 0 0 3px rgba(255,255,255,.85),0 2px 12px rgba(0,0,0,.6)}' +
-      '#pulseCadView .npop{position:absolute;z-index:10;width:280px;max-width:90vw;background:rgba(22,27,34,.98);border:1px solid #30363d;border-radius:12px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:600 12px Inter,sans-serif}' +
-      '#pulseCadView .npop textarea{width:100%;min-height:72px;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:8px;padding:8px;resize:vertical;font:600 12px Inter,sans-serif;box-sizing:border-box}' +
-      '#pulseCadView .npop input{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:8px;padding:6px 8px;box-sizing:border-box;font:600 12px Inter,sans-serif}' +
-      '#pulseCadView .cv-side{width:220px;background:#10151d;border-right:1px solid #21262d;display:flex;flex-direction:column;flex-shrink:0}' +
-      'html.pulse-cv-land,html.pulse-cv-land body{overflow:hidden!important}' +
+      '#museCadView .cvb{padding:6px 11px;background:#1c2330;border:1px solid #2d3748;color:#c9d1d9;border-radius:8px;font:700 11px Inter,sans-serif;cursor:pointer;white-space:nowrap}' +
+      '#museCadView .cvb:hover{background:#2a3444;color:#fff}' +
+      '#museCadView .cvb.on{background:#2563eb;border-color:#2563eb;color:#fff}' +
+      '#museCadView .cvb.note{border-color:#f59e0b}' +
+      '#museCadView .cvb.note.on{background:#f59e0b;border-color:#f59e0b;color:#0d1117}' +
+      '#museCadView .cvb.ok{background:#238636;border-color:#2ea043;color:#fff}' +
+      '#museCadView .cvb.bad{background:#3d1117;border-color:#5c2027;color:#ff9b9b}' +
+      '#museCadView .ndot{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.55);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
+      '#museCadView .ndot:hover{transform:translate(-50%,-50%) scale(1.25)}' +
+      '#museCadView .ndot.sel{box-shadow:0 0 0 3px rgba(255,255,255,.85),0 2px 12px rgba(0,0,0,.6)}' +
+      '#museCadView .npop{position:absolute;z-index:10;width:280px;max-width:90vw;background:rgba(22,27,34,.98);border:1px solid #30363d;border-radius:12px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:600 12px Inter,sans-serif}' +
+      '#museCadView .npop textarea{width:100%;min-height:72px;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:8px;padding:8px;resize:vertical;font:600 12px Inter,sans-serif;box-sizing:border-box}' +
+      '#museCadView .npop input{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:8px;padding:6px 8px;box-sizing:border-box;font:600 12px Inter,sans-serif}' +
+      '#museCadView .cv-side{width:220px;background:#10151d;border-right:1px solid #21262d;display:flex;flex-direction:column;flex-shrink:0}' +
+      'html.muse-cv-land,html.muse-cv-land body{overflow:hidden!important}' +
       '@media (max-width:900px){' +
-        '#pulseCadView .cv-side{width:min(168px,34vw)}' +
-        '#pulseCadView .cvb{padding:8px 10px;min-height:40px}' +
+        '#museCadView .cv-side{width:min(168px,34vw)}' +
+        '#museCadView .cvb{padding:8px 10px;min-height:40px}' +
       '}' +
-      'html.pulse-cv-land.pulse-phone-portrait #pulseCadView,' +
-      'html.pulse-cv-land #pulseCadView.cv-force-land{' +
+      'html.muse-cv-land.muse-phone-portrait #museCadView,' +
+      'html.muse-cv-land #museCadView.cv-force-land{' +
         'width:100vh!important;height:100vw!important;width:100dvh!important;height:100dvw!important;' +
         'max-width:none!important;max-height:none!important;' +
         'top:0!important;left:0!important;right:auto!important;bottom:auto!important;' +
@@ -813,12 +813,12 @@
       var rd = new FileReader();
       rd.onload = function () {
         ctx.fmt = 'dwg';
-        if (location.protocol === 'file:' || global.__PULSE_FILE_ORIGIN) {
-          setStatus('DWG needs http://localhost — run ./start-pulse.sh');
-          toast('Open Pulse via ./start-pulse.sh for DWG');
+        if (location.protocol === 'file:' || global.__MUSE_FILE_ORIGIN) {
+          setStatus('DWG needs http://localhost — run ./start-muse.sh');
+          toast('Open Muse Live via ./start-muse.sh for DWG');
           return;
         }
-        var convert = global.pulseDwgToDxf;
+        var convert = global.museDwgToDxf;
         if (typeof convert !== 'function') {
           setStatus('LibreDWG not available');
           return;
@@ -897,7 +897,7 @@
       toast('CAD notes saved');
     } else {
       try {
-        localStorage.setItem('nbcpulse_cadnotes_' + (ctx.key || 'x') + '_' + (ctx.planId || 'p'), JSON.stringify(notes));
+        localStorage.setItem('muselive_cadnotes_' + (ctx.key || 'x') + '_' + (ctx.planId || 'p'), JSON.stringify(notes));
         ctx.dirty = false;
         setStatus('Notes saved locally');
       } catch (e) { toast('Could not save notes'); }
@@ -942,14 +942,14 @@
       ctx.fmt = 'dxf';
       var n = loadDxf(opts.dxfText);
       done(n ? ('DXF · ' + n + ' segments') : 'Empty DXF');
-    } else if (opts.dwgB64 && typeof global.pulseDwgB64ToDxf === 'function') {
+    } else if (opts.dwgB64 && typeof global.museDwgB64ToDxf === 'function') {
       ctx.fmt = 'dwg';
       setStatus('Parsing DWG…');
-      global.pulseDwgB64ToDxf(opts.dwgB64).then(function (dxf) {
+      global.museDwgB64ToDxf(opts.dwgB64).then(function (dxf) {
         if (dxf) {
           var n2 = loadDxf(dxf);
           done(n2 ? ('DWG · ' + n2 + ' segments') : 'DWG empty');
-        } else done('DWG parse failed — use ./start-pulse.sh + DXF');
+        } else done('DWG parse failed — use ./start-muse.sh + DXF');
       });
     } else if (opts.objText) {
       ctx.fmt = 'obj';

@@ -1,0 +1,253 @@
+/* Scoped connected workflow controls; Classic typography and navigation remain intact. */
+.muse-work {
+  --pw-bg: rgb(var(--c-surface, 255 255 255));
+  --pw-fg: rgb(var(--c-ink, 23 24 26));
+  --pw-muted: rgb(var(--c-ink-3, 113 113 122));
+  --pw-line: rgb(var(--c-line-strong, 203 213 225));
+  --pw-accent: rgb(var(--c-solid, 99 46 138));
+  background: var(--pw-bg);
+  color: var(--pw-fg);
+  border: 1px solid var(--pw-line);
+  border-radius: 14px;
+  padding: 18px;
+  margin-top: 18px;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.5;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dark .muse-work,
+[data-theme="dark"] .muse-work {
+  --pw-bg: rgb(var(--c-surface, 18 24 38));
+  --pw-fg: rgb(var(--c-ink, 233 237 245));
+  --pw-muted: rgb(var(--c-ink-3, 150 163 185));
+  --pw-line: rgb(var(--c-line-strong, 56 66 88));
+  --pw-accent: rgb(var(--pk-purple-700, 203 161 236));
+}
+.muse-work header,
+.muse-work footer,
+.pw-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.muse-work h2 {
+  font-size: 18px;
+  font-weight: 700;
+}
+.muse-work h3 {
+  font-size: 15px;
+  font-weight: 700;
+}
+.muse-work p {
+  margin: 10px 0;
+}
+.muse-work small {
+  color: var(--pw-muted);
+  font-size: 12px;
+}
+.muse-work button {
+  border: 1px solid var(--pw-line);
+  background: var(--pw-bg);
+  color: var(--pw-accent);
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 40px;
+  max-width: 100%;
+  white-space: normal;
+  cursor: pointer;
+}
+.muse-work button:hover {
+  filter: brightness(0.93);
+}
+.muse-work button:focus-visible,
+.muse-work input:focus-visible,
+.muse-work select:focus-visible,
+.muse-work textarea:focus-visible {
+  outline: 3px solid var(--pw-accent);
+  outline-offset: 2px;
+}
+.muse-work label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  margin: 12px 0;
+}
+.muse-work input,
+.muse-work select,
+.muse-work textarea {
+  font: inherit;
+  font-size: 16px;
+  color: var(--pw-fg);
+  background: var(--pw-bg);
+  border: 1px solid var(--pw-line);
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+}
+.muse-work textarea {
+  resize: vertical;
+}
+.pw-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+}
+.pw-dialog {
+  position: fixed;
+  inset: 0;
+  width: min(920px, 94vw);
+  max-height: 90dvh;
+  margin: auto;
+  padding: 22px;
+  overflow: auto;
+  z-index: 100000;
+  box-shadow: 0 20px 80px rgb(var(--c-ink, 23 24 26) / 0.32);
+}
+.pw-dialog::backdrop {
+  background: rgb(var(--c-ink, 23 24 26) / 0.6);
+}
+.pw-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+.muse-work article {
+  border: 1px solid var(--pw-line);
+  border-radius: 10px;
+  padding: 14px;
+  min-width: 0;
+}
+.pw-collection {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--pw-line);
+}
+.muse-work details {
+  margin-top: 12px;
+}
+.muse-work summary {
+  font-weight: 600;
+  cursor: pointer;
+  padding: 10px 0;
+}
+.muse-work ul {
+  list-style: disc;
+  padding-left: 22px;
+}
+.muse-work li {
+  margin: 7px 0;
+}
+.muse-work dl {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) minmax(0, 3fr);
+  gap: 8px 20px;
+}
+.muse-work dt {
+  font-weight: 600;
+  color: var(--pw-muted);
+}
+.muse-work dd {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.muse-work pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.muse-work table {
+  border-collapse: collapse;
+  width: 100%;
+}
+.muse-work td,
+.muse-work th {
+  border-bottom: 1px solid var(--pw-line);
+  padding: 10px;
+  text-align: left;
+  white-space: nowrap;
+}
+.pw-scroll {
+  overflow-x: auto;
+}
+.pw-media {
+  display: block;
+  width: 100%;
+  height: 60dvh;
+  object-fit: contain;
+  border: 1px solid var(--pw-line);
+}
+.pw-context {
+  padding: 12px;
+  margin: 12px 0;
+}
+.pw-context button {
+  margin: 4px;
+}
+#pw-error:empty {
+  display: none;
+}
+#pw-error {
+  color: rgb(var(--st-blocked, 229 27 36));
+  font-weight: 600;
+}
+.dark #pw-error,
+[data-theme="dark"] #pw-error {
+  color: rgb(var(--st-blocked, 248 165 165));
+}
+@media (max-width: 600px) {
+  .muse-work {
+    padding: 12px;
+  }
+  .pw-fields {
+    grid-template-columns: 1fr;
+  }
+  .pw-dialog {
+    width: 96vw;
+    max-height: 94dvh;
+    padding: 14px;
+  }
+  .muse-work dl {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .muse-work dd {
+    margin-bottom: 10px;
+  }
+  .pw-toolbar {
+    justify-content: flex-start;
+  }
+  .muse-work button {
+    min-height: 44px;
+  }
+  .pw-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+.muse-work button:active {
+  transform: translateY(1px);
+}
+#wikiStorageStatus {
+  font-size: 12px;
+  margin: 10px 0;
+  color: inherit;
+}
+.pw-guide-editor {
+  grid-column: 1 / -1;
+}
+.pw-guide-editor section {
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid var(--pw-line);
+  border-radius: 8px;
+}

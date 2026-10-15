@@ -1,0 +1,1366 @@
+/* ==========================================================================
+   MUSE LIVE — UI SYSTEM  (0.51 "Spectrum Glass" · assets/ui)
+   --------------------------------------------------------------------------
+   Loaded LAST so it wins over both muse-shell.css and muse-dark.css.
+
+   Design language (from assets/ui reference set):
+     · Frosted glass panels over a soft spectrum mesh canvas.
+     · Translucent header / nav / drawers / dashboard cards with blur.
+     · Dense tables stay more opaque (readability + paint budget).
+     · Status = outlined pill + solid dot, or soft tinted pill. Never both.
+     · Colour appears only where it means something (six spectrum hues).
+     · Clicky motion: 60–150ms, transform/opacity/colour only.
+   ========================================================================== */
+
+/* ==========================================================================
+   1 · CANVAS + BASE
+   ========================================================================== */
+body{
+  font-family:var(--font-ui);
+  color:rgb(var(--c-ink));
+  background:
+    radial-gradient(1100px 640px at 8% -10%, rgb(var(--pk-purple-600) / .10), transparent 55%),
+    radial-gradient(900px 520px at 96% 0%, rgb(var(--pk-blue-500) / .08), transparent 52%),
+    radial-gradient(780px 460px at 50% 110%, rgb(var(--pk-orange-500) / .06), transparent 50%),
+    radial-gradient(640px 360px at 70% 40%, rgb(var(--pk-green-600) / .05), transparent 55%),
+    rgb(var(--c-canvas)) !important;
+  background-attachment:scroll !important;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  letter-spacing:-.005em;
+}
+.mono{font-variant-numeric:tabular-nums;}
+::selection{background:rgb(var(--st-comms) / .22);}
+
+/* Dense list/table rows — no blur (paint budget); soft wash only */
+.risk-row,thead.sticky,.sticky.top-0.bg-white,
+.muse-rich-host,.omni-bubble-in{
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+
+/* Focus ring — spectrum purple (primary brand accent for chrome) */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:2px solid rgb(var(--st-comms));
+  outline-offset:2px;
+  border-radius:var(--r-sm);
+}
+
+/* Skip link — first tab stop; off-canvas until focused */
+.muse-skip{
+  position:fixed;left:12px;top:8px;z-index:10000;
+  padding:8px 14px;
+  background:rgb(var(--c-solid));
+  color:rgb(var(--c-on-solid));
+  font-size:13px;font-weight:600;line-height:1.2;
+  border-radius:var(--r-sm);
+  text-decoration:none;
+  transform:translateY(-160%);
+  transition:transform var(--t-fast) var(--ease);
+}
+.muse-skip:focus,.muse-skip:focus-visible{
+  transform:none;
+  outline:2px solid rgb(var(--st-comms));
+  outline-offset:3px;
+}
+main.muse-main{scroll-margin-top:72px;}
+#dashRowMain{min-height:320px;}
+
+/* Scrollbars — thin, neutral, only visible on hover of the scroll host */
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{
+  background:rgb(var(--n-300));
+  border-radius:var(--r-pill);
+  border:3px solid transparent;
+  background-clip:content-box;
+}
+::-webkit-scrollbar-thumb:hover{background:rgb(var(--n-400));background-clip:content-box;}
+*{scrollbar-width:thin;scrollbar-color:rgb(var(--n-300)) transparent;}
+
+/* ==========================================================================
+   2 · SURFACES — glass look, FAST paint (assets/ui)
+   Blur ONLY on chrome (header / rail / drawers). Content cards use translucent
+   fills without backdrop-filter — scrolling stays smooth with maps + long tables.
+   ========================================================================== */
+.glass,.glass-tile,.glass-fab,.glass-pill{
+  background:var(--glass-fill) !important;
+  border:1px solid var(--glass-edge) !important;
+  box-shadow:var(--glass-elev) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.glass-panel,.glass-drawer,.glass-modal{
+  background:var(--glass-fill-strong) !important;
+  border:1px solid var(--glass-edge) !important;
+  box-shadow:var(--glass-elev) !important;
+  backdrop-filter:blur(var(--glass-blur-strong)) saturate(var(--glass-sat)) !important;
+  -webkit-backdrop-filter:blur(var(--glass-blur-strong)) saturate(var(--glass-sat)) !important;
+}
+.glass-pill{
+  background:var(--glass-fill-soft) !important;
+  box-shadow:var(--glass-shine) !important;
+}
+
+/* Content cards — translucent + rim, NO blur (biggest scroll win) */
+main div.bg-white.rounded-2xl,main div.bg-white.rounded-xl,
+main section.bg-white.rounded-2xl,main section.bg-white.rounded-xl,
+main article.bg-white.rounded-2xl,main aside.bg-white.rounded-2xl,
+.view-pane div.bg-white.rounded-2xl,.view-pane div.bg-white.rounded-xl,
+.view-pane section.bg-white.rounded-2xl,
+div.bg-white.rounded-2xl.border,div.bg-white.rounded-xl.border,
+.portfolio-card,.eng-tile,.snap-card,.risk-panel,.risk-board,.wx-tile,
+.project-card,.dept-t,.glass-tile{
+  background:var(--glass-fill) !important;
+  border:1px solid var(--glass-edge) !important;
+  box-shadow:var(--glass-elev) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  border-radius:var(--r-xl);
+  overflow:hidden;
+  background-clip:padding-box;
+  isolation:isolate;
+  contain:layout style;
+}
+main .shadow-2xl,main .shadow-xl,main .shadow-lg{box-shadow:var(--glass-elev) !important;}
+
+/* Inactive view panes — skip layout/paint until shown */
+.view-pane:not(.active){
+  content-visibility:hidden;
+  contain:strict;
+}
+.view-pane.active{
+  content-visibility:visible;
+  contain:layout style;
+}
+
+/* Interactive cards: soft lift + brighter rim */
+.project-card,.dept-t.dept-t-closed,.wx-tile,.snap-card{
+  transition:border-color var(--t-fast) var(--ease),
+             box-shadow var(--t-fast) var(--ease),
+             transform var(--t-fast) var(--ease);
+}
+.project-card:hover,.dept-t.dept-t-closed:hover,.wx-tile:hover,.snap-card:hover{
+  border-color:var(--glass-rim) !important;
+  box-shadow:0 12px 32px rgba(15,23,42,.12), var(--glass-shine) !important;
+  transform:translateY(-1px);
+}
+.project-card:active,.dept-t.dept-t-closed:active,.wx-tile:active{transform:translateY(0) scale(.997);}
+
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass,.glass-panel,.glass-tile,.glass-pill,.glass-drawer,.glass-modal,.glass-fab,
+  main div.bg-white.rounded-2xl,main div.bg-white.rounded-xl,
+  .project-card,.dept-t,.wx-tile,.snap-card{
+    background:rgb(var(--c-surface) / .94) !important;
+  }
+}
+
+/* ==========================================================================
+   3 · APP CHROME — header + brand
+   ========================================================================== */
+header.sticky,header.glass-panel{
+  height:var(--header-h) !important;
+  background:var(--glass-fill-strong) !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:12px !important;
+  border-bottom:1px solid var(--glass-edge) !important;
+  box-shadow:0 1px 0 var(--glass-rim), 0 8px 28px rgba(15,23,42,.06) !important;
+  backdrop-filter:blur(14px) saturate(1.25) !important;
+  -webkit-backdrop-filter:blur(14px) saturate(1.25) !important;
+}
+.muse-header-brand{flex-shrink:0;min-width:0;}
+.muse-brand-title{flex-shrink:0 !important;min-width:7.5rem;}
+.muse-header-right{margin-left:auto;flex-shrink:0;}
+.pui-pane{position:relative;overflow:hidden;background-clip:padding-box;}
+.pui-pane::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:rgb(var(--st-comms));border-radius:3px 0 0 3px;}
+.kb-layout{grid-template-columns:minmax(220px,280px) minmax(0,1fr);}
+@media (max-width:767px){.kb-layout{grid-template-columns:minmax(0,1fr)!important;}}
+.demo-data-chip{
+  display:inline-flex;align-items:center;
+  font-size:10px;font-weight:800;letter-spacing:.06em;
+  color:rgb(var(--pk-yellow-900));
+  background:rgb(var(--st-caution-wash));
+  border:1px solid rgb(var(--st-caution) / .55);
+  border-radius:var(--r-pill);padding:3px 8px;
+}
+button.demo-data-chip{
+  appearance:none;-webkit-appearance:none;font:inherit;cursor:pointer;
+  line-height:1.2;
+}
+button.demo-data-chip:hover{filter:brightness(.97);}
+body.muse-exec-home .dash-row-pcr{display:none !important;}
+button.demo-data-chip:active{transform:scale(.97);}
+.omni-fab,body.omni-fab-on .omni-fab{display:flex !important;}
+.spectrum-gradient{background:var(--spectrum-sweep) !important;}
+
+/* Brand lockup: the official spectrum reads best still and crisp. The old
+   1.6s muse + two expanding rings animated forever on the main thread. */
+.muse-brand-mark{width:34px !important;height:34px !important;}
+.spectrum-mark{animation:none !important;width:26px !important;height:26px !important;}
+.pk-ring,.pk-ring2{display:none !important;}
+.muse-brand-title span:first-child{
+  font-size:12.5px !important;
+  font-weight:700 !important;
+  letter-spacing:-.01em !important;
+  text-transform:none !important;
+  color:rgb(var(--c-ink)) !important;
+}
+.muse-brand-title span:last-child{
+  font-size:9.5px !important;
+  font-weight:500 !important;
+  letter-spacing:.01em !important;
+  text-transform:none !important;
+  color:rgb(var(--c-ink-4)) !important;
+}
+/* Brand stripe: 2px is enough to read as Muse Live without shouting */
+.spectrum-gradient{height:2px !important;}
+
+/* Header logout — hairline pill, quiet until hovered */
+header a[href="/logout"]{
+  height:24px;display:inline-flex;align-items:center;
+  padding:0 8px !important;
+  border-radius:var(--r-sm) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  background:rgb(var(--c-surface-2)) !important;
+  color:rgb(var(--c-ink-3)) !important;
+  font-size:10px !important;font-weight:600 !important;
+  transition:background var(--t-fast),color var(--t-fast),border-color var(--t-fast);
+}
+header a[href="/logout"]:hover{
+  background:rgb(var(--c-surface-3)) !important;
+  color:rgb(var(--c-ink)) !important;
+  border-color:rgb(var(--c-line-strong)) !important;
+}
+/* After PoR/storage chip removal: keep header actions from colliding on narrow phones */
+header.sticky > .flex.items-center.flex-shrink-0,
+header.glass-panel > .flex.items-center.flex-shrink-0{
+  gap:0.35rem;
+  min-width:0;
+}
+@media (max-width:480px){
+  header.sticky > .flex.items-center.flex-shrink-0,
+  header.glass-panel > .flex.items-center.flex-shrink-0{
+    gap:0.2rem;
+  }
+  header #roleSwitchMount{max-width:42vw;overflow:hidden;}
+}
+
+/* Theme toggle — recessed track, raised active thumb (reference img 18) */
+#themeBtn{
+  background:rgb(var(--c-surface-3)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-radius:var(--r-pill) !important;
+  padding:2px !important;gap:2px !important;
+  box-shadow:var(--sh-inset) !important;
+}
+#themeBtn button{
+  width:26px;height:22px;
+  display:inline-flex;align-items:center;justify-content:center;
+  border:0;border-radius:var(--r-pill);
+  background:transparent;color:rgb(var(--c-ink-4));
+  cursor:pointer;
+  transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease),
+             box-shadow var(--t-fast) var(--ease);
+}
+#themeBtn button:hover{color:rgb(var(--c-ink-2));}
+#themeBtn button[aria-pressed="true"],#themeBtn button.is-on,#themeBtn button.on{
+  background:rgb(var(--c-surface)) !important;
+  color:rgb(var(--c-ink)) !important;
+  box-shadow:var(--sh-sm);
+}
+#themeBtn button:active{transform:scale(.94);}
+
+/* Profile / crew avatars — one solid spectrum purple. No sweep, no second hue. */
+.muse-avatar,
+#userChipAvatar,
+#userChipAvatar.muse-avatar{
+  background:#632E8A !important;
+  background-color:#632E8A !important;
+  background-image:none !important;
+  color:#fff !important;
+  border:2px solid rgb(var(--c-surface)) !important;
+  box-shadow:var(--sh-sm);
+}
+html.dark .muse-avatar,
+html.dark #userChipAvatar{
+  background:#632E8A !important;
+  background-color:#632E8A !important;
+  background-image:none !important;
+}
+
+/* User chip */
+#userChipAvatar{
+  width:30px !important;height:30px !important;
+  font-size:10px !important;
+}
+#userChipName{font-size:11.5px !important;font-weight:600 !important;color:rgb(var(--c-ink)) !important;}
+#userChipTitle{font-size:9.5px !important;color:rgb(var(--c-ink-4)) !important;}
+
+/* Header icon buttons — 44px tap on search / chrome */
+header button.w-9,header button.w-11,header button.rounded-lg:not(#themeBtn button){
+  border-radius:var(--r-md) !important;
+  min-width:44px !important;min-height:44px !important;
+  transition:background var(--t-fast) var(--ease),transform var(--t-instant) var(--ease);
+}
+header button.w-9:hover,header button.w-11:hover{background:rgb(var(--c-surface-3)) !important;}
+header button.w-9:active,header button.w-11:active{transform:scale(.93);}
+header a[href="/logout"]{min-height:44px !important;min-width:44px !important;}
+#createModal button[onclick="closeCreateModal()"],
+#charlieDrawer button[onclick="toggleCharlie()"],
+.omni-drawer button[onclick="closeOmniDrawer()"]{
+  min-width:44px;min-height:44px;
+}
+
+/* Role switcher */
+.role-switch{
+  background:rgb(var(--c-surface-2)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-radius:var(--r-md) !important;
+  box-shadow:none !important;
+}
+.role-switch select{
+  background:transparent !important;
+  color:rgb(var(--c-ink-2)) !important;
+  font-size:11px !important;font-weight:600 !important;
+}
+
+/* ==========================================================================
+   4 · NAV RAIL — reference sidebar (img 7 / 18)
+   ========================================================================== */
+.nav-rail{
+  background:var(--glass-fill-strong) !important;
+  border-right:1px solid var(--glass-edge) !important;
+  box-shadow:4px 0 28px rgba(15,23,42,.05), var(--glass-shine) !important;
+  backdrop-filter:blur(12px) saturate(1.2) !important;
+  -webkit-backdrop-filter:blur(12px) saturate(1.2) !important;
+  transition:width var(--t-base) var(--ease);
+  contain:layout style;
+}
+body.nav-rail-expanded .nav-rail{
+  box-shadow:8px 0 36px rgba(15,23,42,.1), var(--glass-shine) !important;
+}
+.nav-rail-top{
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.04)) !important;
+  border-bottom:1px solid var(--glass-edge) !important;
+  min-height:40px !important;
+}
+html.dark .nav-rail-top{
+  background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.01)) !important;
+}
+.nav-rail-sep{background:rgb(var(--c-line)) !important;}
+.nav-rail-foot{
+  border:none !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
+html.dark .nav-rail-foot{
+  border:none !important;
+  background:transparent !important;
+}
+.nav-rail-section-lbl{
+  font-size:10px !important;
+  font-weight:600 !important;
+  letter-spacing:.02em !important;
+  text-transform:none !important;
+  color:rgb(var(--c-ink-4)) !important;
+  padding:10px 10px 4px !important;
+}
+
+/* Rows: 8px radius, subtle grey fill when active — not a black slab */
+.nav-rail-btn{
+  color:rgb(var(--c-ink-2)) !important;
+  border-radius:var(--r-md) !important;
+  transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease),
+             transform var(--t-instant) var(--ease);
+}
+.nav-rail-btn:hover{
+  background:rgb(var(--c-surface-3)) !important;
+  color:rgb(var(--c-ink)) !important;
+}
+.nav-rail-btn:active{transform:scale(.95);}
+.nav-rail-btn.is-active{
+  background:rgb(var(--c-surface-3)) !important;
+  color:rgb(var(--c-ink)) !important;
+  box-shadow:none !important;
+  font-weight:650;
+}
+.nav-rail-btn.is-active:hover{background:rgb(var(--c-line)) !important;}
+/* Active marker: 2px spectrum blue bar on the leading edge */
+.nav-rail-btn.is-active::before{
+  content:'';position:absolute;left:-6px;top:50%;
+  width:2px;height:16px;margin-top:-8px;border-radius:2px;
+  background:rgb(var(--st-comms));
+}
+body.nav-rail-expanded .nav-rail-btn.is-active::before{left:-4px;}
+.nav-rail-label{font-size:12.5px !important;font-weight:550 !important;}
+.nav-rail-btn.is-active .nav-rail-label{font-weight:650 !important;}
+
+/* "New show" — spectrum purple primary (assets/ui CTA language) */
+.nav-rail-btn-new{
+  background:linear-gradient(145deg,rgb(var(--pk-purple-500)),rgb(var(--pk-purple-700))) !important;
+  color:#fff !important;
+  box-shadow:0 4px 14px rgb(var(--pk-purple-700) / .35), var(--glass-shine) !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  overflow:hidden;
+  background-clip:padding-box;
+}
+.nav-rail-btn-new:hover{background:linear-gradient(145deg,rgb(var(--pk-purple-600)),rgb(var(--pk-purple-800))) !important;filter:brightness(1.04) !important;}
+.nav-rail-btn-warn{color:rgb(var(--st-blocked)) !important;}
+.nav-rail-btn-warn:hover{background:rgb(var(--st-blocked-wash)) !important;}
+
+/* Badges.
+   Collapsed, the rail is 56px of pure wayfinding — a column of numbered
+   bubbles turned it into confetti and they collided with neighbouring icons.
+   So: collapsed shows a 6px status dot, expanded shows the count as quiet
+   right-aligned text (reference img 18). Same information, no noise. */
+.nav-rail-badge,.nav-rail-dot-attn{
+  border:0 !important;
+  box-shadow:0 0 0 2px rgb(var(--c-surface-2)) !important;
+  border-radius:var(--r-pill) !important;
+}
+body:not(.nav-rail-expanded) .nav-rail-badge,
+body:not(.nav-rail-expanded) .nav-rail-dot-attn{
+  top:5px !important;right:7px !important;
+  min-width:0 !important;width:6px !important;height:6px !important;
+  padding:0 !important;overflow:hidden !important;
+  font-size:0 !important;color:transparent !important;
+  text-indent:-99px !important;
+}
+.nav-rail-badge.is-red,.nav-rail-badge.is-live,.nav-rail-dot-attn{background:rgb(var(--st-blocked)) !important;}
+.nav-rail-badge.is-blue{background:rgb(var(--st-info)) !important;}
+body.nav-rail-expanded .nav-rail-badge,
+body.nav-rail-expanded .nav-rail-dot-attn{
+  box-shadow:none !important;
+  background:transparent !important;
+  color:rgb(var(--c-ink-4)) !important;
+  font-size:10.5px !important;font-weight:600 !important;
+  min-width:auto !important;height:auto !important;padding:0 2px !important;
+}
+body.nav-rail-expanded .nav-rail-badge.is-red,
+body.nav-rail-expanded .nav-rail-badge.is-live,
+body.nav-rail-expanded .nav-rail-dot-attn{color:rgb(var(--st-blocked-ink)) !important;}
+body.nav-rail-expanded .nav-rail-badge.is-blue{color:rgb(var(--st-info-ink)) !important;}
+.nav-rail-prod-dot{box-shadow:0 0 0 2px rgb(var(--c-surface-2)) !important;}
+.nav-rail-prod-letter{font-size:11.5px !important;font-weight:700 !important;}
+
+/* Collapsed tooltips */
+body:not(.nav-rail-expanded) .nav-rail-btn[title]:hover::after{
+  background:rgb(var(--n-900)) !important;
+  color:rgb(var(--c-surface)) !important;
+  font-size:11px !important;font-weight:600 !important;
+  border-radius:var(--r-sm) !important;
+  box-shadow:var(--sh-lg) !important;
+}
+body:not(.nav-rail-expanded) .nav-rail-btn[title]:hover::before{border-right-color:rgb(var(--n-900)) !important;}
+.nav-rail-scrim{background:rgb(var(--n-950) / .32) !important;}
+
+/* ==========================================================================
+   5 · TABS + SEGMENTED CONTROLS
+   ========================================================================== */
+[id^="projTabs-"]{
+  background:var(--glass-fill-soft) !important;
+  border-bottom:1px solid var(--glass-edge) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.tab-active{
+  background:rgb(var(--c-solid)) !important;
+  color:rgb(var(--c-on-solid)) !important;
+  box-shadow:var(--sh-sm) !important;
+}
+.tab-inactive{
+  background:transparent !important;
+  color:rgb(var(--c-ink-3)) !important;
+  backdrop-filter:none !important;
+}
+.tab-inactive:hover{
+  background:rgb(var(--c-surface-3)) !important;
+  color:rgb(var(--c-ink)) !important;
+}
+
+.dept-tabstrip{gap:4px !important;}
+.dept-tab{
+  background:rgb(var(--c-surface)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-radius:var(--r-md) !important;
+  box-shadow:none !important;
+  color:rgb(var(--c-ink-2)) !important;
+  font-size:11.5px !important;
+  transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease),
+             color var(--t-fast) var(--ease),transform var(--t-instant) var(--ease);
+}
+.dept-tab:hover{
+  transform:none !important;
+  background:rgb(var(--c-surface-3)) !important;
+  border-color:rgb(var(--c-line-strong)) !important;
+}
+.dept-tab:active{transform:scale(.97) !important;}
+.dept-tab.on,.dept-tab.is-on,.dept-tab[aria-selected="true"]{
+  background:rgb(var(--c-solid)) !important;
+  color:rgb(var(--c-on-solid)) !important;
+  border-color:rgb(var(--c-solid)) !important;
+}
+
+/* Filter/segment pill rows the templates build with `.rounded-full.border`.
+   Same guard as above: only chips that leave their fill unspecified. */
+.filter-chip:not([class*="bg-"]),
+#snapFilters button:not([class*="bg-"]),
+#engFilters button:not([class*="bg-"]),
+.snap-filter button:not([class*="bg-"]){
+  background:rgb(var(--c-surface));
+  border:1px solid rgb(var(--c-line));
+  box-shadow:none;
+  color:rgb(var(--c-ink-2));
+}
+#snapFilters button,#engFilters button,.filter-chip{
+  transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease),
+             transform var(--t-instant) var(--ease);
+}
+#snapFilters button:not([class*="bg-"]):hover,
+#engFilters button:not([class*="bg-"]):hover,
+.filter-chip:not([class*="bg-"]):hover{
+  background:rgb(var(--c-surface-3));
+  border-color:rgb(var(--c-line-strong));
+}
+#snapFilters button:active,#engFilters button:active,.filter-chip:active{transform:scale(.97);}
+
+/* ==========================================================================
+   6 · BUTTONS — press feedback on everything
+   ========================================================================== */
+button,[role="button"],summary{-webkit-tap-highlight-color:transparent;}
+button:not(:disabled){transition:background-color var(--t-fast) var(--ease),
+  border-color var(--t-fast) var(--ease),color var(--t-fast) var(--ease),
+  box-shadow var(--t-fast) var(--ease),transform var(--t-instant) var(--ease);}
+button:not(:disabled):active{transform:scale(.975);}
+button:disabled{opacity:.45;cursor:not-allowed;}
+
+/* Gradient fills are not part of the reference language. The templates use
+   `bg-gradient-to-*` for primary actions; collapse those to a flat spectrum
+   blue so "primary action" looks the same in every corner of the product. */
+main [class*="bg-gradient-to"],.view-pane [class*="bg-gradient-to"],
+[id$="Modal"] [class*="bg-gradient-to"],[id$="Overlay"] [class*="bg-gradient-to"]{
+  background-image:none !important;
+}
+main button[class*="bg-gradient-to"],.view-pane button[class*="bg-gradient-to"],
+main a[class*="bg-gradient-to"],
+[id$="Modal"] button[class*="bg-gradient-to"],[id$="Overlay"] button[class*="bg-gradient-to"]{
+  background-color:rgb(var(--st-info)) !important;
+  color:#fff !important;
+  box-shadow:var(--sh-sm) !important;
+}
+main button[class*="bg-gradient-to"]:hover,.view-pane button[class*="bg-gradient-to"]:hover{
+  background-color:rgb(var(--pk-blue-600)) !important;
+}
+
+/* Secondary: white + hairline + micro shadow (reference img 11/12 toolbars).
+   `:not([class*="bg-"])` is load-bearing — a button that names its own fill
+   (bg-gray-900 for the active/primary state, bg-red-600 for destructive) must
+   keep it, or `text-white` lands on white. */
+main button.border:not([class*="bg-"]),
+.view-pane button.border:not([class*="bg-"]),
+[id$="Modal"] button.border:not([class*="bg-"]),
+[id$="Overlay"] button.border:not([class*="bg-"]){
+  background:rgb(var(--c-surface));
+  border-color:rgb(var(--c-line));
+  box-shadow:var(--sh-xs);
+}
+main button.border:not([class*="bg-"]):hover,
+.view-pane button.border:not([class*="bg-"]):hover{
+  background:rgb(var(--c-surface-2));
+  border-color:rgb(var(--c-line-strong));
+}
+
+/* ==========================================================================
+   7 · STATUS PILLS — the continuity layer
+   Outlined pill + solid dot (reference img 10) for live/plant state; soft
+   tinted pill (img 5/12) for workflow state. Both come from the same tokens.
+   ========================================================================== */
+.pui-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  height:22px;padding:0 8px;
+  border-radius:var(--r-pill);
+  border:1px solid rgb(var(--c-line));
+  background:rgb(var(--c-surface));
+  font-size:10.5px;font-weight:600;line-height:1;
+  color:rgb(var(--c-ink-2));
+  white-space:nowrap;
+}
+.pui-pill::before{
+  content:'';width:6px;height:6px;border-radius:50%;
+  background:rgb(var(--st-idle));flex:0 0 auto;
+}
+.pui-pill-ready{border-color:rgb(var(--st-ready) / .4);color:rgb(var(--st-ready-ink));}
+.pui-pill-ready::before{background:rgb(var(--st-ready));}
+.pui-pill-caution{border-color:rgb(var(--st-caution) / .45);color:rgb(var(--st-caution-ink));}
+.pui-pill-caution::before{background:rgb(var(--st-caution));}
+.pui-pill-warn{border-color:rgb(var(--st-warn) / .42);color:rgb(var(--st-warn-ink));}
+.pui-pill-warn::before{background:rgb(var(--st-warn));}
+.pui-pill-blocked{border-color:rgb(var(--st-blocked) / .42);color:rgb(var(--st-blocked-ink));}
+.pui-pill-blocked::before{background:rgb(var(--st-blocked));}
+.pui-pill-info{border-color:rgb(var(--st-info) / .42);color:rgb(var(--st-info-ink));}
+.pui-pill-info::before{background:rgb(var(--st-info));}
+.pui-pill-comms{border-color:rgb(var(--st-comms) / .42);color:rgb(var(--st-comms-ink));}
+.pui-pill-comms::before{background:rgb(var(--st-comms));}
+
+.pui-tag{
+  display:inline-flex;align-items:center;gap:4px;
+  height:20px;padding:0 7px;border-radius:var(--r-xs);
+  font-size:10px;font-weight:650;line-height:1;white-space:nowrap;
+  background:rgb(var(--st-idle-wash));color:rgb(var(--st-idle-ink));
+}
+.pui-tag-ready{background:rgb(var(--st-ready-wash));color:rgb(var(--st-ready-ink));}
+.pui-tag-caution{background:rgb(var(--st-caution-wash));color:rgb(var(--st-caution-ink));}
+.pui-tag-warn{background:rgb(var(--st-warn-wash));color:rgb(var(--st-warn-ink));}
+.pui-tag-blocked{background:rgb(var(--st-blocked-wash));color:rgb(var(--st-blocked-ink));}
+.pui-tag-info{background:rgb(var(--st-info-wash));color:rgb(var(--st-info-ink));}
+.pui-tag-comms{background:rgb(var(--st-comms-wash));color:rgb(var(--st-comms-ink));}
+
+/* Existing chips inherit the same language */
+.dept-chip{
+  background:rgb(var(--c-surface-2)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  color:rgb(var(--c-ink-3)) !important;
+  box-shadow:none !important;
+  border-radius:var(--r-pill) !important;
+  font-size:9.5px !important;
+}
+.dept-chip-alert{
+  background:rgb(var(--st-blocked-wash)) !important;
+  border-color:rgb(var(--st-blocked) / .4) !important;
+  color:rgb(var(--st-blocked-ink)) !important;
+}
+.dept-hidebtn{color:rgb(var(--c-ink-4)) !important;text-transform:none !important;letter-spacing:0 !important;}
+.dept-hidebtn:hover{color:rgb(var(--c-ink-2)) !important;}
+.dept-t{
+  border-color:rgb(var(--c-line)) !important;
+  border-radius:var(--r-xl) !important;
+}
+
+/* Go / No-Go — the most-read status in the product */
+.risk-gng,.risk-gng-go,.risk-gng-cond,.risk-gng-nogo,.risk-gng-na{
+  border-radius:var(--r-pill) !important;
+  font-weight:650 !important;
+  box-shadow:none !important;
+  border-width:1px !important;border-style:solid !important;
+}
+.risk-gng-go{background:rgb(var(--st-ready-wash)) !important;color:rgb(var(--st-ready-ink)) !important;border-color:rgb(var(--st-ready) / .4) !important;}
+.risk-gng-cond{background:rgb(var(--st-caution-wash)) !important;color:rgb(var(--st-caution-ink)) !important;border-color:rgb(var(--st-caution) / .45) !important;}
+.risk-gng-nogo{background:rgb(var(--st-blocked-wash)) !important;color:rgb(var(--st-blocked-ink)) !important;border-color:rgb(var(--st-blocked) / .42) !important;}
+.risk-gng-na{background:rgb(var(--st-idle-wash)) !important;color:rgb(var(--st-idle-ink)) !important;border-color:rgb(var(--c-line)) !important;}
+
+.risk-chip-crit{background:rgb(var(--st-blocked-wash)) !important;color:rgb(var(--st-blocked-ink)) !important;}
+.risk-chip-watch{background:rgb(var(--st-caution-wash)) !important;color:rgb(var(--st-caution-ink)) !important;}
+.risk-chip-clear{background:rgb(var(--st-ready-wash)) !important;color:rgb(var(--st-ready-ink)) !important;}
+
+/* Attention badges — one calm muse, no expanding box-shadow rings */
+@keyframes pui-breathe{0%,100%{opacity:1;}50%{opacity:.55;}}
+.attn-badge,.notif-badge,.risk-high{
+  animation:pui-breathe 2.4s ease-in-out infinite !important;
+  box-shadow:none !important;
+}
+.onair{animation:pui-breathe 1.1s step-end infinite !important;}
+
+/* Progress bars */
+progress{height:6px;border-radius:var(--r-pill);overflow:hidden;}
+progress::-webkit-progress-bar{background:rgb(var(--c-surface-3));border-radius:var(--r-pill);}
+progress.green::-webkit-progress-value{background:rgb(var(--st-ready));}
+progress.yellow::-webkit-progress-value{background:rgb(var(--st-caution));}
+progress.orange::-webkit-progress-value{background:rgb(var(--st-warn));}
+progress.red::-webkit-progress-value{background:rgb(var(--st-blocked));}
+progress.green::-moz-progress-bar{background:rgb(var(--st-ready));}
+progress.yellow::-moz-progress-bar{background:rgb(var(--st-caution));}
+progress.orange::-moz-progress-bar{background:rgb(var(--st-warn));}
+progress.red::-moz-progress-bar{background:rgb(var(--st-blocked));}
+.risk-bar-track{background:rgb(var(--c-surface-3)) !important;}
+
+/* ==========================================================================
+   8 · TABLES + LIST ROWS (reference img 9 / 10 / 11)
+   ========================================================================== */
+main table,.view-pane table{border-collapse:separate;border-spacing:0;width:100%;}
+main table thead th,.view-pane table thead th{
+  font-size:10.5px;font-weight:600;
+  text-transform:none;letter-spacing:0;
+  color:rgb(var(--c-ink-3));
+  border-bottom:1px solid rgb(var(--c-line)) !important;
+  padding-top:9px;padding-bottom:9px;
+  white-space:nowrap;
+}
+main table thead th:not([class*="bg-"]),.view-pane table thead th:not([class*="bg-"]){
+  background:rgb(var(--c-surface));
+}
+main table tbody td,.view-pane table tbody td{
+  border-bottom:1px solid rgb(var(--c-line) / .7);
+  font-size:12px;
+  padding-top:9px;padding-bottom:9px;
+  color:rgb(var(--c-ink-2));
+}
+main table tbody tr:last-child td,.view-pane table tbody tr:last-child td{border-bottom:0;}
+main table tbody tr,.view-pane table tbody tr{transition:background-color var(--t-fast) var(--ease);}
+main table tbody tr:hover,.view-pane table tbody tr:hover{background:rgb(var(--c-surface-2));}
+/* No zebra in the reference language */
+main table tbody tr:nth-child(even),.view-pane table tbody tr:nth-child(even){background-image:none;}
+thead.sticky,.sticky.top-0.bg-white{
+  background:rgb(var(--c-surface)) !important;
+  box-shadow:0 1px 0 rgb(var(--c-line));
+}
+.fin-th{color:rgb(var(--c-ink-3)) !important;}
+.fin-th:hover{color:rgb(var(--c-ink)) !important;}
+
+/* Risk board rows */
+.risk-head{
+  background:rgb(var(--c-surface)) !important;
+  border-bottom:1px solid rgb(var(--c-line)) !important;
+  color:rgb(var(--c-ink-3)) !important;
+}
+.risk-row{
+  background:rgb(var(--c-surface)) !important;
+  border-bottom:1px solid rgb(var(--c-line) / .7) !important;
+  transition:background-color var(--t-fast) var(--ease) !important;
+}
+.risk-row:hover{background:rgb(var(--c-surface-2)) !important;}
+/* Severity reads from a 3px leading rule, not a full-width wash */
+.risk-row.risk-band-critical,.risk-row.risk-band-watch{
+  background:rgb(var(--c-surface)) !important;
+  box-shadow:inset 3px 0 0 rgb(var(--st-idle));
+}
+.risk-row.risk-band-critical{box-shadow:inset 3px 0 0 rgb(var(--st-blocked));}
+.risk-row.risk-band-watch{box-shadow:inset 3px 0 0 rgb(var(--st-caution));}
+
+/* ==========================================================================
+   9 · FORMS
+   ========================================================================== */
+input:not([type=checkbox]):not([type=radio]):not([type=range]),
+select,textarea{
+  background:rgb(var(--c-surface));
+  border:1px solid rgb(var(--c-line));
+  border-radius:var(--r-md);
+  color:rgb(var(--c-ink));
+  font-size:12.5px;
+  transition:border-color var(--t-fast) var(--ease),box-shadow var(--t-fast) var(--ease);
+}
+input:hover:not(:focus),select:hover:not(:focus),textarea:hover:not(:focus){border-color:rgb(var(--c-line-strong));}
+input:focus,select:focus,textarea:focus{
+  outline:none;
+  border-color:rgb(var(--st-info));
+  box-shadow:0 0 0 3px rgb(var(--st-info) / .14);
+}
+::placeholder{color:rgb(var(--c-ink-4));}
+.ifb-sel{background:rgb(var(--c-surface)) !important;border-color:rgb(var(--c-line)) !important;color:rgb(var(--c-ink)) !important;}
+.muse-rich-host{background:rgb(var(--c-surface)) !important;}
+.muse-rich .ql-toolbar.ql-snow,.muse-rich .ql-container.ql-snow{border-color:rgb(var(--c-line)) !important;}
+
+/* Toggle switches */
+.perm-toggle{background:rgb(var(--c-surface-3)) !important;}
+.perm-toggle.on,.perm-toggle[aria-checked="true"]{background:rgb(var(--st-ready)) !important;}
+
+/* ==========================================================================
+   10 · MODALS + OVERLAYS
+   ========================================================================== */
+[id$="Modal"]:not(#engModal),[id$="Overlay"],#gsOverlay{background:rgb(var(--n-950) / .4) !important;}
+[id$="Modal"]:not(#engModal) > .bg-white,[id$="Modal"]:not(#engModal) > div.bg-white,
+[id$="Overlay"] > .bg-white,[id$="Overlay"] > div.bg-white.rounded-2xl,
+#gsOverlay .bg-white,#gsOverlay > div,#userProfileOverlay > div,#gsAiPanel > div{
+  background:rgb(var(--c-surface)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-radius:var(--r-2xl) !important;
+  box-shadow:var(--sh-xl) !important;
+}
+.toast{
+  background:rgb(var(--c-surface)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-radius:var(--r-lg) !important;
+  box-shadow:var(--sh-lg) !important;
+  animation:pui-toast var(--t-slow) var(--ease-out) !important;
+}
+@keyframes pui-toast{from{opacity:0;transform:translateY(6px) scale(.98);}to{opacity:1;transform:none;}}
+
+footer#provenanceStamp,#provenanceStamp{
+  background:rgb(var(--c-surface-2)) !important;
+  border-top:1px solid rgb(var(--c-line)) !important;
+}
+footer{
+  background:rgb(var(--c-surface)) !important;
+  border-top:1px solid rgb(var(--c-line)) !important;
+  color:rgb(var(--c-ink-2)) !important;
+  font-size:12px !important;
+}
+footer .mono,footer div{color:inherit !important;}
+
+/* ==========================================================================
+   11 · CHARLIE — spectrum orange bot, spectrum purple user
+   Same tokens as the rest of the platform: Charlie's green IS dashboard green.
+   ========================================================================== */
+#charlieLauncher{
+  background:rgb(var(--c-surface)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-right:0 !important;
+  color:rgb(var(--c-ink-2)) !important;
+  box-shadow:var(--sh-md) !important;
+  transition:background var(--t-fast) var(--ease),color var(--t-fast) var(--ease) !important;
+}
+#charlieLauncher:hover{background:rgb(var(--c-surface-2)) !important;color:rgb(var(--c-ink)) !important;}
+#charlieLauncher::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:rgb(var(--charlie-accent));
+}
+#charlieDrawer{
+  background:rgb(var(--c-surface)) !important;
+  border-left:1px solid rgb(var(--c-line)) !important;
+  box-shadow:var(--sh-drawer) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  contain:layout style;
+  height:100dvh;max-height:100dvh;
+}
+#charlieDrawer > div:first-child,#charlieDrawer .border-b{
+  background:rgb(var(--c-surface)) !important;
+  border-color:rgb(var(--c-line)) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+#charlieMessages{background:transparent !important;}
+/* iOS Messages palette — Charlie blue · user green */
+.charlie-bubble-bot{
+  background:linear-gradient(145deg,rgba(0,122,255,.92),rgba(10,132,255,.78)) !important;
+  border:1px solid rgba(0,122,255,.45) !important;
+  color:#fff !important;
+  border-radius:var(--r-lg) !important;
+  box-shadow:0 4px 16px rgba(0,122,255,.22), var(--glass-shine) !important;
+}
+.charlie-bubble-user{
+  background:linear-gradient(145deg,rgba(52,199,89,.92),rgba(48,209,88,.78)) !important;
+  border:1px solid rgba(52,199,89,.5) !important;
+  color:#fff !important;
+  border-radius:var(--r-lg) !important;
+  box-shadow:0 4px 16px rgba(52,199,89,.2), var(--glass-shine) !important;
+}
+.charlie-typing-bubble{
+  background:linear-gradient(145deg,rgba(0,122,255,.85),rgba(10,132,255,.7)) !important;
+  border:1px solid rgba(0,122,255,.4) !important;
+}
+.charlie-dot{background:rgba(255,255,255,.85) !important;}
+#charlieInput{
+  background:rgb(var(--c-surface-2)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  box-shadow:none !important;
+  border-radius:var(--r-lg) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+#charlieInput:focus{border-color:rgba(0,122,255,.55) !important;box-shadow:0 0 0 3px rgba(0,122,255,.16) !important;}
+#charlieChips button{
+  background:rgb(var(--c-surface-2)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  color:rgb(var(--c-ink-2)) !important;
+  box-shadow:none !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+#charlieChips button:hover{
+  background:rgba(0,122,255,.12) !important;
+  border-color:rgba(0,122,255,.35) !important;
+  color:rgb(var(--pk-blue-800)) !important;
+}
+#charlieModeDot{box-shadow:none !important;}
+
+/* ==========================================================================
+   12 · OMNI — spectrum purple, kept distinct from Charlie
+   ========================================================================== */
+.omni-fab{
+  background:rgb(var(--c-surface)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-right:0 !important;
+  color:rgb(var(--c-ink-2)) !important;
+  box-shadow:var(--sh-md) !important;
+}
+.omni-fab:hover{background:rgb(var(--c-surface-2)) !important;color:rgb(var(--c-ink)) !important;}
+.omni-fab::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2px;
+  background:rgb(var(--omni-accent));
+}
+.omni-fab-badge{background:rgb(var(--st-blocked)) !important;color:#fff !important;border:0 !important;box-shadow:none !important;}
+/* Scrim is a dim only — drawers themselves are opaque paper */
+.omni-scrim{
+  background:rgb(var(--c-ink) / .28) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.omni-drawer,.omni-drawer.open{
+  background:rgb(var(--c-surface)) !important;
+  border-left:1px solid rgb(var(--c-line)) !important;
+  box-shadow:var(--sh-drawer) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+  contain:layout style;
+  height:100dvh;max-height:100dvh;
+}
+.omni-drawer > div:first-child,.omni-drawer .border-b,#omniDrawerFoot{
+  background:rgb(var(--c-surface)) !important;
+  border-color:rgb(var(--c-line)) !important;
+}
+#omniDrawerBody{background:transparent !important;}
+.omni-tabbtn{
+  background:transparent !important;
+  color:rgb(var(--c-ink-3)) !important;
+  border-radius:var(--r-md) !important;
+  border:1px solid transparent !important;
+}
+.omni-tabbtn:hover{background:var(--glass-fill-soft) !important;color:rgb(var(--c-ink)) !important;}
+.omni-tabbtn.on{
+  background:linear-gradient(145deg,rgb(var(--pk-purple-500)),rgb(var(--pk-purple-700))) !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,.18) !important;
+  box-shadow:0 4px 14px rgb(var(--pk-purple-700) / .3) !important;
+}
+.omni-input{
+  background:rgb(var(--c-surface)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  box-shadow:none !important;
+}
+.omni-input:focus{border-color:rgb(var(--omni-accent)) !important;box-shadow:0 0 0 3px rgb(var(--omni-accent) / .14) !important;}
+.omni-bubble-in{
+  max-width:85%;
+  background:rgb(var(--c-surface-2)) !important;
+  border:1px solid rgb(var(--c-line-strong)) !important;
+  color:rgb(var(--c-ink)) !important;
+  box-shadow:none !important;
+  border-radius:16px 16px 16px 4px !important;
+  overflow:hidden;
+  background-clip:padding-box;
+}
+.omni-bubble-in,
+.omni-bubble-in *,
+.omni-bubble-in .rt,
+.omni-bubble-in .rt *{
+  color:rgb(var(--c-ink)) !important;
+}
+.omni-bubble-in .text-gray-500,
+.omni-bubble-in .text-gray-400{color:rgb(var(--c-ink-3)) !important;}
+.omni-bubble-in a,.omni-bubble-in .rt a{color:rgb(var(--st-info-ink)) !important;}
+/* Outbound: solid spectrum purple so white copy is always readable (light + dark) */
+.omni-bubble-out{
+  max-width:80%;
+  background:linear-gradient(160deg,#7b3aad,#632E8A) !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  color:#ffffff !important;
+  box-shadow:0 4px 14px rgb(var(--pk-purple-700) / .28) !important;
+  border-radius:16px 16px 4px 16px !important;
+  overflow:hidden;
+  background-clip:padding-box;
+}
+.omni-bubble-out,
+.omni-bubble-out *,
+.omni-bubble-out .rt,
+.omni-bubble-out .rt *,
+.omni-bubble-out .rt.rt-on-dark,
+.omni-bubble-out .rt.rt-on-dark *{
+  color:#ffffff !important;
+}
+.omni-bubble-out a,.omni-bubble-out .rt a{color:#f2e9fb !important;}
+html.dark .omni-bubble-in{
+  background:rgb(var(--c-surface-3)) !important;
+  border-color:rgb(var(--c-line-strong)) !important;
+}
+html.dark .omni-bubble-out{
+  background:linear-gradient(160deg,#8b4bc4,#632E8A) !important;
+}
+.omni-send{background:rgb(var(--omni-accent)) !important;color:#fff !important;box-shadow:none !important;}
+.omni-st{
+  background:rgb(var(--c-surface)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  box-shadow:none !important;
+  border-radius:var(--r-pill) !important;
+}
+.omni-st-active{background:rgb(var(--st-ready-wash)) !important;color:rgb(var(--st-ready-ink)) !important;border-color:rgb(var(--st-ready) / .4) !important;}
+.omni-st-mon{background:rgb(var(--st-caution-wash)) !important;color:rgb(var(--st-caution-ink)) !important;border-color:rgb(var(--st-caution) / .45) !important;}
+.omni-st-stby{background:rgb(var(--st-idle-wash)) !important;color:rgb(var(--st-idle-ink)) !important;}
+.omni-critband{background:rgb(var(--st-blocked-wash)) !important;color:rgb(var(--st-blocked-ink)) !important;border-color:rgb(var(--st-blocked) / .4) !important;}
+.omni-h4{color:rgb(var(--c-ink-3)) !important;}
+.omni-mailrow,.omni-xyrow,.omni-icrow{
+  background:rgb(var(--c-surface)) !important;
+  border-color:rgb(var(--c-line)) !important;
+}
+.omni-mailrow:hover,.omni-xyrow:hover,.omni-icrow:hover{background:rgb(var(--c-surface-2)) !important;}
+
+/* ==========================================================================
+   13 · MAPS + CANVAS HOSTS — opaque, hairline framed
+   ========================================================================== */
+.trk-map-shell,.trk-map-shell-light,#trkMapBox{
+  background:rgb(var(--c-surface-2)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  border-radius:var(--r-xl) !important;
+  box-shadow:none !important;
+}
+html.dark .trk-map-shell,html.dark .trk-map-shell-light,
+html.dark .trk-map-shell-dark,html.dark #trkMapBox{
+  background:rgb(var(--c-surface-inset)) !important;
+  border-color:rgb(var(--c-line)) !important;
+}
+
+/* ==========================================================================
+   14 · REFERENCE PRIMITIVES — available to new markup
+   ========================================================================== */
+.pui-card{
+  background:rgb(var(--c-surface));
+  border:1px solid rgb(var(--c-line));
+  border-radius:var(--r-xl);
+  box-shadow:var(--sh-xs);
+}
+.pui-card-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:11px 14px;border-bottom:1px solid rgb(var(--c-line));
+}
+.pui-card-title{
+  font-size:12px;font-weight:650;letter-spacing:-.005em;
+  color:rgb(var(--c-ink));
+}
+.pui-card-sub{font-size:11px;color:rgb(var(--c-ink-4));}
+.pui-card-body{padding:14px;}
+
+/* KPI well (reference img 9 / 17) */
+.pui-kpi{
+  background:rgb(var(--c-surface));
+  border:1px solid rgb(var(--c-line));
+  border-radius:var(--r-lg);
+  padding:11px 13px;
+}
+.pui-kpi-label{
+  display:flex;align-items:center;gap:6px;
+  font-size:10.5px;font-weight:600;color:rgb(var(--c-ink-3));
+  margin-bottom:6px;
+}
+.pui-kpi-value{
+  font-size:22px;font-weight:680;letter-spacing:-.02em;
+  color:rgb(var(--c-ink));line-height:1.1;
+}
+.pui-kpi-delta{
+  display:inline-flex;align-items:center;gap:3px;
+  height:19px;padding:0 6px;border-radius:var(--r-pill);
+  font-size:10px;font-weight:650;
+}
+.pui-kpi-delta-up{background:rgb(var(--st-ready-wash));color:rgb(var(--st-ready-ink));}
+.pui-kpi-delta-down{background:rgb(var(--st-blocked-wash));color:rgb(var(--st-blocked-ink));}
+
+/* Segmented control */
+.pui-seg{
+  display:inline-flex;align-items:center;gap:2px;padding:2px;
+  background:rgb(var(--c-surface-3));
+  border:1px solid rgb(var(--c-line));
+  border-radius:var(--r-md);
+  box-shadow:var(--sh-inset);
+}
+.pui-seg > button{
+  height:26px;padding:0 11px;border:0;border-radius:var(--r-sm);
+  background:transparent;color:rgb(var(--c-ink-3));
+  font-size:11.5px;font-weight:600;cursor:pointer;
+}
+.pui-seg > button:hover{color:rgb(var(--c-ink));}
+.pui-seg > button[aria-selected="true"],.pui-seg > button.on{
+  background:rgb(var(--c-surface));color:rgb(var(--c-ink));box-shadow:var(--sh-sm);
+}
+
+/* Buttons */
+.pui-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:30px;padding:0 11px;
+  border:1px solid rgb(var(--c-line));
+  border-radius:var(--r-md);
+  background:rgb(var(--c-surface));
+  color:rgb(var(--c-ink));
+  font-size:12px;font-weight:600;cursor:pointer;
+  box-shadow:var(--sh-xs);
+}
+.pui-btn:hover{background:rgb(var(--c-surface-2));border-color:rgb(var(--c-line-strong));}
+.pui-btn-primary{
+  background:rgb(var(--c-solid));border-color:rgb(var(--c-solid));
+  color:rgb(var(--c-on-solid));box-shadow:var(--sh-sm);
+}
+.pui-btn-primary:hover{background:rgb(var(--c-solid-hover));border-color:rgb(var(--c-solid-hover));}
+.pui-btn-brand,.muse-cta-purple{
+  background:linear-gradient(145deg,rgb(var(--pk-purple-500)),rgb(var(--pk-purple-700))) !important;
+  border:1px solid rgba(255,255,255,.16) !important;
+  color:#fff !important;
+  box-shadow:0 4px 14px rgb(var(--pk-purple-700) / .35), var(--glass-shine) !important;
+}
+.pui-btn-brand:hover,.muse-cta-purple:hover{
+  background:linear-gradient(145deg,rgb(var(--pk-purple-600)),rgb(var(--pk-purple-800))) !important;
+  filter:brightness(1.04);
+}
+
+/* Section label */
+.pui-eyebrow{
+  font-size:10px;font-weight:600;letter-spacing:.01em;
+  color:rgb(var(--c-ink-4));
+}
+/* Hairline divider */
+.pui-rule{height:1px;background:rgb(var(--c-line));border:0;}
+
+/* Entity tile — the rounded gradient square from the reference set */
+.pui-ico{
+  width:26px;height:26px;flex:0 0 auto;
+  display:inline-flex;align-items:center;justify-content:center;
+  border-radius:var(--r-sm);
+  border:1px solid rgb(var(--c-line));
+  background:rgb(var(--c-surface-2));
+  font-size:11px;font-weight:700;color:rgb(var(--c-ink-2));
+}
+.pui-ico-red{background:rgb(var(--st-blocked-wash));color:rgb(var(--st-blocked-ink));border-color:rgb(var(--st-blocked) / .3);}
+.pui-ico-orange{background:rgb(var(--st-warn-wash));color:rgb(var(--st-warn-ink));border-color:rgb(var(--st-warn) / .3);}
+.pui-ico-yellow{background:rgb(var(--st-caution-wash));color:rgb(var(--st-caution-ink));border-color:rgb(var(--st-caution) / .35);}
+.pui-ico-green{background:rgb(var(--st-ready-wash));color:rgb(var(--st-ready-ink));border-color:rgb(var(--st-ready) / .3);}
+.pui-ico-blue{background:rgb(var(--st-info-wash));color:rgb(var(--st-info-ink));border-color:rgb(var(--st-info) / .3);}
+.pui-ico-purple{background:rgb(var(--st-comms-wash));color:rgb(var(--st-comms-ink));border-color:rgb(var(--st-comms) / .3);}
+
+/* ==========================================================================
+   15 · TYPE SCALE NORMALISATION
+   The templates lean on 8–10px uppercase tracking-widest labels, which reads
+   as "dense broadcast tool" but fights the reference's calm sentence-case.
+   Nudge the smallest sizes up and drop the shoutiest tracking.
+   ========================================================================== */
+main .text-\[8px\],.view-pane .text-\[8px\]{font-size:9.5px !important;}
+main .text-\[9px\],.view-pane .text-\[9px\]{font-size:10px !important;}
+main .text-\[10px\],.view-pane .text-\[10px\]{font-size:10.5px !important;}
+main h1,main h2,main h3,.view-pane h3{letter-spacing:-.012em;}
+
+/* Sentence case.
+   The templates wrap almost every label in `uppercase tracking-wider`, which
+   is why the old UI read as a shouty telemetry readout. The underlying strings
+   are already written in title case ("Production Portfolio Overview"), so
+   simply dropping the transform lands on the reference's calm voice — and
+   anything authored in literal capitals (LIVE, ON AIR, PCR1) is untouched. */
+main .uppercase,.view-pane .uppercase,
+#charlieDrawer .uppercase,.omni-drawer .uppercase,
+[id$="Modal"] .uppercase,[id$="Overlay"] .uppercase,
+.nav-rail .uppercase{
+  text-transform:none;
+  letter-spacing:0;
+}
+main .tracking-wider,main .tracking-widest,main .tracking-\[0\.2em\],
+.view-pane .tracking-wider,.view-pane .tracking-widest,
+[id$="Modal"] .tracking-wider,[id$="Overlay"] .tracking-wider{
+  letter-spacing:0 !important;
+}
+/* Keep the shout where it is meaningful: on-air and live indicators */
+main .onair,main .onair *,.view-pane .onair,
+.risk-gng-go,.risk-gng-cond,.risk-gng-nogo{
+  text-transform:uppercase;
+  letter-spacing:.03em;
+}
+
+/* ==========================================================================
+   16 · MOBILE
+   ========================================================================== */
+@media (max-width:1023px){
+  #charlieLauncher,.omni-fab{
+    border-radius:var(--r-pill) !important;
+    border-right:1px solid rgb(var(--c-line)) !important;
+    box-shadow:var(--sh-lg) !important;
+  }
+  #charlieLauncher::before,.omni-fab::before{display:none;}
+  #charlieDrawer,.omni-drawer{border-left:0 !important;border-top:1px solid rgb(var(--c-line)) !important;}
+}
+@media (max-width:767px){
+  .pui-kpi-value{font-size:19px;}
+  header.sticky,header.glass-panel{height:52px !important;}
+}
+
+/* ==========================================================================
+   17 · PRINT — TechBook / survey / manifest fallbacks render through the app
+   ========================================================================== */
+/* ==========================================================================
+   16.5 · THEME READABILITY + ROUNDING + OMNI/CHARLIE STACK
+   Light and dark must both keep ink on wash, white on solid purple/blue/green.
+   Hairline trims clip to the same radius as the fill.
+   ========================================================================== */
+.glass,.glass-tile,.glass-panel,.glass-modal,.glass-pill,
+.pui-btn,.pui-btn-brand,.pui-btn-primary,.muse-cta-purple,
+.omni-tabbtn,.omni-st,.omni-send,.omni-mailrow,.omni-xyrow,.omni-icrow,
+.charlie-bubble-bot,.charlie-bubble-user,.charlie-typing-bubble,
+#charlieLauncher,.omni-fab{
+  background-clip:padding-box;
+}
+.pui-btn,.pui-btn-brand,.pui-btn-primary,.muse-cta-purple,
+.omni-tabbtn.on,.omni-send,.omni-st,
+.charlie-bubble-bot,.charlie-bubble-user{
+  overflow:hidden;
+}
+
+/* Snapshot tiles: keep rounded trim, keep missing-count badge fully inside */
+#snapshotGrid{overflow:visible;padding-top:2px;}
+.project-card{
+  overflow:hidden !important;
+  background-clip:padding-box !important;
+  isolation:isolate;
+}
+.project-card .notif-badge{
+  top:10px !important;right:10px !important;left:auto !important;
+  width:20px;height:20px;
+}
+.project-card .snap-counts{
+  flex-wrap:wrap;
+  gap:6px 10px !important;
+}
+.project-card .snap-counts span{
+  white-space:nowrap;
+}
+
+/* Omni / Charlie: hide the docked edge tabs while that drawer is open so they never sit on the sidebar. */
+.omni-drawer.open{z-index:80 !important;background:rgb(var(--c-surface)) !important;}
+body.omni-open .omni-fab,
+body.omni-open #charlieLauncher,
+body.charlie-open .omni-fab,
+body.charlie-open #charlieLauncher{
+  display:none !important;
+  pointer-events:none !important;
+  opacity:0 !important;
+}
+html.dark #charlieLauncher,html.dark .omni-fab{
+  color:#fff !important;
+}
+
+/* P0-T1 truck sensors — paper + ink (no black island) */
+.tb-panel,.tb-panel.pui-pane,.tb-telemetry-panel{
+  background:rgb(var(--c-surface)) !important;
+  color:rgb(var(--c-ink)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  box-shadow:var(--sh-sm) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.tb-kpi{
+  background:rgb(var(--c-surface-2)) !important;
+  color:rgb(var(--c-ink)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+.tb-pill{
+  background:rgb(var(--c-surface-2)) !important;
+  color:rgb(var(--c-ink)) !important;
+  border:1px solid rgb(var(--c-line)) !important;
+}
+html:not(.dark) .tb-telemetry-panel [style*="color:#f4f4f5"],
+html:not(.dark) .tb-telemetry-panel [style*="color:#f8fafc"],
+html:not(.dark) .tb-telemetry-panel [style*="color:#e4e4e7"],
+html:not(.dark) .tb-telemetry-panel [style*="color:#fff"]{
+  color:rgb(var(--c-ink)) !important;
+}
+html:not(.dark) .tb-telemetry-panel [style*="background:rgba(255,255,255"],
+html:not(.dark) .tb-telemetry-panel [style*="background:rgba(0,0,0"],
+html:not(.dark) .tb-telemetry-panel [style*="background:linear-gradient(145deg,rgba(18,24,40"]{
+  background:rgb(var(--c-surface-2)) !important;
+  border-color:rgb(var(--c-line)) !important;
+}
+
+/* Charlie — iOS bubbles (Aug 20 look) */
+.charlie-bubble-bot{background:#007AFF !important;color:#fff !important;border:none !important;}
+.charlie-bubble-user{background:#34C759 !important;color:#fff !important;border:none !important;}
+.charlie-bubble-bot,.charlie-bubble-bot *,
+.charlie-bubble-user,.charlie-bubble-user *{color:#ffffff !important;}
+html.dark .charlie-bubble-bot,html.dark .charlie-bubble-user{color:#ffffff !important;}
+
+/* Inbound Omni meta stays muted, never white-on-white */
+html:not(.dark) .omni-bubble-in .omni-bub-meta-out{color:rgb(var(--c-ink-3)) !important;}
+.omni-bub-meta-out{color:#f0e4ff !important;}
+
+/* Drawer / modal body text follows ink tokens (Tailwind gray-* can fight glass) */
+.omni-drawer,.omni-drawer p,.omni-drawer h3,
+#charlieDrawer,#charlieDrawer p{
+  color:rgb(var(--c-ink));
+}
+.omni-drawer .text-gray-900,#charlieDrawer .text-gray-900{color:rgb(var(--c-ink)) !important;}
+.omni-drawer .text-gray-500,#charlieDrawer .text-gray-500{color:rgb(var(--c-ink-3)) !important;}
+.omni-drawer .text-gray-400,#charlieDrawer .text-gray-400{color:rgb(var(--c-ink-3)) !important;}
+#createModal > div,[id$="Modal"] > .bg-white,[id$="Overlay"] > .bg-white{
+  overflow:hidden;
+  background-clip:padding-box;
+  border-radius:var(--r-xl);
+}
+/* Create Production light-mode contrast (wins if this file is concatenated last) */
+#createModal{color-scheme:light;}
+html.dark #createModal{color-scheme:dark;}
+#createModal > div,
+#createModal > div.bg-white{
+  background:#ffffff !important;
+  color:#111827 !important;
+  backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important;
+}
+html:not(.dark) #createModal .text-gray-900{color:#111827 !important;}
+html:not(.dark) #createModal .text-gray-700{color:#374151 !important;}
+html:not(.dark) #createModal .text-gray-600{color:#4b5563 !important;}
+html:not(.dark) #createModal .text-gray-500{color:#6b7280 !important;}
+html:not(.dark) #createModal .text-gray-400{color:#9ca3af !important;}
+#createModal input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+#createModal select, #createModal textarea,
+#createModal .ql-editor, #createModal .ql-container, #createModal .muse-rich-host,
+#createModal #np_q, #createModal #np_res{
+  background:#ffffff !important;
+  color:#111827 !important;
+  border-color:#d1d5db !important;
+  caret-color:#111827;
+}
+#createModal .ql-toolbar{
+  background:#f9fafb !important;
+  color:#111827 !important;
+  border-color:#d1d5db !important;
+}
+#createModal input::placeholder,
+#createModal textarea::placeholder,
+#createModal .ql-editor.ql-blank::before{color:#9ca3af !important;}
+#createModal button.bg-gray-900,
+#createModal .muse-cta,
+#createModal button.muse-cta{color:#ffffff !important;}
+html.dark #createModal > div,
+html.dark #createModal > div.bg-white{
+  background:#121826 !important;
+  color:#e9edf5 !important;
+}
+html.dark #createModal input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+html.dark #createModal select, html.dark #createModal textarea,
+html.dark #createModal .ql-editor, html.dark #createModal .ql-container, html.dark #createModal .muse-rich-host,
+html.dark #createModal #np_q, html.dark #createModal #np_res{
+  background:#1c2434 !important;
+  color:#e9edf5 !important;
+  border-color:#27324a !important;
+  caret-color:#e9edf5;
+}
+html.dark .omni-input,html.dark #charlieInput{
+  background:rgb(var(--c-surface-2)) !important;
+  color:rgb(var(--c-ink)) !important;
+  border-color:rgb(var(--c-line-strong)) !important;
+}
+html:not(.dark) .omni-input,html:not(.dark) #charlieInput{
+  background:#ffffff !important;
+  color:rgb(var(--c-ink)) !important;
+  border-color:rgb(var(--c-line-strong)) !important;
+}
+
+@media print{
+  .nav-rail,.nav-rail-scrim,#charlieLauncher,#charlieDrawer,.omni-fab,.omni-drawer,
+  header.sticky,#toastBox,[id$="Overlay"],[id$="Modal"]{display:none !important;}
+  body{background:#fff !important;padding:0 !important;color:#111112 !important;}
+  main{max-width:100% !important;padding:0 !important;}
+  .pui-card,main div.bg-white.rounded-2xl{box-shadow:none !important;border-color:#d8d8dd !important;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+
+/* Profile chip — solid spectrum (kept; the rainbow chip was the one complaint on that look) */
+#userChipAvatar,.muse-avatar{
+  background:#632E8A !important;
+  background-image:none !important;
+  color:#fff !important;
+}
+
+.omni-fab,body.omni-fab-on .omni-fab{display:flex !important;}
+
+#museOffline{
+  position:sticky;top:0;z-index:80;
+  padding:8px 14px;text-align:center;
+  font:600 13px/1.3 var(--font-ui),system-ui,sans-serif;
+  background:rgb(var(--pk-yellow-400));
+  color:#17181A;
+}
+#museOffline[hidden]{display:none !important;}

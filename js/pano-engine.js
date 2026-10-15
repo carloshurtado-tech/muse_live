@@ -1,5 +1,5 @@
 /**
- * NBC Pulse — Broadcast 360° Planner v4.0
+ * Muse Live — Broadcast 360° Planner v4.0
  * FOOLPROOF MAP MODE (default):
  *   - Equirect shown as a 2:1 map you pan L/R and U/D only (no sphere gyro).
  *   - Markers & draw paths stored in texture UV (0–1) so they NEVER slide.
@@ -60,7 +60,7 @@
   function syncPhonePortrait() {
     var portrait = (window.innerHeight || 0) > (window.innerWidth || 0) + 24;
     try {
-      document.documentElement.classList.toggle('pulse-phone-portrait', !!portrait);
+      document.documentElement.classList.toggle('muse-phone-portrait', !!portrait);
     } catch (e) {}
     return portrait;
   }
@@ -72,8 +72,8 @@
   }
   function lockLandscape(on) {
     try {
-      document.documentElement.classList.toggle('pulse-cv-land', !!on);
-      document.body.classList.toggle('pulse-cv-land', !!on);
+      document.documentElement.classList.toggle('muse-cv-land', !!on);
+      document.body.classList.toggle('muse-cv-land', !!on);
     } catch (e0) {}
     if (on) {
       syncPhonePortrait();
@@ -83,7 +83,7 @@
         window.addEventListener('orientationchange', onLandResize);
       }
     } else {
-      try { document.documentElement.classList.remove('pulse-phone-portrait'); } catch (e2) {}
+      try { document.documentElement.classList.remove('muse-phone-portrait'); } catch (e2) {}
     }
     try {
       var so = screen.orientation;
@@ -99,31 +99,31 @@
   function ensureShell() {
     if (el) return;
     el = document.createElement('div');
-    el.id = 'pulsePanoEng';
+    el.id = 'musePanoEng';
     el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10001;flex-direction:column;background:#0d1117;font-family:Inter,system-ui,sans-serif;color:#e6edf3';
     el.innerHTML =
       '<style>' +
-      '#pulsePanoEng .pb{background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:5px 9px;border-radius:6px;font:700 10px Inter,sans-serif;cursor:pointer;white-space:nowrap}' +
-      '#pulsePanoEng .pb:hover{background:#30363d}' +
-      '#pulsePanoEng .pb.on{background:#58a6ff;border-color:#58a6ff;color:#0d1117}' +
-      '#pulsePanoEng .pb.ok{background:#1a3d24;border-color:#3fb950;color:#3fb950}' +
-      '#pulsePanoEng .pb.bad{background:#3d1f1f;border-color:#f85149;color:#f85149}' +
-      '#pulsePanoEng .pb.draw{border-color:#f59e0b}' +
-      '#pulsePanoEng .pb.draw.on{background:#f59e0b;border-color:#f59e0b;color:#0d1117}' +
-      '#pulsePanoEng .mi{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin:2px 0}' +
-      '#pulsePanoEng .mi:hover{background:#21262d}' +
-      '#pulsePanoEng .mi.sel{background:#1f3a5f}' +
-      '#pulsePanoEng .mk{position:absolute;transform:translate(-50%,-100%);cursor:pointer;z-index:4;pointer-events:auto}' +
-      '#pulsePanoEng .mk-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid;box-shadow:0 2px 10px rgba(0,0,0,.55);background:rgba(13,17,23,.9)}' +
-      '#pulsePanoEng .mk-lbl{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;font:700 9px Inter,sans-serif;white-space:nowrap;background:rgba(13,17,23,.92);padding:2px 6px;border-radius:4px;border:1px solid #30363d;max-width:150px;overflow:hidden;text-overflow:ellipsis}' +
-      '#pulsePanoEng .mk.sel .mk-dot{box-shadow:0 0 0 2px #fff,0 2px 12px rgba(0,0,0,.6)}' +
-      '#pulsePanoEng .tbx{position:absolute;transform:translate(-50%,-50%);z-index:5;pointer-events:auto;min-width:80px;max-width:200px;background:rgba(13,17,23,.92);border:1px solid #58a6ff;border-radius:8px;padding:6px 8px;font:600 11px Inter,sans-serif;color:#e6edf3;cursor:pointer}' +
-      '#pulsePanoEng .tip{position:absolute;z-index:20;pointer-events:none;display:none;max-width:260px;background:rgba(22,27,34,.97);border:1px solid #30363d;border-radius:10px;padding:8px 10px;font:600 11px Inter,sans-serif;color:#e6edf3;box-shadow:0 8px 24px rgba(0,0,0,.5)}' +
-      '#pulsePanoEng .tip b{color:#58a6ff;display:block;margin-bottom:3px;font-size:10px;letter-spacing:.04em;text-transform:uppercase}' +
-      'html.pulse-cv-land,html.pulse-cv-land body{overflow:hidden!important}' +
-      '@media (max-width:900px){#pulsePanoEng .pb{padding:8px 10px;min-height:40px}}' +
-      'html.pulse-cv-land.pulse-phone-portrait #pulsePanoEng,' +
-      'html.pulse-cv-land #pulsePanoEng.cv-force-land{' +
+      '#musePanoEng .pb{background:#21262d;border:1px solid #30363d;color:#e6edf3;padding:5px 9px;border-radius:6px;font:700 10px Inter,sans-serif;cursor:pointer;white-space:nowrap}' +
+      '#musePanoEng .pb:hover{background:#30363d}' +
+      '#musePanoEng .pb.on{background:#58a6ff;border-color:#58a6ff;color:#0d1117}' +
+      '#musePanoEng .pb.ok{background:#1a3d24;border-color:#3fb950;color:#3fb950}' +
+      '#musePanoEng .pb.bad{background:#3d1f1f;border-color:#f85149;color:#f85149}' +
+      '#musePanoEng .pb.draw{border-color:#f59e0b}' +
+      '#musePanoEng .pb.draw.on{background:#f59e0b;border-color:#f59e0b;color:#0d1117}' +
+      '#musePanoEng .mi{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin:2px 0}' +
+      '#musePanoEng .mi:hover{background:#21262d}' +
+      '#musePanoEng .mi.sel{background:#1f3a5f}' +
+      '#musePanoEng .mk{position:absolute;transform:translate(-50%,-100%);cursor:pointer;z-index:4;pointer-events:auto}' +
+      '#musePanoEng .mk-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid;box-shadow:0 2px 10px rgba(0,0,0,.55);background:rgba(13,17,23,.9)}' +
+      '#musePanoEng .mk-lbl{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;font:700 9px Inter,sans-serif;white-space:nowrap;background:rgba(13,17,23,.92);padding:2px 6px;border-radius:4px;border:1px solid #30363d;max-width:150px;overflow:hidden;text-overflow:ellipsis}' +
+      '#musePanoEng .mk.sel .mk-dot{box-shadow:0 0 0 2px #fff,0 2px 12px rgba(0,0,0,.6)}' +
+      '#musePanoEng .tbx{position:absolute;transform:translate(-50%,-50%);z-index:5;pointer-events:auto;min-width:80px;max-width:200px;background:rgba(13,17,23,.92);border:1px solid #58a6ff;border-radius:8px;padding:6px 8px;font:600 11px Inter,sans-serif;color:#e6edf3;cursor:pointer}' +
+      '#musePanoEng .tip{position:absolute;z-index:20;pointer-events:none;display:none;max-width:260px;background:rgba(22,27,34,.97);border:1px solid #30363d;border-radius:10px;padding:8px 10px;font:600 11px Inter,sans-serif;color:#e6edf3;box-shadow:0 8px 24px rgba(0,0,0,.5)}' +
+      '#musePanoEng .tip b{color:#58a6ff;display:block;margin-bottom:3px;font-size:10px;letter-spacing:.04em;text-transform:uppercase}' +
+      'html.muse-cv-land,html.muse-cv-land body{overflow:hidden!important}' +
+      '@media (max-width:900px){#musePanoEng .pb{padding:8px 10px;min-height:40px}}' +
+      'html.muse-cv-land.muse-phone-portrait #musePanoEng,' +
+      'html.muse-cv-land #musePanoEng.cv-force-land{' +
         'width:100vh!important;height:100vw!important;width:100dvh!important;height:100dvw!important;' +
         'max-width:none!important;max-height:none!important;' +
         'top:0!important;left:0!important;right:auto!important;bottom:auto!important;' +
@@ -750,7 +750,7 @@
   function loadGearCatalog(key) {
     gearCatalog = { packages: [], bodies: [], lenses: [], mounts: [], empty: true, count: 0 };
     try {
-      var fn = global.pulseBlockingGear || (typeof pulseBlockingGear === 'function' ? pulseBlockingGear : null);
+      var fn = global.museBlockingGear || (typeof museBlockingGear === 'function' ? museBlockingGear : null);
       if (fn && key) gearCatalog = fn(key) || gearCatalog;
     } catch (e) {}
     refreshGearBanner();
@@ -1119,7 +1119,7 @@
   }
   function getSceneData() {
     return {
-      version: 5, engine: 'pulse-pano-map',
+      version: 5, engine: 'muse-pano-map',
       viewMode: viewMode, flipV: flipV, flipH: flipH,
       map: { panU: mapPanU, panV: mapPanV, zoom: mapZoom },
       look: { lon: lon, lat: lat, fov: fov },
@@ -1128,14 +1128,14 @@
   }
   function saveScene() {
     persistAll();
-    try { localStorage.setItem('nbcpulse_pano360_' + (state.key || 'x'), JSON.stringify(getSceneData())); } catch (e) {}
+    try { localStorage.setItem('muselive_pano360_' + (state.key || 'x'), JSON.stringify(getSceneData())); } catch (e) {}
     setStatus('Saved to survey');
     if (typeof toast === 'function') toast('360 map blocking saved');
   }
   function exportJSON() {
     var a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(getSceneData(), null, 2)], { type: 'application/json' }));
-    a.download = 'pulse360_map_' + (state.key || 'scene') + '.json';
+    a.download = 'muse360_map_' + (state.key || 'scene') + '.json';
     a.click();
   }
   function importJSON(e) {
@@ -1175,7 +1175,7 @@
       if (drawC) ctx.drawImage(drawC, 0, 0);
       var a = document.createElement('a');
       a.href = out.toDataURL('image/jpeg', 0.92);
-      a.download = 'pulse360_block.jpg'; a.click();
+      a.download = 'muse360_block.jpg'; a.click();
     } catch (e) { setStatus('Snapshot failed'); }
   }
   function setStatus(msg) {

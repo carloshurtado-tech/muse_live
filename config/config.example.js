@@ -1,5 +1,5 @@
 /* Pages public config — no secrets. Local overrides are not deployed. */
-window.NBC_PULSE_CONFIG = Object.assign(window.NBC_PULSE_CONFIG || {}, {
+window.MUSE_LIVE_CONFIG = Object.assign(window.MUSE_LIVE_CONFIG || {}, {
   OPEN_METEO_BASE: "https://api.open-meteo.com/v1/forecast",
   USE_VENDOR_CDN: false,
   _source: "pages"

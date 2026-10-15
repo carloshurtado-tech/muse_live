@@ -2,6 +2,6 @@
 # /api/* is handled by Pages Functions
 
 /app /index.html 200
-/pulse /index.html 200
-/NBC_Pulse.html /index.html 301
-/NBC_Pulse_0.38.html /index.html 301
+/muse /index.html 200
+/Muse_Live.html /index.html 301
+/Muse_Live_0.38.html /index.html 301

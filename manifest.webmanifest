@@ -1,6 +1,6 @@
 {
-  "name": "NBC Pulse",
-  "short_name": "Pulse",
+  "name": "Muse Live",
+  "short_name": "Muse Live",
   "description": "Collaborative digital techbook for live broadcast operations.",
   "start_url": "/",
   "scope": "/",
@@ -9,7 +9,7 @@
   "theme_color": "#632E8A",
   "icons": [
     {
-      "src": "assets/brand/NBC_Peacock_(2022).svg",
+      "src": "assets/brand/muse-live-mark.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"

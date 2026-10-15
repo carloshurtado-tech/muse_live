@@ -1,7 +1,7 @@
 /**
- * Headless Pulse MCP — discover / describe / dispatch_readonly / dispatch.
+ * Headless Muse Live MCP — discover / describe / dispatch_readonly / dispatch.
  * Auth: same CFP-Auth cookie as other /api routes (middleware).
- * Writes never mutate server state (Pulse SoR is the browser). dispatch returns a Confirm action.
+ * Writes never mutate server state (Muse Live SoR is the browser). dispatch returns a Confirm action.
  */
 const OPS = [
   { name: 'briefing.morning', kind: 'read', summary: 'Ranked morning briefing from posted live JSON', args: [] },
@@ -11,9 +11,9 @@ const OPS = [
   { name: 'tx.conflicts', kind: 'read', summary: 'Transmission conflicts from live JSON', args: [] },
   { name: 'eng.open', kind: 'read', summary: 'Open ENG from live JSON', args: [] },
   { name: 'wiki.search', kind: 'read', summary: 'Wiki hits if wiki is in the posted snapshot', args: ['q'] },
-  { name: 'show.open_tab', kind: 'write', summary: 'Open a production tab (Confirm in Pulse)', args: ['show', 'tab'] },
-  { name: 'dept.set_status', kind: 'write', summary: 'Set department status (Confirm in Pulse)', args: ['show', 'dept', 'status'] },
-  { name: 'techbook.export', kind: 'write', summary: 'Export techbook (Confirm in Pulse)', args: ['show'] }
+  { name: 'show.open_tab', kind: 'write', summary: 'Open a production tab (Confirm in Muse Live)', args: ['show', 'tab'] },
+  { name: 'dept.set_status', kind: 'write', summary: 'Set department status (Confirm in Muse Live)', args: ['show', 'dept', 'status'] },
+  { name: 'techbook.export', kind: 'write', summary: 'Export techbook (Confirm in Muse Live)', args: ['show'] }
 ];
 
 function json(obj, status) {
@@ -36,15 +36,15 @@ function describe(name) {
   return null;
 }
 
-function briefingFromPulse(pulse) {
-  if (!pulse || typeof pulse !== 'object') return { error: 'post a pulse snapshot' };
-  return pulse.ops_skills || pulse.briefing_now || { note: 'Client should POST live JSON from buildCharlieContext' };
+function briefingFromMuse(muse) {
+  if (!muse || typeof muse !== 'object') return { error: 'post a muse snapshot' };
+  return muse.ops_skills || muse.briefing_now || { note: 'Client should POST live JSON from buildCharlieContext' };
 }
 
 export async function onRequest(context) {
   const { request } = context;
   if (request.method === 'GET') {
-    return json({ ok: true, protocol: 'pulse-mcp', tools: ['discover', 'describe', 'dispatch', 'dispatch_readonly'], ops: OPS });
+    return json({ ok: true, protocol: 'muse-mcp', tools: ['discover', 'describe', 'dispatch', 'dispatch_readonly'], ops: OPS });
   }
   if (request.method !== 'POST') return json({ error: 'method' }, 405);
   var body = {};
@@ -60,7 +60,7 @@ export async function onRequest(context) {
     var n = body.name || body.op;
     var specR = describe(n);
     if (!specR) return json({ error: 'unknown op' }, 404);
-    return json({ ok: true, result: briefingFromPulse(body.pulse), op: specR });
+    return json({ ok: true, result: briefingFromMuse(body.muse), op: specR });
   }
   if (tool === 'dispatch') {
     var nw = body.name || body.op;
@@ -71,10 +71,10 @@ export async function onRequest(context) {
         ok: true,
         needs_confirm: true,
         action: { op: nw, args: body.args || {} },
-        note: 'Pulse system of record is the browser. Apply via Confirm-to-act in Charlie or Omni.',
+        note: 'Muse Live system of record is the browser. Apply via Confirm-to-act in Charlie or Omni.',
       });
     }
-    return json({ ok: true, result: briefingFromPulse(body.pulse) });
+    return json({ ok: true, result: briefingFromMuse(body.muse) });
   }
   return json({ error: 'unknown tool' }, 400);
 }

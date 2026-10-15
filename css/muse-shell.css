@@ -2,19 +2,19 @@
   /* Inter first (webfont loaded below) so desktop browsers share metrics — avoid
      device-local Google Sans / system fonts that paint at different optical sizes. */
   :root{
-    --live-red:#b91c36;        /* exact LIVE pill red — shared by Master Schedule conflicts */
-    --live-red-bg:#fee2e7;
-    --live-red-border:#f87187;
+    --live-red:#C80F2E;        /* exact LIVE pill red — shared by Master Schedule conflicts */
+    --live-red-bg:#FDE7EA;
+    --live-red-border:#F5A3B1;
     --muse-ui-scale:1;
     /* Frosted glass system */
     --glass-blur:18px;
     --glass-blur-strong:28px;
     --glass-blur-soft:12px;
     --glass-sat:1.45;
-    --glass-bg:rgba(255,255,255,.52);
-    --glass-bg-strong:rgba(255,255,255,.68);
-    --glass-bg-soft:rgba(255,255,255,.38);
-    --glass-bg-pill:rgba(255,255,255,.55);
+    --glass-bg:rgba(255,255,255,.98);
+    --glass-bg-strong:#FFFFFF;
+    --glass-bg-soft:rgba(255,255,255,.96);
+    --glass-bg-pill:#FFFFFF;
     --glass-border:rgba(255,255,255,.55);
     --glass-border-edge:rgba(28,28,29,.08);
     --glass-highlight:inset 0 1px 0 rgba(255,255,255,.62);
@@ -28,13 +28,13 @@
     --pk-blue:#0866FF;
     --pk-purple:#0866FF;
     --pk-purple-deep:#0759DB;
-    --app-bg0:#f7f9fb;
-    --app-bg1:rgba(228,30,63,.10);
-    --app-bg2:rgba(245,131,42,.09);
-    --app-bg3:rgba(247,185,40,.08);
-    --app-bg4:rgba(49,162,76,.07);
-    --app-bg5:rgba(8,102,255,.09);
-    --app-bg6:rgba(8,102,255,.10);
+    --app-bg0:#F0F2F5;
+    --app-bg1:rgba(240,242,245,0);
+    --app-bg2:rgba(240,242,245,0);
+    --app-bg3:rgba(240,242,245,0);
+    --app-bg4:rgba(240,242,245,0);
+    --app-bg5:rgba(240,242,245,0);
+    --app-bg6:rgba(240,242,245,0);
     --app-wash:
       linear-gradient(180deg, rgba(255,255,255,.52) 0%, rgba(255,255,255,.10) 46%, rgba(255,255,255,.36) 100%),
       linear-gradient(125deg,
@@ -120,7 +120,7 @@
   .spectrum-gradient{background:linear-gradient(90deg,#0064E0 0%,#0082FB 100%);}
   @keyframes spectrum-muse{0%,100%{transform:scale(1);}50%{transform:scale(1.08);}}
   @keyframes ring-pop{0%{transform:scale(0.8);opacity:0.55;}75%{transform:scale(1.85);opacity:0;}100%{opacity:0;}}
-  .spectrum-mark{animation:spectrum-muse 1.6s ease-in-out infinite;transform-origin:center;}
+  .spectrum-mark{transform-origin:center;}
   /* Rail launchers use vertical writing-mode — rotate official spectrum 90° clockwise so it sits upright */
   .pk-rail-logo{writing-mode:horizontal-tb;object-fit:contain;filter:brightness(1.15);transform:rotate(90deg);transform-origin:center center;flex-shrink:0;display:block;}
   .museai-icon{
@@ -520,7 +520,7 @@
     max-width:100%;
     min-width:0;
   }
-  /* Muse bubbles — iOS blue (bot) + iOS green (user) + soft wrap */
+  /* Muse bubbles — Messenger style: grey (Muse) + Meta blue (you) */
   .museai-bubble-bot,
   .museai-bubble-user{
     max-width:min(100%,20rem);
@@ -534,36 +534,16 @@
     hyphens:auto;
     overflow-x:hidden;
   }
-  .museai-bubble-bot{
-    color:#ffffff;
-    background:linear-gradient(145deg,rgba(0,102,255,.92),rgba(10,108,255,.78));
-    border:1px solid rgba(0,102,255,.45);
-    box-shadow:0 4px 16px rgba(0,102,255,.22), inset 0 1px 0 rgba(255,255,255,.28);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-  }
-  .museai-bubble-user{
-    color:#ffffff;
-    background:linear-gradient(145deg,rgba(52,199,86,.92),rgba(48,209,86,.78));
-    border:1px solid rgba(52,199,86,.5);
-    box-shadow:0 4px 16px rgba(52,199,86,.2), inset 0 1px 0 rgba(255,255,255,.28);
-    backdrop-filter:blur(10px);
-    -webkit-backdrop-filter:blur(10px);
-    margin-left:auto;
-  }
+  .museai-bubble-bot{color:#050505;background:#F0F2F5;border:0;box-shadow:none;}
+  .museai-bubble-user{color:#ffffff;background:#0866FF;border:0;box-shadow:none;margin-left:auto;}
   .museai-typing-bubble{
     width:auto;
     max-width:5rem;
     white-space:normal;
   }
-  .museai-typing-bubble .museai-dot{background:rgba(255,255,255,.85);}
+  .museai-typing-bubble .museai-dot{background:#65676B;}
   html.dark .museai-bubble-bot,
-  .dark .museai-bubble-bot{
-    color:#ffffff;
-    background:linear-gradient(145deg,rgba(10,108,255,.95),rgba(0,102,255,.82));
-    border-color:rgba(10,108,255,.5);
-    box-shadow:0 4px 20px rgba(0,0,0,.3), inset 0 1px 0 rgba(255,255,255,.12);
-  }
+  .dark .museai-bubble-bot{color:#E4E6EB;background:#3A3B3C;border:0;box-shadow:none;}
   html.dark .museai-bubble-user,
   .dark .museai-bubble-user{
     color:#ffffff;
@@ -1656,10 +1636,10 @@ html.dark .wiki-tag-menu button:hover{background:rgba(255,255,255,.06);}
 /* Prefer reduced transparency when user requests */
 @media (prefers-reduced-transparency: reduce){
   :root{
-    --glass-bg:rgba(255,255,255,.92);
-    --glass-bg-strong:rgba(255,255,255,.96);
-    --glass-bg-soft:rgba(255,255,255,.88);
-    --glass-bg-pill:rgba(255,255,255,.9);
+    --glass-bg:rgba(255,255,255,.98);
+    --glass-bg-strong:#FFFFFF;
+    --glass-bg-soft:rgba(255,255,255,.96);
+    --glass-bg-pill:#FFFFFF;
     --glass-blur:0px;
     --glass-blur-strong:0px;
     --glass-blur-soft:0px;
@@ -2119,7 +2099,7 @@ html.muse-cv-land #musePanoEng.cv-force-land{
 
 /* ===== Ops OS — show board / plan of record (desktop-first, spectrum status) ===== */
 .os-chip{
-  appearance:none;border:1px solid rgb(var(--c-line,#d1d4db));background:rgb(var(--c-surface-2,#f3f4f6));
+  appearance:none;border:1px solid #CED0D4;background:#F0F2F5;
   color:rgb(var(--c-ink-2,#414244));font:700 9px/1 DM Mono,ui-monospace,monospace;
   padding:5px 8px;border-radius:8px;cursor:pointer;letter-spacing:.02em;flex-shrink:0;
 }
@@ -2359,3 +2339,13 @@ html.dark #engModalBox .eng-modal-foot button.border-2{
 
 
 
+
+/* Muse assistant — Messenger-style bubbles (Meta palette) */
+.museai-bubble-user{background:#0866FF;color:#FFFFFF;max-width:85%;font-size:14px;line-height:1.4;white-space:pre-wrap;}
+.museai-bubble-bot{background:#F0F2F5;color:#050505;max-width:90%;font-size:14px;line-height:1.45;white-space:pre-wrap;}
+html.dark .museai-bubble-bot{background:#3A3B3C;color:#E4E6EB;}
+#museaiChips button{font-size:12px !important;padding:6px 12px !important;border-radius:999px !important;background:#E7F3FF !important;color:#0866FF !important;border:0 !important;font-weight:600;}
+html.dark #museaiChips button{background:#263951 !important;color:#2D88FF !important;}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+
+.omni-fab .omni-fab-ico{flex-shrink:0;display:block;color:#fff;}

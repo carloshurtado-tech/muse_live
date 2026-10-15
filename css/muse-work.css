@@ -1,10 +1,10 @@
 /* Scoped connected workflow controls; Classic typography and navigation remain intact. */
 .muse-work {
   --pw-bg: rgb(var(--c-surface, 255 255 255));
-  --pw-fg: rgb(var(--c-ink, 23 24 26));
-  --pw-muted: rgb(var(--c-ink-3, 113 113 122));
-  --pw-line: rgb(var(--c-line-strong, 203 213 225));
-  --pw-accent: rgb(var(--c-solid, 99 46 138));
+  --pw-fg: rgb(var(--c-ink, 24 24 25));
+  --pw-muted: rgb(var(--c-ink-3, 114 116 121));
+  --pw-line: rgb(var(--c-line-strong, 209 212 219));
+  --pw-accent: rgb(var(--c-solid, 8 102 255));
   background: var(--pw-bg);
   color: var(--pw-fg);
   border: 1px solid var(--pw-line);
@@ -19,11 +19,11 @@
 }
 .dark .muse-work,
 [data-theme="dark"] .muse-work {
-  --pw-bg: rgb(var(--c-surface, 18 24 38));
-  --pw-fg: rgb(var(--c-ink, 233 237 245));
-  --pw-muted: rgb(var(--c-ink-3, 150 163 185));
-  --pw-line: rgb(var(--c-line-strong, 56 66 88));
-  --pw-accent: rgb(var(--pk-purple-700, 203 161 236));
+  --pw-bg: rgb(var(--c-surface, 27 28 29));
+  --pw-fg: rgb(var(--c-ink, 233 238 245));
+  --pw-muted: rgb(var(--c-ink-3, 157 164 178));
+  --pw-line: rgb(var(--c-line-strong, 70 71 74));
+  --pw-accent: rgb(var(--pk-purple-700, 161 191 236));
 }
 .muse-work header,
 .muse-work footer,
@@ -110,10 +110,10 @@
   padding: 22px;
   overflow: auto;
   z-index: 100000;
-  box-shadow: 0 20px 80px rgb(var(--c-ink, 23 24 26) / 0.32);
+  box-shadow: 0 20px 80px rgb(var(--c-ink, 24 24 25) / 0.32);
 }
 .pw-dialog::backdrop {
-  background: rgb(var(--c-ink, 23 24 26) / 0.6);
+  background: rgb(var(--c-ink, 24 24 25) / 0.6);
 }
 .pw-cards {
   display: grid;
@@ -197,12 +197,12 @@
   display: none;
 }
 #pw-error {
-  color: rgb(var(--st-blocked, 229 27 36));
+  color: rgb(var(--st-blocked, 228 30 63));
   font-weight: 600;
 }
 .dark #pw-error,
 [data-theme="dark"] #pw-error {
-  color: rgb(var(--st-blocked, 248 165 165));
+  color: rgb(var(--st-blocked, 248 165 179));
 }
 @media (max-width: 600px) {
   .muse-work {

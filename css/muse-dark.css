@@ -1,13 +1,13 @@
 /* Semantic scheme tokens — role names, resolved with light-dark() against the root scheme. */
 :root{
   color-scheme:light dark;
-  --muse-bg:light-dark(#f7f9fb,#111112);
-  --muse-surface:light-dark(#ffffff,#1B1C1D);
-  --muse-surface-raised:light-dark(#ffffff,#212224);
-  --muse-text:light-dark(#1B1C1D,#e9eef5);
-  --muse-text-muted:light-dark(#54565a,#9fa6b4);
-  --muse-border:light-dark(#e5e7eb,#27354a);
-  --muse-accent:light-dark(#0866FF,#76a8f4);
+  --muse-bg:light-dark(#F0F2F5,#18191A);
+  --muse-surface:light-dark(#FFFFFF,#242526);
+  --muse-surface-raised:light-dark(#FFFFFF,#3A3B3C);
+  --muse-text:light-dark(#1C1E21,#E4E6EB);
+  --muse-text-muted:light-dark(#65676B,#B0B3B8);
+  --muse-border:light-dark(#CED0D4,#3E4042);
+  --muse-accent:light-dark(#0866FF,#2D88FF);
 }
 html:not(.dark){color-scheme:light;}
 html.dark{color-scheme:dark;}
@@ -29,26 +29,26 @@ html.dark img:not([src$=".svg"]):not(.muse-keep-bright){filter:brightness(.92);}
    own documents — nothing here touches them.
    ============================================================ */
 html.dark{color-scheme:dark;
-  --live-red:#ff7b91; --live-red-bg:#3a1219; --live-red-border:#8a303f;
-  --pv-bg:#101112; --pv-card:#1B1C1D; --pv-card2:#212224; --pv-mut:#272829;
-  --pv-line1:#292a2c; --pv-line2:#27354a; --pv-line3:#45474a;
-  --pv-t1:#e9eef5; --pv-t2:#dbdee3; --pv-t3:#c0c5ce; --pv-t4:#9fa6b4; --pv-t5:#8992a3; --pv-t6:#778194; --pv-t7:#5c5e61;
+  --live-red:#FF6B81; --live-red-bg:#3A1A1F; --live-red-border:#8A2E3E;
+  --pv-bg:#18191A; --pv-card:#242526; --pv-card2:#3A3B3C; --pv-mut:#3A3B3C;
+  --pv-line1:#3E4042; --pv-line2:#3E4042; --pv-line3:#4E4F50;
+  --pv-t1:#E4E6EB; --pv-t2:#E4E6EB; --pv-t3:#CFD2D6; --pv-t4:#B0B3B8; --pv-t5:#A8ABAF; --pv-t6:#8A8D91; --pv-t7:#6E7176;
   /* Frosted glass (dark) */
-  --glass-bg:rgba(27,28,29,.52);
-  --glass-bg-strong:rgba(22,22,23,.68);
-  --glass-bg-soft:rgba(27,28,29,.4);
-  --glass-bg-pill:rgba(39,40,41,.55);
+  --glass-bg:#242526;
+  --glass-bg-strong:#242526;
+  --glass-bg-soft:#242526;
+  --glass-bg-pill:#3A3B3C;
   --glass-border:rgba(255,255,255,.1);
   --glass-border-edge:rgba(255,255,255,.08);
   --glass-highlight:inset 0 1px 0 rgba(255,255,255,.08);
   --glass-shadow:0 10px 36px rgba(0,0,0,.35), var(--glass-highlight);
   --glass-shadow-drawer:-16px 0 48px rgba(0,0,0,.45), var(--glass-highlight);
   --glass-shadow-tile:0 8px 28px rgba(0,0,0,.32), var(--glass-highlight);
-  --app-bg0:#0e0e0f;
-  --app-bg1:rgba(8,102,255,.16);
-  --app-bg2:rgba(8,102,255,.09);
-  --app-bg3:rgba(249,117,22,.07);
-  --app-bg4:rgba(49,162,76,.07);
+  --app-bg0:#18191A;
+  --app-bg1:rgba(24,25,26,0);
+  --app-bg2:rgba(24,25,26,0);
+  --app-bg3:rgba(24,25,26,0);
+  --app-bg4:rgba(24,25,26,0);
 }
 html.dark body{
   color:#dfe5ee;
@@ -824,10 +824,10 @@ html.dark .wx-tile{background:var(--glass-bg) !important;border-color:var(--glas
 html.dark .muse-rich-host{background:var(--glass-bg-strong);}
 @media (prefers-reduced-transparency: reduce){
   html.dark{
-    --glass-bg:rgba(27,28,29,.96);
-    --glass-bg-strong:rgba(22,22,23,.98);
-    --glass-bg-soft:rgba(27,28,29,.94);
-    --glass-bg-pill:rgba(39,40,41,.95);
+    --glass-bg:#242526;
+    --glass-bg-strong:#242526;
+    --glass-bg-soft:#242526;
+    --glass-bg-pill:#3A3B3C;
     --glass-blur:0px;
     --glass-blur-strong:0px;
     --glass-blur-soft:0px;

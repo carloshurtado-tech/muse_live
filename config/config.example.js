@@ -8,4 +8,4 @@ window.MUSEAI_EDGE_ENABLED = false;
 window.MUSEAI_LOCAL_ENABLED = false;
 window.MUSEAI_CLOUD_ENABLED = false;
 window.MUSEAI_AI_ENABLED = false;
-window.MUSEAI_UNDER_CONSTRUCTION = true;
+window.MUSEAI_UNDER_CONSTRUCTION = false;

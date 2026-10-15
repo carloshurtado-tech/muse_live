@@ -509,11 +509,9 @@ var TX_RES={
  "Harmonic XOS (ENC4)":{cap:50,type:'Fiber'},
  "Harmonic XOS (ENC5)":{cap:50,type:'Fiber'},
  "Harmonic XOS (ENC6)":{cap:50,type:'Fiber'},
- "LiveU LU800":{cap:120,type:"LiveU LU800"},
  "LiveU LU800 #2":{cap:120,type:"LiveU LU800"},
- "LiveU LU800":{cap:60,type:"LiveU LU800"},
  "LiveU LU800":{cap:80,type:"LiveU LU800"},
- "Harmonic XOS":{cap:200,type:"LiveU LU800"},
+ "Harmonic XOS":{cap:200,type:"Encoder"},
  'TOC Router 2110':{cap:4000,type:'Router'},
  'Muse Live 2110 Spine':{cap:6000,type:'Router'},
  'IBC Nevion Fabric':{cap:8000,type:'Router'},
@@ -2942,7 +2940,7 @@ function engGeoPick(r){
   if(lc){var label=r.name+(r.city?' — '+r.city:'');lc.value=label;}
   engDraftTz=museTzGuess(r.lat,r.lng); /* provisional — refined async below */
   engRenderLocMap();
-  toast('📍 '+esc(r.name)+' added to the request');
+  toast('📍 '+txt(r.name)+' added to the request');
   /* auto-pull conditions for the new coordinates — SILENT: populate the panel only,
      never auto-dispatch a simulated crew weather alert just because a venue was picked */
   try{engWxCheckDraft(true);}catch(e){}
@@ -5676,7 +5674,7 @@ function npcGanttHTML(){loadNPCOnce();
       '<div class="col-span-7 relative rounded border border-gray-100" style="height:40px;background:repeating-linear-gradient(90deg,#fafafa,#fafafa calc(100%/7 - 1px),#eeeff2 calc(100%/7 - 1px),#eeeff2 calc(100%/7))">';
     // facility bookings — DARK, solid
     fac.forEach(function(b){var left=(b[0]/7*100),w=(b[1]/7*100);
-      g+='<div onclick="toast(\''+(''+b[2]).replace(/'/g,'')+' · '+res+'\')" class="absolute rounded text-[9px] font-bold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:#2a2b2c;z-index:2" title="'+esc(b[2])+'">'+esc(b[2])+'</div>';});
+      g+='<div onclick="toast(\''+(''+b[2]).replace(/'/g,'')+' · '+res+'\')" class="absolute rounded text-[9px] font-bold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:#2a2b2c;z-index:2" title="'+txt(b[2])+'">'+txt(b[2])+'</div>';});
     // NPC events — SEMI-TRANSPARENT, overlapping below
     npc.forEach(function(ev){var left=(ev.col/7*100),w=(ev.span/7*100);var conf=npcConflictsFor(ev).length>0;
       var declined=(ev.participate===false);
@@ -5686,7 +5684,7 @@ function npcGanttHTML(){loadNPCOnce();
       else if(conf){bg='var(--live-red)';bd='var(--live-red)';tx='#ffffff';}
       else{bg='rgba(35,116,237,0.28)';bd='rgba(35,116,237,0.6)';tx='#0d469b';}
       var tag=declined?'⊘ ':(ev.crewed?'✓ ':(conf?'⚠ ':''));
-      g+='<div onclick="openNPCEvent(\''+ev.id+'\')" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate" style="bottom:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:'+bg+';color:'+tx+';border:1px '+(conf&&!declined?'solid':'dashed')+' '+bd+';z-index:'+(conf&&!declined?'2':'1')+(conf&&!declined?';box-shadow:0 1px 4px rgba(185,28,54,.45)':'')+(declined?';text-decoration:line-through':'')+'" title="'+esc(ev.title)+(declined?' — Muse Live will not participate':(conf?' — CONFLICT':''))+'">'+tag+esc(ev.title)+'</div>';});
+      g+='<div onclick="openNPCEvent(\''+ev.id+'\')" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate" style="bottom:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:'+bg+';color:'+tx+';border:1px '+(conf&&!declined?'solid':'dashed')+' '+bd+';z-index:'+(conf&&!declined?'2':'1')+(conf&&!declined?';box-shadow:0 1px 4px rgba(185,28,54,.45)':'')+(declined?';text-decoration:line-through':'')+'" title="'+txt(ev.title)+(declined?' — Muse Live will not participate':(conf?' — CONFLICT':''))+'">'+tag+txt(ev.title)+'</div>';});
     g+='</div></div>';
   });
   g+='</div>';
@@ -6029,7 +6027,7 @@ function bcastPaneHTML(){
   var body=bcastView==='day'?bcastDayHTML():(bcastView==='week'?bcastWeekHTML():(bcastView==='month'?bcastMonthHTML():bcastYearHTML()));
   return '<div class="flex flex-wrap items-center justify-between gap-2 mb-4">'+
     '<div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Broadcast Schedule — Network Air</h3>'+
-      '<p class="text-[10px] text-gray-500 mt-0.5">Meta East &amp; West · Meta en Español East &amp; West · Meta Horizon</p></div>'+
+      '<p class="text-[10px] text-gray-500 mt-0.5">Facebook Live East &amp; West · Instagram Live · WhatsApp Channels · Meta Horizon</p></div>'+
     '<div class="flex items-center gap-2 flex-wrap">'+
       '<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1">'+vb('day','Day')+vb('week','Week')+vb('month','Month')+vb('year','Year')+'</div>'+
       '<div class="inline-flex items-center gap-1">'+
@@ -7571,11 +7569,11 @@ function pcadOnMessage(e){
     pcadStatusMsg('');
     var m=document.getElementById('pcadMeta');
     if(m&&d.entities!=null)m.textContent=(pcad.meta?pcad.meta+' · ':'')+d.entities+' entities · '+d.layers+' layers';
-    if(d.entities===0)toast&&toast('The CAD engine opened "'+esc(d.name||'this drawing')+'" but found no entities in it');
+    if(d.entities===0)toast&&toast('The CAD engine opened "'+txt(d.name||'this drawing')+'" but found no entities in it');
     return;}
   if(d.type==='open-failed'){
     pcadStatusMsg('');
-    toast&&toast('The CAD engine could not read "'+esc(d.name||'this file')+'"'+(d.message?(' — '+esc(d.message)):''));
+    toast&&toast('The CAD engine could not read "'+txt(d.name||'this file')+'"'+(d.message?(' — '+txt(d.message)):''));
     return;}}
 
 function pcadStatusMsg(t){var s=document.getElementById('pcadLoad');if(!s)return;
@@ -7998,7 +7996,7 @@ function survGeoPick(key,r){var s=getSurvey(key);
   var L=(typeof activeLocation==='function')?activeLocation(key):null;
   if(L){L.lat=r.lat;L.lng=r.lng;if(r.city)L.city=r.city;if(!L.venue)L.venue=r.name;}
   stampEdit(key);renderProjectView(key);
-  toast('📍 '+esc(r.name)+' set as survey location');
+  toast('📍 '+txt(r.name)+' set as survey location');
   try{museTzLookup(r.lat,r.lng,function(tz){if(!tz)return;s.tz=tz;
     var S=_shadeMaps['survshade_'+key];if(S){S.tz=tz;S.baseParts=museZonedParts(tz,museNow());_shadeLabel('survshade_'+key);}});}catch(e){}
 }
@@ -10356,7 +10354,7 @@ function cadRoundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo
 var MD_SEED_WBS=[
   {id:'PRJ-2026-MUSEAITOUR-01',desc:'Muse AI World Tour — IBC Operations',active:true,prod:'museaitour'},
   {id:'PRJ-2026-MUSEAITOUR-02',desc:'Muse AI World Tour — Venue Production',active:true,prod:'museaitour'},
-  {id:'PRJ-2026-RAYBANGEN3-01',desc:'Sail250 NYC — Harbor Broadcast',active:true,prod:'raybangen3'},
+  {id:'PRJ-2026-RAYBANGEN3-01',desc:'Ray-Ban Meta Gen 3 — Harbor Broadcast',active:true,prod:'raybangen3'},
   {id:'PRJ-2026-ORION-01',desc:'Orion Developer Preview — Host Broadcast',active:true,prod:'orion'},
   {id:'PRJ-2026-ORION-02',desc:'Orion Developer Preview — Digital & Streaming',active:true,prod:'orion'},
   {id:'PRJ-2026-MUSEAILAUNCH-01',desc:'Muse AI Launch Keynote',active:true,prod:'museailaunch'},
@@ -12947,7 +12945,7 @@ function npLocAddFromGeo(r){
   npLocs.push(ent);npRenderLocs();npMapRefresh();
   museTzLookup(r.lat,r.lng,function(tz,ab){ent.tz=tz||ent.tz;ent.tzl=(ab||'').replace(/^GMT/,'')||npTzShort(tz);npRenderLocs();});
   var isFirst=npLocs.length===1;
-  toast(isFirst?('Primary venue set \u2014 '+esc(ent.name)):('Added '+esc(ent.name)+' \u00B7 '+npLocs.length+' venues'));
+  toast(isFirst?('Primary venue set \u2014 '+txt(ent.name)):('Added '+txt(ent.name)+' \u00B7 '+npLocs.length+' venues'));
 }
 function npTzShort(tz){var m={'America/New_York':'ET','America/Chicago':'CT','America/Denver':'MT','America/Phoenix':'MST','America/Los_Angeles':'PT','America/Toronto':'ET','America/Vancouver':'PT','America/Mexico_City':'CST','Europe/London':'GMT','Europe/Paris':'CET','Asia/Tokyo':'JST'};return m[tz]||(tz||'').split('/').pop()||'';}
 /* iso 3166-1 alpha-2 -> flag emoji (regional indicator pair) */

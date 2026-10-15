@@ -1,12 +1,12 @@
 {
-  "name": "Muse Live",
+  "name": "Muse Live — Meta",
   "short_name": "Muse Live",
   "description": "Collaborative digital techbook for live broadcast operations.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#0B0F17",
-  "theme_color": "#632E8A",
+  "background_color": "#F0F2F5",
+  "theme_color": "#FFFFFF",
   "icons": [
     {
       "src": "assets/brand/meta-mark.svg",

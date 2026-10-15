@@ -1926,7 +1926,7 @@ function renderMatrix(){
     var counts='<span class="text-emerald-600 font-bold">'+c.approved+'✓</span> <span class="text-amber-600 font-bold">'+c.pending+'⋯</span> <span class="text-red-600 font-bold">'+c.missing+'✕</span>';
     var btn=p.risk?'<button onclick="event.stopPropagation();toast(\'Escalation sent to Engineering VP\')" class="text-[10px] text-red-700 font-bold hover:underline">Escalate →</button>':'<button onclick="event.stopPropagation();openProject(\''+k+'\')" class="text-[10px] text-blue-700 font-bold hover:underline">Full Brief →</button>';
     return '<div onclick="openProject(\''+k+'\')" class="bg-white rounded-2xl p-5 border '+border+' cursor-pointer relative" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+badge+
-      '<div class="flex items-center justify-between mb-3 pb-3 border-b '+(p.risk?'border-red-100':'border-gray-100')+'"><h3 class="text-sm font-bold '+(p.risk?'text-red-900':'text-gray-900')+'">'+esc(p.name)+'</h3><span class="text-[9px] font-bold bg-'+p.tagColor+'-100 border border-'+p.tagColor+'-300 text-'+p.tagColor+'-800 px-2 py-0.5 rounded-md mono">'+esc(p.tag||'')+'</span></div>'+
+      '<div class="flex items-center justify-between mb-3 pb-3 border-b '+(p.risk?'border-red-100':'border-gray-100')+'"><h3 class="text-sm font-bold '+(p.risk?'text-red-900':'text-gray-900')+'">'+txt(p.name)+'</h3><span class="text-[9px] font-bold bg-'+p.tagColor+'-100 border border-'+p.tagColor+'-300 text-'+p.tagColor+'-800 px-2 py-0.5 rounded-md mono">'+txt(p.tag||'')+'</span></div>'+
       '<div class="space-y-1.5 text-xs">'+rows+'</div>'+
       '<div class="pt-3 border-t '+(p.risk?'border-red-100':'border-gray-100')+' mt-3 flex justify-between items-center"><span class="text-[10px] mono">'+counts+'</span>'+btn+'</div></div>';
   }).join('');
@@ -6382,7 +6382,8 @@ function downloadTechbook(key,opts){
 }
 
 /* ===== PRINT-BASED TECHBOOK (no CDN — always works; Save as PDF) ===== */
-function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function txt(s){return s==null?'':''+s;}
+function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function spectrumSVGmarkup(sz,bodyFill){
   /* Official Muse Live Spectrum from assets/brand — natural aspect (~1.727:1) */
   var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(290/191);
@@ -6757,10 +6758,53 @@ function museaiWikiAnswer(qRaw){
   var extra=more.length?(' Related: '+more.join('; ')+'.'):'';
   return (h.title+': '+body+cite+extra).replace(/\s+/g,' ').trim();
 }
+/* Muse intents for the briefing chips — computed from live production data */
+function museaiIntents(q){
+  try{
+    var keys=(typeof order!=='undefined'&&order)||[];
+    var P=function(k){return productions[k]||{};};
+    var nm=function(k){return P(k).name||k;};
+    var pct=function(k){try{return computePct(P(k));}catch(e){return P(k).pct||0;}};
+    var atRisk=keys.filter(function(k){return P(k).risk||pct(k)<40;});
+    var txc=null;try{if(typeof txConflicts==='function')txc=txConflicts();}catch(e){}
+    var txn=txc&&txc.notes?txc.notes.length:0;
+    if(/\b(at risk|risks?|red flags?|blockers?|in trouble)\b/.test(q)){
+      if(!atRisk.length)return 'Nothing is at risk right now — all '+keys.length+' productions are at 40% readiness or better.';
+      return atRisk.length+' of '+keys.length+' productions need attention:\n'+atRisk.map(function(k){var p=P(k);
+        return '• '+nm(k)+' — '+pct(k)+'% ready'+(p.bottleneck&&p.bottleneck.text?' · '+p.bottleneck.text:'')+(p.date?' · '+p.date:'');}).join('\n');
+    }
+    if(/\b(morning |daily )?brief(ing)?\b|\bwhat'?s (happening|going on)\b/.test(q)){
+      var active=keys.filter(function(k){return /active|production/i.test(P(k).status||'');});
+      var eng=(typeof engRequests!=='undefined'&&engRequests)?engRequests.length:0;
+      var att=0;try{att=attentionCount();}catch(e){}
+      var lines=['Here is your Muse Live briefing.',
+        'Portfolio: '+keys.length+' productions · '+active.length+' in production · '+atRisk.length+' at risk.'];
+      keys.slice().sort(function(a,b){return pct(a)-pct(b);}).forEach(function(k){lines.push('• '+nm(k)+' — '+pct(k)+'% · '+(P(k).status||'')+(P(k).date?' · '+P(k).date:''));});
+      lines.push('Transmission: '+(txn?txn+' booking conflict'+(txn===1?'':'s')+' to resolve.':'no booking conflicts.'));
+      if(eng)lines.push('ENG: '+eng+' camera request'+(eng===1?'':'s')+' on the board.');
+      if(att)lines.push(att+' item'+(att===1?'':'s')+' flagged for your attention.');
+      return lines.join('\n');
+    }
+    if(/\bcrew\b/.test(q)&&/\b(open|unfilled|vacan\w*|available|unassigned|gaps?)\b/.test(q)){
+      var rows=keys.map(function(k){var o=0,a=0;try{o=projOpenCount(k);a=projAssignedCount(k);}catch(e){}return {k:k,o:o,a:a};});
+      var total=rows.reduce(function(n,r){return n+r.o;},0);
+      if(!total)return 'Every crew position is filled across all '+keys.length+' productions.';
+      return total+' crew position'+(total===1?' is':'s are')+' still open:\n'+rows.filter(function(r){return r.o;}).sort(function(a,b){return b.o-a.o;})
+        .map(function(r){return '• '+nm(r.k)+' — '+r.o+' open · '+r.a+' assigned';}).join('\n')+'\nOpen a production → Crew to assign people.';
+    }
+    if(/\bconflicts?\b/.test(q)&&/\b(tx|transmission|bookings?|circuits?|bandwidth)\b/.test(q)){
+      if(!txn)return 'No transmission conflicts — every TX booking fits its path capacity.';
+      return txn+' transmission conflict'+(txn===1?'':'s')+':\n'+txc.notes.slice(0,8).map(function(n){return '• '+(n.text||n.res||'');}).join('\n')+
+        (txn>8?'\n…and '+(txn-8)+' more.':'')+'\nOpen Schedule → Facilities & Productions to rebalance.';
+    }
+  }catch(e){}
+  return null;
+}
 function museaiAnswer(qRaw){
   var _corr=null;try{_corr=museCorrectQuery(qRaw);}catch(e){_corr=null;}
   var q=(_corr&&_corr.q?_corr.q:String(qRaw||'')).toLowerCase().trim();
   if(!q)return "Ask me anything about Muse Live (any module or show) or any real-world question — e.g. \"Is audio ready for Orion Reveal?\" or \"What causes RF interference?\"";
+  var _intent=museaiIntents(q);if(_intent)return _intent;
   if(/^(hi|hey|hello|yo|sup|good (morning|afternoon|evening))/.test(q))return "Hi — I'm Muse. I answer every Muse Live question (all modules + live data across all productions) and general real-world questions too. Try \"What is Muse Live?\", \"How does PackList work?\", or \"When is the next Dolphins preseason game?\"";
   try{
     var wikiA=museaiWikiAnswer(qRaw||q);
@@ -7485,7 +7529,7 @@ function musePaintTheme(scheme,pref){
   document.documentElement.setAttribute('data-theme-pref',pref||museThemePref());
   document.documentElement.style.colorScheme=(pref==='system'||!pref)?'light dark':scheme;
   try{
-    var bar=dark?'#111112':'#f7f9fb';
+    var bar=dark?'#242526':'#FFFFFF';
     var metas=document.querySelectorAll('meta[name="theme-color"]');
     if(metas[0])metas[0].setAttribute('content',bar);
     document.cookie='Muse-Theme='+scheme+'; Path=/; Max-Age=31536000; SameSite=Lax';
@@ -8030,7 +8074,7 @@ function audioPeaks(buf,n){var d=buf.getChannelData(0);var step=Math.floor(d.len
 function audioUploadFiles(key,ev){var files=ev.target.files;if(!files||!files.length)return;
   Array.prototype.forEach.call(files,function(f){audioConvertFile(key,f);});ev.target.value='';}
 function audioConvertFile(key,file){var p=productions[key];if(!p)return;
-  toast('Converting '+esc(file.name)+' → PCM WAV 48 kHz…');
+  toast('Converting '+txt(file.name)+' → PCM WAV 48 kHz…');
   var reader=new FileReader();
   reader.onload=function(){
     var AC=window.AudioContext||window.webkitAudioContext;
@@ -8049,14 +8093,14 @@ function audioConvertFile(key,file){var p=productions[key];if(!p)return;
         _audioBlobs[id]={url:URL.createObjectURL(wav),peaks:audioPeaks(out,240)};
         var fin=function(){audioAssets(p).push(asset);stampEdit(key);renderAll();
           try{renderDeptBoard(key);}catch(e){}
-          toast('✓ '+esc(asset.name)+' — PCM WAV '+Math.round(asset.sr/1000)+' kHz ready');};
+          toast('✓ '+txt(asset.name)+' — PCM WAV '+Math.round(asset.sr/1000)+' kHz ready');};
         if(wav.size<=1500000){var r2=new FileReader();
           r2.onload=function(){asset.dataUri=r2.result;asset.persisted=true;fin();};
           r2.onerror=function(){fin();};r2.readAsDataURL(wav);}
         else fin();
       });
     },function(){try{ac.close();}catch(e){}
-      toast('⚠ Could not decode "'+esc(file.name)+'" — format not supported by this browser’s decoder');});
+      toast('⚠ Could not decode "'+txt(file.name)+'" — format not supported by this browser’s decoder');});
   };
   reader.readAsArrayBuffer(file);}
 function audioDelete(key,id){var p=productions[key];if(!p)return;
@@ -8677,12 +8721,12 @@ var _gfxBlobs={};  // id -> {url, previewConverted:bool, matteUrl?}
 var _gfxUi={};     // id -> {bg, loop, cue} transient player UI state
 var GFX_SIM_SHOWS={
   museaitour:{open:'Show Open — Muse AI World Tour 2026',bumper:'Bumper — Muse AI World Tour',wipe:'Wipe — Muse AI World Tour'},
-  charm:{open:'Show Open — Winter Games',bumper:'Bumper — Winter Games',wipe:'Wipe — Winter Games'},
+  charm:{open:'Show Open — Meta Charm Launch',bumper:'Bumper — Meta Charm Launch',wipe:'Wipe — Meta Charm Launch'},
   orion:{open:'Show Open — Orion Reveal',bumper:'Bumper — Orion Reveal',wipe:'Wipe — Orion Reveal'},
   raybangen3:{open:'Show Open — Ray-Ban Meta Gen 3 Launch',bumper:'Bumper — Ray-Ban Meta Gen 3 Launch',wipe:'Wipe — Ray-Ban Meta Gen 3 Launch'},
   museailaunch:{open:'Show Open — Muse AI Launch',bumper:'Bumper — Muse AI Launch',wipe:'Wipe — Muse AI Launch'},
-  whatsapp:{open:'Show Open — WhatsApp Summit',bumper:'Bumper — WhatsApp Summit',wipe:'Wipe — WhatsApp Summit'},
-  igcreators:{open:'Show Open — Creator Week',bumper:'Bumper — Creator Week',wipe:'Wipe — Creator Week'}
+  whatsapp:{open:'Show Open — WhatsApp Business Summit',bumper:'Bumper — WhatsApp Business Summit',wipe:'Wipe — WhatsApp Business Summit'},
+  igcreators:{open:'Show Open — Instagram Creator Week',bumper:'Bumper — Instagram Creator Week',wipe:'Wipe — Instagram Creator Week'}
 };
 function gfxProdKey(p){
   if(!p)return '';
@@ -8694,9 +8738,9 @@ function gfxEnvSimsFor(key){
   var labels=GFX_SIM_SHOWS[key]||{open:'Show Open — environment sim',bumper:'Bumper — environment sim',wipe:'Wipe — environment sim'};
   var base='assets/gfx-sims/'+show+'/';
   return [
-    {simId:'sim_open_'+show,kind:'open',name:labels.open,src:base+'open.mp4',poster:base+'open.jpg'},
-    {simId:'sim_bumper_'+show,kind:'bumper',name:labels.bumper,src:base+'bumper.mp4',poster:base+'bumper.jpg'},
-    {simId:'sim_wipe_'+show,kind:'wipe',name:labels.wipe,src:base+'wipe.mp4',poster:base+'wipe.jpg'}
+    {simId:'sim_open_'+show,kind:'open',name:labels.open,src:base+'open.webm',poster:base+'open.jpg'},
+    {simId:'sim_bumper_'+show,kind:'bumper',name:labels.bumper,src:base+'bumper.webm',poster:base+'bumper.jpg'},
+    {simId:'sim_wipe_'+show,kind:'wipe',name:labels.wipe,src:base+'wipe.webm',poster:base+'wipe.jpg'}
   ];
 }
 function gfxEnsureEnvSims(p,key){
@@ -8942,7 +8986,7 @@ function gfxConvert(key,id){var a=gfxAssetById(key,id);if(!a)return;
       try{renderDeptBoard(key);}catch(e){}
       try{ff.FS('unlink','in.src');ff.FS('unlink','out.webm');}catch(e){}
     });
-  }).catch(function(e){gfxStatusLine(id,'');toast('⚠ Preview conversion failed: '+esc((e&&e.message)||'ffmpeg unavailable'));});}
+  }).catch(function(e){gfxStatusLine(id,'');toast('⚠ Preview conversion failed: '+txt((e&&e.message)||'ffmpeg unavailable'));});}
 function gfxProbe(key,id){var a=gfxAssetById(key,id);if(!a)return;
   /* review fix: after a preview conversion the probe MUST read the native file — probing
      the -an VP9 preview would overwrite declared codec/audio/alpha with preview values */
@@ -8982,9 +9026,9 @@ function gfxProbe(key,id){var a=gfxAssetById(key,id);if(!a)return;
       else if(/Audio:/i.test(all)===false&&vm){d.audio='No embedded audio';found.push('no audio stream');}
       gfxStatusLine(id,'');
       stampEdit(key);try{renderDeptBoard(key);}catch(e){}
-      toast(found.length?('Probe: '+esc(found.join(' · '))):'Probe finished — could not parse stream info');
+      toast(found.length?('Probe: '+txt(found.join(' · '))):'Probe finished — could not parse stream info');
     });
-  }).catch(function(e){gfxStatusLine(id,'');toast('⚠ Probe failed: '+esc((e&&e.message)||'ffmpeg unavailable'));});}
+  }).catch(function(e){gfxStatusLine(id,'');toast('⚠ Probe failed: '+txt((e&&e.message)||'ffmpeg unavailable'));});}
 function gfxSectionHTML(key){var p=productions[key];var assets=gfxAssets(p,key);
   var rows=assets.map(function(a){
     var src=gfxSrcFor(a);var matteSrc=a.pair?gfxSrcFor(a,'matte'):null;var ui=gfxUi(a.id);var rb=_gfxBlobs[a.id];
@@ -9110,10 +9154,10 @@ var WXC_CITIES=[
  {city:'Los Angeles',lat:34.0522,lon:-118.2437},
  {city:'San Juan',lat:18.4655,lon:-66.1057},
  {city:'Mexico City',lat:19.4326,lon:-99.1332}];
-var WXC_KEY='jT7BVrztaPUsuXmLBxLnxv93kuo2uykx';
+var WXC_KEY=''; /* Windy point-forecast key (optional). Empty = keyless Open-Meteo. */
 var WXC_CACHE={}; /* idx -> {ts, source:'windy'|'openmeteo', cur, hours, aqi, error} */
 var WXC_TTL=10*60*1000;
-var WXC_FORCE_FALLBACK=false; /* set true in the console to demo the fallback path */
+var WXC_FORCE_FALLBACK=!WXC_KEY; /* no key -> Open-Meteo directly */
 
 function wxcCompass(deg){var pts=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return pts[Math.round((((deg%360)+360)%360)/22.5)%16];}
 function wxcAqiBand(a){if(a==null)return {label:'—',c:'#9ba2b0',bg:'#f3f4f6'};
@@ -9194,7 +9238,7 @@ function openCityWx(i){var ov=document.getElementById('wxCityOverlay');var bx=do
     '<p class="text-[10px] text-gray-500 mt-1">'+esc(z[0]||'')+' · fetching current conditions…</p></div>'+
     '<button onclick="closeCityWx()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button></div>'+
     '<div class="text-center py-10"><span class="inline-block w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full" style="animation:spin 1s linear infinite"></span>'+
-    '<p class="text-[10px] text-gray-400 mt-2">Contacting Windy point-forecast…</p></div>';
+    '<p class="text-[10px] text-gray-400 mt-2">Fetching live conditions…</p></div>';
   wxcLoad(i,function(){wxcRender(i);});}
 function closeCityWx(){var ov=document.getElementById('wxCityOverlay');if(ov)ov.style.display='none';}
 function wxcRefresh(i){WXC_CACHE[i]=null;openCityWx(i);}

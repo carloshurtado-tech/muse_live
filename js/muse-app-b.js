@@ -1916,7 +1916,7 @@ function finDocPDF(){if(!finDocCur)return;var d=finDocData(finDocCur.type,finDoc
     FIN_SPECTRUM.forEach(function(c,i){doc.setFillColor(c);doc.rect(i*(W/6),0,W/6,6,'F');});
     y=44;
     doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(24,25,26);
-    doc.text('N B C   P U L S E',M,y);
+    doc.text('M U S E   L I V E',M,y);
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(101,103,107);
     doc.text('MUSE LIVE / Muse Live  \u00B7  BROADCAST OPERATIONS',M,y+11);
     doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(24,25,26);
@@ -2261,7 +2261,7 @@ finDocPDF=function(){
     y=42;
     // Muse Live masthead
     doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(24,25,26);
-    doc.text('N B C   P U L S E',M,y);
+    doc.text('M U S E   L I V E',M,y);
     doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(101,103,107);
     doc.text('MUSE LIVE / Muse Live  \u00B7  BROADCAST OPERATIONS CRM',M,y+11);
     // document type + ID (right-aligned)
@@ -3327,7 +3327,7 @@ function engPDFRender(list,titleStr){
       if(ei>0)doc.addPage();
       var p=productions[e.prod]||{name:e.prod};var y=0;
       SPECTRUM.forEach(function(c,i){doc.setFillColor(c);doc.rect(i*(PW/6),0,PW/6,5,'F');});
-      y=44;doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(24,25,26);doc.text('N B C   P U L S E',M,y);
+      y=44;doc.setFont('helvetica','bold');doc.setFontSize(14);doc.setTextColor(24,25,26);doc.text('M U S E   L I V E',M,y);
       doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(101,103,107);doc.text('ENG REQUEST  \u00B7  LIVE CAMERA HIT',M,y+11);
       doc.setFont('helvetica','bold');doc.setFontSize(15);doc.setTextColor(24,25,26);doc.text(S(e.id),PW-M,y,{align:'right'});
       doc.setFont('courier','bold');doc.setFontSize(9);doc.setTextColor(101,103,107);doc.text(S(e.status).toUpperCase(),PW-M,y+13,{align:'right'});

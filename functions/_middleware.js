@@ -64,7 +64,7 @@ export async function onRequest({ request, next, env }) {
 
   if (authed) return next();
 
-  if (PUBLIC_PATHS.has(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p))) return next();
+  if (PUBLIC_PATHS.has(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p)) || path.endsWith('.css')) return next();
   if (path.startsWith('/api/')) return json({ ok: false, error: 'Sign in required' }, 401);
   // App scripts are withheld until sign-in; an empty module keeps the login page error-free.
   if (path.endsWith('.js') || path.endsWith('.mjs')) {

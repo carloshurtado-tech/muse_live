@@ -88,13 +88,13 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
         document.addEventListener('DOMContentLoaded',function(){
           var b=document.createElement('div');
           b.id='museFileBanner';
-          b.style.cssText='position:fixed;inset:0;z-index:999999;background:#101112;color:#e6ebf3;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
-          b.innerHTML='<div style="max-width:520px;background:#1b1c1d;border:1px solid #353638;border-radius:16px;padding:28px;text-align:center">'+
-            '<div style="font:800 20px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-bottom:10px;color:#f56c0b">Open Muse Live via the local server</div>'+
-            '<p style="font:600 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8890a1;line-height:1.5;margin:0 0 16px">You opened a <b style="color:#e6ebf3">file://</b> URL. This browser blocks DWG (LibreDWG), maps, and modules from file origins.<br><br>In Terminal:</p>'+
-            '<pre style="text-align:left;background:#111213;border:1px solid #353638;border-radius:10px;padding:12px;font:700 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#3fb95b;overflow:auto">cd ~/MuseLive\n./start-muse.sh</pre>'+
-            '<p style="font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8890a1;margin:14px 0 18px">Then use <b style="color:#589bff">http://127.0.0.1:'+port+'/'+name+'</b></p>'+
-            '<a href="'+dest+'" style="display:inline-block;background:#23863A;color:#ffffff;font:700 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:10px 18px;border-radius:10px;text-decoration:none">Try open http://127.0.0.1:'+port+'</a>'+
+          b.style.cssText='position:fixed;inset:0;z-index:999999;background:#18191A;color:#e7f3ff;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+          b.innerHTML='<div style="max-width:520px;background:#1c1e21;border:1px solid #3A3B3C;border-radius:16px;padding:28px;text-align:center">'+
+            '<div style="font:800 20px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-bottom:10px;color:#f5832a">Open Muse Live via the local server</div>'+
+            '<p style="font:600 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8a8d91;line-height:1.5;margin:0 0 16px">You opened a <b style="color:#e7f3ff">file://</b> URL. This browser blocks DWG (LibreDWG), maps, and modules from file origins.<br><br>In Terminal:</p>'+
+            '<pre style="text-align:left;background:#18191A;border:1px solid #3A3B3C;border-radius:10px;padding:12px;font:700 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#31a24c;overflow:auto">cd ~/MuseLive\n./start-muse.sh</pre>'+
+            '<p style="font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8a8d91;margin:14px 0 18px">Then use <b style="color:#0866ff">http://127.0.0.1:'+port+'/'+name+'</b></p>'+
+            '<a href="'+dest+'" style="display:inline-block;background:#1E7B34;color:#ffffff;font:700 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:10px 18px;border-radius:10px;text-decoration:none">Try open http://127.0.0.1:'+port+'</a>'+
             '</div>';
           document.body.appendChild(b);
         });
@@ -103,40 +103,41 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
   }catch(e){}
 })();
 </script>
-<link rel="preload" href="css/muse-tw.css?v=20261015-meta1" as="style">
-<link rel="preload" href="css/muse-shell.css?v=20261015-meta1" as="style">
-<link rel="preload" href="css/muse-dark.css?v=20261015-meta1" as="style">
+<link rel="preload" href="css/muse-tw.css?v=20261015-meta2" as="style">
+<link rel="preload" href="css/muse-shell.css?v=20261015-meta2" as="style">
+<link rel="preload" href="css/muse-dark.css?v=20261015-meta2" as="style">
 <link rel="preload" href="assets/brand/meta-mark-animated.svg" as="image">
-<link rel="stylesheet" href="css/muse-tw.css?v=20261015-meta1">
-<link rel="stylesheet" href="css/muse-shell.css?v=20261015-meta1">
-<link rel="stylesheet" href="css/muse-dark.css?v=20261015-meta1" id="museDarkThemeLink">
+<link rel="stylesheet" href="css/muse-tw.css?v=20261015-meta2">
+<link rel="stylesheet" href="css/muse-shell.css?v=20261015-meta2">
+<link rel="stylesheet" href="css/muse-dark.css?v=20261015-meta2" id="museDarkThemeLink">
 <link rel="stylesheet" href="js/vendor/quill/quill.snow.css">
-<link rel="stylesheet" href="css/muse-wiki.css?v=20261015-meta1">
-<link rel="stylesheet" href="css/muse-work.css?v=20261015-meta1">
-<link rel="stylesheet" href="css/muse-departments.css?v=20261015-meta1">
-<script src="js/muse-sample-gear.js?v=20261015-meta1" defer></script>
-<script src="js/muse-planet-trucks.js?v=20261015-meta1" defer></script>
-<script src="js/muse-platform.js?v=20261015-meta1" defer></script>
-<script src="js/muse-lazy.js?v=20261015-meta1" defer></script>
-<script src="js/muse-kb-seed.js?v=20261015-meta1" defer></script>
-<script src="js/muse-records.js?v=20261015-meta1" defer></script>
-<script src="js/muse-wiki-schema.js?v=20261015-meta1" defer></script>
-<script src="js/muse-kb.js?v=20261015-meta1" defer></script>
-<script src="js/muse-thingsboard.js?v=20261015-meta1" defer></script>
-<script src="js/muse-broadcast-ops.js?v=20261015-meta1" defer></script>
-<script src="js/muse-recovery.js?v=20261015-meta1" defer></script>
-<script src="js/muse-app-a.min.js?v=20261015-meta1" defer></script>
-<script src="js/muse-app-b.min.js?v=20261015-meta1" defer></script>
-<script src="js/muse-export-gear.js?v=20261015-meta1" defer></script>
-<script src="js/muse-ops-os.js?v=20261015-meta1" defer></script>
-<script src="js/muse-live-core.js?v=20261015-meta1" defer></script>
-<script src="js/muse-live-ops.js?v=20261015-meta1" defer></script>
-<script src="js/muse-work-core.js?v=20261015-meta1" defer></script>
-<script src="js/muse-work-ui.js?v=20261015-meta1" defer></script>
-<script src="js/muse-mcp.js?v=20261015-meta1" defer></script>
-<script src="js/muse-generic-kit.js?v=20261015-meta1" defer></script>
-<script src="js/muse-ai.js?v=20261015-meta1" defer></script>
-<script src="js/muse-survey-media.js?v=20261015-meta1" defer></script>
+<link rel="stylesheet" href="css/muse-wiki.css?v=20261015-meta2">
+<link rel="stylesheet" href="css/muse-work.css?v=20261015-meta2">
+<link rel="stylesheet" href="css/muse-departments.css?v=20261015-meta2">
+<link rel="stylesheet" href="css/muse-meta.css?v=20261015-meta2">
+<script src="js/muse-sample-gear.js?v=20261015-meta2" defer></script>
+<script src="js/muse-planet-trucks.js?v=20261015-meta2" defer></script>
+<script src="js/muse-platform.js?v=20261015-meta2" defer></script>
+<script src="js/muse-lazy.js?v=20261015-meta2" defer></script>
+<script src="js/muse-kb-seed.js?v=20261015-meta2" defer></script>
+<script src="js/muse-records.js?v=20261015-meta2" defer></script>
+<script src="js/muse-wiki-schema.js?v=20261015-meta2" defer></script>
+<script src="js/muse-kb.js?v=20261015-meta2" defer></script>
+<script src="js/muse-thingsboard.js?v=20261015-meta2" defer></script>
+<script src="js/muse-broadcast-ops.js?v=20261015-meta2" defer></script>
+<script src="js/muse-recovery.js?v=20261015-meta2" defer></script>
+<script src="js/muse-app-a.min.js?v=20261015-meta2" defer></script>
+<script src="js/muse-app-b.min.js?v=20261015-meta2" defer></script>
+<script src="js/muse-export-gear.js?v=20261015-meta2" defer></script>
+<script src="js/muse-ops-os.js?v=20261015-meta2" defer></script>
+<script src="js/muse-live-core.js?v=20261015-meta2" defer></script>
+<script src="js/muse-live-ops.js?v=20261015-meta2" defer></script>
+<script src="js/muse-work-core.js?v=20261015-meta2" defer></script>
+<script src="js/muse-work-ui.js?v=20261015-meta2" defer></script>
+<script src="js/muse-mcp.js?v=20261015-meta2" defer></script>
+<script src="js/muse-generic-kit.js?v=20261015-meta2" defer></script>
+<script src="js/muse-ai.js?v=20261015-meta2" defer></script>
+<script src="js/muse-survey-media.js?v=20261015-meta2" defer></script>
 <style id="museDashLayout">
 /* Classic dashboard + telemetry layout — desktop columns by default */
 .dash-row-main{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(0,2fr)!important;gap:1.5rem!important;align-items:start}
@@ -169,7 +170,7 @@ html.muse-gated body > *:not(#museGate){visibility:hidden;pointer-events:none;}
   position:fixed;inset:0;z-index:2147483000;box-sizing:border-box;
   display:flex;align-items:center;justify-content:center;
   padding:max(24px,env(safe-area-inset-top,0px)) 20px max(24px,env(safe-area-inset-bottom,0px));
-  background:#F0F2F5;color:#1C2B33;overflow-y:auto;
+  background:#F0F2F5;color:#242526;overflow-y:auto;
   font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
   visibility:hidden;opacity:0;pointer-events:none;transition:opacity .2s ease;
 }
@@ -178,17 +179,17 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 #museGate .gate-shell{width:100%;max-width:1000px;display:flex;align-items:center;justify-content:space-between;gap:48px;}
 #museGate .gate-hero{flex:1 1 480px;min-width:0;display:flex;flex-direction:column;align-items:flex-start;}
 #museGate .gate-meta{height:20px;width:auto;margin:0 0 20px 6px;}
-#museGate .gate-art{width:100%;max-width:520px;aspect-ratio:3/2;border-radius:16px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.08);}
-#museGate .gate-art img{width:100%;height:100%;object-fit:cover;display:block;}
-#museGate .gate-title{margin:24px 0 6px;font-size:32px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#1C2B33;}
-#museGate .gate-tag{margin:0;max-width:460px;font-size:20px;line-height:1.35;color:#465A69;}
-#museGate .gate-card{flex:0 0 396px;max-width:100%;background:#fff;border-radius:12px;padding:24px 20px 20px;
+#museGate .gate-art{width:100%;max-width:520px;aspect-ratio:3/2;background:transparent;}
+#museGate .gate-art img{width:100%;height:100%;object-fit:contain;display:block;}
+#museGate .gate-title{margin:24px 0 6px;font-size:32px;line-height:1.15;font-weight:700;letter-spacing:-.01em;color:#242526;}
+#museGate .gate-tag{margin:0;max-width:460px;font-size:20px;line-height:1.35;color:#4B4F56;}
+#museGate .gate-card{flex:0 0 396px;max-width:100%;background:#ffffff;border-radius:12px;padding:24px 20px 20px;
   box-shadow:0 2px 4px rgba(0,0,0,.1),0 8px 16px rgba(0,0,0,.1);}
-#museGate .gate-card h1{margin:0 0 4px;font-size:22px;font-weight:700;color:#1C2B33;text-align:center;}
+#museGate .gate-card h1{margin:0 0 4px;font-size:22px;font-weight:700;color:#242526;text-align:center;}
 #museGate .gate-card .gate-sub{margin:0 0 18px;font-size:15px;color:#65676B;text-align:center;}
 #museGate .gate-field{position:relative;}
-#museGate .gate-field input{width:100%;height:52px;padding:0 52px 0 16px;border:1px solid #CCD0D5;border-radius:8px;
-  background:#fff;color:#1C2B33;font:400 17px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;outline:none;}
+#museGate .gate-field input{width:100%;height:52px;padding:0 52px 0 16px;border:1px solid #CED0D4;border-radius:8px;
+  background:#ffffff;color:#242526;font:400 17px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;outline:none;}
 #museGate .gate-field input::placeholder{color:#8A8D91;}
 #museGate .gate-field input:focus{border-color:#0866FF;box-shadow:0 0 0 2px #E7F3FF;}
 #museGate .gate-field input[aria-invalid="true"]{border-color:#E41E3F;box-shadow:0 0 0 2px #FDE7EA;}
@@ -198,12 +199,12 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 #museGate .gate-eye:focus-visible{outline:2px solid #0866FF;outline-offset:1px;}
 #museGate .gate-msg{min-height:20px;margin:8px 2px 6px;font-size:13px;line-height:20px;color:#E41E3F;}
 #museGate .gate-msg.is-hint{color:#65676B;}
-#museGate .gate-btn{width:100%;height:48px;border:0;border-radius:8px;background:#0866FF;color:#fff;cursor:pointer;
+#museGate .gate-btn{width:100%;height:48px;border:0;border-radius:8px;background:#0866FF;color:#ffffff;cursor:pointer;
   font:700 20px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;transition:background .15s ease;}
-#museGate .gate-btn:hover{background:#0759DB;}
-#museGate .gate-btn:focus-visible{outline:3px solid #9EC5FF;outline-offset:2px;}
-#museGate .gate-btn[disabled]{background:#6EA6FF;cursor:progress;}
-#museGate .gate-rule{height:1px;background:#DADDE1;margin:20px 0 16px;border:0;}
+#museGate .gate-btn:hover{background:#0866FF;}
+#museGate .gate-btn:focus-visible{outline:3px solid #B9D7FF;outline-offset:2px;}
+#museGate .gate-btn[disabled]{background:#B9D7FF;cursor:progress;}
+#museGate .gate-rule{height:1px;background:#E4E6EB;margin:20px 0 16px;border:0;}
 #museGate .gate-from{display:flex;flex-direction:column;align-items:center;gap:6px;font-size:13px;color:#65676B;}
 #museGate .gate-from img{height:14px;width:auto;}
 #museGate .gate-legal{margin:16px 0 0;text-align:center;font-size:12px;color:#8A8D91;}
@@ -226,7 +227,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
   <div class="gate-shell">
     <div class="gate-hero">
       <img class="gate-meta" src="assets/brand/meta-logo.svg" alt="Meta" width="99" height="20">
-      <div class="gate-art"><img src="assets/brand/muse-mascot.jpg" srcset="assets/brand/muse-mascot-800.jpg 800w, assets/brand/muse-mascot.jpg 1600w" sizes="(max-width:899px) 320px, 520px" alt="Muse, the Muse AI mascot, wearing a headset beside a broadcast camera" width="1600" height="1067" fetchpriority="high"></div>
+      <div class="gate-art"><img src="assets/brand/muse-mascot.webp" alt="Muse, the Muse AI mascot, wearing a headset beside a broadcast camera" width="1600" height="1067" fetchpriority="high"></div>
       <p class="gate-title">Muse Live</p>
       <p class="gate-tag">Live broadcast operations for Meta — planned, crewed and run with Muse AI.</p>
     </div>
@@ -455,7 +456,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
     <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80 mb-5">
       <div class="flex-shrink-0"><h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900">Broadcast Progress Snapshot</h1><p class="text-xs sm:text-sm text-gray-600 mt-0.5">Live production requirement fulfillment across all major projects.</p></div>
       <div id="snapFilterPills" class="flex items-center justify-center gap-2 flex-wrap flex-1"></div>
-      <div class="flex items-center gap-2 sm:gap-3 flex-wrap flex-shrink-0"><button onclick="openCreateModal()" class="muse-cta group relative flex items-center gap-2 text-white rounded-xl pl-3 pr-4 py-2 text-xs font-bold transition-all hover:-translate-y-px overflow-hidden"><span class="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 transition-transform group-hover:rotate-90" style="backdrop-filter:blur(2px)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>New Project<span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#0064E0 0%,#0082FB 100%);opacity:.85"></span></button><span class="text-xs font-semibold text-gray-600 mono">Sync: <span class="text-gray-900" id="lastSync">Just Now</span></span><button onclick="refreshData()" class="bg-white border border-gray-300 rounded-lg px-4 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50">↻ Refresh</button></div>
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap flex-shrink-0"><button onclick="openCreateModal()" class="muse-cta group relative flex items-center gap-2 text-white rounded-xl pl-3 pr-4 py-2 text-xs font-bold transition-all hover:-translate-y-px overflow-hidden"><span class="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 transition-transform group-hover:rotate-90" style="backdrop-filter:blur(2px)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>New Project<span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#0064E0 0%,#0082FB 55%,#00C2FF 100%);opacity:.85"></span></button><span class="text-xs font-semibold text-gray-600 mono">Sync: <span class="text-gray-900" id="lastSync">Just Now</span></span><button onclick="refreshData()" class="bg-white border border-gray-300 rounded-lg px-4 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50">↻ Refresh</button></div>
     </div>
     <div id="snapshotGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"></div>
     </section>
@@ -523,7 +524,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
       <button onclick="perExportJSON()" title="Machine-readable export — secrets stripped, exempt people omitted" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">JSON</button>
       <button onclick="perExportCSV()" title="Machine-readable export — secrets stripped, exempt people omitted" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">CSV</button>
       <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Microsoft 365</span>
-      <button onclick="syncMicrosoftContacts()" title="Link Outlook / Microsoft enterprise contacts (Graph stub — configure M365Config to go live)" class="text-[10px] font-bold text-[#0f55bd] border border-[#0f55bd]/40 rounded-lg px-2 py-1.5 hover:bg-[#0f55bd]/08">Link Contacts</button>
+      <button onclick="syncMicrosoftContacts()" title="Link Outlook / Microsoft enterprise contacts (Graph stub — configure M365Config to go live)" class="text-[10px] font-bold text-[#0a58ca] border border-[#0a58ca]/40 rounded-lg px-2 py-1.5 hover:bg-[#0a58ca]/08">Link Contacts</button>
       <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Talent</span>
       <button onclick="xlsxTemplate('talent')" title="Download a pre-formatted template" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Template</button>
       <button onclick="xlsxImportOpen('talent',null)" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2 py-1.5 hover:bg-gray-800">Import</button>
@@ -628,7 +629,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- SCAN BARCODE MODAL -->
-<div id="scanOverlay" onclick="if(event.target===this)closeScan()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5)">
+<div id="scanOverlay" onclick="if(event.target===this)closeScan()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.5)">
   <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:420px;max-height:90vh;overflow-y:auto">
     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100"><h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14"/></svg> Scan Barcode</h3><button onclick="closeScan()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button></div>
     <div class="p-4 space-y-3">
@@ -643,12 +644,12 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- INVENTORY DETAIL MODAL -->
-<div id="invDetailOverlay" onclick="if(event.target===this)closeInvDetail()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+<div id="invDetailOverlay" onclick="if(event.target===this)closeInvDetail()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45)">
   <div id="invDetailBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:560px;max-height:90vh;overflow:hidden"></div>
 </div>
 
 <!-- CHECK-OUT MODAL -->
-<div id="checkoutOverlay" onclick="if(event.target===this)closeCheckout()" style="display:none;position:fixed;inset:0;z-index:65;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+<div id="checkoutOverlay" onclick="if(event.target===this)closeCheckout()" style="display:none;position:fixed;inset:0;z-index:65;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45)">
   <div id="checkoutBox" class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:420px;max-height:90vh;overflow-y:auto"></div>
 </div>
 
@@ -681,14 +682,14 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- THREAD OVERLAY -->
-<div id="commsMsgOverlay" onclick="if(event.target===this)closeCommsMsg()" style="display:none;position:fixed;inset:0;z-index:70;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+<div id="commsMsgOverlay" onclick="if(event.target===this)closeCommsMsg()" style="display:none;position:fixed;inset:0;z-index:70;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)">
   <div id="commsMsgBox" class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:560px;max-height:84vh;display:flex;flex-direction:column;overflow:hidden"></div>
 </div>
 
 <!-- COMPOSE MODAL -->
-<div id="composeOverlay" onclick="if(event.target===this)closeCompose()" style="display:none;position:fixed;inset:0;z-index:72;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto;background:rgba(17,17,18,.52);backdrop-filter:blur(5px)">
+<div id="composeOverlay" onclick="if(event.target===this)closeCompose()" style="display:none;position:fixed;inset:0;z-index:72;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto;background:rgba(24,25,26,.52);backdrop-filter:blur(5px)">
   <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:560px;margin:auto">
-    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112,#1e1f20)">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#18191A,#1c1e21)">
       <p class="text-[11px] font-bold text-white uppercase tracking-widest">New Message</p>
       <button onclick="closeCompose()" class="text-gray-400 hover:text-white text-lg leading-none">✕</button>
     </div>
@@ -758,11 +759,11 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
      Create PO / WO / Invoice with line items, vendor picker,
      project metadata, and instant PDF export
      ============================================================ -->
-<div id="finBuilderModal" class="hidden" style="position:fixed;inset:0;z-index:68;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;background:rgba(17,17,18,.52);backdrop-filter:blur(5px)" onclick="if(event.target===this)closeFinBuilder()">
+<div id="finBuilderModal" class="hidden" style="position:fixed;inset:0;z-index:68;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;background:rgba(24,25,26,.52);backdrop-filter:blur(5px)" onclick="if(event.target===this)closeFinBuilder()">
   <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:720px;margin:auto">
 
     <!-- header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1f20 100%)">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#18191A 0%,#1c1e21 100%)">
       <div class="flex items-center gap-3">
         <div class="flex gap-0.5">
           <div style="width:6px;height:26px;background:#F7B928;border-radius:2px"></div>
@@ -770,7 +771,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
           <div style="width:6px;height:26px;background:#E41E3F;border-radius:2px"></div>
           <div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div>
           <div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div>
-          <div style="width:6px;height:26px;background:#31A24C;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#1E7B34;border-radius:2px"></div>
         </div>
         <div>
           <p class="text-[11px] font-bold text-white uppercase tracking-widest">New Financial Document</p>
@@ -896,7 +897,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- VENDOR PICKER (inside builder flow) -->
-<div id="finVendorPicker" class="hidden" style="position:fixed;inset:0;z-index:72;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.6);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeVendorPicker()">
+<div id="finVendorPicker" class="hidden" style="position:fixed;inset:0;z-index:72;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(24,25,26,.6);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeVendorPicker()">
   <div class="bg-white rounded-2xl shadow-2xl" style="width:500px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column">
     <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 flex-shrink-0">
       <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Vendor Directory</h3>
@@ -914,11 +915,11 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 
 
 <!-- ENG REQUEST MODAL -->
-<div id="engModal" class="eng-modal hidden" style="position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:hidden;background:rgba(17,17,18,.62)" onclick="if(event.target===this)closeEngModal()">
+<div id="engModal" class="eng-modal hidden" style="position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:hidden;background:rgba(24,25,26,.62)" onclick="if(event.target===this)closeEngModal()">
   <div id="engModalBox" class="eng-modal-box bg-white rounded-2xl shadow-2xl w-full" style="max-width:760px;margin:auto">
-    <div id="engModalHead" class="eng-modal-head flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1f20 100%)">
+    <div id="engModalHead" class="eng-modal-head flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#18191A 0%,#1c1e21 100%)">
       <div class="flex items-center gap-3">
-        <div class="flex gap-0.5"><div style="width:6px;height:26px;background:#F7B928;border-radius:2px"></div><div style="width:6px;height:26px;background:#F5832A;border-radius:2px"></div><div style="width:6px;height:26px;background:#E41E3F;border-radius:2px"></div><div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div><div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div><div style="width:6px;height:26px;background:#31A24C;border-radius:2px"></div></div>
+        <div class="flex gap-0.5"><div style="width:6px;height:26px;background:#F7B928;border-radius:2px"></div><div style="width:6px;height:26px;background:#F5832A;border-radius:2px"></div><div style="width:6px;height:26px;background:#E41E3F;border-radius:2px"></div><div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div><div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div><div style="width:6px;height:26px;background:#1E7B34;border-radius:2px"></div></div>
         <div><p class="text-[11px] font-bold text-white uppercase tracking-widest" id="engModalTitle">New ENG Request</p><p class="text-[9px] text-gray-400 mt-0.5">Live Camera Hit · Logistics &amp; Gear</p></div>
       </div>
       <button onclick="closeEngModal()" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-lg">✕</button>
@@ -1089,7 +1090,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- MUSEAI SETTINGS -->
-<div id="museaiSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeMuseAiSettings()">
+<div id="museaiSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeMuseAiSettings()">
   <div class="bg-white rounded-2xl shadow-2xl" style="width:460px;max-width:94vw">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
       <div><h3 class="text-sm font-bold text-gray-900 leading-none">Muse — Ops Assistant</h3><p class="text-[10px] text-gray-500 mt-1">Under construction.</p></div>
@@ -1138,7 +1139,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 
 
 <!-- FINANCIAL DOCUMENT VIEWER -->
-<div id="finDocModal" class="hidden" style="position:fixed;inset:0;z-index:65;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeFinDoc()">
+<div id="finDocModal" class="hidden" style="position:fixed;inset:0;z-index:65;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeFinDoc()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:680px;max-width:96vw;max-height:92vh">
     <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 flex-shrink-0">
       <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-500"></span><h3 class="text-xs font-bold uppercase tracking-wider text-gray-700" id="finDocTitle">Document</h3></div>
@@ -1155,7 +1156,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- CREATE PROJECT MODAL (v34 — two-column, multi-day, working location search) -->
-<div id="createModal" class="hidden" style="position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeCreateModal()">
+<div id="createModal" class="hidden" style="position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeCreateModal()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:960px;max-width:97vw;max-height:94vh">
     <div class="flex items-center justify-between px-6 py-3.5 border-b border-gray-200 flex-shrink-0">
       <div class="flex items-center gap-2.5">
@@ -1243,7 +1244,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 <!-- SCHEDULE EDITOR MODAL -->
 <!-- GEAR LIBRARY MANAGER (admin · opened from Avery's high-clearance profile) -->
 <!-- VENDOR DIRECTORY (admin · rental / third-party vendors) -->
-<div id="vendorModal" class="hidden" style="position:fixed;inset:0;z-index:61;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeVendorManager()">
+<div id="vendorModal" class="hidden" style="position:fixed;inset:0;z-index:61;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeVendorManager()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:1040px;max-width:97vw;height:88vh">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
       <div class="flex items-center gap-2.5">
@@ -1265,7 +1266,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
   </div>
 </div>
 
-<div id="schedModal" class="hidden" style="position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeSchedModal()">
+<div id="schedModal" class="hidden" style="position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeSchedModal()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:1000px;max-width:96vw;max-height:92vh">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
       <div class="flex items-center gap-2.5">
@@ -1295,14 +1296,14 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
     </div>
     <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2"><button onclick="downloadTechbook(schedKey)" title="Always exports current live production data — not a saved snapshot" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-4 py-2 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Techbook PDF · live</button>
-      <button onclick="downloadScheduleBook(schedKey)" class="flex items-center gap-1.5 text-xs font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-4 py-2 hover:bg-blue-100"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1266e3" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Schedule Book PDF</button></div>
+      <button onclick="downloadScheduleBook(schedKey)" class="flex items-center gap-1.5 text-xs font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-4 py-2 hover:bg-blue-100"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0866ff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Schedule Book PDF</button></div>
       <div class="flex items-center gap-2"><button onclick="closeSchedModal()" class="text-xs font-semibold text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel</button><button onclick="saveSchedule()" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-5 py-2 hover:bg-blue-700">Save Schedule</button></div>
     </div>
   </div>
 </div>
 
 <!-- PRODUCTION SIGN-OFF MODAL -->
-<div id="signoffModal" class="hidden" style="position:fixed;inset:0;z-index:62;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.55);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeSignoff()">
+<div id="signoffModal" class="hidden" style="position:fixed;inset:0;z-index:62;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.55);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeSignoff()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:520px;max-width:96vw;max-height:90vh">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-emerald-600 rounded-t-2xl">
       <h3 id="soTitle" class="text-sm font-bold text-white flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Production Sign-Off</h3>
@@ -1325,7 +1326,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- DEPARTMENT APPROVAL MODAL -->
-<div id="approvalModal" class="hidden" style="position:fixed;inset:0;z-index:62;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeApproval()">
+<div id="approvalModal" class="hidden" style="position:fixed;inset:0;z-index:62;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeApproval()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:520px;max-width:96vw;max-height:90vh">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
       <h3 id="apprTitle" class="text-sm font-bold text-gray-900">Approval</h3>
@@ -1353,11 +1354,11 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </div>
 
 <!-- CREW CONTACT CARD (click a name) -->
-<div id="crewCardOverlay" onclick="if(event.target===this)closeCrewCard()" style="display:none;position:fixed;inset:0;z-index:62;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.4)">
+<div id="crewCardOverlay" onclick="if(event.target===this)closeCrewCard()" style="display:none;position:fixed;inset:0;z-index:62;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.4)">
   <div id="crewCardBox" class="bg-white rounded-2xl shadow-2xl p-5" style="width:400px;max-width:94vw;max-height:90vh;overflow-y:auto"></div>
 </div>
 <!-- ASSIGN PERSON TO POSITION (positions-first crewing) -->
-<div id="assignOverlay" onclick="if(event.target===this)closeAssign()" style="display:none;position:fixed;inset:0;z-index:63;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+<div id="assignOverlay" onclick="if(event.target===this)closeAssign()" style="display:none;position:fixed;inset:0;z-index:63;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45)">
   <div class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:440px;max-height:88vh;overflow:hidden">
     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
       <h3 id="assignTitle" class="text-sm font-bold text-gray-900">Assign — Position</h3>
@@ -1383,7 +1384,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
     </div>
   </div>
 </div>
-<div id="gsOverlay" onclick="if(event.target===this)globalSearchClose()" style="display:none;position:fixed;inset:0;z-index:80;align-items:flex-start;justify-content:center;padding:80px 16px 16px;background:rgba(17,17,18,.5);backdrop-filter:blur(5px)">
+<div id="gsOverlay" onclick="if(event.target===this)globalSearchClose()" style="display:none;position:fixed;inset:0;z-index:80;align-items:flex-start;justify-content:center;padding:80px 16px 16px;background:rgba(24,25,26,.5);backdrop-filter:blur(5px)">
   <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:640px;max-height:78vh;display:flex;flex-direction:column;overflow:hidden">
     <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 flex-shrink-0">
       <svg class="text-gray-400 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
@@ -1396,47 +1397,47 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
     <div id="gsResults" class="overflow-y-auto flex-1 py-1"></div>
   </div>
 </div>
-<div id="ticketOverlay" onclick="if(event.target===this)closeTicket()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+<div id="ticketOverlay" onclick="if(event.target===this)closeTicket()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)">
   <div id="ticketBox"></div>
 </div>
 <!-- CSV IMPORT MODAL -->
-<div id="csvOverlay" onclick="if(event.target===this)closeCsvImport()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+<div id="csvOverlay" onclick="if(event.target===this)closeCsvImport()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45)">
   <div id="csvBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:92vh;overflow:hidden"></div>
 </div>
 
 <!-- USER PROFILE MODAL -->
-<div id="userProfileOverlay" onclick="if(event.target===this)closeUserProfile()" style="display:none;position:fixed;inset:0;z-index:70;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+<div id="userProfileOverlay" onclick="if(event.target===this)closeUserProfile()" style="display:none;position:fixed;inset:0;z-index:70;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)">
   <div id="userProfileBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:460px;max-height:92vh;overflow:hidden"></div>
 </div>
 
 <!-- FLIGHT BOOKING MODAL (move pending → booked) -->
-<div id="bookFlightOverlay" onclick="if(event.target===this)closeBookFlight()" style="display:none;position:fixed;inset:0;z-index:66;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+<div id="bookFlightOverlay" onclick="if(event.target===this)closeBookFlight()" style="display:none;position:fixed;inset:0;z-index:66;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45)">
   <div id="bookFlightBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:480px;max-height:92vh;overflow:hidden"></div>
 </div>
-<div id="personnelEditOverlay" onclick="if(event.target===this)closePersonnelEdit()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+<div id="personnelEditOverlay" onclick="if(event.target===this)closePersonnelEdit()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45)">
   <div id="personnelEditBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:560px;max-height:92vh;overflow:hidden"></div>
 </div>
 <!-- v31 PHASE 2: WBS / cost-center master data manager -->
-<div id="mdOverlay" onclick="if(event.target===this)closeMasterData()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+<div id="mdOverlay" onclick="if(event.target===this)closeMasterData()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)">
   <div id="mdBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:640px;max-height:92vh;overflow:hidden"></div>
 </div>
 <!-- v31 PHASE 2/3: split-cost allocation editor -->
-<div id="allocOverlay" onclick="if(event.target===this)closeAllocEditor()" style="display:none;position:fixed;inset:0;z-index:68;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+<div id="allocOverlay" onclick="if(event.target===this)closeAllocEditor()" style="display:none;position:fixed;inset:0;z-index:68;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)">
   <div id="allocBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:92vh;overflow:hidden"></div>
 </div>
 <!-- v31 PHASE 3: new travel request -->
-<div id="trOverlay" onclick="if(event.target===this)closeTrNew()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+<div id="trOverlay" onclick="if(event.target===this)closeTrNew()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)">
   <div id="trBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:480px;max-height:92vh;overflow:hidden"></div>
 </div>
 <!-- v31.1: per-person hotel booking -->
-<div id="hotelOverlay" onclick="if(event.target===this)closeHotelEdit()" style="display:none;position:fixed;inset:0;z-index:68;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+<div id="hotelOverlay" onclick="if(event.target===this)closeHotelEdit()" style="display:none;position:fixed;inset:0;z-index:68;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)">
   <div id="hotelBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:420px;max-height:92vh;overflow:hidden"></div>
 </div>
 <!-- v31 PHASE 5: per-day forecast modal -->
-<div id="dayWxOverlay" onclick="if(event.target===this)closeDayWx()" style="display:none;position:fixed;inset:0;z-index:69;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+<div id="dayWxOverlay" onclick="if(event.target===this)closeDayWx()" style="display:none;position:fixed;inset:0;z-index:69;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)">
   <div id="dayWxBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:560px;max-height:92vh;overflow:hidden"></div>
 </div>
-<div id="npcOverlay" onclick="if(event.target===this)closeNPCEvent()" style="display:none;position:fixed;inset:0;z-index:66;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+<div id="npcOverlay" onclick="if(event.target===this)closeNPCEvent()" style="display:none;position:fixed;inset:0;z-index:66;align-items:center;justify-content:center;padding:16px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)">
   <div id="npcBox" class="bg-white rounded-2xl shadow-2xl p-5" style="width:480px;max-width:95vw;max-height:92vh;overflow-y:auto"></div>
 </div>
 
@@ -1480,27 +1481,27 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 
 <!-- MUSEAI LAUNCHER (docked in right gutter, fixed 42px width) -->
 <!-- EXCEL IMPORT PREVIEW (Work Items 7 & 8) -->
-<div id="xlsxOverlay" onclick="if(event.target===this)closeXlsxPreview()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:72;align-items:center;justify-content:center;padding:16px">
+<div id="xlsxOverlay" onclick="if(event.target===this)closeXlsxPreview()" style="display:none;position:fixed;inset:0;background:rgba(24,25,26,.55);z-index:72;align-items:center;justify-content:center;padding:16px">
   <div id="xlsxBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- SURVEY PDF location chooser (Work Item 6) -->
-<div id="survPdfOverlay" onclick="if(event.target===this)closeSurveyPdfOptions()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:71;align-items:center;justify-content:center;padding:16px">
+<div id="survPdfOverlay" onclick="if(event.target===this)closeSurveyPdfOptions()" style="display:none;position:fixed;inset:0;background:rgba(24,25,26,.55);z-index:71;align-items:center;justify-content:center;padding:16px">
   <div id="survPdfBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- CONTROL ROOM detail modal (Work Item 4) -->
-<div id="roomOverlay" onclick="if(event.target===this)closeRoomDetail()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+<div id="roomOverlay" onclick="if(event.target===this)closeRoomDetail()" style="display:none;position:fixed;inset:0;background:rgba(24,25,26,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
   <div id="roomBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- CITY CONDITIONS modal (Work Item 3) -->
-<div id="wxCityOverlay" onclick="if(event.target===this)closeCityWx()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+<div id="wxCityOverlay" onclick="if(event.target===this)closeCityWx()" style="display:none;position:fixed;inset:0;background:rgba(24,25,26,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
   <div id="wxCityBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-md max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- ACCOUNT PROVISIONING & PERMISSIONS modal (Work Item 1) -->
-<div id="accountOverlay" onclick="if(event.target===this)closeAccountModal()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+<div id="accountOverlay" onclick="if(event.target===this)closeAccountModal()" style="display:none;position:fixed;inset:0;background:rgba(24,25,26,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
   <div id="accountBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 

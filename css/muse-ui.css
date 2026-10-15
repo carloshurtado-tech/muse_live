@@ -142,7 +142,7 @@ main .shadow-2xl,main .shadow-xl,main .shadow-lg{box-shadow:var(--glass-elev) !i
 }
 .project-card:hover,.dept-t.dept-t-closed:hover,.wx-tile:hover,.snap-card:hover{
   border-color:var(--glass-rim) !important;
-  box-shadow:0 12px 32px rgba(28,28,29,.12), var(--glass-shine) !important;
+  box-shadow:0 12px 32px rgba(28,30,33,.12), var(--glass-shine) !important;
   transform:translateY(-1px);
 }
 .project-card:active,.dept-t.dept-t-closed:active,.wx-tile:active{transform:translateY(0) scale(.997);}
@@ -165,7 +165,7 @@ header.sticky,header.glass-panel{
   align-items:center !important;
   gap:12px !important;
   border-bottom:1px solid var(--glass-edge) !important;
-  box-shadow:0 1px 0 var(--glass-rim), 0 8px 28px rgba(28,28,29,.06) !important;
+  box-shadow:0 1px 0 var(--glass-rim), 0 8px 28px rgba(28,30,33,.06) !important;
   backdrop-filter:blur(14px) saturate(1.25) !important;
   -webkit-backdrop-filter:blur(14px) saturate(1.25) !important;
 }
@@ -331,14 +331,14 @@ header a[href="/logout"]{min-height:44px !important;min-width:44px !important;}
 .nav-rail{
   background:var(--glass-fill-strong) !important;
   border-right:1px solid var(--glass-edge) !important;
-  box-shadow:4px 0 28px rgba(28,28,29,.05), var(--glass-shine) !important;
+  box-shadow:4px 0 28px rgba(28,30,33,.05), var(--glass-shine) !important;
   backdrop-filter:blur(12px) saturate(1.2) !important;
   -webkit-backdrop-filter:blur(12px) saturate(1.2) !important;
   transition:width var(--t-base) var(--ease);
   contain:layout style;
 }
 body.nav-rail-expanded .nav-rail{
-  box-shadow:8px 0 36px rgba(28,28,29,.1), var(--glass-shine) !important;
+  box-shadow:8px 0 36px rgba(28,30,33,.1), var(--glass-shine) !important;
 }
 .nav-rail-top{
   background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.04)) !important;
@@ -823,22 +823,22 @@ footer .mono,footer div{color:inherit !important;}
 #museaiMessages{background:transparent !important;}
 /* iOS Messages palette — Muse blue · user green */
 .museai-bubble-bot{
-  background:linear-gradient(145deg,rgba(0,102,255,.92),rgba(10,108,255,.78)) !important;
-  border:1px solid rgba(0,102,255,.45) !important;
+  background:linear-gradient(145deg,rgba(8,102,255,.92),rgba(8,102,255,.78)) !important;
+  border:1px solid rgba(8,102,255,.45) !important;
   color:#ffffff !important;
   border-radius:var(--r-lg) !important;
-  box-shadow:0 4px 16px rgba(0,102,255,.22), var(--glass-shine) !important;
+  box-shadow:0 4px 16px rgba(8,102,255,.22), var(--glass-shine) !important;
 }
 .museai-bubble-user{
-  background:linear-gradient(145deg,rgba(52,199,86,.92),rgba(48,209,86,.78)) !important;
-  border:1px solid rgba(52,199,86,.5) !important;
+  background:linear-gradient(145deg,rgba(49,162,76,.92),rgba(49,162,76,.78)) !important;
+  border:1px solid rgba(49,162,76,.5) !important;
   color:#ffffff !important;
   border-radius:var(--r-lg) !important;
-  box-shadow:0 4px 16px rgba(52,199,86,.2), var(--glass-shine) !important;
+  box-shadow:0 4px 16px rgba(49,162,76,.2), var(--glass-shine) !important;
 }
 .museai-typing-bubble{
-  background:linear-gradient(145deg,rgba(0,102,255,.85),rgba(10,108,255,.7)) !important;
-  border:1px solid rgba(0,102,255,.4) !important;
+  background:linear-gradient(145deg,rgba(8,102,255,.85),rgba(8,102,255,.7)) !important;
+  border:1px solid rgba(8,102,255,.4) !important;
 }
 .museai-dot{background:rgba(255,255,255,.85) !important;}
 #museaiInput{
@@ -849,7 +849,7 @@ footer .mono,footer div{color:inherit !important;}
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
-#museaiInput:focus{border-color:rgba(0,102,255,.55) !important;box-shadow:0 0 0 3px rgba(0,102,255,.16) !important;}
+#museaiInput:focus{border-color:rgba(8,102,255,.55) !important;box-shadow:0 0 0 3px rgba(8,102,255,.16) !important;}
 #museaiChips button{
   background:rgb(var(--c-surface-2)) !important;
   border:1px solid rgb(var(--c-line)) !important;
@@ -859,8 +859,8 @@ footer .mono,footer div{color:inherit !important;}
   -webkit-backdrop-filter:none !important;
 }
 #museaiChips button:hover{
-  background:rgba(0,102,255,.12) !important;
-  border-color:rgba(0,102,255,.35) !important;
+  background:rgba(8,102,255,.12) !important;
+  border-color:rgba(8,102,255,.35) !important;
   color:rgb(var(--pk-blue-800)) !important;
 }
 #museaiModeDot{box-shadow:none !important;}
@@ -942,7 +942,7 @@ footer .mono,footer div{color:inherit !important;}
 /* Outbound: solid spectrum purple so white copy is always readable (light + dark) */
 .omni-bubble-out{
   max-width:80%;
-  background:linear-gradient(160deg,#1160d6,#0866FF) !important;
+  background:linear-gradient(160deg,#0866ff,#0866FF) !important;
   border:1px solid rgba(255,255,255,.18) !important;
   color:#ffffff !important;
   box-shadow:0 4px 14px rgb(var(--pk-purple-700) / .28) !important;
@@ -958,13 +958,13 @@ footer .mono,footer div{color:inherit !important;}
 .omni-bubble-out .rt.rt-on-dark *{
   color:#ffffff !important;
 }
-.omni-bubble-out a,.omni-bubble-out .rt a{color:#e9f0fb !important;}
+.omni-bubble-out a,.omni-bubble-out .rt a{color:#e7f3ff !important;}
 html.dark .omni-bubble-in{
   background:rgb(var(--c-surface-3)) !important;
   border-color:rgb(var(--c-line-strong)) !important;
 }
 html.dark .omni-bubble-out{
-  background:linear-gradient(160deg,#2273ed,#0866FF) !important;
+  background:linear-gradient(160deg,#0866ff,#0866FF) !important;
 }
 .omni-send{background:rgb(var(--omni-accent)) !important;color:#ffffff !important;box-shadow:none !important;}
 .omni-st{
@@ -1241,9 +1241,9 @@ html.dark #museaiLauncher,html.dark .omni-fab{
   color:rgb(var(--c-ink)) !important;
   border:1px solid rgb(var(--c-line)) !important;
 }
-html:not(.dark) .tb-telemetry-panel [style*="color:#f3f4f6"],
-html:not(.dark) .tb-telemetry-panel [style*="color:#f8fafc"],
-html:not(.dark) .tb-telemetry-panel [style*="color:#e2e4e9"],
+html:not(.dark) .tb-telemetry-panel [style*="color:#f0f2f5"],
+html:not(.dark) .tb-telemetry-panel [style*="color:#f7f8fa"],
+html:not(.dark) .tb-telemetry-panel [style*="color:#e4e6eb"],
 html:not(.dark) .tb-telemetry-panel [style*="color:#ffffff"]{
   color:rgb(var(--c-ink)) !important;
 }
@@ -1255,15 +1255,15 @@ html:not(.dark) .tb-telemetry-panel [style*="background:linear-gradient(145deg,r
 }
 
 /* Muse — iOS bubbles (Aug 20 look) */
-.museai-bubble-bot{background:#0066FF !important;color:#ffffff !important;border:none !important;}
-.museai-bubble-user{background:#34C756 !important;color:#ffffff !important;border:none !important;}
+.museai-bubble-bot{background:#0866FF !important;color:#ffffff !important;border:none !important;}
+.museai-bubble-user{background:#31A24C !important;color:#ffffff !important;border:none !important;}
 .museai-bubble-bot,.museai-bubble-bot *,
 .museai-bubble-user,.museai-bubble-user *{color:#ffffff !important;}
 html.dark .museai-bubble-bot,html.dark .museai-bubble-user{color:#ffffff !important;}
 
 /* Inbound Omni meta stays muted, never white-on-white */
 html:not(.dark) .omni-bubble-in .omni-bub-meta-out{color:rgb(var(--c-ink-3)) !important;}
-.omni-bub-meta-out{color:#e4efff !important;}
+.omni-bub-meta-out{color:#e7f3ff !important;}
 
 /* Drawer / modal body text follows ink tokens (Tailwind gray-* can fight glass) */
 .omni-drawer,.omni-drawer p,.omni-drawer h3,
@@ -1284,48 +1284,48 @@ html.dark #createModal{color-scheme:dark;}
 #createModal > div,
 #createModal > div.bg-white{
   background:#ffffff !important;
-  color:#1B1C1D !important;
+  color:#1C1E21 !important;
   backdrop-filter:none !important;
   -webkit-backdrop-filter:none !important;
 }
-html:not(.dark) #createModal .text-gray-900{color:#1B1C1D !important;}
-html:not(.dark) #createModal .text-gray-700{color:#424346 !important;}
-html:not(.dark) #createModal .text-gray-600{color:#54565a !important;}
-html:not(.dark) #createModal .text-gray-500{color:#727479 !important;}
-html:not(.dark) #createModal .text-gray-400{color:#9ba2b0 !important;}
+html:not(.dark) #createModal .text-gray-900{color:#1C1E21 !important;}
+html:not(.dark) #createModal .text-gray-700{color:#3E4042 !important;}
+html:not(.dark) #createModal .text-gray-600{color:#4b4f56 !important;}
+html:not(.dark) #createModal .text-gray-500{color:#65676B !important;}
+html:not(.dark) #createModal .text-gray-400{color:#b0b3b8 !important;}
 #createModal input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 #createModal select, #createModal textarea,
 #createModal .ql-editor, #createModal .ql-container, #createModal .muse-rich-host,
 #createModal #np_q, #createModal #np_res{
   background:#ffffff !important;
-  color:#1B1C1D !important;
-  border-color:#d1d4db !important;
-  caret-color:#1B1C1D;
+  color:#1C1E21 !important;
+  border-color:#ced0d4 !important;
+  caret-color:#1C1E21;
 }
 #createModal .ql-toolbar{
-  background:#fafafa !important;
-  color:#1B1C1D !important;
-  border-color:#d1d4db !important;
+  background:#f7f8fa !important;
+  color:#1C1E21 !important;
+  border-color:#ced0d4 !important;
 }
 #createModal input::placeholder,
 #createModal textarea::placeholder,
-#createModal .ql-editor.ql-blank::before{color:#9ba2b0 !important;}
+#createModal .ql-editor.ql-blank::before{color:#b0b3b8 !important;}
 #createModal button.bg-gray-900,
 #createModal .muse-cta,
 #createModal button.muse-cta{color:#ffffff !important;}
 html.dark #createModal > div,
 html.dark #createModal > div.bg-white{
-  background:#1B1C1D !important;
-  color:#e9eef5 !important;
+  background:#1C1E21 !important;
+  color:#f0f2f5 !important;
 }
 html.dark #createModal input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 html.dark #createModal select, html.dark #createModal textarea,
 html.dark #createModal .ql-editor, html.dark #createModal .ql-container, html.dark #createModal .muse-rich-host,
 html.dark #createModal #np_q, html.dark #createModal #np_res{
-  background:#272829 !important;
-  color:#e9eef5 !important;
-  border-color:#27354a !important;
-  caret-color:#e9eef5;
+  background:#242526 !important;
+  color:#f0f2f5 !important;
+  border-color:#3a3b3c !important;
+  caret-color:#f0f2f5;
 }
 html.dark .omni-input,html.dark #museaiInput{
   background:rgb(var(--c-surface-2)) !important;
@@ -1341,9 +1341,9 @@ html:not(.dark) .omni-input,html:not(.dark) #museaiInput{
 @media print{
   .nav-rail,.nav-rail-scrim,#museaiLauncher,#museaiDrawer,.omni-fab,.omni-drawer,
   header.sticky,#toastBox,[id$="Overlay"],[id$="Modal"]{display:none !important;}
-  body{background:#ffffff !important;padding:0 !important;color:#111112 !important;}
+  body{background:#ffffff !important;padding:0 !important;color:#18191A !important;}
   main{max-width:100% !important;padding:0 !important;}
-  .pui-card,main div.bg-white.rounded-2xl{box-shadow:none !important;border-color:#d6d9df !important;}
+  .pui-card,main div.bg-white.rounded-2xl{box-shadow:none !important;border-color:#ced0d4 !important;}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
 
@@ -1361,6 +1361,6 @@ html:not(.dark) .omni-input,html:not(.dark) #museaiInput{
   padding:8px 14px;text-align:center;
   font:600 13px/1.3 var(--font-ui),system-ui,sans-serif;
   background:rgb(var(--pk-yellow-400));
-  color:#181819;
+  color:#18191A;
 }
 #museOffline[hidden]{display:none !important;}

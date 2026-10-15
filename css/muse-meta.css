@@ -1,0 +1,111 @@
+/* ==========================================================================
+   Muse Live × Meta — polish layer. Loaded last; wins over earlier layers.
+   One typeface, one type scale, one color per role, Meta navigation chrome.
+   ========================================================================== */
+:root{
+  --m-font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  --m-blue:#0866FF;--m-blue-hover:#0757D9;--m-blue-tint:#E7F3FF;
+  --m-text:#1C1E21;--m-text-2:#65676B;--m-line:#E4E6EB;--m-line-2:#CED0D4;
+  --m-bg:#F0F2F5;--m-card:#FFFFFF;--m-hover:#F2F3F5;--m-red:#E41E3F;
+  --m-shadow:0 1px 2px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.04);
+  --m-shadow-pop:0 4px 16px rgba(0,0,0,.12);
+}
+html.dark{
+  --m-blue:#2D88FF;--m-blue-hover:#4A9BFF;--m-blue-tint:#263951;
+  --m-text:#E4E6EB;--m-text-2:#B0B3B8;--m-line:#3E4042;--m-line-2:#4E4F50;
+  --m-bg:#18191A;--m-card:#242526;--m-hover:#3A3B3C;
+  --m-shadow:0 1px 2px rgba(0,0,0,.35);--m-shadow-pop:0 6px 20px rgba(0,0,0,.45);
+}
+
+/* 1 · One typeface everywhere (numbers align like a spreadsheet) ---------- */
+*,*::before,*::after{font-family:var(--m-font) !important;}
+html{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;}
+body{font-variant-numeric:tabular-nums;}
+.mono,.font-mono{letter-spacing:0 !important;font-variant-numeric:tabular-nums;}
+
+/* 2 · Sentence case, natural letter-spacing ------------------------------ */
+.uppercase,[style*="text-transform:uppercase"],[style*="text-transform: uppercase"]{text-transform:none !important;}
+.tracking-wide,.tracking-wider,.tracking-widest,[class*="tracking-["],[style*="letter-spacing"]{letter-spacing:normal !important;}
+
+/* 3 · Readable type scale (no more 7–9px micro text) ---------------------- */
+.text-\[6px\],.text-\[7px\],.text-\[7\.5px\],.text-\[8px\]{font-size:10.5px !important;line-height:1.35 !important;}
+.text-\[8\.5px\],.text-\[9px\]{font-size:11px !important;line-height:1.4 !important;}
+.text-\[9\.5px\],.text-\[10px\]{font-size:12px !important;}
+.text-\[10\.5px\],.text-\[11px\]{font-size:12.5px !important;}
+
+/* 4 · App frame ---------------------------------------------------------- */
+html body{background:var(--m-bg) !important;color:var(--m-text);}
+html body header.sticky{background:var(--m-card) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;
+  box-shadow:0 1px 2px rgba(0,0,0,.08) !important;border-radius:0 !important;border:0 !important;}
+html body header.sticky::after{display:none !important;}
+:where(button,a,[role="button"],input,select,textarea):focus-visible{outline:2px solid var(--m-blue) !important;outline-offset:2px !important;}
+
+/* 5 · Left navigation — Meta style --------------------------------------- */
+:root{--nav-rail-w:64px;}
+@media (max-width:767px){:root{--nav-rail-w:56px;}}
+#navRail .nav-rail-btn{min-width:44px;min-height:44px;}
+#navRail:not(.is-expanded) .nav-rail-scroll,#navRail .nav-rail-top,#navRail .nav-rail-foot{align-items:center;}
+#navRail .nav-rail-ico svg,#navRail .nav-rail-btn > svg{width:22px;height:22px;}
+html body .nav-rail{background:var(--m-card) !important;border-right:1px solid var(--m-line) !important;box-shadow:none !important;
+  backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+html body .nav-rail-btn{position:relative;color:var(--m-text-2) !important;background:transparent !important;border:0 !important;
+  border-radius:10px !important;box-shadow:none !important;transition:background-color .15s ease,color .15s ease;}
+html body .nav-rail-btn:hover{background:var(--m-hover) !important;color:var(--m-text) !important;}
+html body .nav-rail-btn.is-active,html body .nav-rail-btn[aria-current="page"]{background:var(--m-blue-tint) !important;color:var(--m-blue) !important;}
+html body .nav-rail-btn.is-active svg,html body .nav-rail-btn[aria-current="page"] svg{stroke-width:2.1;}
+html body .nav-rail-btn.nav-rail-btn-new{background:var(--m-blue) !important;color:#fff !important;}
+html body .nav-rail-btn.nav-rail-btn-new:hover{background:var(--m-blue-hover) !important;}
+html body .nav-rail-btn.nav-rail-btn-warn{color:var(--m-red) !important;}
+html body .nav-rail-sep{background:var(--m-line) !important;}
+html body .nav-rail-label{color:inherit !important;font-weight:600 !important;}
+
+/* 6 · Notification badges — one shape, one red, one size ----------------- */
+html body .muse-badge,html body .nav-rail-attn,html body .omni-fab-badge,html body .notif-badge,html body .attn-badge,html body .museai-fab-badge{
+  background:var(--m-red) !important;color:#fff !important;font:700 11px/18px var(--m-font) !important;
+  min-width:18px !important;height:18px !important;padding:0 5px !important;border-radius:9px !important;border:0 !important;
+  box-shadow:0 0 0 2px var(--m-card) !important;text-align:center !important;letter-spacing:0 !important;box-sizing:border-box !important;}
+#navRail .nav-rail-btn .muse-badge,#navRail .nav-rail-btn .nav-rail-attn{position:absolute !important;top:3px !important;left:calc(50% + 5px) !important;right:auto !important;bottom:auto !important;
+  transform:none !important;margin:0 !important;min-width:17px !important;height:17px !important;padding:0 4px !important;border-radius:9px !important;
+  font-size:10.5px !important;line-height:17px !important;z-index:2;}
+body.nav-rail-expanded #navRail .nav-rail-btn .muse-badge,body.nav-rail-expanded #navRail .nav-rail-btn .nav-rail-attn{left:26px !important;}
+html body .muse-badge:empty,html body .nav-rail-attn:empty,html body .omni-fab-badge:empty{display:none !important;}
+html body .muse-burger-dot{background:var(--m-red) !important;box-shadow:0 0 0 2px var(--m-card) !important;}
+
+/* 7 · Omni + Muse edge tabs — a matched pair ----------------------------- */
+html body .omni-fab,html body #museaiLauncher,html.dark body .omni-fab,html.dark body #museaiLauncher{background:var(--m-card) !important;color:var(--m-text) !important;
+  border:1px solid var(--m-line) !important;box-shadow:var(--m-shadow-pop) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+html body .omni-fab:hover,html body #museaiLauncher:hover{background:var(--m-hover) !important;}
+html body .omni-fab .omni-fab-ico{color:var(--m-blue) !important;}
+html body .omni-fab-label,html body .museai-fab-label{color:var(--m-text) !important;font-weight:700 !important;text-transform:none !important;letter-spacing:.02em !important;font-size:12px !important;}
+html body #museaiLauncher img{width:22px !important;height:22px !important;transform:none !important;object-fit:contain !important;flex-shrink:0;}
+
+/* 8 · Cards & surfaces --------------------------------------------------- */
+html body main .bg-white.rounded-2xl,html body main section.bg-white,html body main .bg-white.rounded-xl.border{
+  box-shadow:var(--m-shadow) !important;border-color:transparent !important;}
+html body .rounded-2xl{border-radius:12px !important;}
+html body .rounded-3xl{border-radius:16px !important;}
+html.dark body main .bg-white.rounded-2xl,html.dark body main section.bg-white{background:var(--m-card) !important;}
+
+/* 9 · Buttons — Meta primary is blue, not black -------------------------- */
+html body :is(button,a).bg-gray-900,html body :is(button,a).bg-black,html body :is(button,a).bg-gray-800{
+  background:var(--m-blue) !important;color:#fff !important;border-color:var(--m-blue) !important;}
+html body :is(button,a).bg-gray-900:hover,html body :is(button,a).bg-black:hover,html body :is(button,a).bg-gray-800:hover{background:var(--m-blue-hover) !important;}
+
+/* 10 · Stat tiles (portfolio + ENG) -------------------------------------- */
+.meta-stat{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;min-height:72px;padding:12px 14px;
+  border-radius:10px;background:var(--m-card);border:1px solid var(--m-line);text-align:left;cursor:pointer;
+  transition:border-color .15s ease,box-shadow .15s ease;}
+.meta-stat:hover{border-color:var(--m-line-2);}
+.meta-stat.is-on{border-color:var(--m-blue);box-shadow:inset 0 0 0 1px var(--m-blue);}
+.meta-stat-n{font-size:24px;line-height:1;font-weight:700;color:var(--m-text);}
+.meta-stat-l{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--m-text-2);}
+.meta-stat-l i{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;}
+
+/* 11 · Muse drawer ------------------------------------------------------- */
+html body #museaiDrawer{background:var(--m-card) !important;backdrop-filter:none !important;-webkit-backdrop-filter:none !important;}
+html body #museaiDrawer > div:first-child{background:var(--m-card) !important;}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.01ms !important;animation-duration:.01ms !important;}}
+
+/* 12 · Header details ---------------------------------------------------- */
+html body .role-switch-label{white-space:nowrap !important;font-size:12px !important;font-weight:600 !important;letter-spacing:normal !important;text-transform:none !important;color:var(--m-text-2) !important;}

@@ -1,7 +1,7 @@
 /* Department workspaces: scoped to expanded production-area tiles. */
 /* Fallback channels match muse-tokens.css for Classic builds without its link. */
-.dept-workspace{--dw-panel:rgb(var(--c-surface,255 255 255));--dw-soft:rgb(var(--c-surface-2,251 251 251));--dw-line:rgb(var(--c-line-strong,209 212 219) / .65);--dw-ink:rgb(var(--c-ink,24 24 25));--dw-muted:rgb(var(--c-ink-3,114 116 121));--dw-accent:rgb(var(--c-solid,8 102 255));color:var(--dw-ink);padding:22px!important;min-width:0;max-width:100%}
-html.dark .dept-workspace{--dw-panel:rgb(var(--c-surface,27 28 29));--dw-soft:rgb(var(--c-surface-2,31 32 33));--dw-line:rgb(var(--c-line-strong,70 71 74));--dw-ink:rgb(var(--c-ink,233 238 245));--dw-muted:rgb(var(--c-ink-3,157 164 178));--dw-accent:rgb(var(--pk-purple-700,161 191 236))}
+.dept-workspace{--dw-panel:rgb(var(--c-surface,255 255 255));--dw-soft:rgb(var(--c-surface-2,247 248 250));--dw-line:rgb(var(--c-line-strong,206 208 212) / .65);--dw-ink:rgb(var(--c-ink,24 25 26));--dw-muted:rgb(var(--c-ink-3,101 103 107));--dw-accent:rgb(var(--c-solid,8 102 255));color:var(--dw-ink);padding:22px!important;min-width:0;max-width:100%}
+html.dark .dept-workspace{--dw-panel:rgb(var(--c-surface,28 30 33));--dw-soft:rgb(var(--c-surface-2,28 30 33));--dw-line:rgb(var(--c-line-strong,62 64 66));--dw-ink:rgb(var(--c-ink,231 243 255));--dw-muted:rgb(var(--c-ink-3,176 179 184));--dw-accent:rgb(var(--pk-purple-700,185 215 255))}
 .dept-workspace .dept-workspace-tabs{display:flex;flex-wrap:wrap;gap:6px 24px;border-bottom:1px solid var(--dw-line);margin:0 0 22px}
 .dept-workspace-tabs button{background:transparent;border:0;border-bottom:3px solid transparent;padding:12px 0;color:var(--dw-muted);font-size:13px;font-weight:600;min-height:44px}
 .dept-workspace-tabs button[aria-selected=true]{color:var(--dw-accent);border-bottom-color:var(--dw-accent)}

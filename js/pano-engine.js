@@ -18,9 +18,9 @@
     smpte: '🎞', zone: '⬚', draw: '✏️'
   };
   var COLORS = {
-    camera: '#589bff', jib: '#fb8c3c', steadicam: '#8bb7fa', cable: '#f0883e', equipment: '#3fb95b', mic: '#a8cbff',
-    text: '#e6ebf3', power: '#fbbe24', rf: '#8bb7fa', fiber: '#2274ee', ifb: '#72a6f4', truck: '#9ba2b1',
-    hazard: '#ef4461', talent: '#34d359', exit: '#fbbe24', smpte: '#a5c8fc', zone: '#84b4fc'
+    camera: '#0866ff', jib: '#f5832a', steadicam: '#b9d7ff', cable: '#f5832a', equipment: '#31a24c', mic: '#b9d7ff',
+    text: '#e4e6eb', power: '#f7b928', rf: '#b9d7ff', fiber: '#0866ff', ifb: '#b9d7ff', truck: '#b0b3b8',
+    hazard: '#e41e3f', talent: '#31a24c', exit: '#f7b928', smpte: '#b9d7ff', zone: '#b9d7ff'
   };
   var PLACE_TOOLS = [
     ['camera', 'Cam'], ['jib', 'Jib'], ['steadicam', 'Steadi'],
@@ -100,26 +100,26 @@
     if (el) return;
     el = document.createElement('div');
     el.id = 'musePanoEng';
-    el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10001;flex-direction:column;background:#111213;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3';
+    el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10001;flex-direction:column;background:#18191A;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e4e6eb';
     el.innerHTML =
       '<style>' +
-      '#musePanoEng .pb{background:#262728;border:1px solid #353638;color:#e6ebf3;padding:5px 9px;border-radius:6px;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;cursor:pointer;white-space:nowrap}' +
-      '#musePanoEng .pb:hover{background:#353638}' +
-      '#musePanoEng .pb.on{background:#589bff;border-color:#589bff;color:#111213}' +
-      '#musePanoEng .pb.ok{background:#1a3d22;border-color:#3fb95b;color:#3fb95b}' +
-      '#musePanoEng .pb.bad{background:#2d2e2f;border-color:#f84966;color:#f84966}' +
-      '#musePanoEng .pb.draw{border-color:#f56c0b}' +
-      '#musePanoEng .pb.draw.on{background:#f56c0b;border-color:#f56c0b;color:#111213}' +
+      '#musePanoEng .pb{background:#242526;border:1px solid #3A3B3C;color:#e4e6eb;padding:5px 9px;border-radius:6px;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;cursor:pointer;white-space:nowrap}' +
+      '#musePanoEng .pb:hover{background:#3A3B3C}' +
+      '#musePanoEng .pb.on{background:#0866ff;border-color:#0866ff;color:#18191A}' +
+      '#musePanoEng .pb.ok{background:#12301c;border-color:#31a24c;color:#31a24c}' +
+      '#musePanoEng .pb.bad{background:#242526;border-color:#e41e3f;color:#e41e3f}' +
+      '#musePanoEng .pb.draw{border-color:#f5832a}' +
+      '#musePanoEng .pb.draw.on{background:#f5832a;border-color:#f5832a;color:#18191A}' +
       '#musePanoEng .mi{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin:2px 0}' +
-      '#musePanoEng .mi:hover{background:#262728}' +
-      '#musePanoEng .mi.sel{background:#1f395f}' +
+      '#musePanoEng .mi:hover{background:#242526}' +
+      '#musePanoEng .mi.sel{background:#0a58ca}' +
       '#musePanoEng .mk{position:absolute;transform:translate(-50%,-100%);cursor:pointer;z-index:4;pointer-events:auto}' +
-      '#musePanoEng .mk-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid;box-shadow:0 2px 10px rgba(0,0,0,.55);background:rgba(17,18,19,.9)}' +
-      '#musePanoEng .mk-lbl{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;white-space:nowrap;background:rgba(17,18,19,.92);padding:2px 6px;border-radius:4px;border:1px solid #353638;max-width:150px;overflow:hidden;text-overflow:ellipsis}' +
+      '#musePanoEng .mk-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid;box-shadow:0 2px 10px rgba(0,0,0,.55);background:rgba(24,25,26,.9)}' +
+      '#musePanoEng .mk-lbl{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;white-space:nowrap;background:rgba(24,25,26,.92);padding:2px 6px;border-radius:4px;border:1px solid #3A3B3C;max-width:150px;overflow:hidden;text-overflow:ellipsis}' +
       '#musePanoEng .mk.sel .mk-dot{box-shadow:0 0 0 2px #ffffff,0 2px 12px rgba(0,0,0,.6)}' +
-      '#musePanoEng .tbx{position:absolute;transform:translate(-50%,-50%);z-index:5;pointer-events:auto;min-width:80px;max-width:200px;background:rgba(17,18,19,.92);border:1px solid #589bff;border-radius:8px;padding:6px 8px;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3;cursor:pointer}' +
-      '#musePanoEng .tip{position:absolute;z-index:20;pointer-events:none;display:none;max-width:260px;background:rgba(27,28,29,.97);border:1px solid #353638;border-radius:10px;padding:8px 10px;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3;box-shadow:0 8px 24px rgba(0,0,0,.5)}' +
-      '#musePanoEng .tip b{color:#589bff;display:block;margin-bottom:3px;font-size:10px;letter-spacing:.04em;text-transform:uppercase}' +
+      '#musePanoEng .tbx{position:absolute;transform:translate(-50%,-50%);z-index:5;pointer-events:auto;min-width:80px;max-width:200px;background:rgba(24,25,26,.92);border:1px solid #0866ff;border-radius:8px;padding:6px 8px;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e4e6eb;cursor:pointer}' +
+      '#musePanoEng .tip{position:absolute;z-index:20;pointer-events:none;display:none;max-width:260px;background:rgba(28,30,33,.97);border:1px solid #3A3B3C;border-radius:10px;padding:8px 10px;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e4e6eb;box-shadow:0 8px 24px rgba(0,0,0,.5)}' +
+      '#musePanoEng .tip b{color:#0866ff;display:block;margin-bottom:3px;font-size:10px;letter-spacing:.04em;text-transform:uppercase}' +
       'html.muse-cv-land,html.muse-cv-land body{overflow:hidden!important}' +
       '@media (max-width:900px){#musePanoEng .pb{padding:8px 10px;min-height:40px}}' +
       'html.muse-cv-land.muse-phone-portrait #musePanoEng,' +
@@ -130,27 +130,27 @@
         'transform:rotate(90deg) translateY(-100%);transform-origin:top left;' +
       '}' +
       '</style>' +
-      '<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1b1c1d;border-bottom:1px solid #353638;flex-wrap:wrap">' +
-        '<div style="font:700 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#589bff;margin-right:4px">📡 Broadcast 360 · Map Blocking</div>' +
-        '<span style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#3fb95b;border:1px solid #23863A;border-radius:4px;padding:2px 6px">v' + PanoEng.version + '</span>' +
+      '<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1c1e21;border-bottom:1px solid #3A3B3C;flex-wrap:wrap">' +
+        '<div style="font:700 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0866ff;margin-right:4px">📡 Broadcast 360 · Map Blocking</div>' +
+        '<span style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#31a24c;border:1px solid #1E7B34;border-radius:4px;padding:2px 6px">v' + PanoEng.version + '</span>' +
         '<button type="button" class="pb on" data-a="modeMap" id="ppeModeMap" title="Simple L/R U/D pan — markers stick">🗺 Map pan</button>' +
         '<button type="button" class="pb" data-a="modeLook" id="ppeModeLook" title="Optional sphere look">🌐 Sphere look</button>' +
         '<button type="button" class="pb" data-a="load">📂 Load 360°</button>' +
         '<input type="file" id="ppeFile" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="display:none">' +
         '<button type="button" class="pb" data-a="flipv">↕ Flip V</button>' +
         '<button type="button" class="pb" data-a="fliph">↔ Flip H</button>' +
-        '<div style="width:1px;height:22px;background:#353638"></div>' +
-        '<span style="font-size:9px;color:#8890a1">Place</span>' +
+        '<div style="width:1px;height:22px;background:#3A3B3C"></div>' +
+        '<span style="font-size:9px;color:#8a8d91">Place</span>' +
         PLACE_TOOLS.map(function (t) {
           return '<button type="button" class="pb' + (t[0] === 'camera' ? ' on' : '') + '" data-tool="' + t[0] + '">' + (ICONS[t[0]] || '') + ' ' + t[1] + '</button>';
         }).join('') +
-        '<div style="width:1px;height:22px;background:#353638"></div>' +
-        '<span style="font-size:9px;color:#f56c0b">Draw</span>' +
+        '<div style="width:1px;height:22px;background:#3A3B3C"></div>' +
+        '<span style="font-size:9px;color:#f5832a">Draw</span>' +
         DRAW_TOOLS.map(function (t) {
           return '<button type="button" class="pb draw" data-tool="' + t[0] + '">' + t[1] + '</button>';
         }).join('') +
         '<button type="button" class="pb" data-a="finish">✓ Finish path</button>' +
-        '<div style="width:1px;height:22px;background:#353638"></div>' +
+        '<div style="width:1px;height:22px;background:#3A3B3C"></div>' +
         '<button type="button" class="pb ok" data-a="save">💾 Save</button>' +
         '<button type="button" class="pb" data-a="export">⬇️ JSON</button>' +
         '<button type="button" class="pb" data-a="import">⬆️ JSON</button>' +
@@ -158,7 +158,7 @@
         '<button type="button" class="pb" data-a="snap">📷 Snap</button>' +
         '<button type="button" class="pb bad" data-a="clear">🗑 Clear</button>' +
         '<span style="flex:1"></span>' +
-        '<span id="ppeStatus" style="font:600 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8890a1"></span>' +
+        '<span id="ppeStatus" style="font:600 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8a8d91"></span>' +
         '<button type="button" class="pb bad" data-a="close">✕</button>' +
       '</div>' +
       '<div style="flex:1;display:flex;min-height:0">' +
@@ -167,34 +167,34 @@
           '<canvas id="ppeDraw" style="position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;z-index:2"></canvas>' +
           '<div id="ppeMarks" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3"></div>' +
           '<div id="ppeTip" class="tip"></div>' +
-          '<div id="ppeHint" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(27,28,29,.95);border:1px solid #353638;border-radius:12px;padding:22px 28px;text-align:center;max-width:480px;z-index:5;pointer-events:none">' +
+          '<div id="ppeHint" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(28,30,33,.95);border:1px solid #3A3B3C;border-radius:12px;padding:22px 28px;text-align:center;max-width:480px;z-index:5;pointer-events:none">' +
             '<div style="font:700 18px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-bottom:8px">360° Map Blocking</div>' +
-            '<p style="color:#8890a1;font-size:13px;line-height:1.5">Load a panorama. <b style="color:#e6ebf3">Map pan</b> = simple left/right &amp; up/down. Markers stick to the image. Drag to draw cable runs.</p>' +
+            '<p style="color:#8a8d91;font-size:13px;line-height:1.5">Load a panorama. <b style="color:#e4e6eb">Map pan</b> = simple left/right &amp; up/down. Markers stick to the image. Drag to draw cable runs.</p>' +
           '</div>' +
-          '<div id="ppeHud" style="position:absolute;left:12px;bottom:12px;background:rgba(27,28,29,.9);border:1px solid #353638;border-radius:8px;padding:7px 12px;font:600 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8890a1;z-index:5;pointer-events:none">No image</div>' +
+          '<div id="ppeHud" style="position:absolute;left:12px;bottom:12px;background:rgba(28,30,33,.9);border:1px solid #3A3B3C;border-radius:8px;padding:7px 12px;font:600 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8a8d91;z-index:5;pointer-events:none">No image</div>' +
         '</div>' +
-        '<div style="width:300px;background:rgba(27,28,29,.98);border-left:1px solid #353638;display:flex;flex-direction:column;flex-shrink:0">' +
-          '<div style="padding:10px 12px;border-bottom:1px solid #353638;font:700 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:flex;justify-content:space-between">' +
+        '<div style="width:300px;background:rgba(28,30,33,.98);border-left:1px solid #3A3B3C;display:flex;flex-direction:column;flex-shrink:0">' +
+          '<div style="padding:10px 12px;border-bottom:1px solid #3A3B3C;font:700 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:flex;justify-content:space-between">' +
             '<span>Blocking (<span id="ppeCount">0</span>)</span>' +
-            '<span style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#3fb95b">UV-LOCKED</span></div>' +
-          '<div id="ppeGearBanner" style="padding:6px 10px;border-bottom:1px solid #353638;font:600 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8890a1"></div>' +
-          '<div id="ppeShotList" style="max-height:120px;overflow:auto;padding:6px 8px;border-bottom:1px solid #262728;font:600 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:none"></div>' +
+            '<span style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#31a24c">UV-LOCKED</span></div>' +
+          '<div id="ppeGearBanner" style="padding:6px 10px;border-bottom:1px solid #3A3B3C;font:600 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8a8d91"></div>' +
+          '<div id="ppeShotList" style="max-height:120px;overflow:auto;padding:6px 8px;border-bottom:1px solid #242526;font:600 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;display:none"></div>' +
           '<div id="ppeList" style="flex:1;overflow:auto;padding:6px"></div>' +
-          '<div id="ppeProps" style="display:none;border-top:1px solid #353638;padding:10px;font-size:12px;max-height:48%;overflow:auto">' +
-            '<label style="display:block;color:#8890a1;margin-bottom:3px">Label</label>' +
-            '<input id="ppeLabel" type="text" style="width:100%;margin-bottom:6px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:6px;padding:5px 8px;box-sizing:border-box">' +
-            '<label style="display:block;color:#8890a1;margin-bottom:3px">Type</label>' +
-            '<select id="ppeType" style="width:100%;margin-bottom:6px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:6px;padding:5px 8px"></select>' +
-            '<label style="display:block;color:#589bff;margin-bottom:3px;font-size:10px">DEPT STATUS PACKAGE</label>' +
-            '<select id="ppeGearPkg" style="width:100%;margin-bottom:6px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:6px;padding:5px 8px"></select>' +
-            '<label style="display:block;color:#8890a1;margin-bottom:3px">Camera body</label>' +
-            '<select id="ppeBody" style="width:100%;margin-bottom:6px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:6px;padding:5px 8px"></select>' +
-            '<label style="display:block;color:#8890a1;margin-bottom:3px">Lens</label>' +
-            '<select id="ppeLens" style="width:100%;margin-bottom:6px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:6px;padding:5px 8px"></select>' +
-            '<label style="display:block;color:#8890a1;margin-bottom:3px">Mount</label>' +
-            '<select id="ppeMount" style="width:100%;margin-bottom:6px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:6px;padding:5px 8px"></select>' +
-            '<label style="display:block;color:#8890a1;margin-bottom:3px">Description</label>' +
-            '<textarea id="ppeNotes" rows="3" style="width:100%;margin-bottom:8px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:6px;padding:5px 8px;box-sizing:border-box;resize:vertical;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif"></textarea>' +
+          '<div id="ppeProps" style="display:none;border-top:1px solid #3A3B3C;padding:10px;font-size:12px;max-height:48%;overflow:auto">' +
+            '<label style="display:block;color:#8a8d91;margin-bottom:3px">Label</label>' +
+            '<input id="ppeLabel" type="text" style="width:100%;margin-bottom:6px;background:#18191A;border:1px solid #3A3B3C;color:#e4e6eb;border-radius:6px;padding:5px 8px;box-sizing:border-box">' +
+            '<label style="display:block;color:#8a8d91;margin-bottom:3px">Type</label>' +
+            '<select id="ppeType" style="width:100%;margin-bottom:6px;background:#18191A;border:1px solid #3A3B3C;color:#e4e6eb;border-radius:6px;padding:5px 8px"></select>' +
+            '<label style="display:block;color:#0866ff;margin-bottom:3px;font-size:10px">DEPT STATUS PACKAGE</label>' +
+            '<select id="ppeGearPkg" style="width:100%;margin-bottom:6px;background:#18191A;border:1px solid #3A3B3C;color:#e4e6eb;border-radius:6px;padding:5px 8px"></select>' +
+            '<label style="display:block;color:#8a8d91;margin-bottom:3px">Camera body</label>' +
+            '<select id="ppeBody" style="width:100%;margin-bottom:6px;background:#18191A;border:1px solid #3A3B3C;color:#e4e6eb;border-radius:6px;padding:5px 8px"></select>' +
+            '<label style="display:block;color:#8a8d91;margin-bottom:3px">Lens</label>' +
+            '<select id="ppeLens" style="width:100%;margin-bottom:6px;background:#18191A;border:1px solid #3A3B3C;color:#e4e6eb;border-radius:6px;padding:5px 8px"></select>' +
+            '<label style="display:block;color:#8a8d91;margin-bottom:3px">Mount</label>' +
+            '<select id="ppeMount" style="width:100%;margin-bottom:6px;background:#18191A;border:1px solid #3A3B3C;color:#e4e6eb;border-radius:6px;padding:5px 8px"></select>' +
+            '<label style="display:block;color:#8a8d91;margin-bottom:3px">Description</label>' +
+            '<textarea id="ppeNotes" rows="3" style="width:100%;margin-bottom:8px;background:#18191A;border:1px solid #3A3B3C;color:#e4e6eb;border-radius:6px;padding:5px 8px;box-sizing:border-box;resize:vertical;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif"></textarea>' +
             '<button type="button" class="pb" data-a="apply" style="width:100%">Update</button>' +
           '</div>' +
         '</div>' +
@@ -449,7 +449,7 @@
     });
     var ctx = canvas.getContext('2d');
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    ctx.fillStyle = '#0d0d0d';
+    ctx.fillStyle = '#050505';
     ctx.fillRect(0, 0, W, H);
 
     if (imgReady && imgEl) {
@@ -463,7 +463,7 @@
       /* checker */
       var g = 24;
       for (var y = 0; y < H; y += g) for (var x = 0; x < W; x += g) {
-        ctx.fillStyle = ((x / g + y / g) % 2) ? '#161718' : '#111112';
+        ctx.fillStyle = ((x / g + y / g) % 2) ? '#18191A' : '#18191A';
         ctx.fillRect(x, y, g, g);
       }
     }
@@ -510,7 +510,7 @@
       ensureUv(m);
       var p = uvToScreen(m.u, m.v, W, H);
       if (!p) return;
-      var col = COLORS[m.type] || '#589bff';
+      var col = COLORS[m.type] || '#0866ff';
       var sel = m.id === state.selectedId ? ' sel' : '';
       if (m.kind === 'text') {
         html += '<div class="tbx' + sel + '" data-id="' + m.id + '" style="left:' + p.x + 'px;top:' + p.y + 'px;border-color:' + col + '">' +
@@ -565,17 +565,17 @@
         ctx.beginPath();
         ctx.arc(p.x, p.y, i === 0 || i === scr.length - 1 ? 6 : 3.5, 0, Math.PI * 2);
         ctx.fillStyle = color; ctx.fill();
-        ctx.strokeStyle = '#111213'; ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.strokeStyle = '#18191A'; ctx.lineWidth = 1.5; ctx.stroke();
       });
     }
     state.items.forEach(function (m) {
       if (m.kind !== 'path' || !m.pts) return;
-      var col = COLORS[m.type] || '#2274ee';
+      var col = COLORS[m.type] || '#0866ff';
       var dash = m.type === 'power' ? [8, 5] : (m.type === 'smpte' ? [4, 4] : []);
       stroke(m.pts, col, m.id === state.selectedId ? 5.5 : 4, dash);
     });
     if (drawDraft && drawDraft.pts && drawDraft.pts.length) {
-      stroke(drawDraft.pts, COLORS[drawDraft.type] || '#f56c0b', 5, [7, 5]);
+      stroke(drawDraft.pts, COLORS[drawDraft.type] || '#f5832a', 5, [7, 5]);
     }
   }
 
@@ -826,8 +826,8 @@
     var b = el && el.querySelector('#ppeGearBanner'); if (!b) return;
     var n = (gearCatalog.packages || []).length;
     b.innerHTML = n
-      ? '<span style="color:#3fb95b">●</span> ' + n + ' cam packages from Dept Status · Cameras / Video'
-      : '<span style="color:#f56c0b">⚠</span> Add cameras under Department Status → Cameras / Video for package pickers';
+      ? '<span style="color:#31a24c">●</span> ' + n + ' cam packages from Dept Status · Cameras / Video'
+      : '<span style="color:#f5832a">⚠</span> Add cameras under Department Status → Cameras / Video for package pickers';
   }
 
   function defaultLabel(type) {
@@ -913,7 +913,7 @@
     el.querySelector('#ppeCount').textContent = String(state.items.length);
     refreshShotList();
     if (!state.items.length) {
-      list.innerHTML = '<div style="color:#74767b;padding:10px;font-size:11px">No blocking yet. Place Cam or Draw Fiber — markers stick to the map.</div>';
+      list.innerHTML = '<div style="color:#65676b;padding:10px;font-size:11px">No blocking yet. Place Cam or Draw Fiber — markers stick to the map.</div>';
       return;
     }
     list.innerHTML = '';
@@ -922,8 +922,8 @@
       div.className = 'mi' + (m.id === state.selectedId ? ' sel' : '');
       var meta = m.kind === 'path' ? ((m.pts || []).length + ' pts') : (m.body || m.kind);
       div.innerHTML = '<span>' + (ICONS[m.type] || '•') + '</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
-        esc(m.label) + ' <span style="color:#74767b">· ' + esc(meta) + '</span></span>' +
-        '<span style="color:#f84966;cursor:pointer" data-del="' + m.id + '">✕</span>';
+        esc(m.label) + ' <span style="color:#65676b">· ' + esc(meta) + '</span></span>' +
+        '<span style="color:#e41e3f;cursor:pointer" data-del="' + m.id + '">✕</span>';
       div.onclick = function (e) {
         if (e.target.getAttribute('data-del')) deleteItem(m.id);
         else selectItem(m.id);
@@ -936,9 +936,9 @@
     var cams = state.items.filter(function (m) { return CAM_TYPES[m.type]; });
     if (!cams.length) { box.style.display = 'none'; return; }
     box.style.display = 'block';
-    box.innerHTML = '<div style="color:#8890a1;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-bottom:4px">SHOT LIST · ' + cams.length + '</div>' +
+    box.innerHTML = '<div style="color:#8a8d91;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-bottom:4px">SHOT LIST · ' + cams.length + '</div>' +
       cams.map(function (m) {
-        return '<div style="padding:3px 0;border-bottom:1px solid #262728;cursor:pointer" data-shot="' + m.id + '">' +
+        return '<div style="padding:3px 0;border-bottom:1px solid #242526;cursor:pointer" data-shot="' + m.id + '">' +
           (ICONS[m.type] || '📷') + ' <b>' + esc(m.label) + '</b> · ' + esc(m.body || 'body TBD') +
           (m.lens ? ' · ' + esc(m.lens) : '') + '</div>';
       }).join('');
@@ -953,7 +953,7 @@
     var rect = view.getBoundingClientRect();
     tip.style.display = 'block';
     tip.innerHTML = '<b>' + esc((ICONS[m.type] || '') + ' ' + (m.label || m.type)) + '</b>' +
-      (m.body || m.lens ? ('<div style="margin:3px 0;color:#cbcfd7">' + esc([m.body, m.lens, m.mount].filter(Boolean).join(' · ')) + '</div>') : '') +
+      (m.body || m.lens ? ('<div style="margin:3px 0;color:#ced0d4">' + esc([m.body, m.lens, m.mount].filter(Boolean).join(' · ')) + '</div>') : '') +
       esc(m.notes || '');
     tip.style.left = Math.min(rect.width - 280, Math.max(8, cx - rect.left + 12)) + 'px';
     tip.style.top = Math.min(rect.height - 80, Math.max(8, cy - rect.top + 12)) + 'px';

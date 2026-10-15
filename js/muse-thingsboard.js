@@ -575,7 +575,7 @@
       '<div class="tb-kpi" data-tb-kpi-wrap="' +
       esc(kpiKey || label) +
       '" style="flex:1 1 140px;min-width:132px;max-width:200px;padding:10px 12px;border-radius:14px;' +
-      'background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 228 231))">' +
+      'background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 230 235))">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">' +
       '<div><div style="font:700 9px/1.2 var(--font-ui),system-ui,sans-serif;letter-spacing:.06em;color:rgb(var(--c-ink-3))">' +
       esc(label) +
@@ -623,9 +623,9 @@
           esc(t.id) +
           '\')" style="appearance:none;cursor:pointer;border-radius:999px;padding:6px 12px;font:700 11px var(--font-ui),system-ui,sans-serif;' +
           'border:1px solid ' +
-          (active ? 'rgb(var(--st-info))' : 'rgb(var(--c-line, 228 228 231))') +
+          (active ? 'rgb(var(--st-info))' : 'rgb(var(--c-line, 228 230 235))') +
           ';background:' +
-          (active ? 'rgb(var(--st-info-wash, 224 242 254))' : 'rgb(var(--c-surface))') +
+          (active ? 'rgb(var(--st-info-wash, 231 243 255))' : 'rgb(var(--c-surface))') +
           ';color:rgb(var(--c-ink));display:inline-flex;align-items:center;gap:7px;transition:background .15s,transform .1s">' +
           '<span data-tb-truck-dot style="width:7px;height:7px;border-radius:50%;background:' +
           col +
@@ -669,7 +669,7 @@
         kpiTile('UPS load', s.upsLoadPct, '%', h.upsLoadPct || [s.upsLoadPct], 'var(--pk-yellow)', 'upsLoadPct') +
         '</div>' +
         '<div style="display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:10px">' +
-        '<div style="padding:12px 14px;border-radius:14px;background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 228 231))">' +
+        '<div style="padding:12px 14px;border-radius:14px;background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 230 235))">' +
         '<div style="font:700 9px/1 var(--font-ui),system-ui,sans-serif;letter-spacing:.07em;color:rgb(var(--c-ink-3));margin-bottom:10px">Rule score · simulated</div>' +
         '<div style="display:flex;gap:14px;align-items:center">' +
         scoreRing +
@@ -689,7 +689,7 @@
             '</span>') +
         '</div></div></div>' +
         '<div style="margin-top:10px;font:500 10px/1.45 var(--font-ui),system-ui,sans-serif;color:rgb(var(--c-ink-3))">Simulated sensors. Connect ThingsBoard to replace the walk with live ingest.</div></div>' +
-        '<div style="padding:12px 14px;border-radius:14px;background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 228 231))">' +
+        '<div style="padding:12px 14px;border-radius:14px;background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 230 235))">' +
         '<div style="font:700 9px/1 var(--font-ui),system-ui,sans-serif;letter-spacing:.07em;color:rgb(var(--c-ink-3));margin-bottom:8px">Truck status</div>' +
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">' +
         '<span data-tb-status-dot style="width:8px;height:8px;border-radius:50%;background:' +
@@ -716,11 +716,11 @@
     var modeBadge =
       tb.mode === 'live'
         ? '<span class="tb-pill" style="font:800 9px var(--font-ui),sans-serif;padding:3px 8px;border-radius:999px;background:rgb(var(--st-ready-wash));color:rgb(var(--st-ready-ink));border:1px solid rgb(var(--st-ready))">Ingest</span>'
-        : '<span class="tb-pill" style="font:800 9px var(--font-ui),sans-serif;padding:3px 8px;border-radius:999px;background:rgb(var(--c-surface-2));color:rgb(var(--c-ink-2));border:1px solid rgb(var(--c-line, 228 228 231))">Demo</span>';
+        : '<span class="tb-pill" style="font:800 9px var(--font-ui),sans-serif;padding:3px 8px;border-radius:999px;background:rgb(var(--c-surface-2));color:rgb(var(--c-ink-2));border:1px solid rgb(var(--c-line, 228 230 235))">Demo</span>';
 
     return (
       '<div class="tb-panel pui-pane tb-telemetry-panel" style="border-radius:18px;padding:14px 14px 12px;' +
-      'background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 228 231))">' +
+      'background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 230 235))">' +
       '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">' +
       '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">' +
       '<div style="font:800 13px/1.2 var(--font-ui),system-ui,sans-serif;color:rgb(var(--c-ink))">Truck sensors · simulated</div>' +
@@ -732,18 +732,18 @@
       '</div>' +
       hilPanelHTML(key, tb) +
       body +
-      '<details style="margin-top:12px;border-radius:12px;border:1px solid rgb(var(--c-line, 228 228 231));background:rgb(var(--c-surface-2));color:rgb(var(--c-ink));padding:8px 10px">' +
+      '<details style="margin-top:12px;border-radius:12px;border:1px solid rgb(var(--c-line, 228 230 235));background:rgb(var(--c-surface-2));color:rgb(var(--c-ink));padding:8px 10px">' +
       '<summary style="cursor:pointer;font:700 9px var(--font-ui),system-ui,sans-serif;letter-spacing:.06em;color:rgb(var(--c-ink-3));list-style:none">Config · plug-and-play fields</summary>' +
       '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">' +
       '<label style="display:block"><span style="font:700 8px var(--font-ui),sans-serif;color:rgb(var(--c-ink-3))">Endpoint</span>' +
       '<input disabled placeholder="https://thingsboard.cloud/api/…" value="' +
       esc(tb.endpoint || '') +
-      '" style="width:100%;margin-top:4px;padding:7px 9px;border-radius:8px;border:1px solid rgb(var(--c-line, 228 228 231));' +
+      '" style="width:100%;margin-top:4px;padding:7px 9px;border-radius:8px;border:1px solid rgb(var(--c-line, 228 230 235));' +
       'background:rgb(var(--c-surface));color:rgb(var(--c-ink-3));font:600 11px var(--font-ui),system-ui,sans-serif;font-variant-numeric:tabular-nums"/></label>' +
       '<label style="display:block"><span style="font:700 8px var(--font-ui),sans-serif;color:rgb(var(--c-ink-3))">Device token</span>' +
       '<input disabled placeholder="•••••••• (access token)" value="' +
       esc(tb.deviceToken || '') +
-      '" style="width:100%;margin-top:4px;padding:7px 9px;border-radius:8px;border:1px solid rgb(var(--c-line, 228 228 231));' +
+      '" style="width:100%;margin-top:4px;padding:7px 9px;border-radius:8px;border:1px solid rgb(var(--c-line, 228 230 235));' +
       'background:rgb(var(--c-surface));color:rgb(var(--c-ink-3));font:600 11px var(--font-ui),system-ui,sans-serif"/></label></div>' +
       '<p style="margin:8px 0 0;font:500 10px var(--font-ui),system-ui,sans-serif;color:rgb(var(--c-ink-3))">ThingsBoard REST / MQTT / WS ingest reserved for plug-and-play. Per-truck device IDs map when mode flips to ingest.</p>' +
       '</details></div>'
@@ -759,16 +759,16 @@
         '<button type="button" onclick="' +
         fn +
         '" style="appearance:none;cursor:pointer;border-radius:9px;padding:6px 10px;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;' +
-        'border:1px solid #e5e7eb;background:#ffffff;color:#1B1C1D">' +
+        'border:1px solid #e4e6eb;background:#ffffff;color:#1C1E21">' +
         esc(lab) +
         '</button>'
       );
     };
     var log = (hil.log || []).slice(0, 8).map(function (row) {
-      var col = row.kind === 'sign' ? '#15802e' : row.kind === 'inject' ? '#dc2644' : '#1266e3';
+      var col = row.kind === 'sign' ? '#1e7b34' : row.kind === 'inject' ? '#e41e3f' : '#0866ff';
       return (
-        '<div style="display:flex;gap:8px;font:500 11px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#424346">' +
-        '<span style="font-variant-numeric:tabular-nums;color:#9ba2b0;min-width:54px">' +
+        '<div style="display:flex;gap:8px;font:500 11px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#3E4042">' +
+        '<span style="font-variant-numeric:tabular-nums;color:#b0b3b8;min-width:54px">' +
         esc(row.ts) +
         '</span>' +
         '<span style="font-weight:800;color:' +
@@ -782,7 +782,7 @@
       );
     }).join('');
     var signed = hil.signed
-      ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:#f0fdf3;border:1px solid #bbf7c9;color:#166528;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">' +
+      ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:#e6f4ea;border:1px solid #a8dab5;color:#1E7B34;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">' +
         'Signed ' +
         esc(hil.signed.result) +
         ' · ' +
@@ -792,15 +792,15 @@
         '</div>'
       : '';
     return (
-      '<div class="hil-loop" style="margin:0 0 12px;padding:12px 14px;border-radius:14px;border:1px solid #e5e7eb;background:#fafafa">' +
+      '<div class="hil-loop" style="margin:0 0 12px;padding:12px 14px;border-radius:14px;border:1px solid #e4e6eb;background:#f7f8fa">' +
       '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">' +
-      '<div><div style="font:800 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1B1C1D">Hardware-in-the-loop</div>' +
-      '<div style="font:500 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#727479;margin-top:2px">Closed loop: inject a plant fault · act from Muse Live · sign the run. Simulated — not live ingest.</div></div>' +
+      '<div><div style="font:800 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1C1E21">Hardware-in-the-loop</div>' +
+      '<div style="font:500 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#65676B;margin-top:2px">Closed loop: inject a plant fault · act from Muse Live · sign the run. Simulated — not live ingest.</div></div>' +
       (hil.fault
-        ? '<span style="font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:3px 8px;border-radius:999px;background:#fef2f4;color:#dc2644;border:1px solid #fecad3">FAULT · ' +
+        ? '<span style="font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:3px 8px;border-radius:999px;background:#fde7ea;color:#e41e3f;border:1px solid #fde7ea">FAULT · ' +
           esc(hil.fault) +
           '</span>'
-        : '<span style="font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:3px 8px;border-radius:999px;background:#f0fdf3;color:#15802e;border:1px solid #bbf7c9">PLANT NOMINAL</span>') +
+        : '<span style="font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:3px 8px;border-radius:999px;background:#e6f4ea;color:#1e7b34;border:1px solid #a8dab5">PLANT NOMINAL</span>') +
       '</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
       btn('Voltage sag', "MuseThingsBoard.injectFault('" + k + "','voltage')") +
@@ -817,7 +817,7 @@
       '\')" style="appearance:none;cursor:pointer;border-radius:9px;padding:6px 12px;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;border:0;background:#0866FF;color:#ffffff">Sign HIL run</button>' +
       '</div>' +
       '<div data-hil-log style="display:flex;flex-direction:column;gap:4px;max-height:132px;overflow:auto">' +
-      (log || '<div style="font:500 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#9ba2b0">No events yet. Inject a fault to close the loop.</div>') +
+      (log || '<div style="font:500 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#b0b3b8">No events yet. Inject a fault to close the loop.</div>') +
       '</div>' +
       signed +
       '</div>'

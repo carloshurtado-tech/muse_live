@@ -891,7 +891,7 @@
 
   /* ---- HTML builders ---- */
   function statusDot(st) {
-    var c = st === 'green' ? '#31A24C' : st === 'amber' ? '#f56c0b' : st === 'red' ? '#ef4461' : '#9ba2b0';
+    var c = st === 'green' ? '#1E7B34' : st === 'amber' ? '#f5832a' : st === 'red' ? '#e41e3f' : '#b0b3b8';
     return '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + c + ';box-shadow:0 0 0 2px ' + c + '22"></span>';
   }
 
@@ -995,15 +995,15 @@
       .map(function (h, i) {
         var col =
           h.status === 'green'
-            ? '#31A24C'
+            ? '#1E7B34'
             : h.status === 'amber'
-              ? '#f56c0b'
+              ? '#f5832a'
               : h.status === 'red'
-                ? '#ef4461'
-                : '#9ba2b0';
+                ? '#e41e3f'
+                : '#b0b3b8';
         var arrow =
           i < hops.length - 1
-            ? '<span style="color:#9ba2b1;font-size:14px;padding:0 2px;flex-shrink:0">→</span>'
+            ? '<span style="color:#b0b3b8;font-size:14px;padding:0 2px;flex-shrink:0">→</span>'
             : '';
         return (
           '<div style="display:flex;align-items:center;gap:0">' +
@@ -1020,10 +1020,10 @@
           ';text-transform:uppercase;letter-spacing:.04em">' +
           esc(h.status || 'unknown') +
           '</div>' +
-          '<div style="font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1B1C1D;line-height:1.2;margin-top:2px">' +
+          '<div style="font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1C1E21;line-height:1.2;margin-top:2px">' +
           esc((h.name || 'Hop').slice(0, 28)) +
           '</div>' +
-          '<div style="font:600 8px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#727479;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+          '<div style="font:600 8px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#65676B;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
           esc((h.from || '') + (h.to ? ' → ' + h.to : '')) +
           '</div></div>' +
           arrow +
@@ -1145,7 +1145,7 @@
     var t = o.truck;
     var pow = o.power;
     var pr = powerRollup(pow);
-    var barCol = pr.level === 'red' ? '#ef4461' : pr.level === 'amber' ? '#f56c0b' : '#31A24C';
+    var barCol = pr.level === 'red' ? '#e41e3f' : pr.level === 'amber' ? '#f5832a' : '#1E7B34';
     var loadRows = (pow.loads || [])
       .map(function (l) {
         var busOpts = POWER_BUSES.map(function (b) {
@@ -1211,7 +1211,7 @@
       '<div class="flex items-center justify-between mb-2"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Power Bus &amp; Load</h3>' +
       levelBadge(pr.level, pr.level === 'unknown' ? 'Unverified' : pr.pct + '% load') +
       '</div>' +
-      '<div class="mb-3"><div style="height:10px;background:#eeeff2;border-radius:5px;overflow:hidden"><div style="width:' +
+      '<div class="mb-3"><div style="height:10px;background:#f0f2f5;border-radius:5px;overflow:hidden"><div style="width:' +
       Math.min(pr.pct, 100) +
       '%;height:100%;background:' +
       barCol +
@@ -1510,7 +1510,7 @@
     var budget = parseFloat(r.budgetMs) || 0;
     var pct = budget > 0 ? Math.round((total / budget) * 100) : 0;
     var level = !budget ? 'unknown' : total > budget ? 'red' : total > budget * 0.85 ? 'amber' : 'green';
-    var barCol = level === 'red' ? '#ef4461' : level === 'amber' ? '#f56c0b' : '#31A24C';
+    var barCol = level === 'red' ? '#e41e3f' : level === 'amber' ? '#f5832a' : '#1E7B34';
     return (
       '<div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">' +
       '<div class="flex flex-wrap items-center justify-between gap-2 mb-2">' +
@@ -1518,7 +1518,7 @@
       '<p class="text-[10px] text-gray-500">Contribution + return path latency (ms) vs agreed air delay budget</p></div>' +
       levelBadge(level, total + ' / ' + budget + ' ms') +
       '</div>' +
-      '<div class="mb-3"><div style="height:8px;background:#eeeff2;border-radius:4px;overflow:hidden"><div style="width:' +
+      '<div class="mb-3"><div style="height:8px;background:#f0f2f5;border-radius:4px;overflow:hidden"><div style="width:' +
       Math.min(pct, 100) +
       '%;height:100%;background:' +
       barCol +

@@ -1,0 +1,7 @@
+# Do not swallow Functions routes
+# /api/* is handled by Pages Functions
+
+/app /index.html 200
+/pulse /index.html 200
+/NBC_Pulse.html /index.html 301
+/NBC_Pulse_0.38.html /index.html 301

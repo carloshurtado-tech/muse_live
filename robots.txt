@@ -1,0 +1,4 @@
+# NBC Pulse — crawl the public shell. The password gate still blocks the ops console.
+User-agent: *
+Allow: /
+Sitemap: /sitemap.xml

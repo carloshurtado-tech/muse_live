@@ -1,0 +1,18 @@
+{
+  "name": "NBC Pulse",
+  "short_name": "Pulse",
+  "description": "Collaborative digital techbook for live broadcast operations.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0B0F17",
+  "theme_color": "#632E8A",
+  "icons": [
+    {
+      "src": "assets/brand/NBC_Peacock_(2022).svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

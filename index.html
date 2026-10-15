@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f7f8fb">
+<meta name="color-scheme" content="light dark">
+<title>NBC Pulse</title>
+<script>
+/* First paint: Light unless the user stored dark or Follow OS. */
+(function(){
+  try{
+    document.documentElement.classList.add('pulse-theme-boot');
+    var pref=null;
+    try{pref=localStorage.getItem('pulseTheme');}catch(e0){}
+    if(pref!=='light'&&pref!=='dark'&&pref!=='system')pref='light';
+    var dark;
+    if(pref==='system'){
+      dark=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme-pref','system');
+      document.documentElement.style.colorScheme='light dark';
+    }else{
+      dark=pref==='dark';
+      document.documentElement.setAttribute('data-theme-pref',pref);
+      document.documentElement.style.colorScheme=pref;
+    }
+    document.documentElement.classList.toggle('dark',dark);
+    var bar=dark?'#0b1018':'#f7f8fb';
+    var metas=document.querySelectorAll('meta[name="theme-color"]');
+    if(metas.length)metas[0].setAttribute('content',bar);
+    try{document.cookie='Pulse-Theme='+(dark?'dark':'light')+'; Path=/; Max-Age=31536000; SameSite=Lax';}catch(e1){}
+  }catch(e){}
+})();
+</script>
+<script>
+/* Match visual density on Safari and Edge (desktop). Those engines often paint
+   ~10% larger at 100% zoom. */
+(function(){
+  try{
+    var ua=navigator.userAgent||'';
+    var isEdge=/Edg\//.test(ua);
+    var isSafari=/Safari\//.test(ua)&&!/Chrome\//.test(ua)&&!/Chromium\//.test(ua)&&!/Edg\//.test(ua)&&!/OPR\//.test(ua)&&!/Android/.test(ua);
+    var coarse=false;
+    try{coarse=!!(window.matchMedia&&window.matchMedia('(pointer: coarse)').matches);}catch(e0){}
+    if((isSafari||isEdge)&&!coarse)document.documentElement.classList.add('pulse-density-match');
+  }catch(e){}
+})();
+</script>
+<script>
+/* CRITICAL: file:// breaks DWG (WASM), maps, and modules. Auto-redirect to local server. */
+(function(){
+  try{
+    if(location.protocol==='file:'){
+      window.__PULSE_FILE_ORIGIN=true;
+      var port=(window.PULSE_PORT||8317);
+      var name=(location.pathname.split('/').pop()||'NBC_Pulse_0.38.html');
+      var dest='http://127.0.0.1:'+port+'/'+name;
+      /* try server first; if up, leave file:// immediately */
+      var img=new Image();
+      var done=false;
+      function go(){if(done)return;done=true;location.replace(dest);}
+      img.onload=go;img.onerror=function(){/* server not up — banner after DOM */};
+      img.src='http://127.0.0.1:'+port+'/assets/brand/NBC_Peacock_(2022).svg?t='+Date.now();
+      setTimeout(function(){
+        if(done)return;
+        document.addEventListener('DOMContentLoaded',function(){
+          var b=document.createElement('div');
+          b.id='pulseFileBanner';
+          b.style.cssText='position:fixed;inset:0;z-index:999999;background:#0b0f17;color:#e6edf3;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Inter,system-ui,sans-serif';
+          b.innerHTML='<div style="max-width:520px;background:#161b22;border:1px solid #30363d;border-radius:16px;padding:28px;text-align:center">'+
+            '<div style="font:800 20px Inter,sans-serif;margin-bottom:10px;color:#f59e0b">Open Pulse via the local server</div>'+
+            '<p style="font:600 13px Inter,sans-serif;color:#8b949e;line-height:1.5;margin:0 0 16px">You opened a <b style="color:#e6edf3">file://</b> URL. This browser blocks DWG (LibreDWG), maps, and modules from file origins.<br><br>In Terminal:</p>'+
+            '<pre style="text-align:left;background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:12px;font:700 12px DM Mono,monospace;color:#3fb950;overflow:auto">cd ~/Pulse\n./start-pulse.sh</pre>'+
+            '<p style="font:600 12px Inter,sans-serif;color:#8b949e;margin:14px 0 18px">Then use <b style="color:#58a6ff">http://127.0.0.1:'+port+'/'+name+'</b></p>'+
+            '<a href="'+dest+'" style="display:inline-block;background:#238636;color:#fff;font:700 13px Inter,sans-serif;padding:10px 18px;border-radius:10px;text-decoration:none">Try open http://127.0.0.1:'+port+'</a>'+
+            '</div>';
+          document.body.appendChild(b);
+        });
+      },400);
+    }
+  }catch(e){}
+})();
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" href="css/pulse-tw.css?v=0530" as="style">
+<link rel="preload" href="css/pulse-shell.css?v=0536" as="style">
+<link rel="preload" href="css/pulse-dark.css?v=0528" as="style">
+<link rel="preload" href="assets/brand/NBC_Peacock_(2022).svg" as="image">
+<link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=DM+Mono:wght@400;500&display=swap" as="style">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/pulse-tw.css?v=0530">
+<link rel="stylesheet" href="css/pulse-shell.css?v=0536">
+<link rel="stylesheet" href="css/pulse-dark.css?v=0528" id="pulseDarkThemeLink">
+<link rel="stylesheet" href="js/vendor/quill/quill.snow.css">
+<link rel="stylesheet" href="css/pulse-wiki.css?v=0510">
+<link rel="stylesheet" href="css/pulse-work.css?v=20260915-enrichment1">
+<link rel="stylesheet" href="css/pulse-departments.css?v=20260915-departments1">
+<script src="js/pulse-sample-gear.js?v=20260925-build1" defer></script>
+<script src="js/pulse-planet-trucks.js?v=20260923-planets1" defer></script>
+<script src="js/pulse-platform.js?v=0506" defer></script>
+<script src="js/pulse-lazy.js?v=20260914-release1" defer></script>
+<script src="js/pulse-kb-seed.js?v=20260925-build1" defer></script>
+<script src="js/pulse-records.js?v=20260915-enrichment1" defer></script>
+<script src="js/pulse-wiki-schema.js?v=20260915-enrichment1" defer></script>
+<script src="js/pulse-kb.js?v=20260923-realgear2" defer></script>
+<script src="js/pulse-thingsboard.js?v=20260923-planets1" defer></script>
+<script src="js/pulse-broadcast-ops.js?v=20260923-planets1" defer></script>
+<script src="js/pulse-recovery.js?v=20260915-enrichment1" defer></script>
+<script src="js/pulse-app-a.min.js?v=20260925-build1" defer></script>
+<script src="js/pulse-app-b.min.js?v=20260925-build1" defer></script>
+<script src="js/pulse-export-gear.js?v=20260925-build1" defer></script>
+<script src="js/pulse-ops-os.js?v=20260914-release1" defer></script>
+<script src="js/pulse-live-core.js?v=20260915-live1" defer></script>
+<script src="js/pulse-live-ops.js?v=20260915-enrichment1" defer></script>
+<script src="js/pulse-work-core.js?v=20260915-enrichment1" defer></script>
+<script src="js/pulse-work-ui.js?v=20260915-enrichment1" defer></script>
+<script src="js/pulse-mcp.js?v=0521" defer></script>
+<script src="js/pulse-generic-kit.js?v=20260925-build1" defer></script>
+<script src="js/pulse-charlie.js?v=20260925-build1" defer></script>
+<script src="js/pulse-survey-media.js?v=0513" defer></script>
+<style id="pulseDashLayout">
+/* Classic dashboard + telemetry layout — desktop columns by default */
+.dash-row-main{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(0,2fr)!important;gap:1.5rem!important;align-items:start}
+.dash-row-eng{grid-column:1/-1!important}
+.dash-trk-grid{display:grid!important;grid-template-columns:minmax(0,3fr) minmax(260px,2fr)!important;gap:1rem!important;align-items:stretch}
+.dash-trk-map{min-width:0;min-height:480px!important;height:55vh!important;max-height:640px!important}
+.dash-trk-list{min-width:0;max-height:640px;overflow-y:auto}
+/* Stack only on narrow phones */
+@media(max-width:767px){
+  .dash-row-main,.dash-trk-grid{grid-template-columns:minmax(0,1fr)!important}
+  .dash-row-eng{grid-column:auto!important}
+  .dash-trk-map{min-height:240px!important;height:42vh!important;max-height:420px!important}
+}
+</style>
+<!-- Charlie — under construction for this snapshot. -->
+<script>window.NBC_PULSE_CONFIG={OPEN_METEO_BASE:"https://api.open-meteo.com/v1/forecast",USE_VENDOR_CDN:false,_source:"none"};</script>
+<script>
+window.CHARLIE_EDGE_ENABLED=false;
+window.CHARLIE_LOCAL_ENABLED=false;
+window.CHARLIE_CLOUD_ENABLED=false;
+window.CHARLIE_AI_ENABLED=false;
+window.CHARLIE_UNDER_CONSTRUCTION=true;
+</script>
+<script src="config/config.example.js"></script>
+<script src="config/config.local.js"></script>
+<style>
+html.pulse-gated,html.pulse-gated body{overflow:hidden;}
+/* CLS 1.0 on #pulseGateForm>p.sub>TEXT was display:none of the overlay/app.
+   Never display:none. Keep a real 280×38 subtitle box; hide with visibility/opacity only. */
+#pulseGate{
+  display:flex !important;
+  position:fixed !important;
+  inset:0;
+  box-sizing:border-box;
+  width:100%;
+  height:100%;
+  min-width:100%;
+  min-height:100vh;
+  min-height:100dvh;
+  z-index:2147483000;
+  align-items:center;
+  justify-content:center;
+  padding:max(28px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
+  text-align:center;
+  font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+  color:#111827;
+  background-color:#f7f8fb;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.52) 0%,rgba(255,255,255,.1) 46%,rgba(255,255,255,.36) 100%),linear-gradient(125deg,rgba(229,27,36,.1),rgba(239,123,16,.09) 17%,rgba(247,183,23,.08) 34%,rgba(0,161,93,.07) 50%,rgba(0,160,222,.09) 67%,rgba(99,46,138,.1) 84%,rgba(255,255,255,.32));
+  visibility:hidden;
+  pointer-events:none;
+  opacity:0;
+  contain:layout style;
+  isolation:isolate;
+  overflow:hidden;
+}
+html.pulse-gated #pulseGate{visibility:visible;pointer-events:auto;opacity:1;}
+html.pulse-gated body > *:not(#pulseGate){pointer-events:none;visibility:hidden;}
+#pulseGate .wrap{width:100%;max-width:360px;position:relative;z-index:3;contain:layout;overflow:hidden;}
+#pulseGate h1{margin:0 0 8px;font-size:clamp(18px,5.5vw,22px);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#111827;line-height:1.2;min-height:1.2em;}
+#pulseGate .sub{display:block;box-sizing:border-box;margin:0 auto 22px;width:280px;max-width:100%;min-height:38px;font-size:13px;font-weight:500;color:#374151;line-height:19px;}
+#pulseGate .err{display:block;box-sizing:border-box;margin:0 auto 16px;width:280px;max-width:100%;min-height:17px;font-size:13px;font-weight:600;color:#b91c1c;line-height:17px;}
+#pulseGate .err:empty{visibility:hidden;}
+#pulseGate .field{width:100%;margin:0 0 14px;}
+#pulseGate .field input{width:100%;height:48px;padding:0 18px;border:0;border-radius:999px;background:rgba(255,255,255,.55);color:#111827;font:500 16px system-ui,-apple-system,sans-serif;text-align:center;letter-spacing:.18em;outline:none;box-shadow:inset 0 2px 6px rgba(15,23,42,.1),inset 0 1px 1px rgba(15,23,42,.08);}
+#pulseGate button{display:block;width:100%;height:48px;border:0;border-radius:999px;cursor:pointer;font:700 14px system-ui,-apple-system,sans-serif;letter-spacing:.04em;color:#fff;background:#632E8A;box-shadow:0 8px 22px rgba(99,46,138,.28);position:relative;z-index:2;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#pulseGate .field,#pulseGate .foot{position:relative;z-index:2;}
+#pulseGate .foot{margin:18px 0 0;font-size:12px;font-weight:600;color:#374151;letter-spacing:.01em;}
+#pulseGate .foot strong{font-weight:800;color:#111827;}
+#pulseGate .peacock{width:112px;height:112px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;}
+#pulseGate .peacock img{width:96px;height:56px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(15,23,42,.12));}
+#pulseGate .gate-minions{
+  object-fit:contain;object-position:right bottom;
+  pointer-events:none !important;
+}
+/* Default: neither variant shows until a viewport media query picks one */
+#pulseGate .gate-minions--tile,
+#pulseGate .gate-minions--corner{display:none !important;}
+@media (min-width:768px) and (min-height:561px){
+  /* Desktop: full uncropped minions on the overlay BACKGROUND, browser bottom-right — never the login tile. */
+  #pulseGate{contain:style; isolation:isolate; overflow:visible;}
+  #pulseGate .wrap{
+    position:relative;
+    z-index:5;
+    box-sizing:border-box;
+    overflow:hidden; /* keep password/button inside the tile */
+    background:rgba(255,255,255,.96);
+    border:1px solid rgba(255,255,255,.9);
+    border-radius:22px;
+    padding:28px 22px 22px;
+    box-shadow:0 16px 48px rgba(15,23,42,.12);
+  }
+  #pulseGate .wrap .field,
+  #pulseGate .wrap .field input,
+  #pulseGate .wrap button{
+    box-sizing:border-box;
+    max-width:100%;
+  }
+  #pulseGate .wrap .field{width:100%;}
+  #pulseGate .wrap .field input{
+    width:100%;
+    display:block;
+  }
+  #pulseGate .gate-minions--tile{display:none !important;}
+  #pulseGate > .gate-minions--corner{
+    display:block !important;
+    position:absolute !important;
+    right:0 !important;
+    bottom:0 !important;
+    left:auto !important;
+    top:auto !important;
+    margin:0 !important;
+    /* entire PNG visible; scale up but keep inside the viewport */
+    width:auto !important;
+    height:auto !important;
+    max-width:min(400px,34vw) !important;
+    max-height:min(48vh, calc(100dvh - 48px)) !important;
+    z-index:2 !important;
+    object-fit:contain !important;
+    object-position:right bottom !important;
+    pointer-events:none !important;
+    opacity:1 !important;
+    overflow:visible !important;
+  }
+}
+@media (max-width:767px),(max-height:560px){
+  #pulseGate{
+    align-items:center;
+    padding:max(16px,env(safe-area-inset-top,0px)) 16px max(16px,env(safe-area-inset-bottom,0px));
+  }
+  #pulseGate .wrap{
+    z-index:3;margin-top:0;max-width:min(360px,100%);
+    background:#fff;
+    border:1px solid rgba(255,255,255,.8);
+    border-radius:22px;
+    padding:20px 16px 128px;
+    box-shadow:0 12px 40px rgba(15,23,42,.12);
+    overflow:hidden;
+  }
+  #pulseGate .gate-minions--corner{display:none !important;}
+  #pulseGate .gate-minions--tile{
+    display:block !important;
+    position:absolute !important;
+    right:0 !important;
+    bottom:0 !important;
+    left:auto !important;
+    top:auto !important;
+    transform:none !important;
+    width:min(200px,62vw);
+    max-height:120px;
+    height:auto;
+    opacity:1;
+    z-index:1;
+    object-position:right bottom;
+  }
+  #pulseGate .foot{margin-top:12px;font-size:12px;color:#1f2937;}
+  #pulseGate .peacock{width:72px;height:72px;margin-bottom:10px;}
+  #pulseGate .peacock img{width:64px;height:38px;}
+  #pulseGate .sub{margin-bottom:12px;}
+}
+@media (max-height:480px){
+  #pulseGate .wrap{padding-bottom:96px;}
+  #pulseGate .gate-minions--tile{width:min(160px,42vw);max-height:88px;}
+  #pulseGate .peacock{width:48px;height:48px;margin-bottom:4px;}
+  #pulseGate .peacock img{width:44px;height:26px;}
+  #pulseGate h1{margin-bottom:4px;font-size:16px;}
+  #pulseGate .sub{margin-bottom:8px;min-height:0;}
+}
+</style>
+</head>
+<body class="min-h-screen flex flex-col pulse-has-rail pulse-has-navrail">
+<div id="pulseGate" role="dialog" aria-modal="true" aria-labelledby="pulseGateTitle" aria-hidden="true">
+  <form class="wrap" id="pulseGateForm" autocomplete="off">
+    <div class="peacock"><img src="assets/brand/NBC_Peacock_(2022).svg" alt="NBC" width="72" height="42"/></div>
+    <h1 id="pulseGateTitle">NBC Pulse</h1>
+    <p class="sub">A collaborative digital techbook OS for live broadcast operations.</p>
+    <p class="err" id="pulseGateErr" aria-live="polite"></p>
+    <label for="username" style="position:absolute;width:1px;height:1px;overflow:hidden">Username</label>
+    <input id="username" name="username" type="text" value="nbc-pulse" autocomplete="username" readonly tabindex="-1" aria-hidden="true" style="position:absolute;opacity:0;height:0;width:0"/>
+    <div class="field"><input id="pulseGatePassword" name="password" type="password" placeholder="••••••••" autocomplete="current-password" aria-label="Access password"></div>
+    <button type="submit">Unlock Pulse</button>
+    <p class="foot">Powered by <strong>Techbook OS</strong></p>
+    <img class="gate-minions gate-minions--tile" src="assets/brand/DM3_Minions_.png" alt="" width="280" height="352"/>
+  </form>
+  <img class="gate-minions gate-minions--corner" src="assets/brand/DM3_Minions_.png" alt="" width="280" height="352"/>
+</div>
+<script>
+(function(){
+  function setGate(on){
+    try{
+      document.documentElement.classList.toggle('pulse-gated',!!on);
+      var g=document.getElementById('pulseGate');
+      if(g){
+        g.setAttribute('aria-hidden',on?'false':'true');
+        try{g.inert=!on;}catch(e1){}
+      }
+    }catch(e){}
+  }
+  function unlock(){setGate(false);}
+  function bind(){
+    var form=document.getElementById('pulseGateForm');if(!form||form._bound)return;form._bound=true;
+    function doLogin(ev){
+      if(ev){ev.preventDefault();if(ev.stopPropagation)ev.stopPropagation();}
+      if(form._busy)return;
+      var input=document.getElementById('pulseGatePassword');
+      try{if(input)input.blur();}catch(e0){}
+      var pw=(input&&input.value)||'';
+      var err=document.getElementById('pulseGateErr');
+      var btn=form.querySelector('button[type="submit"]');
+      if(!pw){if(err)err.textContent='Enter the access password.';return;}
+      form._busy=true;
+      if(btn){btn.disabled=true;btn.textContent='Unlocking…';}
+      if(err)err.textContent='';
+      fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({password:pw})})
+        .then(function(r){return r.json().then(function(j){return {ok:r.ok,j:j};}).catch(function(){return {ok:r.ok,j:{}};});})
+        .then(function(x){
+          if(x.ok&&x.j&&x.j.ok){
+            unlock();
+            try{
+              var u=new URL(location.href);
+              u.searchParams.delete('gate');
+              if(!u.hash||u.hash==='#')u.hash='#/dashboard';
+              var qs=u.searchParams.toString();
+              var dest=u.pathname+(qs?('?'+qs):'')+u.hash;
+              if(dest!==location.pathname+location.search+location.hash)location.replace(dest);
+            }catch(e1){}
+            return;
+          }
+          form._busy=false;
+          if(btn){btn.disabled=false;btn.textContent='Unlock Pulse';}
+          if(err){err.textContent=(x.j&&x.j.error)||'Incorrect password. Try again.';}
+        })
+        .catch(function(){
+          form._busy=false;
+          if(btn){btn.disabled=false;btn.textContent='Unlock Pulse';}
+          if(err)err.textContent='Could not reach the login service.';
+        });
+    }
+    form.addEventListener('submit',doLogin);
+  }
+  function check(){unlock();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){bind();check();});
+  else{bind();check();}
+})();
+</script>
+  <!-- left: nav rail · right: Charlie/Omni rails · phones: compact icon rail -->
+
+<!-- LEFT NAV RAIL — collapsible icon rail (labels when expanded) -->
+<aside id="navRail" class="nav-rail" aria-label="Primary navigation">
+  <div class="nav-rail-top">
+    <button type="button" class="nav-rail-btn nav-rail-expand" id="navRailToggle" onclick="toggleNavRail()" title="Expand menu" aria-label="Expand or collapse navigation" aria-expanded="false">
+      <svg class="nav-rail-ico-expand" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
+      <span class="nav-rail-label">Menu</span>
+      <span id="burgerBadge" class="nav-rail-attn"></span>
+    </button>
+  </div>
+  <div class="nav-rail-scroll">
+    <div id="navRailPrimary" class="nav-rail-group"></div>
+    <div class="nav-rail-sep" aria-hidden="true"></div>
+    <div id="navRailProds" class="nav-rail-group"></div>
+  </div>
+  <div class="nav-rail-foot">
+    <button type="button" class="nav-rail-btn" onclick="globalSearchOpen()" title="Search (⌘K)" aria-label="Search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <span class="nav-rail-label">Search</span>
+    </button>
+    <button type="button" class="nav-rail-btn nav-rail-btn-new" onclick="openCreateModal()" title="New production" aria-label="New production">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      <span class="nav-rail-label">New show</span>
+    </button>
+  </div>
+</aside>
+<div id="navRailScrim" class="nav-rail-scrim" onclick="toggleNavRail(false)" hidden></div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-40 w-full h-16 glass-panel flex items-center justify-between px-4 sm:px-6">
+  <div class="flex items-center space-x-3 sm:space-x-5 min-w-0">
+    <button type="button" id="navRailHeaderToggle" class="pulse-nav-burger" onclick="toggleNavRail()" title="Open menu" aria-label="Open menu" aria-expanded="false">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h10M4 18h16"/></svg>
+      <span id="headerBurgerBadge" class="pulse-burger-dot" aria-hidden="true"></span>
+    </button>
+    <div class="flex items-center space-x-3 cursor-pointer group min-w-0" onclick="switchView('dashboard')" title="Return to Dashboard" role="button">
+      <div class="pulse-brand-mark relative w-11 h-11 flex items-center justify-center flex-shrink-0">
+        <svg class="absolute w-full h-full pk-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#00A0DE" stroke-width="3" opacity="0.4"/></svg>
+        <svg class="absolute w-full h-full pk-ring2" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#EF7B10" stroke-width="3" opacity="0.4"/></svg>
+        <img class="peacock-mark w-10 h-10 z-10 relative object-contain" src="assets/brand/NBC_Peacock_(2022).svg" alt="NBC" width="40" height="40" draggable="false" decoding="async" fetchpriority="high">
+      </div>
+      <div class="h-5 w-px bg-gray-300 hidden sm:block"></div>
+      <div class="pulse-brand-title flex flex-col leading-none min-w-0">
+        <span class="text-[11px] font-bold tracking-[0.22em] uppercase text-gray-900 group-hover:text-blue-700 transition-colors">NBC Pulse</span>
+        <span class="text-[9px] font-medium tracking-[0.1em] text-gray-500 uppercase mt-0.5 hidden sm:block">Broadcast Ops CRM</span>
+      </div>
+    </div>
+    <nav id="tabNav" class="hidden"></nav>
+  </div>
+  <div class="header-tools flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+    <div id="roleSwitchMount" class="flex-shrink-0"></div>
+    <button type="button" id="headerSearchBtn" onclick="globalSearchOpen()" class="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-gray-100 transition-colors" title="Search everything (⌘K)" aria-label="Search">
+      <svg class="text-gray-500" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    </button>
+    <button type="button" id="pulsePorChip" class="os-chip" title="Plan of record">PoR · live</button>
+    <div id="themeBtn" class="flex items-center rounded-full border border-gray-200 bg-gray-100 p-0.5 gap-0.5 flex-shrink-0" title="Appearance" role="group" aria-label="Theme"></div>
+    <div class="pulse-user-chip flex items-center space-x-2 cursor-pointer group flex-shrink-0" onclick="openUserProfile()" title="View profile">
+      <div class="pulse-user-chip-text text-right hidden sm:block min-w-0">
+        <p id="userChipName" class="text-[11px] font-semibold text-gray-900 leading-none group-hover:text-blue-700 truncate">Lila Hart</p>
+        <p id="userChipTitle" class="text-[9px] text-gray-500 mt-0.5 text-right truncate">VP, Technical Production · Admin</p>
+      </div>
+      <div id="userChipAvatar" class="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600 to-blue-500 text-white flex items-center justify-center text-xs font-bold border-2 border-white shadow-md group-hover:ring-2 group-hover:ring-blue-400 flex-shrink-0">AC</div>
+    </div>
+  </div>
+</header>
+
+<main class="flex-1 w-full mx-auto p-4 sm:p-6 pulse-main" style="max-width:1700px">
+
+<!-- ===== DASHBOARD ===== -->
+<div id="view-dashboard" class="view-pane active space-y-6">
+<div id="cfgBannerHost"></div>
+<div id="osFieldBanner" hidden></div>
+
+  <!-- NPC CONFLICT ALERT -->
+  <div id="npcAlertHost"></div>
+
+  <!-- WORLD CLOCK TILE -->
+  <section class="bg-white rounded-2xl p-3 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+    <div class="dash-clock-head flex items-center justify-between border-b border-gray-100 pb-2 mb-2 gap-2 flex-wrap">
+      <div class="flex items-center space-x-2 min-w-0"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 truncate">Network Clock · US Timezones &amp; Mexico</h3></div>
+      <span id="pulseClockBadge" title="Atomic network-time sync" class="text-[9px] mono font-bold bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded inline-flex items-center justify-center flex-shrink-0" style="min-width:7.75rem;height:1.25rem">NTP · syncing…</span>
+    </div>
+    <div id="worldClocks" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"></div>
+  </section>
+
+  <!-- ROW 1 -->
+
+  <section id="dashRowMain" class="dash-row-main">
+    <!-- Active PCR/ACR -->
+    <div class="dash-row-pcr bg-white rounded-2xl p-4 border border-gray-200/60 flex flex-col self-start" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-2.5 mb-3">
+        <div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Active PCR / ACR</h3></div>
+        <span class="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded mono font-bold">● LIVE</span>
+      </div>
+      <div id="routingBoard" class="space-y-3">
+        <div class="text-center py-6 text-[10px] text-gray-400">Loading room schedule…</div>
+      </div>
+      <div class="text-[9px] text-gray-500 mono mt-3 pt-2 border-t border-gray-100 flex justify-between"><span>Routing Matrix · Xytech RmBooking</span><button onclick="switchView('schedule');setSchedTab('facility')" class="text-blue-700 font-bold hover:underline">Facilities Gantt →</button></div>
+    </div>
+
+    <!-- Portfolio Infographic -->
+    <div class="dash-row-portfolio bg-white rounded-2xl p-5 border border-gray-200/60 flex flex-col" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+        <div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Production Portfolio Overview</h3><p class="text-[10px] text-gray-500 mt-0.5">All active, pending &amp; planned productions — broadcast cycle FY2025–2026</p></div>
+        <span class="text-[9px] mono font-bold bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded">FY 2025–2026</span>
+      </div>
+      <div id="portfolioStats" class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-5"></div>
+      <div id="portfolioRows" class="space-y-2.5 flex-1"></div>
+      <div class="flex items-center gap-5 mt-4 pt-3 border-t border-gray-100">
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-green-500"></span><span class="text-[9px] text-gray-600">90%+ On Track</span></div>
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-yellow-400"></span><span class="text-[9px] text-gray-600">60–89% Watch</span></div>
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-orange-500"></span><span class="text-[9px] text-gray-600">40–59% Caution</span></div>
+        <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-red-500"></span><span class="text-[9px] text-gray-600">&lt;40% At Risk</span></div>
+      </div>
+    </div>
+
+    <!-- ENG Requests Overview -->
+    <div class="dash-row-eng bg-white rounded-2xl p-5 border border-gray-200/60 flex flex-col" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3 mb-4">
+        <div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">ENG Requests Overview</h3><p class="text-[10px] text-gray-500 mt-0.5">Live camera hits across all productions — tap a tile to filter</p></div>
+        <button onclick="switchView('engrequests')" class="text-[9px] mono font-bold text-blue-700 hover:underline">Open ENG Requests →</button>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div id="engPortfolioStats" class="lg:col-span-2 grid grid-cols-3 gap-2 content-start"></div>
+        <div id="engPortfolioRows" class="lg:col-span-3 space-y-2"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SNAPSHOT -->
+  <section>
+    <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80 mb-5">
+      <div class="flex-shrink-0"><h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900">Broadcast Progress Snapshot</h1><p class="text-xs sm:text-sm text-gray-600 mt-0.5">Live production requirement fulfillment across all major projects.</p></div>
+      <div id="snapFilterPills" class="flex items-center justify-center gap-2 flex-wrap flex-1"></div>
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap flex-shrink-0"><button onclick="openCreateModal()" class="pulse-cta group relative flex items-center gap-2 text-white rounded-xl pl-3 pr-4 py-2 text-xs font-bold transition-all hover:-translate-y-px overflow-hidden"><span class="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 transition-transform group-hover:rotate-90" style="backdrop-filter:blur(2px)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>New Project<span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#E51B24,#EF7B10,#F7B717,#00A15D,#00A0DE,#632E8A);opacity:.85"></span></button><span class="text-xs font-semibold text-gray-600 mono">Sync: <span class="text-gray-900" id="lastSync">Just Now</span></span><button onclick="refreshData()" class="bg-white border border-gray-300 rounded-lg px-4 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50">↻ Refresh</button></div>
+    </div>
+    <div id="snapshotGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"></div>
+    </section>
+
+  <!-- LIVE OPERATION LOG (standalone) -->
+  <section>
+    <div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+      <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Live Operation Log</h3><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span></div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
+        <div onclick="openProject('superbowl')" class="relative pl-4 border-l-2 border-red-300 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">09:12 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">⚠ SB LXI Power Alert</p><p class="text-[10px] text-gray-600 mt-0.5">Venue electrical confirmation escalated to NBC Engineering VP.</p></div>
+        <div onclick="openProject('worldcup')" class="relative pl-4 border-l-2 border-blue-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">08:41 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">Power Management &amp; Contingency Pending</p><p class="text-[10px] text-gray-600 mt-0.5">Nolan Grant committed verified MOS layout for World Cup IBC.</p></div>
+        <div onclick="openProject('superbowl')" class="relative pl-4 border-l-2 border-emerald-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">06:14 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">Super Bowl CAD Document Uploaded</p><p class="text-[10px] text-gray-600 mt-0.5">CAD document uploaded for Super Bowl LXI. Pending approval.</p></div>
+        <div onclick="openProject('worldcup')" class="relative pl-4 border-l-2 border-amber-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">Yesterday</p><p class="text-xs font-semibold text-gray-900 mt-0.5">World Cup Camera Setup Approved</p><p class="text-[10px] text-gray-600 mt-0.5">World Cup Director has approved the camera setup configuration.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== LIVE ASSET TRACKING — fleet telemetry & arrival alerts ===== -->
+  <section class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2.5 mb-3">
+      <div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Live Asset Tracking · Fleet Telemetry</h3><span id="trkCount" class="text-[9px] bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded mono font-bold"></span></div>
+      <div class="flex items-center gap-2">
+        <span class="text-[9px] mono text-gray-500 hidden sm:block">AirTag · GPS · Cellular geofence alerts</span>
+        <button onclick="openTrackerModal()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">+ Link Tracker</button>
+      </div>
+    </div>
+    <div id="dashTrkGrid" class="dash-trk-grid">
+      <div class="dash-trk-map rounded-2xl border border-gray-200 overflow-hidden bg-gray-50 shadow-sm" id="trkMapBox"></div>
+      <div class="dash-trk-list space-y-1.5" id="trkRows"></div>
+    </div>
+  </section>
+
+  <!-- ===== OPERATIONS & FINANCE — portfolio summary (detail lives in each production's Finance tab) ===== -->
+  <section id="dashOpsFinance" class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+    <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-2.5 mb-3">
+      <div class="flex items-center space-x-2"><span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Operations &amp; Finance · Portfolio Summary</h3></div>
+      <div class="flex items-center gap-2"><span class="text-[9px] mono text-gray-500 hidden sm:block">POs · Work Orders · Transmission · Accounts Payable</span><button onclick="openMasterData()" class="text-[10px] font-bold text-purple-700 bg-purple-50 border border-purple-200 rounded-lg px-2.5 py-1.5 hover:bg-purple-100">🏛 WBS / Cost Centers</button><button onclick="openFinBuilder(order[0],\'po\')" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">+ New Document</button></div>
+    </div>
+    <div id="opsConflicts" class="mb-3"></div>
+    <div id="finPortfolioStats" class="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3"></div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left" style="min-width:760px">
+        <thead><tr class="text-[8px] font-bold uppercase tracking-wider text-gray-500 border-b border-gray-200">
+          <th class="py-2 pr-3">Production</th><th class="py-2 pr-3 text-right">Budget</th><th class="py-2 pr-3 text-right">Committed</th><th class="py-2 pr-3 text-right">Invoiced</th><th class="py-2 pr-3 text-right">Paid</th><th class="py-2 pr-3 text-right">Open AP</th><th class="py-2 pr-3">AP Health</th><th class="py-2"></th>
+        </tr></thead>
+        <tbody id="finSummaryRows"></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<!-- PERSONNEL (standalone directory) -->
+<div id="view-personnel" class="view-pane space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">
+    <div>
+      <h1 class="text-2xl font-semibold tracking-tight text-gray-900">Personnel Directory</h1>
+      <p class="text-sm text-gray-600 mt-0.5">Every person across all productions — search, add, and edit. Crews are built from this directory.</p>
+    </div>
+    <div class="flex items-center gap-2 flex-wrap"><span id="personnelCount" class="text-xs mono text-gray-600"></span>
+      <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Personnel · Excel</span>
+      <button onclick="xlsxTemplate('personnel')" title="Download a pre-formatted template for real personnel upload" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Template</button>
+      <button onclick="xlsxImportOpen('personnel',null)" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2 py-1.5 hover:bg-gray-800">Import</button>
+      <button onclick="xlsxExport('personnel',null)" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Export</button>
+      <button onclick="perExportJSON()" title="Machine-readable export — secrets stripped, exempt people omitted" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">JSON</button>
+      <button onclick="perExportCSV()" title="Machine-readable export — secrets stripped, exempt people omitted" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">CSV</button>
+      <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Microsoft 365</span>
+      <button onclick="syncMicrosoftContacts()" title="Link Outlook / Microsoft enterprise contacts (Graph stub — configure M365Config to go live)" class="text-[10px] font-bold text-[#0f6cbd] border border-[#0f6cbd]/40 rounded-lg px-2 py-1.5 hover:bg-[#0f6cbd]/08">Link Contacts</button>
+      <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Talent</span>
+      <button onclick="xlsxTemplate('talent')" title="Download a pre-formatted template" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Template</button>
+      <button onclick="xlsxImportOpen('talent',null)" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2 py-1.5 hover:bg-gray-800">Import</button>
+      <button onclick="xlsxExport('talent',null)" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Export</button>
+      <button onclick="openPersonnelAdd()" class="flex items-center gap-1.5 text-[11px] font-bold text-white bg-blue-600 rounded-lg px-3 py-2 hover:bg-blue-700"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Add Personnel</button></div>
+  </div>
+  <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 flex flex-wrap items-start gap-3">
+    <span class="text-[9px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-300 rounded px-1.5 py-0.5 flex-shrink-0 mt-0.5">Demo data</span>
+    <div class="min-w-0 flex-1 text-[11px] text-amber-950/90 leading-relaxed">
+      <b>Seeded roster is synthetic</b> — names, emails, and phones are fictional for demos and safe to show on stage.
+      Load <b>real</b> personnel with <b>Template → Import</b> (Excel/CSV keeps the column contract), or prepare
+      <b>Link Contacts</b> for Outlook / Microsoft 365 enterprise directory (Graph stub until IT fills <span class="mono">M365Config</span>).
+    </div>
+  </div>
+  <div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+    <div class="flex flex-wrap items-center gap-2 pb-4 border-b border-gray-200 mb-4">
+      <div class="relative flex-1 min-w-[12rem] max-w-xs"><svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="personnelFilter" oninput="renderPersonnelDir()" type="text" placeholder="Search name, position, email…" class="w-full text-[11px] border border-gray-300 rounded-lg pl-8 pr-3 py-1.5" style="outline:none"></div>
+      <select id="personnelProject" onchange="renderPersonnelDir()" class="text-[11px] border border-gray-300 rounded-lg px-2 py-1.5 bg-white" style="outline:none"></select>
+      <select id="personnelGroup" onchange="renderPersonnelDir()" class="text-[11px] border border-gray-300 rounded-lg px-2 py-1.5 bg-white" style="outline:none">
+        <option value="">All Groups</option><option>Field &amp; Technical</option><option>IT / Network &amp; Engineering</option><option>PCR / Control Room</option><option>Production &amp; Executive</option>
+      </select>
+      <select id="personnelShift" onchange="renderPersonnelDir()" class="text-[11px] border border-gray-300 rounded-lg px-2 py-1.5 bg-white" style="outline:none">
+        <option value="">All Personnel</option><option value="on">On Shift only</option><option value="off">Off Shift</option>
+      </select>
+      <select id="personnelCategory" onchange="renderPersonnelDir()" class="text-[11px] border border-gray-300 rounded-lg px-2 py-1.5 bg-white" style="outline:none">
+        <option value="">All Categories</option><option>Employee</option><option>Freelancer</option><option>Vendor</option><option>Talent / On-Air</option>
+      </select>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs font-medium text-gray-700">
+        <thead class="sticky top-0 bg-white"><tr class="text-gray-500 uppercase tracking-wider text-[9px] border-b border-gray-100"><th class="pb-2">Name</th><th class="pb-2">ID &middot; Category</th><th class="pb-2">Position</th><th class="pb-2">Group</th><th class="pb-2">Passport / ID</th><th class="pb-2">Home</th><th class="pb-2">Contact</th><th class="pb-2">Status</th><th class="pb-2 text-right">Edit</th></tr></thead>
+        <tbody id="personnelBody" class="divide-y divide-gray-100"></tbody>
+      </table>
+    </div>
+    <div class="mt-3 flex items-center justify-end text-[10px] text-gray-500"><span class="mono">Click a name for full contact &amp; schedule card</span></div>
+  </div>
+</div>
+
+<div id="view-kb" class="view-pane space-y-6">
+  <div id="kbHost"></div>
+</div>
+
+<!-- SCHEDULE -->
+<!-- v31 PHASE 4: PERSONNEL PORTAL (traveler-facing itinerary dashboard) -->
+<div id="view-portal" class="view-pane space-y-6"><div id="portalHost"></div></div>
+<div id="view-schedule" class="view-pane space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80"><div><h1 class="text-2xl font-semibold tracking-tight text-gray-900 inline-flex items-center gap-2.5">Master Production Schedule <span id="schedConflictBubble"></span></h1><p class="text-sm text-gray-600 mt-0.5">Broadcast air grid, facility &amp; control-room bookings, and Xytech scheduling bridge.</p></div><div class="flex items-center gap-3"><button onclick="downloadScheduleBook(order[0])" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Schedule Book PDF</button><button type="button" onclick="try{pulseSyncCalendar(order[0]);}catch(e){if(typeof toast==='function')toast(String(e));}" class="flex items-center gap-1.5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-100" title="Download schedule as .ics">Export .ics</button></div></div>
+  <div id="schedTabBar" class="flex justify-center"></div>
+  <div class="bg-white rounded-2xl p-5 border border-gray-200/60 overflow-x-auto" style="box-shadow:0 4px 20px rgba(0,0,0,.03)" id="scheduleGantt"></div>
+</div>
+
+<!-- VENDORS (standalone directory) -->
+<div id="view-vendors" class="view-pane space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">
+    <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Vendor Directory</h1><p class="text-sm text-gray-600 mt-0.5">Approved suppliers, contacts, contracts &amp; documents across every production.</p></div>
+    <div class="flex items-center gap-2 flex-wrap"><button onclick="openCsvImport('vendors')" class="text-xs font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50">Import CSV</button>
+      <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Excel</span>
+      <button onclick="xlsxTemplate('vendors')" title="Download a pre-formatted template" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Template</button>
+      <button onclick="xlsxImportOpen('vendors',null)" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2 py-1.5 hover:bg-gray-800">Import</button>
+      <button onclick="xlsxExport('vendors',null)" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Export</button>
+      <button onclick="vendorsAddNew()" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-4 py-1.5 hover:bg-blue-700">+ New Vendor</button></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <div class="lg:col-span-1 bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
+      <div class="relative mb-3"><svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="vendorsSearch" oninput="renderVendorsView()" placeholder="Search vendors…" class="w-full text-[11px] border border-gray-300 rounded-lg pl-8 pr-3 py-1.5" style="outline:none"></div>
+      <div id="vendorsListPage" class="space-y-1.5"></div>
+    </div>
+    <div class="lg:col-span-2" id="vendorsDetailPage"></div>
+  </div>
+</div>
+
+<!-- EQUIPMENT LIBRARY (standalone inventory) -->
+<div id="view-equipment" class="view-pane space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">
+    <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Equipment Library</h1><p class="text-sm text-gray-600 mt-0.5">Barcode-tracked inventory — serial numbers, check-in / check-out, and live status across every production.</p></div>
+    <div class="flex items-center gap-2">
+      <button onclick="openScan()" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14"/></svg> Scan Barcode</button>
+      <button onclick="openCsvImport('equipment')" class="text-xs font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50">Import CSV</button>
+      <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Excel</span>
+      <button onclick="xlsxTemplate('equipment')" title="Download a pre-formatted template" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Template</button>
+      <button onclick="xlsxImportOpen('equipment',null)" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2 py-1.5 hover:bg-gray-800">Import</button>
+      <button onclick="xlsxExport('equipment',null)" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Export</button>
+      <button onclick="invAddNew()" class="text-xs font-bold text-blue-700 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50">+ New Item</button>
+    </div>
+  </div>
+  <div id="equipStatBand" class="grid grid-cols-2 sm:grid-cols-5 gap-2"></div>
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="relative flex-1 max-w-xs"><svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="equipSearch" oninput="setInvSearch(this.value)" placeholder="Search name, barcode, serial, assignment…" class="w-full text-[11px] border border-gray-300 rounded-lg pl-8 pr-3 py-1.5" style="outline:none"></div>
+    <div class="inline-flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      <button onclick="setInvFilter('status','all')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="isf_all">All</button>
+      <button onclick="setInvFilter('status','available')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="isf_available">Available</button>
+      <button onclick="setInvFilter('status','checked-out')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="isf_checked-out">Out</button>
+      <button onclick="setInvFilter('status','maintenance')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="isf_maintenance">Maint.</button>
+      <button onclick="setInvFilter('status','missing')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="isf_missing">Missing</button>
+    </div>
+  </div>
+  <div id="equipCatChips" class="flex flex-wrap items-center gap-1.5"></div>
+  <div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><div id="equipBody"></div></div>
+</div>
+
+<!-- SCAN BARCODE MODAL -->
+<div id="scanOverlay" onclick="if(event.target===this)closeScan()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5)">
+  <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:420px;max-height:90vh;overflow-y:auto">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100"><h3 class="text-sm font-bold text-gray-900 flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14"/></svg> Scan Barcode</h3><button onclick="closeScan()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button></div>
+    <div class="p-4 space-y-3">
+      <div class="flex items-center gap-2">
+        <input id="scanInput" onkeydown="if(event.key==='Enter')scanLookup()" placeholder="Scan or type a barcode (NBCU-…)" class="flex-1 text-[12px] mono border border-gray-300 rounded-lg px-3 py-2" style="outline:none">
+        <button onclick="scanLookup()" class="text-[11px] font-bold text-white bg-gray-900 rounded-lg px-3 py-2 hover:bg-gray-800">Look Up</button>
+      </div>
+      <button onclick="scanSimulate()" class="w-full text-[10px] font-semibold text-gray-500 border border-dashed border-gray-300 rounded-lg py-1.5 hover:bg-gray-50">⚲ Simulate a hardware scan (demo)</button>
+      <div id="scanResult"></div>
+    </div>
+  </div>
+</div>
+
+<!-- INVENTORY DETAIL MODAL -->
+<div id="invDetailOverlay" onclick="if(event.target===this)closeInvDetail()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+  <div id="invDetailBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:560px;max-height:90vh;overflow:hidden"></div>
+</div>
+
+<!-- CHECK-OUT MODAL -->
+<div id="checkoutOverlay" onclick="if(event.target===this)closeCheckout()" style="display:none;position:fixed;inset:0;z-index:65;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+  <div id="checkoutBox" class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:420px;max-height:90vh;overflow-y:auto"></div>
+</div>
+
+
+<!-- ===== COMMUNICATIONS HUB VIEW ===== -->
+<div id="view-comms" class="view-pane space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">
+    <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Omni</h1><p class="text-sm text-gray-600 mt-0.5">Unified operations comms — Outlook, Teams &amp; TOC alerts, every thread linked to a production, invoice, PO, ENG hit or event.</p></div>
+    <div class="flex items-center gap-3">
+      <span id="commsStats" class="text-xs mono text-gray-600 hidden lg:block"></span>
+      <button onclick="openCompose('production',order[0],'email')" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-4 py-1.5 hover:bg-blue-700">+ New Message</button>
+    </div>
+  </div>
+  <div id="commsStatBand" class="grid grid-cols-3 sm:grid-cols-5 gap-2"></div>
+  <div id="commsAlertHost"></div>
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="relative flex-1 max-w-xs"><svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="commsSearch" oninput="setCommsSearchVal(this.value)" placeholder="Search messages, people, records…" class="w-full text-[11px] border border-gray-300 rounded-lg pl-8 pr-3 py-1.5" style="outline:none"></div>
+    <div class="inline-flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      <button onclick="setCommsFilter('channel','all')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="cf_all">All</button>
+      <button onclick="setCommsFilter('channel','email')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="cf_email">Outlook</button>
+      <button onclick="setCommsFilter('channel','teams')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="cf_teams">Teams</button>
+      <button onclick="setCommsFilter('channel','toc')" class="text-[10px] font-bold px-2.5 py-1 rounded-md" id="cf_toc">TOC</button>
+    </div>
+    <select onchange="setCommsFilter('linkType',this.value)" class="text-[11px] border border-gray-300 rounded-lg px-2 py-1.5 bg-white" style="outline:none">
+      <option value="all">All record types</option><option value="production">Productions</option><option value="inv">Invoices</option><option value="po">Purchase Orders</option><option value="wo">Work Orders</option><option value="eng">ENG Requests</option><option value="npc">NPC Events</option>
+    </select>
+  </div>
+  <div id="commsBody" class="space-y-2"></div>
+</div>
+
+<!-- THREAD OVERLAY -->
+<div id="commsMsgOverlay" onclick="if(event.target===this)closeCommsMsg()" style="display:none;position:fixed;inset:0;z-index:70;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+  <div id="commsMsgBox" class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:560px;max-height:84vh;display:flex;flex-direction:column;overflow:hidden"></div>
+</div>
+
+<!-- COMPOSE MODAL -->
+<div id="composeOverlay" onclick="if(event.target===this)closeCompose()" style="display:none;position:fixed;inset:0;z-index:72;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto;background:rgba(17,17,18,.52);backdrop-filter:blur(5px)">
+  <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:560px;margin:auto">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112,#1e1e20)">
+      <p class="text-[11px] font-bold text-white uppercase tracking-widest">New Message</p>
+      <button onclick="closeCompose()" class="text-gray-400 hover:text-white text-lg leading-none">✕</button>
+    </div>
+    <div class="p-5 space-y-3">
+      <div class="flex gap-1.5" id="cmpChannelBtns">
+        <button onclick="setComposeChannel('email')" id="cmpCh_email" class="flex-1 text-[10px] font-bold py-2 rounded-lg border-2 border-gray-900 bg-gray-900 text-white">✉ Outlook Email</button>
+        <button onclick="setComposeChannel('teams')" id="cmpCh_teams" class="flex-1 text-[10px] font-bold py-2 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-400">💬 Teams Message</button>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Link to</label>
+          <select id="cmp_linkType" onchange="buildComposeIdOptions()" class="w-full text-xs border-2 border-gray-200 rounded-lg px-2.5 py-2 bg-white" style="outline:none"></select></div>
+        <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Record</label>
+          <select id="cmp_linkId" class="w-full text-xs border-2 border-gray-200 rounded-lg px-2.5 py-2 bg-white" style="outline:none"></select></div>
+      </div>
+      <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">To</label>
+        <input id="cmp_to" class="w-full text-xs border-2 border-gray-200 rounded-lg px-2.5 py-2 font-mono text-[11px]" style="outline:none"></div>
+      <div id="cmpSubjectWrap"><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Subject</label>
+        <input id="cmp_subject" class="w-full text-xs border-2 border-gray-200 rounded-lg px-2.5 py-2" style="outline:none"></div>
+      <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Message</label>
+        <div id="cmp_body_wrap"></div></div>
+      <div class="flex items-center gap-2 pt-1">
+        <button onclick="composeSend()" class="flex-1 bg-gray-900 text-white text-xs font-bold rounded-xl py-2.5 hover:bg-gray-800"><span id="cmpSendLabel">Log &amp; open in Outlook</span></button>
+        <button onclick="closeCompose()" class="text-xs text-gray-400 hover:text-gray-700 px-3">Cancel</button>
+      </div>
+      <p class="text-[9px] text-gray-400 text-center">Logged in NBC Pulse &amp; opened in your Microsoft client to send. Live two-way sync requires Graph API (server).</p>
+    </div>
+  </div>
+</div>
+
+<!-- ENG REQUESTS -->
+<div id="view-engrequests" class="view-pane space-y-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">
+    <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">ENG Requests</h1><p class="text-sm text-gray-600 mt-0.5">Live camera hit logistics — crew, camera package, transmission, audio &amp; standard support gear.</p></div>
+    <div class="flex items-center gap-3">
+      <span id="engStats" class="text-xs mono text-gray-600"></span>
+      <button onclick="openEngBook()" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> ENG Sheet PDF</button>
+      <button onclick="openEngModal()" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-4 py-1.5 hover:bg-blue-700">+ New ENG Request</button>
+    </div>
+  </div>
+  <div id="engBoard" class="space-y-4"></div>
+</div>
+
+<!-- FINANCE — enterprise accounting suite (v35) -->
+<div id="view-finance" class="view-pane space-y-5"></div>
+
+<!-- project detail views are created dynamically into this container -->
+<div id="projectViews"></div>
+
+
+<footer id="provenanceStamp" class="pulse-os-foot">
+  <div class="pulse-os-pill">
+    <span class="pulse-os-bar" aria-hidden="true"></span>
+    <span class="pulse-os-copy">Powered by <strong>Techbook OS</strong> — a collaborative digital techbook OS</span>
+    <span class="pulse-os-sep" aria-hidden="true"></span>
+    <span class="pulse-os-brand mono">NBC Pulse</span>
+  </div>
+</footer>
+</main>
+
+<footer class="w-full bg-white border-t border-gray-200/70 flex items-center justify-between px-6 text-[10px] font-medium text-gray-500 mt-6" style="height:48px">
+  <div class="mono">NBCUniversal Media IT Engineering &amp; Broadcast Telemetry · Cycle FY2025–2026</div>
+  <div class="flex space-x-4 mono"><button onclick="toast('Core diagnostics: all routing matrices nominal · 0 faults')" class="hover:text-black">Core Diagnostics</button><span>·</span><button onclick="toast('MAM API · docs open in operations wiki')" class="hover:text-black">MAM API Documentation</button><span>·</span><button onclick="charlieAsk('Give me a portfolio status overview')" class="hover:text-black">Engineering Changelog</button></div>
+</footer>
+
+<!-- ============================================================
+     FINANCIAL DOCUMENT BUILDER MODAL
+     Create PO / WO / Invoice with line items, vendor picker,
+     project metadata, and instant PDF export
+     ============================================================ -->
+<div id="finBuilderModal" class="hidden" style="position:fixed;inset:0;z-index:68;display:none;align-items:flex-start;justify-content:center;padding:24px 16px;overflow-y:auto;background:rgba(17,17,18,.52);backdrop-filter:blur(5px)" onclick="if(event.target===this)closeFinBuilder()">
+  <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:720px;margin:auto">
+
+    <!-- header -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1e20 100%)">
+      <div class="flex items-center gap-3">
+        <div class="flex gap-0.5">
+          <div style="width:6px;height:26px;background:#F7B717;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#EF7B10;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#E51B24;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#632E8A;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#00A0DE;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#00A15D;border-radius:2px"></div>
+        </div>
+        <div>
+          <p class="text-[11px] font-bold text-white uppercase tracking-widest">New Financial Document</p>
+          <p class="text-[9px] text-gray-400 mt-0.5">NBC Pulse · Broadcast Operations CRM</p>
+        </div>
+      </div>
+      <button onclick="closeFinBuilder()" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-lg transition-colors">✕</button>
+    </div>
+
+    <div class="p-6 space-y-5">
+
+      <!-- DOC TYPE + PRODUCTION ROW -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Document Type</label>
+          <div class="flex gap-1.5" id="fbDocTypeBtns">
+            <button onclick="fbSetType('po')" id="fbType_po" class="flex-1 text-[10px] font-bold py-2 rounded-lg border-2 border-gray-900 bg-gray-900 text-white transition-all">Purchase Order</button>
+            <button onclick="fbSetType('wo')" id="fbType_wo" class="flex-1 text-[10px] font-bold py-2 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-400 transition-all">Work Order</button>
+            <button onclick="fbSetType('inv')" id="fbType_inv" class="flex-1 text-[10px] font-bold py-2 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-400 transition-all">Invoice</button>
+          </div>
+        </div>
+        <div>
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Production</label>
+          <select id="fb_prod" onchange="fbRefreshVendors()" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 bg-white focus:border-gray-900 outline-none font-medium"></select>
+        </div>
+      </div>
+
+      <!-- PROJECT INFO BANNER (auto-populated) -->
+      <div id="fbProjBanner" class="rounded-xl border border-gray-200 bg-gray-50 p-3 grid grid-cols-2 sm:grid-cols-4 gap-2"></div>
+
+      <!-- VENDOR / PARTY -->
+      <div id="fbVendorSection">
+        <div class="flex items-center justify-between mb-1.5">
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500" id="fbVendorLabel">Vendor</label>
+          <button onclick="fbOpenVendorPicker()" class="text-[9px] font-bold text-blue-700 hover:underline">Browse vendor directory →</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <input id="fb_vendor" placeholder="Vendor / party name" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none" oninput="fbSyncVendorFields()" />
+          <input id="fb_vendor_addr" placeholder="Address (auto-fills from directory)" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono text-[10px]" />
+          <input id="fb_vendor_contact" placeholder="Contact name" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none" />
+          <input id="fb_vendor_email" placeholder="Contact email" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono text-[10px]" />
+        </div>
+      </div>
+
+      <!-- DATES + TERMS -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div>
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Issue Date</label>
+          <input type="date" id="fb_issue_date" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono" />
+        </div>
+        <div id="fbDueDateWrap">
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Due Date</label>
+          <input type="date" id="fb_due_date" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono" />
+        </div>
+        <div id="fbTermsWrap">
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Payment Terms</label>
+          <select id="fb_terms" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 bg-white focus:border-gray-900 outline-none">
+            <option value="Net 30">Net 30</option>
+            <option value="Net 15">Net 15</option>
+            <option value="Net 45">Net 45</option>
+            <option value="Net 60">Net 60</option>
+            <option value="Due on Receipt">Due on Receipt</option>
+          </select>
+        </div>
+        <div id="fbRefWrap">
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5" id="fbRefLabel">PO Reference</label>
+          <select id="fb_ref" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 bg-white focus:border-gray-900 outline-none font-mono"></select>
+        </div>
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div>
+        <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Description / Scope of Work</label>
+        <input id="fb_desc" placeholder="e.g. ND1 mobile unit — World Cup compound package" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none" />
+      </div>
+
+      <!-- LINE ITEMS -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500">Line Items</label>
+          <button onclick="fbAddLine()" class="text-[9px] font-bold text-blue-700 hover:underline">+ Add Line</button>
+        </div>
+        <div class="rounded-xl border-2 border-gray-200 overflow-hidden">
+          <div class="grid text-[8px] font-bold uppercase tracking-wider text-gray-400 bg-gray-50 px-3 py-2 border-b border-gray-200" style="grid-template-columns:1fr 100px 90px 36px">
+            <span>Description</span><span class="text-right">Unit Price</span><span class="text-right">Qty</span><span></span>
+          </div>
+          <div id="fbLines" class="divide-y divide-gray-100"></div>
+          <div class="grid px-3 py-2.5 bg-gray-50 border-t border-gray-200" style="grid-template-columns:1fr 100px 90px 36px">
+            <span class="text-[9px] font-bold uppercase tracking-wider text-gray-500 col-span-2">Total</span>
+            <span id="fbTotal" class="text-right text-sm font-bold mono text-gray-900 col-span-1">$0</span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOTES + GL -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Notes / Special Instructions</label>
+          <div id="fb_notes_wrap"></div>
+        </div>
+        <div class="space-y-2">
+          <div>
+            <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">GL Code</label>
+            <input id="fb_gl" placeholder="e.g. GL-7420-BCAST-OPS" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono text-[10px]" />
+          </div>
+          <div id="fbLinkedWOWrap">
+            <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5" id="fbLinkedLabel">Linked Work Order</label>
+            <select id="fb_linked" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 bg-white focus:border-gray-900 outline-none font-mono"></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION ROW -->
+      <div class="flex items-center gap-3 pt-2 border-t border-gray-100">
+        <button onclick="fbSaveAndClose()" class="flex-1 bg-gray-900 text-white text-xs font-bold rounded-xl py-3 hover:bg-gray-800 transition-colors">Save Document</button>
+        <button onclick="fbSaveAndPreview()" class="flex-1 border-2 border-gray-900 text-gray-900 text-xs font-bold rounded-xl py-3 hover:bg-gray-50 transition-colors">Save &amp; Preview / Export PDF</button>
+        <button onclick="closeFinBuilder()" class="text-xs text-gray-400 hover:text-gray-700 px-3">Cancel</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- VENDOR PICKER (inside builder flow) -->
+<div id="finVendorPicker" class="hidden" style="position:fixed;inset:0;z-index:72;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.6);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeVendorPicker()">
+  <div class="bg-white rounded-2xl shadow-2xl" style="width:500px;max-width:94vw;max-height:80vh;display:flex;flex-direction:column">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 flex-shrink-0">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-gray-700">Vendor Directory</h3>
+      <button onclick="closeVendorPicker()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
+    </div>
+    <div class="p-3 border-b border-gray-100 flex-shrink-0">
+      <input id="vpSearch" placeholder="Search vendors…" oninput="renderVendorPicker()" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 outline-none focus:border-gray-900" />
+    </div>
+    <div id="vpList" class="overflow-y-auto flex-1 p-2"></div>
+    <div class="p-3 border-t border-gray-100 flex-shrink-0">
+      <button onclick="fbQuickAddVendor()" class="w-full text-[10px] font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg py-2 hover:bg-blue-100">+ Add new vendor to directory</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ENG REQUEST MODAL -->
+<div id="engModal" class="eng-modal hidden" style="position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:hidden;background:rgba(17,17,18,.62)" onclick="if(event.target===this)closeEngModal()">
+  <div id="engModalBox" class="eng-modal-box bg-white rounded-2xl shadow-2xl w-full" style="max-width:760px;margin:auto">
+    <div id="engModalHead" class="eng-modal-head flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1e20 100%)">
+      <div class="flex items-center gap-3">
+        <div class="flex gap-0.5"><div style="width:6px;height:26px;background:#F7B717;border-radius:2px"></div><div style="width:6px;height:26px;background:#EF7B10;border-radius:2px"></div><div style="width:6px;height:26px;background:#E51B24;border-radius:2px"></div><div style="width:6px;height:26px;background:#632E8A;border-radius:2px"></div><div style="width:6px;height:26px;background:#00A0DE;border-radius:2px"></div><div style="width:6px;height:26px;background:#00A15D;border-radius:2px"></div></div>
+        <div><p class="text-[11px] font-bold text-white uppercase tracking-widest" id="engModalTitle">New ENG Request</p><p class="text-[9px] text-gray-400 mt-0.5">Live Camera Hit · Logistics &amp; Gear</p></div>
+      </div>
+      <button onclick="closeEngModal()" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-lg">✕</button>
+    </div>
+
+    <div class="eng-modal-body p-6 space-y-5">
+      <!-- CORE -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="col-span-2"><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Hit Name / Slug</label><input id="eng_name" placeholder="e.g. Zocalo Roof — Pregame Live" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none"></div>
+        <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Production</label><select id="eng_prod" onchange="engProdChange(this)" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 bg-white focus:border-gray-900 outline-none"></select></div>
+        <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Status</label><select id="eng_status" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 bg-white focus:border-gray-900 outline-none"><option>Requested</option><option>Confirmed</option><option>Crewed</option><option>Gear Pulled</option><option>On Location</option><option>Complete</option></select></div>
+        <div class="col-span-2 sm:col-span-4"><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Shoot Dates / Window <span class="text-gray-400 normal-case font-normal">— multi-day OK</span></label>
+          <div class="flex items-center gap-2">
+            <input id="eng_window" placeholder="Jun 11–13 · 19:05 ET" class="flex-1 min-w-0 text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none">
+            <button type="button" data-dp-anchor="1" onclick="pulseOpenDatePop('eng_window',this,{tz:'ET',rangeHint:true})" class="flex-shrink-0 text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">📅 Calendar</button>
+          </div>
+          <p class="text-[9px] text-gray-400 mt-1">One calendar: click start, then end for multi-day shoots. Time &amp; TZ optional.</p>
+        </div>
+      </div>
+
+      <!-- QUICK-CREATE PRODUCTION (v35: build a production on the fly) -->
+      <div id="engNewProd" style="display:none" class="rounded-xl border border-blue-200 bg-blue-50/50 p-3.5">
+        <div class="flex items-center justify-between mb-2"><p class="text-[9px] font-bold uppercase tracking-wider text-blue-700">New Production — quick create</p>
+          <button type="button" onclick="engCancelQuickProd()" class="text-blue-400 hover:text-blue-700 text-sm">✕</button></div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+          <input id="enp_name" placeholder="Production name *" class="col-span-2 text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none">
+          <input id="enp_customer" placeholder="Customer / network" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none">
+          <input id="enp_venue" placeholder="Venue / city" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none">
+          <input id="enp_date" type="date" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono">
+          <select id="enp_status" class="text-xs border-2 border-gray-200 rounded-lg px-3 py-2 bg-white focus:border-gray-900 outline-none"><option>Pre-Production</option><option>Planning</option><option>Active</option><option>Live</option></select>
+        </div>
+        <div class="flex items-center gap-2"><button type="button" onclick="engQuickProdCreate()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-2 hover:bg-gray-800">✓ Create &amp; use</button>
+          <button type="button" onclick="engCancelQuickProd()" class="text-[10px] font-bold text-gray-500 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">Cancel</button>
+          <span class="text-[9px] text-gray-400">Great for stand-ups &amp; live news hits — the hit attaches to this new production.</span></div>
+      </div>
+
+      <!-- LOCATION (PRIMARY, v35) — search · map · weather · shadows -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">Location — Search · Map · Weather · Shadows</p>
+        <div id="eng_geobox" class="mb-2"></div>
+        <div class="mb-2"><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Location / Venue</label>
+          <input id="eng_location" placeholder="e.g. Hyatt Polanco — Drawing Room C" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none"></div>
+        <p class="text-[9px] text-gray-400 mb-2">Search a venue or address to drop it on the map, pull live weather, and cast real sun-shadows. GPS is a courtesy — leave it blank and the hit still saves; the map, weather &amp; shadows simply stay off until coordinates exist.</p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-2">
+          <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Latitude <span class="text-gray-400 normal-case font-normal">(optional)</span></label><input id="eng_lat" placeholder="19.4339" onchange="engLocChanged()" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono text-[10px]"></div>
+          <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Longitude <span class="text-gray-400 normal-case font-normal">(optional)</span></label><input id="eng_lng" placeholder="-99.1330" onchange="engLocChanged()" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none font-mono text-[10px]"></div>
+          <div class="col-span-2 flex items-end gap-2 flex-wrap">
+            <button onclick="engUseProdVenue()" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">📍 Use production venue</button>
+            <button onclick="engClearGeo()" class="text-[10px] font-bold text-gray-500 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">Clear GPS</button>
+            <button onclick="engOpenSurvey()" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">📋 Full Site Survey →</button>
+          </div>
+        </div>
+        <div id="eng_mapPrev" class="rounded-xl overflow-hidden border border-gray-200 relative bg-gray-50" style="height:180px;display:none"></div>
+        <div id="eng_shadeHost" class="mt-3" style="display:none"></div>
+        <div class="flex flex-wrap items-center gap-2 mt-2">
+          <button onclick="engSimWx()" class="text-[10px] font-bold text-amber-700 border border-amber-300 bg-amber-50 rounded-lg px-3 py-2 hover:bg-amber-100">⚠ Demo: simulate severe weather</button>
+          <span id="eng_wxLine" class="text-[10px] text-gray-500 mono"></span>
+        </div>
+        <div id="eng_wxPanel" class="mt-2.5"></div>
+      </div>
+
+      <!-- PERSONNEL & CAMERAS — one package per camera (v34) -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Personnel &amp; Camera Packages <span id="eng_camCount" class="text-gray-400 font-normal normal-case"></span></p>
+          <button onclick="engAddCamera()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">+ Add Camera</button>
+        </div>
+        <p class="text-[9px] text-gray-400 mb-2.5">Each camera gets its own operator, body, lens, prompter &amp; vanity — add one tile per camera on the hit.</p>
+        <div id="eng_camList" class="space-y-2.5"></div>
+      </div>
+
+      <!-- TRANSMISSION — multiple bonded encoders (Work Item 5) -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Transmission — Bonded Encoders</p>
+          <button onclick="engAddLiveu()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">+ Add Encoder</button>
+        </div>
+        <div id="eng_liveuList" class="space-y-2"></div>
+      </div>
+
+      <!-- AUDIO PACKAGES (multiple) -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Audio Packages <span id="eng_audioCount" class="text-gray-400 font-normal normal-case"></span></p>
+          <button type="button" onclick="engAddAudioPkg()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">+ Add Audio Package</button>
+        </div>
+        <p class="text-[9px] text-gray-400 mb-2.5">Add one package per talent / zone / mix (e.g. host lav + IFB, sideline handheld).</p>
+        <div id="eng_audioList" class="space-y-2"></div>
+      </div>
+
+      <!-- IFB SIGNAL ROUTING — multiple REMs & TIFFs with personnel (Work Item 5) -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">IFB Routing — REM (Talent Mix-Minus)</p>
+          <button onclick="engAddRem()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">+ Add REM</button>
+        </div>
+        <div id="eng_remList" class="space-y-2 mb-3"></div>
+        <div class="flex items-center justify-between mb-2 pt-2 border-t border-gray-100">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">IFB Routing — TIFF (Phone Interface)</p>
+          <button onclick="engAddTiff()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">+ Add TIFF</button>
+        </div>
+        <div id="eng_tiffList" class="space-y-2"></div>
+      </div>
+
+      <!-- SITE SURVEY — location photos for this hit (v34) -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <div class="flex items-center justify-between mb-1.5">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Site Survey — Location Photos <span id="eng_photoCount" class="text-gray-400 font-normal normal-case"></span></p>
+          <label class="text-[9px] font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800 cursor-pointer">+ Add photos<input type="file" accept="image/*" multiple onchange="engAddPhotos(event)" style="display:none"></label>
+        </div>
+        <p class="text-[9px] text-gray-400 mb-2">Photos of the location — camera position, power drops, sight-lines, parking, tie-ins. They travel with this request and print into the ENG PDF. Images are downscaled for storage.</p>
+        <div id="eng_photoGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2"></div>
+      </div>
+
+      <!-- LIGHTING — ENG field-kit fixtures (v34) -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <div class="flex items-center justify-between mb-2 flex-wrap gap-1">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Lighting Package <span class="text-gray-400 font-normal normal-case">— fixtures ENG crews carry for interviews &amp; live hits</span></p>
+          <span class="flex items-center gap-1.5"><span class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Setup</span>
+            <select id="eng_lightSetup" class="text-[10px] border-2 border-gray-200 rounded-lg px-2 py-1 bg-white focus:border-gray-900 outline-none"></select></span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mb-2.5">
+          <select id="eng_lightCat" onchange="engLightCatChange()" class="text-[11px] border-2 border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:border-gray-900 outline-none"></select>
+          <select id="eng_lightModel" onchange="engLightModelChange()" class="text-[11px] border-2 border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:border-gray-900 outline-none" style="min-width:180px"></select>
+          <input id="eng_lightOther" placeholder="Describe the fixture…" class="text-[11px] border-2 border-gray-200 rounded-lg px-2.5 py-1.5 focus:border-gray-900 outline-none" style="display:none;min-width:160px">
+          <input id="eng_lightCount" type="number" min="1" value="1" class="w-14 text-[11px] border-2 border-gray-200 rounded-lg px-2 py-1.5 focus:border-gray-900 outline-none font-mono" title="Count">
+          <button onclick="engAddLight()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800">+ Add</button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mb-2.5 -mt-1">
+          <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Auto-filled:</span>
+          <input id="eng_lightCt" placeholder="Color temp" class="text-[10px] border border-gray-200 rounded px-2 py-1 focus:border-gray-900 outline-none" style="width:150px">
+          <input id="eng_lightW" placeholder="Watts" class="text-[10px] border border-gray-200 rounded px-2 py-1 focus:border-gray-900 outline-none font-mono" style="width:70px">
+          <input id="eng_lightMount" placeholder="Mount" class="text-[10px] border border-gray-200 rounded px-2 py-1 focus:border-gray-900 outline-none" style="width:120px">
+        </div>
+        <div id="eng_lightList" class="space-y-1.5"></div>
+        <p id="eng_lightLoad" class="text-[9px] text-gray-500 mono mt-2"></p>
+      </div>
+
+      <!-- STANDARD SUPPORT GEAR — categorized picker (Work Item 5) -->
+      <div class="rounded-xl border border-gray-200 p-3.5">
+        <div class="flex items-center justify-between mb-2 flex-wrap gap-1">
+          <p class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Standard Support Gear <span class="text-gray-400 font-normal normal-case">— pick by category, set quantities</span></p>
+          <span class="flex items-center gap-1.5"><span class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Catalog</span>
+            <button onclick="xlsxTemplate('gearcat')" class="text-[9px] font-bold text-gray-500 border border-gray-200 rounded px-1.5 py-0.5 hover:bg-gray-50" title="Gear catalog template">Template</button>
+            <button onclick="xlsxImportOpen('gearcat',null)" class="text-[9px] font-bold text-gray-500 border border-gray-200 rounded px-1.5 py-0.5 hover:bg-gray-50">Import</button>
+            <button onclick="xlsxExport('gearcat',null)" class="text-[9px] font-bold text-gray-500 border border-gray-200 rounded px-1.5 py-0.5 hover:bg-gray-50">Export</button>
+            <button onclick="engResetGear()" class="text-[9px] font-bold text-blue-700 hover:underline ml-1">Reset to standard kit</button></span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 mb-2.5">
+          <select id="eng_gearCat" onchange="engGearCatChange()" class="text-[11px] border-2 border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:border-gray-900 outline-none"></select>
+          <select id="eng_gearItem" class="text-[11px] border-2 border-gray-200 rounded-lg px-2.5 py-1.5 bg-white focus:border-gray-900 outline-none" style="min-width:180px"></select>
+          <input id="eng_gearOther" placeholder="Describe the item…" class="text-[11px] border-2 border-gray-200 rounded-lg px-2.5 py-1.5 focus:border-gray-900 outline-none" style="display:none;min-width:180px">
+          <input id="eng_gearQty" type="number" min="1" value="1" class="w-16 text-[11px] border-2 border-gray-200 rounded-lg px-2.5 py-1.5 focus:border-gray-900 outline-none font-mono">
+          <button onclick="engAddGear()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800">+ Add</button>
+        </div>
+        <div id="eng_gearList" class="space-y-1.5"></div>
+      </div>
+
+      <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Notes</label><div id="eng_notes_wrap"></div></div>
+
+      <div class="eng-modal-foot flex flex-wrap items-center gap-3 pt-2 border-t border-gray-100">
+        <button onclick="engSaveAndClose()" class="flex-1 min-w-[8rem] bg-gray-900 text-white text-xs font-bold rounded-xl py-3 hover:bg-gray-800">Save ENG Request</button>
+        <button onclick="engSaveAndSync()" class="flex-1 border-2 border-gray-900 text-gray-900 text-xs font-bold rounded-xl py-3 hover:bg-gray-50">Save &amp; Push Gear to Production PackList</button>
+        <button onclick="closeEngModal()" class="text-xs text-gray-400 hover:text-gray-700 px-3">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHARLIE SETTINGS -->
+<div id="charlieSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeCharlieSettings()">
+  <div class="bg-white rounded-2xl shadow-2xl" style="width:460px;max-width:94vw">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div><h3 class="text-sm font-bold text-gray-900 leading-none">Charlie — Ops Assistant</h3><p class="text-[10px] text-gray-500 mt-1">Under construction.</p></div>
+      <button onclick="closeCharlieSettings()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
+    </div>
+    <div class="p-6 space-y-3">
+      <div class="rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2.5">
+        <p class="text-[11px] font-bold text-emerald-900">Charlie</p>
+        <p class="text-[10px] text-emerald-800/90 mt-0.5 leading-snug">Answers anything about NBC Pulse — every screen, show, and workflow — and any other question. Chat, listen, or ask for a picture.</p>
+      </div>
+      <div class="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2">
+        <p class="text-[10px] font-bold text-amber-900">Optional on-device model (free)</p>
+        <p class="text-[10px] text-amber-900/90 mt-0.5 leading-snug">An optional on-device model can run in this browser. Skip it on weaker machines — Pulse rules and live public data still work.</p>
+        <label class="flex items-center gap-2 text-[11px] text-amber-950 mt-2 cursor-pointer">
+          <input id="cs_local_force" type="checkbox" class="rounded border-amber-400">
+          <span>Enable free on-device model</span>
+        </label>
+        <select id="cs_local_model" class="hidden" aria-hidden="true"></select>
+        <div class="w-full h-1.5 bg-amber-100 rounded-full overflow-hidden mt-2" style="display:none">
+          <div id="cs_local_bar" class="h-full bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
+        </div>
+      </div>
+      <div>
+        <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Charlie model</label>
+        <select id="cs_model" class="w-full text-[11px] border border-gray-300 rounded-lg px-3 py-2 bg-white" style="outline:none">
+          <option value="charlie">Charlie</option>
+        </select>
+        <p class="text-[9px] text-gray-400 mt-1">Pulse questions use the in-app rules and live public data.</p>
+      </div>
+      <div class="flex gap-2">
+        <button type="button" onclick="testCharlie()" class="flex-1 text-[10px] font-bold text-white bg-emerald-700 rounded-lg py-2 hover:bg-emerald-800">Test Charlie</button>
+        <button type="button" onclick="charlieLoadModelNow()" class="flex-1 text-[10px] font-bold text-emerald-900 border border-emerald-300 bg-emerald-50 rounded-lg py-2 hover:bg-emerald-100">Load free model</button>
+      </div>
+      <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Travelpayouts Marker (flight search)</label>
+        <input id="cs_tpmarker" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 mono" placeholder="e.g. 123456">
+        <p class="text-[9px] text-gray-400 mt-1">Optional affiliate marker. Stored only in this browser.</p></div>
+      <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Travelpayouts Widget Snippet <span class="text-gray-400 font-normal">(optional)</span></label>
+        <textarea id="cs_tpsnippet" rows="3" class="w-full text-[10px] border border-gray-300 rounded-lg px-3 py-2 mono" style="resize:vertical" placeholder="Optional flight-search widget snippet"></textarea>
+        <p class="text-[9px] text-gray-400 mt-1">Without it, a default search form + Aviasales fallback is used.</p></div>
+      <input id="cs_key" type="hidden" value=""><input id="cs_model" type="hidden" value="">
+      <div id="cs_status" class="text-[10px] mono text-gray-500">● Charlie</div>
+      <button onclick="saveCharlieSettings()" class="w-full bg-gray-900 text-white text-xs font-bold rounded-lg py-2 hover:bg-gray-800">Save</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- FINANCIAL DOCUMENT VIEWER -->
+<div id="finDocModal" class="hidden" style="position:fixed;inset:0;z-index:65;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeFinDoc()">
+  <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:680px;max-width:96vw;max-height:92vh">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 flex-shrink-0">
+      <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-500"></span><h3 class="text-xs font-bold uppercase tracking-wider text-gray-700" id="finDocTitle">Document</h3></div>
+      <div class="flex items-center gap-2">
+        <button onclick="finDocCompose()" class="flex items-center gap-1.5 text-[10px] font-bold text-blue-700 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50">✉ Email</button>
+        <button onclick="finDocPDF()" class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Export PDF</button>
+        <button onclick="closeFinDoc()" class="text-gray-400 hover:text-gray-700 text-lg leading-none w-7 h-7">✕</button>
+      </div>
+    </div>
+    <div class="overflow-y-auto p-5 bg-gray-100" style="flex:1">
+      <div id="finDocBody" class="bg-white rounded-xl shadow-md mx-auto" style="max-width:600px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE PROJECT MODAL (v34 — two-column, multi-day, working location search) -->
+<div id="createModal" class="hidden" style="position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeCreateModal()">
+  <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:960px;max-width:97vw;max-height:94vh">
+    <div class="flex items-center justify-between px-6 py-3.5 border-b border-gray-200 flex-shrink-0">
+      <div class="flex items-center gap-2.5">
+        <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center flex-shrink-0" style="background:#632E8A;box-shadow:0 2px 8px rgba(99,46,138,.35)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        <div><h3 class="text-sm font-bold text-gray-900 leading-none">Create New Production</h3><p class="text-[10px] text-gray-500 mt-1">Adds across the dashboard, tabs &amp; Charlie · departments start at Missing · supports multi-day shoots &amp; multiple venues</p></div>
+      </div>
+      <button onclick="closeCreateModal()" class="text-gray-500 hover:text-gray-700 text-lg leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">✕</button>
+    </div>
+    <div class="p-5 overflow-y-auto" style="flex:1">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <!-- LEFT: identity, dates, description, brand -->
+        <div class="space-y-3.5">
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Project Title <span class="text-red-500">*</span></label>
+            <input id="np_title" type="text" placeholder="e.g. Olympic Trials 2028" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2" style="outline:none">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Client / Division</label>
+              <select id="np_customer" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white" style="outline:none"></select></div>
+            <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Status</label>
+              <select id="np_status" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white" style="outline:none"><option>Pre-Production</option><option>In Production</option><option>On Air</option><option>Post</option><option>Wrapped</option></select></div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Production Manager</label>
+              <select id="np_pm" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white" style="outline:none">
+                <option value="">Select manager / director / VP…</option>
+              </select>
+              <p class="text-[9px] text-gray-400 mt-1">Managers, directors, technical managers, VPs &amp; execs only</p></div>
+            <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Accent Color</label>
+              <div id="np_colors" class="flex flex-wrap gap-1.5 mt-1.5"></div></div>
+          </div>
+          <div class="rounded-xl border border-gray-200 p-3">
+            <div class="flex items-center justify-between mb-2"><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Shoot Dates <span class="text-gray-400 normal-case font-normal">— click once for a day, twice for a range</span></label>
+              <span id="np_dateSpan" class="text-[10px] font-bold text-blue-700"></span></div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div class="sm:col-span-2">
+                <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Start → End</label>
+                <div class="flex items-center gap-2">
+                  <input id="np_dateRange" type="text" readonly placeholder="Pick shoot window on one calendar…" class="flex-1 min-w-0 text-xs border border-gray-300 rounded-lg px-2.5 py-2 bg-white cursor-pointer" style="outline:none" onclick="npOpenShootCal(this)">
+                  <input type="hidden" id="np_date" value="">
+                  <input type="hidden" id="np_dateEnd" value="">
+                  <button type="button" data-dp-anchor="1" onclick="npOpenShootCal(this)" class="flex-shrink-0 text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">📅 Calendar</button>
+                </div>
+              </div>
+              <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Call Time</label><input id="np_time" type="time" class="w-full text-xs border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>
+            </div>
+            <p class="text-[9px] text-gray-400 mt-1.5">One calendar window — first click sets start, second click sets end. Same day = single-day shoot.</p>
+            <label class="flex items-center gap-2 text-[11px] text-gray-700 mt-2.5 cursor-pointer"><input id="np_buildsched" type="checkbox" checked class="rounded"> Build a starter schedule across these days <span class="text-gray-400">(load-in → show days → strike)</span></label>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Description</label>
+            <div id="np_desc_wrap"></div>
+          </div>
+          <div>
+            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Thumbnail (optional)</label>
+            <div class="flex items-center gap-3">
+              <div class="rounded-lg overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0" style="width:96px;height:60px" id="np_thumbwrap"><span class="text-[9px] text-gray-500 px-1 text-center">Colored tile</span></div>
+              <input id="np_thumb" type="file" accept="image/*" class="text-[10px] flex-1 min-w-0" onchange="previewThumb(event)">
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT: locations — search, map, list -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <label class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Locations &amp; Venues <span id="npLocCount" class="text-blue-700 normal-case"></span></label>
+            <button onclick="npAddLoc()" class="text-[10px] font-bold text-blue-700 hover:underline">+ Add manually</button>
+          </div>
+          <p class="text-[10px] text-gray-500 -mt-1">Search a venue or city — the first match added becomes the <b>primary venue</b> (drives the map &amp; live weather). Add more for multi-site shows; each keeps its own GPS, time zone &amp; site survey. GPS is optional.</p>
+          <div id="np_geobox"></div>
+          <div class="rounded-xl overflow-hidden border border-gray-200 relative bg-gray-50" style="height:190px" id="np_mapHost"></div>
+          <div id="npLocRows" class="space-y-1.5"></div>
+        </div>
+      </div>
+    </div>
+    <div class="px-6 py-3.5 border-t border-gray-200 flex items-center justify-between gap-2 flex-shrink-0">
+      <span class="text-[10px] text-gray-400">All fields except title are optional — you can fill the rest in after creating.</span>
+      <div class="flex items-center gap-2">
+        <button onclick="closeCreateModal()" class="text-xs font-semibold text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel</button>
+        <button onclick="createProject()" class="pulse-cta text-xs font-bold text-white rounded-xl px-5 py-2 transition-all hover:-translate-y-px">Create Production</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULE EDITOR MODAL -->
+<!-- GEAR LIBRARY MANAGER (admin · opened from Avery's high-clearance profile) -->
+<!-- VENDOR DIRECTORY (admin · rental / third-party vendors) -->
+<div id="vendorModal" class="hidden" style="position:fixed;inset:0;z-index:61;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeVendorManager()">
+  <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:1040px;max-width:97vw;height:88vh">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center gap-2.5">
+        <span class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg></span>
+        <div><h3 class="text-sm font-bold text-gray-900 leading-none">Vendor Directory — Admin</h3><p class="text-[10px] text-gray-500 mt-1">Third-party rental vendors · contacts, docs &amp; addresses · available when assembling productions</p></div>
+      </div>
+      <button onclick="closeVendorManager()" class="text-gray-500 hover:text-gray-700 text-lg leading-none">✕</button>
+    </div>
+    <div class="flex flex-1 min-h-0">
+      <div class="w-52 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
+        <div id="vmList" class="flex-1 overflow-y-auto p-2"></div>
+        <div class="p-2 border-t border-gray-200"><button onclick="addVendor()" class="w-full flex items-center justify-center gap-1.5 bg-blue-600 text-white rounded-lg px-3 py-2 text-xs font-semibold hover:bg-blue-700"><span class="text-base leading-none">+</span> New Vendor</button></div>
+      </div>
+      <div id="vmPanel" class="flex-1 overflow-y-auto p-5"></div>
+    </div>
+    <div class="px-6 py-3 border-t border-gray-200 flex items-center justify-end">
+      <button onclick="closeVendorManager()" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-5 py-2 hover:bg-blue-700">Done</button>
+    </div>
+  </div>
+</div>
+
+<div id="schedModal" class="hidden" style="position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeSchedModal()">
+  <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:1000px;max-width:96vw;max-height:92vh">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <div class="flex items-center gap-2.5">
+        <span class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </span>
+        <div><h3 class="text-sm font-bold text-gray-900 leading-none" id="schedTitle">Production Schedule</h3><p class="text-[10px] text-gray-500 mt-1">Add dates, crew calls &amp; broadcast windows — saved to this production &amp; Charlie</p></div>
+      </div>
+      <button onclick="closeSchedModal()" class="text-gray-500 hover:text-gray-700 text-lg leading-none">✕</button>
+    </div>
+    <div class="p-4 sm:p-6 overflow-y-auto">
+      <!-- Techbook meta -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 pb-4 border-b border-gray-100">
+        <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Version Type</label><input id="sched_version" type="text" placeholder="e.g. Rev 1.0 · Draft" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2" style="outline:none"></div>
+        <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Prepared By</label><input id="sched_by" type="text" placeholder="Name" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2" style="outline:none"></div>
+        <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Last Edited</label><input id="sched_edited" type="text" disabled class="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 bg-gray-50 text-gray-600 mono" style="outline:none"></div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left" style="min-width:820px">
+          <thead><tr class="text-gray-500 uppercase tracking-wider text-[9px] border-b border-gray-200">
+            <th class="pb-2 pr-2">Type</th><th class="pb-2 pr-2">Date(s)</th><th class="pb-2 pr-2">Time</th><th class="pb-2 pr-2">Activity / Milestone</th><th class="pb-2 pr-2">Crew Call</th><th class="pb-2 pr-2">Broadcast Date(s)</th><th class="pb-2 pr-2">Location / Notes</th><th class="pb-2 w-8"></th>
+          </tr></thead>
+          <tbody id="schedRows"></tbody>
+        </table>
+      </div>
+      <button onclick="addSchedRow()" class="mt-3 text-xs font-semibold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-3 py-1.5 hover:bg-blue-100">+ Add Row</button>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between gap-2">
+      <div class="flex items-center gap-2"><button onclick="downloadTechbook(schedKey)" title="Always exports current live production data — not a saved snapshot" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-4 py-2 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Techbook PDF · live</button>
+      <button onclick="downloadScheduleBook(schedKey)" class="flex items-center gap-1.5 text-xs font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-4 py-2 hover:bg-blue-100"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Schedule Book PDF</button></div>
+      <div class="flex items-center gap-2"><button onclick="closeSchedModal()" class="text-xs font-semibold text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel</button><button onclick="saveSchedule()" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-5 py-2 hover:bg-blue-700">Save Schedule</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTION SIGN-OFF MODAL -->
+<div id="signoffModal" class="hidden" style="position:fixed;inset:0;z-index:62;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.55);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeSignoff()">
+  <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:520px;max-width:96vw;max-height:90vh">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-emerald-600 rounded-t-2xl">
+      <h3 id="soTitle" class="text-sm font-bold text-white flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Production Sign-Off</h3>
+      <button onclick="closeSignoff()" class="text-white/80 hover:text-white text-lg leading-none">✕</button>
+    </div>
+    <div class="p-6 overflow-y-auto">
+      <p class="text-xs text-gray-600 mb-3">All sections are approved & locked. Signing off marks the production <b>Show Locked</b> for air.</p>
+      <div class="grid grid-cols-1 gap-3 mb-3">
+        <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Signed Off By</label><input id="soBy" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2" style="outline:none"></div>
+        <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Sign-Off Notes</label><div id="soNotes_wrap"></div></div>
+      </div>
+      <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Section Lock Summary</label>
+      <div id="soSummary" class="text-[11px] text-gray-700 bg-gray-50 border border-gray-200 rounded-lg p-3" style="max-height:200px;overflow-y-auto"></div>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-2">
+      <button onclick="closeSignoff()" class="text-xs font-semibold text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel</button>
+      <button onclick="confirmSignoff()" class="text-xs font-bold text-white bg-emerald-600 rounded-lg px-5 py-2 hover:bg-emerald-700">Sign Off &amp; Lock Show</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEPARTMENT APPROVAL MODAL -->
+<div id="approvalModal" class="hidden" style="position:fixed;inset:0;z-index:62;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeApproval()">
+  <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:520px;max-width:96vw;max-height:90vh">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+      <h3 id="apprTitle" class="text-sm font-bold text-gray-900">Approval</h3>
+      <button onclick="closeApproval()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
+    </div>
+    <div class="p-6 overflow-y-auto">
+      <div class="grid grid-cols-2 gap-3 mb-3">
+        <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Approval Status</label>
+          <select id="apprState" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white" style="outline:none"><option>Not Started</option><option>Draft</option><option>Pending Review</option><option>Changes Requested</option><option>Approved</option><option>Locked</option></select></div>
+        <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Approved By</label>
+          <input id="apprBy" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2" style="outline:none"></div>
+      </div>
+      <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Approval Notes</label>
+      <div id="apprNotes_wrap" class="mb-3"></div>
+      <label class="text-[10px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Resource Lock Summary (auto)</label>
+      <div id="apprSummary" class="text-[11px] text-gray-700 bg-gray-50 border border-gray-200 rounded-lg p-3 leading-relaxed" style="max-height:160px;overflow-y:auto">—</div>
+    </div>
+    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-end gap-2 flex-wrap">
+      <button onclick="submitApproval('Changes Requested')" class="text-xs font-bold text-red-700 border border-red-200 bg-red-50 rounded-lg px-4 py-2 hover:bg-red-100">Request Changes</button>
+      <button onclick="submitApproval('Pending Review')" class="text-xs font-bold text-amber-700 border border-amber-200 bg-amber-50 rounded-lg px-4 py-2 hover:bg-amber-100">Submit for Review</button>
+      <button onclick="submitApproval('Approved')" class="text-xs font-bold text-white bg-emerald-600 rounded-lg px-4 py-2 hover:bg-emerald-700">Section Approve</button>
+      <button onclick="submitApproval('Locked')" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-4 py-2 hover:bg-blue-700">Approve &amp; Lock Section</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREW CONTACT CARD (click a name) -->
+<div id="crewCardOverlay" onclick="if(event.target===this)closeCrewCard()" style="display:none;position:fixed;inset:0;z-index:62;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.4)">
+  <div id="crewCardBox" class="bg-white rounded-2xl shadow-2xl p-5" style="width:400px;max-width:94vw;max-height:90vh;overflow-y:auto"></div>
+</div>
+<!-- ASSIGN PERSON TO POSITION (positions-first crewing) -->
+<div id="assignOverlay" onclick="if(event.target===this)closeAssign()" style="display:none;position:fixed;inset:0;z-index:63;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+  <div class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:440px;max-height:88vh;overflow:hidden">
+    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">
+      <h3 id="assignTitle" class="text-sm font-bold text-gray-900">Assign — Position</h3>
+      <button onclick="closeAssign()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
+    </div>
+    <div class="px-4 pt-3 flex-shrink-0">
+      <div class="relative"><svg class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input id="assignSearch" oninput="assignSearchInput(this.value)" placeholder="Search personnel by name or role…" class="w-full text-[12px] border border-gray-300 rounded-lg pl-8 pr-3 py-2" style="outline:none"></div>
+      <p class="text-[9px] font-bold uppercase tracking-wider text-gray-400 mt-3 mb-1">From personnel roster</p>
+    </div>
+    <div id="assignList" class="overflow-y-auto flex-1 px-3 pb-2 space-y-0.5" style="min-height:120px"></div>
+    <div class="px-4 py-3 border-t border-gray-100 flex-shrink-0 bg-gray-50">
+      <p class="text-[9px] font-bold uppercase tracking-wider text-gray-500 mb-2">Or enter manually</p>
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <input id="asgName" placeholder="Full name" class="text-[11px] border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none">
+        <input id="asgProv" placeholder="Provided by (vendor/dept)" class="text-[11px] border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none">
+        <input id="asgEmail" placeholder="Email" class="text-[11px] border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none">
+        <input id="asgPhone" placeholder="Phone" class="text-[11px] border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none">
+        <input id="asgPassport" placeholder="Passport / ID #" class="text-[11px] border border-gray-300 rounded-lg px-2.5 py-1.5 mono" style="outline:none">
+        <input id="asgHome" placeholder="Home base (IATA, e.g. MIA)" class="text-[11px] border border-gray-300 rounded-lg px-2.5 py-1.5 mono" style="outline:none" maxlength="3">
+      </div>
+      <button onclick="assignManual()" class="w-full bg-gray-900 text-white text-[12px] font-bold rounded-lg py-2 hover:bg-gray-800">Assign to position</button>
+    </div>
+  </div>
+</div>
+<div id="gsOverlay" onclick="if(event.target===this)globalSearchClose()" style="display:none;position:fixed;inset:0;z-index:80;align-items:flex-start;justify-content:center;padding:80px 16px 16px;background:rgba(17,17,18,.5);backdrop-filter:blur(5px)">
+  <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:640px;max-height:78vh;display:flex;flex-direction:column;overflow:hidden">
+    <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 flex-shrink-0">
+      <svg class="text-gray-400 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="gsInput" oninput="globalSearchRender(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();globalSearchAskNow();}" placeholder="Search Pulse or ask Charlie…" class="flex-1 text-sm outline-none" autocomplete="off">
+      <button type="button" onclick="globalSearchAskNow()" title="Run Search (Enter)" class="text-[9px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1 hover:bg-emerald-100 flex-shrink-0">Search</button>
+      <kbd class="text-[9px] mono text-gray-400 bg-gray-100 border border-gray-200 rounded px-1.5 py-0.5 flex-shrink-0">ESC</kbd>
+      <button onclick="globalSearchClose()" class="text-gray-400 hover:text-gray-700 text-lg leading-none flex-shrink-0">✕</button>
+    </div>
+    <div id="gsAiPanel" class="hidden border-b border-gray-100 flex-shrink-0"></div>
+    <div id="gsResults" class="overflow-y-auto flex-1 py-1"></div>
+  </div>
+</div>
+<div id="ticketOverlay" onclick="if(event.target===this)closeTicket()" style="display:none;position:fixed;inset:0;z-index:64;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+  <div id="ticketBox"></div>
+</div>
+<!-- CSV IMPORT MODAL -->
+<div id="csvOverlay" onclick="if(event.target===this)closeCsvImport()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+  <div id="csvBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:92vh;overflow:hidden"></div>
+</div>
+
+<!-- USER PROFILE MODAL -->
+<div id="userProfileOverlay" onclick="if(event.target===this)closeUserProfile()" style="display:none;position:fixed;inset:0;z-index:70;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+  <div id="userProfileBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:460px;max-height:92vh;overflow:hidden"></div>
+</div>
+
+<!-- FLIGHT BOOKING MODAL (move pending → booked) -->
+<div id="bookFlightOverlay" onclick="if(event.target===this)closeBookFlight()" style="display:none;position:fixed;inset:0;z-index:66;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+  <div id="bookFlightBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:480px;max-height:92vh;overflow:hidden"></div>
+</div>
+<div id="personnelEditOverlay" onclick="if(event.target===this)closePersonnelEdit()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45)">
+  <div id="personnelEditBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:560px;max-height:92vh;overflow:hidden"></div>
+</div>
+<!-- v31 PHASE 2: WBS / cost-center master data manager -->
+<div id="mdOverlay" onclick="if(event.target===this)closeMasterData()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+  <div id="mdBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:640px;max-height:92vh;overflow:hidden"></div>
+</div>
+<!-- v31 PHASE 2/3: split-cost allocation editor -->
+<div id="allocOverlay" onclick="if(event.target===this)closeAllocEditor()" style="display:none;position:fixed;inset:0;z-index:68;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+  <div id="allocBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:520px;max-height:92vh;overflow:hidden"></div>
+</div>
+<!-- v31 PHASE 3: new travel request -->
+<div id="trOverlay" onclick="if(event.target===this)closeTrNew()" style="display:none;position:fixed;inset:0;z-index:67;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+  <div id="trBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:480px;max-height:92vh;overflow:hidden"></div>
+</div>
+<!-- v31.1: per-person hotel booking -->
+<div id="hotelOverlay" onclick="if(event.target===this)closeHotelEdit()" style="display:none;position:fixed;inset:0;z-index:68;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+  <div id="hotelBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:420px;max-height:92vh;overflow:hidden"></div>
+</div>
+<!-- v31 PHASE 5: per-day forecast modal -->
+<div id="dayWxOverlay" onclick="if(event.target===this)closeDayWx()" style="display:none;position:fixed;inset:0;z-index:69;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)">
+  <div id="dayWxBox" class="bg-white rounded-2xl shadow-2xl w-full flex flex-col" style="max-width:560px;max-height:92vh;overflow:hidden"></div>
+</div>
+<div id="npcOverlay" onclick="if(event.target===this)closeNPCEvent()" style="display:none;position:fixed;inset:0;z-index:66;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.5);backdrop-filter:blur(4px)">
+  <div id="npcBox" class="bg-white rounded-2xl shadow-2xl p-5" style="width:480px;max-width:95vw;max-height:92vh;overflow-y:auto"></div>
+</div>
+
+<!-- ============ OMNI-CHANNEL OPERATIONS · persistent sliding drawer ============ -->
+<!-- v32: docked tab mirrors the Ask Charlie launcher exactly — same peacock mark, same type -->
+<button class="omni-fab" onclick="toggleOmniDrawer()" title="Omni">
+  <span id="omniFabBadge" class="omni-fab-badge"></span>
+  <img src="assets/brand/NBC_Peacock_(2022).svg" alt="NBC" width="20" height="13" class="pk-rail-logo" draggable="false">
+  <span class="omni-fab-label" style="font-size:10px;font-weight:700;text-transform:uppercase">Omni</span>
+</button>
+<div id="omniDrawerScrim" class="omni-scrim" onclick="closeOmniDrawer()"></div>
+<aside id="omniDrawer" class="omni-drawer">
+  <div class="px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
+    <!-- v30 Module 15: header follows the Ask Charlie pattern (avatar · name · status line) — purple kept -->
+    <div class="flex items-center justify-between mb-1">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background:#632E8A">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        </div>
+        <div><h3 class="text-sm font-bold text-gray-900 tracking-tight leading-none">Omni</h3>
+        <p class="text-[10px] text-gray-500 mt-1">Ops room · Outlook &amp; Teams · simulated until Graph is connected</p></div>
+      </div>
+      <button onclick="closeOmniDrawer()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
+    </div>
+    <div class="flex items-center justify-between gap-2">
+      <div id="omniCtxLabel" class="text-[11px] min-w-0 truncate"></div>
+      <select id="omniCtxSel" onchange="setOmniCtx(this.value)" class="text-[9px] font-bold border border-gray-300 rounded-lg px-1.5 py-1 bg-white flex-shrink-0" style="outline:none;max-width:150px"></select>
+    </div>
+    <div id="omniStatusRow" class="flex items-center gap-1.5 flex-wrap mt-2.5"></div>
+    <div class="flex items-center gap-1 bg-gray-100 rounded-xl p-1 mt-3">
+      <button id="ot_chat" onclick="setOmniTab('chat')" class="omni-tabbtn on">💬 Chat &amp; Teams</button>
+      <button id="ot_mail" onclick="setOmniTab('mail')" class="omni-tabbtn">📧 Email &amp; Alerts</button>
+      <button id="ot_feed" onclick="setOmniTab('feed')" class="omni-tabbtn">📞 Intercom/Feed</button>
+    </div>
+  </div>
+  <div id="omniDrawerBody" class="flex-1 overflow-y-auto px-4 py-3"></div>
+  <div id="omniDrawerFoot" class="px-4 py-3 border-t border-gray-100 flex-shrink-0"></div>
+</aside>
+
+<div id="toastBox" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
+
+<!-- CHARLIE LAUNCHER (docked in right gutter, fixed 42px width) -->
+<!-- EXCEL IMPORT PREVIEW (Work Items 7 & 8) -->
+<div id="xlsxOverlay" onclick="if(event.target===this)closeXlsxPreview()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:72;align-items:center;justify-content:center;padding:16px">
+  <div id="xlsxBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5"></div>
+</div>
+
+<!-- SURVEY PDF location chooser (Work Item 6) -->
+<div id="survPdfOverlay" onclick="if(event.target===this)closeSurveyPdfOptions()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:71;align-items:center;justify-content:center;padding:16px">
+  <div id="survPdfBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto p-5"></div>
+</div>
+
+<!-- CONTROL ROOM detail modal (Work Item 4) -->
+<div id="roomOverlay" onclick="if(event.target===this)closeRoomDetail()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+  <div id="roomBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto p-5"></div>
+</div>
+
+<!-- CITY CONDITIONS modal (Work Item 3) -->
+<div id="wxCityOverlay" onclick="if(event.target===this)closeCityWx()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+  <div id="wxCityBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-md max-h-[88vh] overflow-y-auto p-5"></div>
+</div>
+
+<!-- ACCOUNT PROVISIONING & PERMISSIONS modal (Work Item 1) -->
+<div id="accountOverlay" onclick="if(event.target===this)closeAccountModal()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+  <div id="accountBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-5"></div>
+</div>
+
+<button id="charlieLauncher" type="button" onclick="toggleCharlie()" title="Charlie — Under Construction" aria-label="Charlie Under Construction">
+  <span id="charlieFabBadge" class="omni-fab-badge"></span>
+  <img src="assets/brand/s-l1200.png" alt="" width="20" height="20" class="charlie-icon" draggable="false">
+  <span class="charlie-fab-label">Charlie</span>
+</button>
+
+<!-- CHARLIE DRAWER — under construction -->
+<div id="charlieDrawer" class="glass-drawer shadow-2xl flex flex-col border-l border-gray-200/40" style="position:fixed;top:0;right:0;height:100%;z-index:70;width:370px;max-width:92vw;transform:translateX(100%);transition:transform .25s ease">
+  <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
+    <div class="flex items-center gap-2.5">
+      <p class="text-sm font-bold text-gray-900 leading-none">Charlie</p>
+      <span id="charlieModeDot" class="hidden"></span>
+      <span id="charlieModeLabel" class="hidden" hidden></span>
+    </div>
+    <button onclick="toggleCharlie()" class="text-gray-500 hover:text-gray-700 text-lg leading-none w-7 h-7">✕</button>
+  </div>
+  <div id="charlieMessages" class="flex-1 overflow-y-auto overflow-x-hidden p-5 min-w-0 flex flex-col items-center justify-center text-center" style="overflow-wrap:anywhere">
+    <p class="text-base font-bold text-gray-900">Under Construction</p>
+  </div>
+  <div id="charlieChips" class="hidden"></div>
+  <div class="p-3 border-t border-gray-200 hidden">
+    <input id="charlieInput" type="text" disabled>
+    <button id="charlieMicBtn" type="button" hidden></button>
+  </div>
+</div>
+
+</body>
+</html>
+
+

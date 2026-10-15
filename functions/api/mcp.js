@@ -38,7 +38,7 @@ function describe(name) {
 
 function briefingFromMuse(muse) {
   if (!muse || typeof muse !== 'object') return { error: 'post a muse snapshot' };
-  return muse.ops_skills || muse.briefing_now || { note: 'Client should POST live JSON from buildCharlieContext' };
+  return muse.ops_skills || muse.briefing_now || { note: 'Client should POST live JSON from buildMuseAiContext' };
 }
 
 export async function onRequest(context) {
@@ -71,7 +71,7 @@ export async function onRequest(context) {
         ok: true,
         needs_confirm: true,
         action: { op: nw, args: body.args || {} },
-        note: 'Muse Live system of record is the browser. Apply via Confirm-to-act in Charlie or Omni.',
+        note: 'Muse Live system of record is the browser. Apply via Confirm-to-act in Muse or Omni.',
       });
     }
     return json({ ok: true, result: briefingFromMuse(body.muse) });

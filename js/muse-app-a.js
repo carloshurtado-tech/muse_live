@@ -18,7 +18,7 @@
      'muselive_personnel_v1','muselive_custom_personnel_v1','muselive_operators_v1',
      'muselive_custom_operators_v1','muselive_perids_v1','muselive_portal_v1',
      'muselive_accounts_v1','muselive_edits','muselive_edits_rev','muselive_talent_v1',
-     'muselive_gear','muselive_charlie_key'].forEach(function(k){
+     'muselive_gear','muselive_museai_key'].forEach(function(k){
       try{localStorage.removeItem(k);}catch(e){}
     });
     localStorage.setItem('muselive_catalog_v3','1');
@@ -37,14 +37,14 @@
    > inline keyless fallback. NO key value is ever hardcoded here. ---- */
 function museCfg(name){
   try{
-    if(name==='CHARLIE_KEY'||name==='CHARLIE_KEY'){
-      var lk=localStorage.getItem('muselive_charlie_key');
+    if(name==='MUSEAI_KEY'||name==='MUSEAI_KEY'){
+      var lk=localStorage.getItem('muselive_museai_key');
       if(lk&&String(lk).trim())return String(lk).trim();
     }
   }catch(e){}
   var c=window.MUSE_LIVE_CONFIG||{};
-  if(name==='CHARLIE_KEY'&&!(c[name]&&String(c[name]).trim())&&c.CHARLIE_KEY)
-    return String(c.CHARLIE_KEY).trim();
+  if(name==='MUSEAI_KEY'&&!(c[name]&&String(c[name]).trim())&&c.MUSEAI_KEY)
+    return String(c.MUSEAI_KEY).trim();
   var v=c[name]!=null?c[name]:'';
   return (typeof v==='string')?v.trim():v;
 }
@@ -57,7 +57,7 @@ function cfgRefresh(){
   fetch('config/config.local.js',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('none');return r.text();})
   .then(function(t){
     try{(new Function(t))();}catch(e){return;}
-    try{if(typeof charlieAssistInit==='function')charlieAssistInit();}catch(e){}
+    try{if(typeof museaiAssistInit==='function')museaiAssistInit();}catch(e){}
     try{cfgBannerInit();}catch(e){}
   }).catch(function(){});}
 /* non-blocking banner — demo ship: no key nag */
@@ -94,7 +94,7 @@ function museAudit(evt,detail){
 /* ---- museRedact: THE serialization-layer redaction choke point. Every export
    (techbook, personnel JSON/CSV, xlsx) passes data through here. Strips secrets
    regardless of UI settings — independent of exportExempt. ---- */
-var REDACT_FIELDS=['portalAccessKey','apiKey','api_key','token','password','CHARLIE_KEY','cred','accessKey'];
+var REDACT_FIELDS=['portalAccessKey','apiKey','api_key','token','password','MUSEAI_KEY','cred','accessKey'];
 function museRedact(obj){
   if(obj==null)return obj;
   if(Array.isArray(obj))return obj.map(museRedact);
@@ -123,7 +123,7 @@ function museVer(rec){if(rec&&typeof rec==='object')rec._v=(rec._v||0)+1;return 
 function museIdemKey(){return 'idem-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,10);}
 
 var productions={
- worldcup:{name:"World Cup 2026",customer:"Sports",venue:"MetLife Stadium · NYNJ Final + multi-venue WC26",vendors:[{id:"v_lenses",docs:[{name:"Camera_Rental_Agreement.pdf"},{name:"COI_2026.pdf"}]},{id:"v_clearwave",docs:[{name:"RF_Coordination_Plan.pdf"}]}],pct:82,status:"Pre-Production",date:"Jul 2026",tag:"MetLife Final · Jul 19",tagColor:"amber",risk:false,notif:"3",
+ museaitour:{name:"Muse AI World Tour 2026",customer:"Meta AI",venue:"MetLife Stadium · NY/NJ Grand Finale + 16 tour venues",vendors:[{id:"v_lenses",docs:[{name:"Camera_Rental_Agreement.pdf"},{name:"COI_2026.pdf"}]},{id:"v_clearwave",docs:[{name:"RF_Coordination_Plan.pdf"}]}],pct:82,status:"Pre-Production",date:"Jul 2026",tag:"MetLife Final · Jul 19",tagColor:"amber",risk:false,notif:"3",
   bottleneck:{label:"Critical Path Bottleneck",text:"Line-up locked · HBS power + Harmonic XOS line-up for Jul 19"},foot:"Sony HDC-5500 · Harmonic XOS · Calrec Apollo/DM7C",
   version:"Rev 2.0 · Jul 19 2026",editedBy:"Lila Hart",lastEdited:"",
   schedule:[
@@ -131,9 +131,9 @@ var productions={
    ["Jul 13, 2026","08:00","Transmission Engineer · Harmonic XOS commission","06:00","—","Double Technical Cabin"],
    ["Jul 14, 2026","09:00","Network Architect · 1GB×2 HBS hand-off","07:00","—","Tech Cabin Sw1/Sw2"],
    ["Jul 16, 2026","08:00","Studio + Platform camera build (HDC-3500 + FR7)","06:30","—","Presentation Studio / Outside Announce"],
-   ["Jul 17, 2026","09:00","Fiber Muse Live 100–102 cert · TIA strand map","07:00","—","Tech Cabin → CIR / Prod Office"],
+   ["Jul 17, 2026","09:00","Fiber Muse AI Launch–102 cert · TIA strand map","07:00","—","Tech Cabin → CIR / Prod Office"],
    ["Jul 18, 2026","10:00","Full Technical Rehearsal · RVON IFB1–6","07:30","—","FlyPack + TC Miami"],
-   ["Jul 19, 2026","12:00","FIFA WORLD CUP 2026 — FINAL — LIVE","08:00","Jul 19, 2026 · Final","MetLife Stadium · NYNJ"]],
+   ["Jul 19, 2026","12:00","MUSE AI WORLD TOUR — GRAND FINALE — LIVE","08:00","Jul 19, 2026 · Final","MetLife Stadium · NYNJ"]],
   dept:[
    ["Audio","approved","Calrec Apollo + DM7C · RIO 3216 · Live Link · Shure Axient Digital AD4Q + AD1 + Sennheiser MD 46"],
    ["Cameras / Video","approved","7× Sony HDC-5500 + FR7 PTZ · Canon CJ45ex9.7B/22x · Studio Build-Up"],
@@ -146,7 +146,7 @@ var productions={
    ["RF / Wireless Mics","approved","Shure Axient Digital AD4Q + AD1 kit + Sennheiser MD 46 · Elite IFB cord 1–6"],
    ["Talent / Production","approved","Presentation Studio + Outside Announce Platform hosts"],
    ["Legal / Rights","pending","3 music sync clearances in final review"]]},
- sail250:{name:"Sail 250",customer:"Muse Live",venue:"NYC Harbor Remote · NYRR",pct:100,status:"Complete",date:"Jun 2026",tag:"NYC Harbor Remote",tagColor:"emerald",risk:false,notif:"",
+ raybangen3:{name:"Ray-Ban Meta Gen 3 Launch",customer:"Reality Labs",venue:"NYC Harbor Remote · Pier 26",pct:100,status:"Complete",date:"Jun 2026",tag:"NYC Harbor Remote",tagColor:"emerald",risk:false,notif:"",
   bottleneck:{label:"Showcase · 100% complete",text:"All departments approved · ready for air"},foot:"EVS XT-VIA · Sony HDC-5500",
   version:"Rev 2.0 · Final",editedBy:"Lila Hart",lastEdited:"",
   completeShowcase:true,
@@ -155,7 +155,7 @@ var productions={
    ["Jun 25, 2026","07:00","LiveU LU800 test & Signal Path","05:30","—","Harbor Remote → PCR 4"],
    ["Jun 25, 2026","13:00","TOC Final Signal Confirmation","—","—","PCR 4 / TOC"],
    ["Jun 26, 2026","05:30","Crew Call · In Position","05:30","—","Dockside Set"],
-   ["Jun 26, 2026","09:00","Sail 250 Parade of Ships — LIVE","06:30","Jun 26, 2026 · 09:00 ET","NYC Harbor"]],
+   ["Jun 26, 2026","09:00","Ray-Ban Meta Gen 3 Harbor Reveal — LIVE","06:30","Jun 26, 2026 · 09:00 ET","NYC Harbor"]],
   dept:[
    ["Audio","approved","16ch MADI / Calrec Apollo — mapped"],
    ["Cameras / Video","approved","Sony HDC-5500 · verified"],
@@ -166,16 +166,16 @@ var productions={
    ["Graphics (GFX)","approved","Lower-third package loaded"],
    ["Comms & IFB","approved","Remotes 1–4 · RTS IFB-325"],
    ["RF / Wireless Mics","approved","DPA 4066 + Shure Axient Digital AD4Q coordinated"],
-   ["Talent / Production","approved","Sportscaster confirmed · dockside"],
+   ["Talent / Production","approved","Host confirmed · dockside"],
    ["Legal / Rights","approved","TOC final signal confirmed · rights cleared"]]},
- superbowl:{name:"Super Bowl LXI",customer:"Sports",venue:"Levi's Stadium · Santa Clara, CA",pct:38,status:"AT RISK",date:"Feb 2027",tag:"Levi's Stadium",tagColor:"red",risk:true,notif:"!",
+ orion:{name:"Orion AR Glasses Reveal",customer:"Reality Labs",venue:"Levi's Stadium · Santa Clara, CA",pct:38,status:"AT RISK",date:"Feb 2027",tag:"Levi's Stadium",tagColor:"red",risk:true,notif:"!",
   bottleneck:{label:"Immediate Follow-Up Required",text:"Venue Power Confirmation Outstanding"},foot:"Engineering Kick-Off: TBD",
   version:"Rev 0.4 · Draft",editedBy:"Lila Hart",lastEdited:"",
   schedule:[
    ["Feb 1, 2027","TBD","Engineering Kick-Off (pending)","TBD","—","Levi's Stadium · TBD"],
    ["Feb 3, 2027","TBD","Compound Build (pending power)","TBD","—","Levi's Stadium Compound"],
    ["Feb 5, 2027","TBD","Technical Rehearsal (planned)","TBD","—","PCR TBD"],
-   ["Feb 8, 2027","15:00","Super Bowl LXI — LIVE","09:00","Feb 8, 2027 · 18:30 ET","Levi's Stadium"]],
+   ["Feb 8, 2027","15:00","Orion AR Glasses Reveal — LIVE","09:00","Feb 8, 2027 · 18:30 ET","Levi's Stadium"]],
   dept:[
    ["Audio","pending","64ch MADI — routing TBD"],
    ["Cameras / Video","pending","128× IP design phase"],
@@ -186,16 +186,16 @@ var productions={
    ["Graphics (GFX)","pending","Template build not started"],
    ["Comms & IFB","pending","24× IFB sourcing"],
    ["RF / Wireless Mics","pending","Mic spec draft awaiting approval"],
-   ["Talent / Production","missing","Lead sportscaster contract not executed"],
+   ["Talent / Production","missing","Lead host contract not executed"],
    ["Legal / Rights","pending","Rights & insurance paperwork in progress"]]},
- muse100:{name:"Muse Live's 100th Anniversary",customer:"Muse Live",venue:"Muse Plaza Studio M1 · NYC",pct:61,status:"Active",date:"Oct 2026",tag:"Studio M1 · Muse Plaza",tagColor:"purple",risk:false,notif:"",
+ museailaunch:{name:"Muse AI Launch Keynote",customer:"Meta AI",venue:"Meta NYC · Studio M1 · Hudson Yards",pct:61,status:"Active",date:"Oct 2026",tag:"Studio M1 · Meta NYC",tagColor:"purple",risk:false,notif:"",
   bottleneck:{label:"Key Dependency",text:"LiveU LU800 Serial Number Validation"},foot:"Chyron Prime · 4K UHD Output",
   version:"Rev 1.1 · Active",editedBy:"Lila Hart",lastEdited:"",
   schedule:[
-   ["Oct 12, 2026","08:00","Studio M1 Set & Lighting Build","06:00","—","Muse Plaza · Studio M1"],
+   ["Oct 12, 2026","08:00","Studio M1 Set & Lighting Build","06:00","—","Meta NYC · Studio M1"],
    ["Oct 14, 2026","09:00","Camera & GFX Integration","07:00","—","Studio M1 / PCR 6"],
    ["Oct 16, 2026","10:00","Full Dress Rehearsal","08:00","—","Studio M1"],
-   ["Oct 18, 2026","18:00","Muse Live 100th Primetime Special — LIVE","13:00","Oct 18, 2026 · 20:00 ET","Studio M1"]],
+   ["Oct 18, 2026","18:00","Muse AI Launch Keynote — LIVE","13:00","Oct 18, 2026 · 20:00 ET","Studio M1"]],
   dept:[
    ["Audio","approved","Calrec Artemis / 96ch Dante"],
    ["Cameras / Video","pending","32× HD-SDI routed · final cam check pending"],
@@ -207,15 +207,15 @@ var productions={
    ["Comms & IFB","approved","16× Riedel Bolero"],
    ["RF / Wireless Mics","approved","Sennheiser MD 46 + lav array"],
    ["Talent / Production","approved","4 host riders active · confirmed"],
-   ["Legal / Rights","pending","Muse Live archive clearances in review"]]},
- midterms:{name:"Midterm Elections",customer:"News",venue:"Multi-Market Remote · Nov 2026",pct:22,status:"Planning",date:"Nov 2026",tag:"Multi-Market Remote",tagColor:"blue",risk:false,notif:"",
-  bottleneck:{label:"Planning Phase",text:"CAD Document Pending Upload"},foot:"Decision Desk: AP Feed Integration",
+   ["Legal / Rights","pending","Meta archive clearances in review"]]},
+ whatsapp:{name:"WhatsApp Business Summit",customer:"WhatsApp",venue:"Multi-Market Remote · Nov 2026",pct:22,status:"Planning",date:"Nov 2026",tag:"Multi-Market Remote",tagColor:"blue",risk:false,notif:"",
+  bottleneck:{label:"Planning Phase",text:"CAD Document Pending Upload"},foot:"Live Q&A Desk: WhatsApp Channels feed",
   version:"Rev 0.6 · Planning",editedBy:"Lila Hart",lastEdited:"",
   schedule:[
    ["Oct 28, 2026","TBD","Multi-Market Site Surveys","TBD","—","8× Markets"],
-   ["Nov 1, 2026","TBD","Decision Desk Infra Build","TBD","—","Muse Live Miami"],
-   ["Nov 2, 2026","12:00","Full Network Rehearsal","09:00","—","Decision Desk / PCR"],
-   ["Nov 3, 2026","17:00","Midterm Election Night — LIVE","12:00","Nov 3, 2026 · 18:00 ET","Multi-Market + TC"]],
+   ["Nov 1, 2026","TBD","Live Q&A Desk Infra Build","TBD","—","Meta Miami"],
+   ["Nov 2, 2026","12:00","Full Network Rehearsal","09:00","—","Live Q&A Desk / PCR"],
+   ["Nov 3, 2026","17:00","WhatsApp Business Summit Keynote — LIVE","12:00","Nov 3, 2026 · 18:00 ET","Multi-Market + TC"]],
   dept:[
    ["Audio","pending","Per-market audio design pending"],
    ["Cameras / Video","pending","Mixed SDI/IP spec TBD"],
@@ -223,19 +223,19 @@ var productions={
    ["Power / Electrical","pending","Power survey scheduled (8 sites)"],
    ["Engineering / CAD","missing","CAD document pending upload"],
    ["Replay / EVS","missing","Replay TBD — planning phase"],
-   ["Graphics (GFX)","pending","Decision-desk GFX not started"],
+   ["Graphics (GFX)","pending","Q&A-desk GFX not started"],
    ["Comms & IFB","pending","24× IFB — budget review"],
    ["RF / Wireless Mics","pending","Sennheiser MD 46 speccing"],
-   ["Talent / Production","approved","Anchor confirmed · Lester Holt"],
-   ["Legal / Rights","missing","Results desk infrastructure spec awaited"]]},
- parade:{name:"Thanksgiving Day Parade",customer:"Entertainment",venue:"Central Park W → Herald Sq. · NYC",pct:55,status:"Active",date:"Nov 2026",tag:"CPW → Herald Sq.",tagColor:"orange",risk:false,notif:"2",
+   ["Talent / Production","approved","Host confirmed · Maya Chen"],
+   ["Legal / Rights","missing","Q&A desk infrastructure spec awaited"]]},
+ igcreators:{name:"Instagram Creator Week",customer:"Instagram",venue:"Central Park W → Herald Sq. · NYC",pct:55,status:"Active",date:"Nov 2026",tag:"CPW → Herald Sq.",tagColor:"orange",risk:false,notif:"2",
   bottleneck:{label:"Critical Path Bottleneck",text:"All Flight Information Excel Pending Upload"},foot:"Aerial Drone: FAA Class B Waiver TBD",
   version:"Rev 1.2 · Active",editedBy:"Lila Hart",lastEdited:"",
   schedule:[
    ["Nov 24, 2026","06:00","Route Fiber Pull & Float Cam Mount","04:00","—","CPW → Herald Square"],
-   ["Nov 25, 2026","07:00","Camera Build & Comms Check","05:00","—","Parade Route"],
-   ["Nov 26, 2026","05:00","Crew Call · In Position","05:00","—","Herald Square Anchor"],
-   ["Nov 27, 2026","09:00","Thanksgiving Day Parade — LIVE","05:30","Nov 27, 2026 · 09:00 ET","CPW → Herald Square"]],
+   ["Nov 25, 2026","07:00","Camera Build & Comms Check","05:00","—","Takeover Route"],
+   ["Nov 26, 2026","05:00","Crew Call · In Position","05:00","—","Herald Square Host Stage"],
+   ["Nov 27, 2026","09:00","Instagram Creator Week Street Takeover — LIVE","05:30","Nov 27, 2026 · 09:00 ET","CPW → Herald Square"]],
   dept:[
    ["Audio","approved","Dante 24ch / SoundGrid node"],
    ["Cameras / Video","pending","24× HD-SDI route confirmed · float cams pending"],
@@ -243,35 +243,35 @@ var productions={
    ["Power / Electrical","pending","3× 200A generators — pending"],
    ["Engineering / CAD","pending","All flight information Excel pending upload"],
    ["Replay / EVS","pending","Replay requirements under review"],
-   ["Graphics (GFX)","approved","Parade GFX package ready"],
+   ["Graphics (GFX)","approved","Creator Week GFX package ready"],
    ["Comms & IFB","approved","18× RTS IFB-325"],
    ["RF / Wireless Mics","approved","Shure Axient Digital AD4Q + AD1 lavs"],
    ["Talent / Production","approved","Lead host confirmed · Broadway platform"],
    ["Legal / Rights","missing","NYC DCAS camera mount permits pending · FAA drone waiver TBD"]]},
- winterolympics:{name:"Winter Olympics (Milano-Cortina)",customer:"Sports",venue:"Milano-Cortina d'Ampezzo · Italy",pct:100,status:"Resource Locked",date:"Feb 2026",tag:"Milano-Cortina IBC",tagColor:"teal",risk:false,notif:"",
+ charm:{name:"Meta Charm Launch (Milan Design Week)",customer:"Reality Labs",venue:"Fiera Milano Rho · Milan, Italy",pct:100,status:"Resource Locked",date:"Feb 2026",tag:"Milan Design Week IBC",tagColor:"teal",risk:false,notif:"",
   bottleneck:{label:"Status",text:"All departments approved — fully cleared"},foot:"EVS XT-VIA · Sony HDC-5500",
   version:"Rev 2.0 · Final",editedBy:"Lila Hart",lastEdited:"",
   schedule:[
-   ["Feb 4, 2026","08:00","Facilities Load-In & Rigging","06:00","—","Milano IBC · Hall A"],
-   ["Feb 5, 2026","09:00","Signal Path & Fiber Commissioning","07:00","—","Milano IBC + Cortina Venues"],
+   ["Feb 4, 2026","08:00","Facilities Load-In & Rigging","06:00","—","Milan IBC · Hall A"],
+   ["Feb 5, 2026","09:00","Signal Path & Fiber Commissioning","07:00","—","Milan IBC + Design Week Venues"],
    ["Feb 6, 2026","10:00","Full Technical Rehearsal","07:30","—","PCR 1 / ACR 2"],
-   ["Feb 6, 2026","18:00","Opening Ceremony — LIVE","14:00","Feb 6, 2026 · 20:00 CET","Stadio Giuseppe Meazza"],
-   ["Feb 7–22, 2026","Varies","Daily Event Coverage","Per day-sheet","Daily · 09:00–23:00 CET","All Cortina/Milano Venues"],
-   ["Feb 22, 2026","18:00","Closing Ceremony — LIVE","13:00","Feb 22, 2026 · 20:00 CET","Arena di Verona"]],
+   ["Feb 6, 2026","18:00","Meta Charm Launch Keynote — LIVE","14:00","Feb 6, 2026 · 20:00 CET","Fiera Milano Rho · Hall 1"],
+   ["Feb 7–22, 2026","Varies","Daily Showcase Coverage","Per day-sheet","Daily · 09:00–23:00 CET","All Milan Design Week Venues"],
+   ["Feb 22, 2026","18:00","Closing Showcase — LIVE","13:00","Feb 22, 2026 · 20:00 CET","Triennale di Milano"]],
   dept:[
    ["Audio","approved","Calrec Artemis · 128ch Dante / 5.1.4 immersive"],
    ["Cameras / Video","approved","60× Sony HDC-5500 · all positions locked"],
    ["Transmission / Signal","approved","256× SMPTE 2110 · dual-path LTN fiber + satellite backup"],
    ["Power / Electrical","approved","Motion Laboratories 400A distro distro · UPS confirmed"],
    ["Engineering / CAD","approved","EVS XT-VIA cluster provisioned · all CAD final v4"],
-   ["Replay / EVS","approved","EVS XT-VIA cluster · 6ch replay provisioned · Milano IBC"],
+   ["Replay / EVS","approved","EVS XT-VIA cluster · 6ch replay provisioned · Milan IBC"],
    ["Graphics (GFX)","approved","Chyron Prime package signed off"],
    ["Comms & IFB","approved","48× RTS ADAM · RVON trunked · all programs mapped"],
    ["RF / Wireless Mics","approved","Sennheiser MKH 416 + Shure Axient Digital AD4Q + AD1 · full RF coordination cleared"],
    ["Talent / Production","approved","Full broadcast team confirmed · all riders executed"],
-   ["Legal / Rights","approved","IOC rights & all music clearances fully executed"]]}
+   ["Legal / Rights","approved","Partner rights & all music clearances fully executed"]]}
 };
-var order=["worldcup","sail250","superbowl","muse100","midterms","parade","winterolympics"];
+var order=["museaitour","raybangen3","orion","museailaunch","whatsapp","igcreators","charm"];
 ;
 var statusMap={approved:{label:"Approved",dot:"emerald",text:"text-emerald-700",bg:"bg-emerald-50",bd:"border-emerald-200",badge:"bg-emerald-100 text-emerald-800 border-emerald-300"},
  pending:{label:"Pending",dot:"amber",text:"text-amber-600",bg:"bg-amber-50",bd:"border-amber-200",badge:"bg-amber-100 text-amber-800 border-amber-300"},
@@ -366,22 +366,22 @@ function phaseFor(p){
   return{label:"Complete",risk:false};
 }
 var tagColorList=["amber","emerald","red","purple","blue","orange","teal","indigo","rose","cyan"];
-var barGrad={amber:"#F7B717",emerald:"#00A15D",red:"#E51B24",purple:"#632E8A",blue:"#00A0DE",orange:"#EF7B10",teal:"#00A15D",indigo:"#00A0DE",rose:"#E51B24",cyan:"#00A0DE",gray:"linear-gradient(90deg,#cbd5e1,#94a3b8)"};
-var dotBg={amber:"#F7B717",emerald:"#00A15D",red:"#E51B24",purple:"#632E8A",blue:"#00A0DE",orange:"#EF7B10",teal:"#00A15D",indigo:"#00A0DE",rose:"#E51B24",cyan:"#00A0DE",gray:"#9ca3af"};
-var customerList=["News","Entertainment","Sports","Muse Live","Muse Live+","Digital","External Productions"];
+var barGrad={amber:"#F7B928",emerald:"#31A24C",red:"#E41E3F",purple:"#0866FF",blue:"#0866FF",orange:"#F5832A",teal:"#31A24C",indigo:"#0866FF",rose:"#E41E3F",cyan:"#0866FF",gray:"linear-gradient(90deg,#d1d4db,#9ba2b1)"};
+var dotBg={amber:"#F7B928",emerald:"#31A24C",red:"#E41E3F",purple:"#0866FF",blue:"#0866FF",orange:"#F5832A",teal:"#31A24C",indigo:"#0866FF",rose:"#E41E3F",cyan:"#0866FF",gray:"#9ba2b0"};
+var customerList=["News","Entertainment","Sports","Muse Live","Meta Horizon","Digital","External Productions"];
 var customerStyle={
- "News":{bg:"#eff6ff",tx:"#00A0DE",bd:"#bfdbfe"},
- "Entertainment":{bg:"#faf5ff",tx:"#7e22ce",bd:"#e9d5ff"},
- "Sports":{bg:"#ecfdf5",tx:"#047857",bd:"#a7f3d0"},
- "Muse Live":{bg:"#eef2ff",tx:"#4338ca",bd:"#c7d2fe"},
- "Spectrum":{bg:"#ecfeff",tx:"#0e7490",bd:"#a5f3fc"},
- "Digital":{bg:"#fff7ed",tx:"#c2410c",bd:"#fed7aa"},
- "External Productions":{bg:"#f9fafb",tx:"#4b5563",bd:"#e5e7eb"}
+ "News":{bg:"#eff5ff",tx:"#0866FF",bd:"#bfd8fe"},
+ "Entertainment":{bg:"#f5f9ff",tx:"#1264de",bd:"#d5e6ff"},
+ "Sports":{bg:"#ecfdf0",tx:"#04781F",bd:"#a7f3b9"},
+ "Muse Live":{bg:"#eef5ff",tx:"#166cec",bd:"#c7ddfe"},
+ "Spectrum":{bg:"#ecfdff",tx:"#0c4292",bd:"#a5c8fc"},
+ "Digital":{bg:"#fff4ed",tx:"#c2580c",bd:"#fecdaa"},
+ "External Productions":{bg:"#fafafa",tx:"#54565a",bd:"#e5e7eb"}
 };
 function custChip(c){
   var s=customerStyle[c]||customerStyle["External Productions"];
   var dark=false;try{dark=document.documentElement.classList.contains('dark');}catch(e){}
-  var bg=dark?'rgba(15,23,42,.72)':s.bg;
+  var bg=dark?'rgba(28,28,29,.72)':s.bg;
   var tx=dark?s.tx:s.tx;
   var bd=dark?s.tx:s.bd;
   return '<span class="text-[9px] font-bold mono px-2 py-0.5 rounded-full" style="background:'+bg+';color:'+tx+';border:1px solid '+bd+'">'+(c||"Unassigned")+'</span>';
@@ -398,7 +398,7 @@ var RVON_ALPHA_POOL=["XZ32","FB63","OK36","TG89","EB49","NY93","IM20","DJ34","II
 /* the maintainable talent roster (single source): extended by customTalent
    (muselive_talent_v1, Excel-importable) and the crew roster at picker time */
 var IFB_HOST_TALENT=['Dana Whitfield','Marcus Cole','Priya Shah','Elena Brooks','James Calder','Nina Park','Owen Grant','Lila Cho','Theo Barnes','Maya Singh','Chris Dalton','Harper Quinn'];
-var DEFAULT_DEPT_FIELDS={"Audio":[["_h1","Mixing & Console","header"],["console","Audio Console",["Calrec Artemis","Calrec Apollo"]],["channels","Channel Count",[],"num"],["mapping","Audio Mapping",["5.1.4 immersive map","Custom crash mix L/R","Discrete 16-track","FS1 / FS2 / FS3 standard","Stereo PGM"]],["stagebox","Stage Box / Node",["Calrec Hydra2","Calrec Apollo"]],["_h2","RF / Wireless Mics","header"],["rxmodel","Microphone Receiver",["Shure Axient Digital AD4Q","Shure Axient Digital AD4Q + AD1"]],["txmodel","Microphone Transmitter",["Shure AD1"]],["micmodel","Microphone / Capsule (Lav & Handheld)",["Sennheiser MKH 416","Sennheiser MD 46","DPA 4066"]],["rffreq","RF / Radio Frequencies",[],"text"],["_h3","Comms & IFB","header"],["intercom","Intercom System",["RTS ADAM","Riedel Bolero"]],["ifb","IFB Transmitter",["RTS IFB-325"]],["ifbphone","IFB Phone Line (REM / TIFF)",["REM 1 · 212-431-1001","REM 2 · 212-431-1002","REM 3 · 212-431-1003","REM 4 · 212-431-1004","REM 5 · 212-431-1005","REM 6 · 212-431-1006","REM 7 · 212-431-1007","REM 8 · 212-431-1008","REM 9 · 212-431-1009","REM 10 · 212-431-1010","REM 11 · 212-431-1011","REM 12 · 212-431-1012","REM 13 · 212-431-1013","REM 14 · 212-431-1014","REM 15 · 212-431-1015","REM 16 · 212-431-1016","REM 17 · 212-431-1017","REM 18 · 212-431-1018","REM 19 · 212-431-1019","REM 20 · 212-431-1020","REM 21 · 212-431-1021","REM 22 · 212-431-1022","REM 23 · 212-431-1023","REM 24 · 212-431-1024","REM 25 · 212-431-1025","REM 26 · 212-431-1026","REM 27 · 212-431-1027","REM 28 · 212-431-1028","REM 29 · 212-431-1029","REM 30 · 212-431-1030","REM 31 · 212-431-1031","REM 32 · 212-431-1032","REM 33 · 212-431-1033","REM 34 · 212-431-1034","REM 35 · 212-431-1035","REM 36 · 212-431-1036","REM 37 · 212-431-1037","REM 38 · 212-431-1038","REM 39 · 212-431-1039","REM 40 · 212-431-1040","TIFF 1 · 212-431-1041","TIFF 2 · 212-431-1042","TIFF 3 · 212-431-1043","TIFF 4 · 212-431-1044","TIFF 5 · 212-431-1045","TIFF 6 · 212-431-1046","TIFF 7 · 212-431-1047","TIFF 8 · 212-431-1048","TIFF 9 · 212-431-1049","TIFF 10 · 212-431-1050","TIFF 11 · 212-431-1051","TIFF 12 · 212-431-1052","TIFF 13 · 212-431-1053","TIFF 14 · 212-431-1054","TIFF 15 · 212-431-1055","TIFF 16 · 212-431-1056","TIFF 17 · 212-431-1057","TIFF 18 · 212-431-1058","TIFF 19 · 212-431-1059","TIFF 20 · 212-431-1060","TIFF 21 · 212-431-1061","TIFF 22 · 212-431-1062"]],["rvon","RVON (Channels · Alphas)",RVON_ALPHA_POOL.slice(),"rvon"],["_h4","PA & Foldback","header"],["pa","PA System",["L-Acoustics X12"]],["foldback","Foldback / Monitors",["d&b audiotechnik M4"]],["_h5","Networking & Cable","header"],["dante","Dante Config",["44.1 kHz / 2ms","48 kHz / 0.5ms / Follower","48 kHz / 1ms / Leader clock","96 kHz / 1ms / Leader","AES67 interop mode","Dante Domain Manager managed"]],["cabletype","Cable Type",["Cat5e (Dante / AES67)","Cat6 (Dante / AES67)","Cat6a shielded (Dante)","EtherCON Cat6 (Dante)","Fiber (Dante long-haul)","3-Pin XLR (analog)","5-Pin XLR (AES/EBU)","Multi-pin audio snake","Digital coax BNC (AES3id)","MADI coax / optical"]],["cablelen","Cable Length / Quality",["10 ft (studio)","25 ft","50 ft","100 ft (touring grade)","150 ft","250 ft","Custom run"]],["_h6","Talent Audio","header"],["sportscaster","Sportscaster",["Booth A/B confirmed","Sennheiser HMD 300-XQ","Calrec Type R commentator","Commentator + analyst","Sideline RF pack","TBD"]],["_h7","Musical Performances","header"],["musicmics","Instrument / Vocal Mics",["Shure SM57","Shure Beta 52A","Sennheiser MD 46"]],["musiciem","IEM / Monitoring",["d&b audiotechnik M4","Shure PSM 1000","L-Acoustics X12"]],["backline","Backline / Stage Audio",["Radial JDI Duplex","Canare 8ch analog snake","Shure PGA Drum Kit","Countryman Type 85","Sound Devices 970"]],["_hval","Validation & Sync","header"],["hitomi","Leader LV5600",["Leader LV5600","Lip-sync validated","— none —"]],["danterf","Dante RF Channels",[],"addable"],["comtek","COMTEK / Assistive IFB",["RTS RM-325","RTS IFB-325","— none —"]]],"Cameras / Video":[["model","Camera Body",["Sony HDC-3500","Sony HDC-5500","Grass Valley LDX 86N","Sony HDC-P31"]],["count","Camera Count",[],"num"],["lens","Lens Package",["Fujinon UA107x8.4","Canon CJ45ex9.7B","Fujinon UA80x9","Canon CJ14ex4.3B"]],["config","Configuration",["Hand Held","Hard cam + handheld","Hard cam · pedestal","Jib 12 ft","Jib 30 ft","Jib 9 ft","PTZ rig","Robotic / POV","RF Steadicam","Sky cam / aerial","Spy / POV rig","Steadicam","Studio Build-Up · Vinten Vector 750","Studio Build-Up · Vinten Vector 750","Studio pedestal · Vinten Vector 750","Studio tripod"]],["signal","Signal Standard",["12G-SDI","6G-SDI","3G-SDI","HD-SDI","SMPTE 2110","NDI"]],["transport","Transport Medium",["SMPTE 311M hybrid fiber","Tactical fiber","Triax","Coax (BNC)","Single-mode fiber (TAC-12)"]],["cablelen","Run / Length Class",["150 ft","250 ft","500 ft","1000 ft","Tactical / deployable","Installed"]],["_hvf","Viewfinder / Returns / Build-Up","header"],["viewfinder","Viewfinder",["Sony HDVF-EL30","No VF (PTZ / POV)"]],["vanitymon","Vanity / Talent Monitor",["— none —","7\" on-cam","9\" talent","17\" confidence","Sony PVM-X2400","55\" talent return"]],["ccuret1","CCU Return 1",["PCR PGM 01","PCR PGM 02","Clean feed","ISO record","Match return","— none —"]],["ccuret2","CCU Return 2",["PCR PGM 01","PCR PGM 02","Clean feed","ISO record","Match return","— none —"]],["shed","Shed / CCU #",[],"text"],["buildkit","Studio Build-Up Kit",["Vinten Vector 750","No build-up (handheld/PTZ)"]],["_hprompter","Prompter","header"],["software","Autoscript WinPlus",["Autoscript WinPlus","Autoscript WinPlus","Autoscript WinPlus","CueScript CSF-17"]],["engine","Autoscript LED 17",["Autoscript LED 17"]],["controller","Controller",["CueScript CSF-17"]],["xboxip","Autoscript IP",[],"ip"],["_hhdr","Image · HDR / Color / Rate","header"],["framerate","Frame Rate",["23.98p","24p","25p","29.97p","30p","50i","59.94i","50p","59.94p","60p"]],["colorspace","Color Space / Transfer",["Rec.709 SDR","Rec.2020 HDR","HLG","PQ / ST 2084","S-Log3","V-Log","Custom LUT pipeline"]],["hdr","HDR Workflow",["SDR only","HDR PQ master + SDR sim","HLG live","Dual SDR/HDR path","Not applicable"]],["shutter","Shutter / Angle",["1/60","1/100","1/120","180°","90°","Custom"]],["whitebal","White Balance",["3200K","4300K","5600K","6500K","Preset A/B","Auto"]],["_hpos","Positions & Coverage","header"],["hardcams","Hard Camera Count",[],"num"],["handhelds","Handheld / Steadicam Count",[],"num"],["ptzcount","PTZ / Robotic Count",[],"num"],["specialcams","Specialty (Jib / Sky / RF / Spy)",[],"text"],["camplot","Camera Plot Status",["Not started","Draft","Locked · signed off","Revised after walkthrough"]],["iso","ISO / Recording Policy",["ISO all cameras","ISO hard cams only","No ISO (PGM only)","Replay ingest ISO"]]],"Transmission / Signal":[["transport","Transmission Method",["Harmonic XOS (NYNJ→Miami)","AT&T (1G fiber)","AWS Elemental","Harmonic XOS","LiveU LU800","LiveU LU800 bonded","LTN Fiber","Fiber + satellite contribution (dual-path)","Evertz 570IP + Haivision Makito X4","Satellite Truck (C-band)","Satellite Truck (Ku-band)","Haivision Makito X4 SRT","The Switch (1G internet)"]],["format","Signal Format",["16× HD-SDI","32× HD-SDI","64× SMPTE 2110","128× SMPTE 2110","256× SMPTE 2110","Mixed SDI/IP","NDI"]],["medium","Transport Medium",["HD-SDI / 3G / 12G coax","Fiber","IP over Ethernet","Satellite RF / coax","ASI (legacy)"]],["connector","Connector / Interface",["BNC","LC fiber","SC fiber","ST fiber","RJ45 / etherCON","Neutrik OpticalCON"]],["bandwidth","Required Bandwidth",[],"text"],["liveumodel","LiveU LU800 Model #",["LiveU LU800","Harmonic XOS"]],["liveuserial","LiveU LU800 Serial #",[],"text"],["_henc","Encoders / Decoders","header"],["encoder","Encoder",["Harmonic XOS","— none —"]],["encmap","ENC / DEC Mapping",[],"text"],["_hsat","Satellite Parameters","header"],["satellite","Satellite / Transponder",["Galaxy 16 / 20C","Galaxy 19 / Tp 12","Eutelsat 113 / Tp 7","SES-1 @ 101W","Intelsat (Ku)","— none —"]],["satslot","Transponder Slot / Channel",[],"text"],["confnum","Booking / Confirmation #",[],"text"],["handoff","Hand-off Location",["Double Technical Cabin · HBS Port 1/2","Salon CITO","Muse Live Miami","Muse Plaza TOC","TC Master Control","Telmex POP","MCM Rack","CIR · MetLife","Production Office · MetLife"]],["satfreq","Satellite Dish Frequency",[],"text"],["backup","Backup Path",["Dual fiber path","LiveU LU800/U","None","Satellite (SES-1 @ 101W)","Starlink B/U","LiveU LU800 B/U"]],["_hpath","Path Engineering","header"],["primarypath","Primary Contribution Path",["Harmonic XOS (NYNJ→Miami)","LTN fiber","Dedicated dark fiber","Bonded cellular (LiveU LU800/TVU)","Ku satellite","C-band satellite","SRT over public IP","The Switch / managed Ethernet","Internal plant only"]],["latency","End-to-End Latency Budget",["<200 ms (IP local)","200–500 ms","0.5–1.5 s bonded","1.5–3 s satellite","Variable / best effort"]],["redundancy","Path Diversity",["A/B diverse fiber","Fiber + cellular B/U","Fiber + sat B/U","Single path","Triple path"]],["failover","Failover Method",["Manual switcher","Automatic hitless","Encoder auto-failover","TOC operator","Not configured"]],["returnpath","Return / Confidence",["PGM return fiber","PGM return bonded","IFB only","None"]],["toc","TOC / Master Control Hand-off",["Confirmed","Pending test","Not scheduled"]],["bitrate","Encode Bitrate / Profile",[],"text"],["nmos","NMOS / ST 2110 Control",["Not applicable (SDI)","IS-04 registered","IS-04 + IS-05 connected","Manual SDP only","Pending"]]],"Engineering":[["router","Router / Infrastructure",["Harmonic XOS","Evertz 7707 fiber Rx","Evertz EQX 32×32","Evertz MAGNUM"]],["sync","Sync / Reference",["Leader LT4610","Leader LT4610","Leader LV5600","PTP / SMPTE 2059","Leader LV5600","Tri-level + LTC","TSL tally interface"]],["cable","Connectivity / Cable",["Cat6 (control VLAN)","Cat6a shielded","Single-mode fiber LC","Multi-mode fiber SC","12G-SDI coax","ST fiber (TAC-12)","Neutrik OpticalCON"]],["_ht","Tally","header"],["remoteprod","Remote Production",["Remote Prod 1","Remote Prod 2"]],["tallysys","Tally System",["TSL TallyMan"]],["dataprobe","Data Probe",["Data Probe 1","Data Probe 2","Data Probe 3"]],["probeqty","Data Probe Qty",[],"num"],["probeip","Data Probe IP",[],"ip"],["_hv","VLAN IP Tracking","header"],["vlan_rts","VLAN IP — RTS",[],"ip"],["vlan_router","VLAN IP — Router",[],"ip"],["vlan_dante","VLAN IP — DANTE",[],"ip"],["vlan_light","VLAN IP — Lighting Console",[],"ip"],["vlan_net","VLAN IP — Internet",[],"ip"],["_hplant","Plant · Sync · Master Control","header"],["genlock","Genlock / Reference",["House black + burst","Tri-level","PTP grandmaster locked","Free-run (not for air)","External GPS-locked"]],["ptpdomain","PTP Domain #",[],"num"],["multiview","Multiviewer Layout",["Quad","8-up","16-up","Custom mosaic","Ultriscape / MVP"]],["routersize","Router Crosspoints",["32×32","64×64","128×128","256×256","IP fabric (virtual)"]],["ccupos","CCU / Base Station Location",["Truck bay","IBC tech core","Venue MDF","Remote / cloud","Mixed"]],["walkie","Radio / Walkie System",["UHF analog","Digital DMR","NXDN","Trunked","Venue-provided"]]],"Lighting":[["fixture","Primary Fixtures",["ARRI SkyPanel S60-C","ETC Source Four LED Series 3"]],["fixturetype","Fixture Types (structured)",["Fresnel","Softbox / LED panel","Leko / ellipsoidal spot","Moving head / automated fixture","Practical","Ring light","Kicker / rim light"]],["colortemp","Color Temperature",["3200K — Tungsten","5600K — Daylight","4300K — Mixed / neutral","2700K — Warm practical","6500K — Overcast daylight","Bi-color (2700K–6500K adjustable)"]],["console","Lighting Console",["MA Lighting grandMA3"]],["cabletype","Cable Type",["5-pin DMX","3-pin DMX","Cat5e EtherCON (sACN / Art-Net)","Cat6 EtherCON (sACN / Art-Net)","Socapex 19-pin (power)","TRUE1 power","Cam-Lock feeder","Edison stinger"]],["cablelen","Cable Length",["25 ft","50 ft","100 ft","250 ft","Custom run"]],["power","Power / Wattage per fixture",[],"text"]],"Power / Electrical":[["source","Power Source",["HBS (Host Broadcast Services)","Dual Generator (A/B)","Generator (on standby)","House Power","House Power + Generator","Shore Power"]],["distro","Distribution",["Motion Laboratories 400A distro"]],["generator","Backup Generator",["MQ Power DCA-70SS"]],["ups","UPS / Battery",["APC Smart-UPS SRT 8kVA"]],["redundancy","Redundant Solution",["A/B power with ATS","Generator + UPS bridge","Shore + generator failover","Dual utility feed","None"]],["_hload","Load · Safety · Bonding","header"],["loadkw","Estimated Load (kW)",[],"num"],["phases","Service Phases",["Single-phase","3-phase 208V","3-phase 480V","Mixed"]],["bonding","Grounding / Bonding",["Verified","Pending electrician","Issue logged","N/A"]],["tiein","Venue Tie-in Status",["Confirmed","Pending","Rejected — using gen"]],["ats","ATS / Transfer Switch",["Installed & tested","Installed untested","None"]],["safety","Electrical Safety Lead",[],"text"]],"Replay / EVS":[["status","Replay Status",["Provisioned · online","Channels mapped","Standby · awaiting config","Not assigned","Fault — see notes"]],["server","Server Platform",["EVS XT-VIA"]],["channels","Record / Play Channels",["4ch · 3R/1P","6ch · 4R/2P","8ch · 6R/2P","12ch · 8R/4P","16ch · 12R/4P","24ch cluster"]],["storage","Shared Storage",["Local only","XFile3 archive","XStore SAN","IP · ST 2110 fabric","Cloud proxy · C-Next"]],["_hop","Replay Operations","header"],["opsmode","Ops Mode",["Live sports multi-iso","News / package","Entertainment live","Training / dry run"]],["operators","Replay Operators",[],"num"],["pgmfeed","PGM Feed Source",["Router dest","Direct camera","Clean feed","External"]],["clipnaming","Clip Naming Convention",[],"text"],["archive","Archive Policy",["Match + hold 48h","Full event XFile3","Highlight only","Client handoff"]],["slo","Slo-Mo Profiles",["100% / 50% / 25%","Variable","Super-mo cameras only","Not used"]],["netstatus","ST 2110 / PTP Status",["Locked","Degraded","N/A (SDI)","Unknown"]]],"CAD":[["status","CAD Status",["CAD final · signed off","CAD pending approval","CAD pending upload","CAD v3 · in review"]],["version","Drawing Set Version",[],"text"],["filetype","File Type",["AutoCAD DWG","PDF set","SketchUp","Vectorworks"]],["siteplan","Site Plan",["Filed","In review","Pending survey"]]],"Monitors":[["size","Monitor Size",["17\"","27\"","40\"","43\"","55\"","65\""]],["mount","Mount",["Floor stand","RACK mount","Stand","Table top"]],["feed","Feed",["MATCH","Multiviewer","MVP","PCR Return","Routable"]],["_hmv","Confidence · Multiview","header"],["count","Monitor Count",[],"num"],["hdrcap","HDR Capable",["Yes","No","Mixed"]],["calibration","Calibration",["Factory","ISF / calibrated","Not calibrated"]],["confidence","Confidence / PGM Position",["TD desk","Producer","A1","Talent return","Truck wall"]]],"Graphics (GFX)":[["system","Graphics System",["Chyron Prime"]],["status","Package Status",["In build","Not started","Signed off"]],["_hopg","Graphics Ops","header"],["operator","GFX Operator Count",[],"num"],["templates","Template Set",["Show package locked","In review","Legacy templates","TBD"]],["scorebug","Scorebug / Bug",["Live data feed","Manual","None"]],["ar","AR / Virtual",["None","Chyron Prime","Custom AR","LED wall integration"]],["brand","Brand / Legal Bugs",["Cleared","Pending legal","N/A"]]],"Talent / Production":[["talent","Talent Status",["Anchor confirmed","Contract not executed","Full broadcast team confirmed","Host riders executed","Sportscasters confirmed","Talent TBD"]],["position","Production Position",["Anchor desk","Booth A/B","Broadway platform","Dockside","Field / sideline","Sky cam position","Studio"]],["_hh","Muse Live Hosts","header"],["host_role","Host Role",["Co-Host","Color Commentator","Main Host","News Anchor","Sideline Reporter","Sport Analyst","Sports Commentator"]],["host_name","Host Name",IFB_HOST_TALENT.slice()]],"Miscellaneous / Consumables":[["expendables","Expendables / Consumables",["Duracell Procell AA","Panduit PLT2S-C","ProTapes Pro Gaff","PEC-12 emulsion cleaner","PEC-PAD lint-free wipe","Giottos rocket blower","Husky clear polyethylene sheeting","Petrol rain cover","Dymo Rhino 6000","Wiha insulated driver set","Yellow Jacket cable ramp","HellermannTyton T50R"]],["qty","Quantity",[],"num"],["notes","Notes",[],"text"]],"Networking / IT":[["_hcirc","Circuits & Bandwidth","header"],["circuit","Primary Circuit",["1 GB Fiber","500 Mbps Fiber","1 GB Microwave","10 GB Fiber","100 Mbps internet","Bonded cellular","Starlink"]],["circuit2","Secondary Circuit",["1 GB Fiber","500 Mbps Fiber","1 GB Microwave","Bonded cellular","Starlink","— none —"]],["provider","Provider / Carrier",["Telmex","AT&T","Lumen","MCM","The Switch","Verizon","Starlink"]],["handoffloc","Hand-off Location",["Salon CITO","Telmex Rack","MCM Rack","TC Demarc","Venue MPOE"]],["_hsw","Switching & SD-WAN","header"],["switch","Core Switch",["Cisco Catalyst 9300"]],["sdwan","SD-WAN / Edge",["Cisco Meraki MX250","— none —"]],["datadrops","Data Drops (Cat5E/6 ports)",[],"addable"],["_hip","IP / VLAN","header"],["wanip","WAN IP / Gateway",[],"ip"],["mgmtvlan","Management VLAN IP",[],"ip"],["wifi","Wi-Fi / WAP",["Cisco Catalyst 9130AX","— none —"]],["_hsec","Security · QoS · Remote","header"],["qos","QoS / DSCP for Media",["Configured","Partial","Not configured"]],["firewall","Firewall / ACL",["Hardened","Default","Open for load-in"]],["remoteaccess","Remote Engineering Access",["VPN only","Jump host","None","Vendor remote"]],["bandwidthtest","Bandwidth Test Status",["Passed","Failed","Not run"]],["dnsntp","DNS / NTP Sources",[],"text"]],"Legal / Rights":[["rights","Rights Status",["Fully executed","In progress","In review","Pending"]],["clearances","Clearances",["All music cleared","Archive in review","FAA drone waiver","Permits pending (DCAS/FAA)","Rights & insurance in progress"]],["_hcomp","Compliance · Insurance · Talent","header"],["coi","Vendor COI Status",["All current","1+ expiring ≤30d","1+ expired","Not tracked"]],["union","Union / Labor Notices",["Filed","Pending","N/A"]],["talentrel","Talent Releases",["Complete","Partial","Outstanding"]],["music","Music / ASCAP-BMI",["Cleared","Cue sheet pending","Live band TBD"]],["privacy","Privacy / GDPR / Likeness",["Reviewed","N/A","Issues open"]]]};
+var DEFAULT_DEPT_FIELDS={"Audio":[["_h1","Mixing & Console","header"],["console","Audio Console",["Calrec Artemis","Calrec Apollo"]],["channels","Channel Count",[],"num"],["mapping","Audio Mapping",["5.1.4 immersive map","Custom crash mix L/R","Discrete 16-track","FS1 / FS2 / FS3 standard","Stereo PGM"]],["stagebox","Stage Box / Node",["Calrec Hydra2","Calrec Apollo"]],["_h2","RF / Wireless Mics","header"],["rxmodel","Microphone Receiver",["Shure Axient Digital AD4Q","Shure Axient Digital AD4Q + AD1"]],["txmodel","Microphone Transmitter",["Shure AD1"]],["micmodel","Microphone / Capsule (Lav & Handheld)",["Sennheiser MKH 416","Sennheiser MD 46","DPA 4066"]],["rffreq","RF / Radio Frequencies",[],"text"],["_h3","Comms & IFB","header"],["intercom","Intercom System",["RTS ADAM","Riedel Bolero"]],["ifb","IFB Transmitter",["RTS IFB-325"]],["ifbphone","IFB Phone Line (REM / TIFF)",["REM 1 · 212-431-1001","REM 2 · 212-431-1002","REM 3 · 212-431-1003","REM 4 · 212-431-1004","REM 5 · 212-431-1005","REM 6 · 212-431-1006","REM 7 · 212-431-1007","REM 8 · 212-431-1008","REM 9 · 212-431-1009","REM 10 · 212-431-1010","REM 11 · 212-431-1011","REM 12 · 212-431-1012","REM 13 · 212-431-1013","REM 14 · 212-431-1014","REM 15 · 212-431-1015","REM 16 · 212-431-1016","REM 17 · 212-431-1017","REM 18 · 212-431-1018","REM 19 · 212-431-1019","REM 20 · 212-431-1020","REM 21 · 212-431-1021","REM 22 · 212-431-1022","REM 23 · 212-431-1023","REM 24 · 212-431-1024","REM 25 · 212-431-1025","REM 26 · 212-431-1026","REM 27 · 212-431-1027","REM 28 · 212-431-1028","REM 29 · 212-431-1029","REM 30 · 212-431-1030","REM 31 · 212-431-1031","REM 32 · 212-431-1032","REM 33 · 212-431-1033","REM 34 · 212-431-1034","REM 35 · 212-431-1035","REM 36 · 212-431-1036","REM 37 · 212-431-1037","REM 38 · 212-431-1038","REM 39 · 212-431-1039","REM 40 · 212-431-1040","TIFF 1 · 212-431-1041","TIFF 2 · 212-431-1042","TIFF 3 · 212-431-1043","TIFF 4 · 212-431-1044","TIFF 5 · 212-431-1045","TIFF 6 · 212-431-1046","TIFF 7 · 212-431-1047","TIFF 8 · 212-431-1048","TIFF 9 · 212-431-1049","TIFF 10 · 212-431-1050","TIFF 11 · 212-431-1051","TIFF 12 · 212-431-1052","TIFF 13 · 212-431-1053","TIFF 14 · 212-431-1054","TIFF 15 · 212-431-1055","TIFF 16 · 212-431-1056","TIFF 17 · 212-431-1057","TIFF 18 · 212-431-1058","TIFF 19 · 212-431-1059","TIFF 20 · 212-431-1060","TIFF 21 · 212-431-1061","TIFF 22 · 212-431-1062"]],["rvon","RVON (Channels · Alphas)",RVON_ALPHA_POOL.slice(),"rvon"],["_h4","PA & Foldback","header"],["pa","PA System",["L-Acoustics X12"]],["foldback","Foldback / Monitors",["d&b audiotechnik M4"]],["_h5","Networking & Cable","header"],["dante","Dante Config",["44.1 kHz / 2ms","48 kHz / 0.5ms / Follower","48 kHz / 1ms / Leader clock","96 kHz / 1ms / Leader","AES67 interop mode","Dante Domain Manager managed"]],["cabletype","Cable Type",["Cat5e (Dante / AES67)","Cat6 (Dante / AES67)","Cat6a shielded (Dante)","EtherCON Cat6 (Dante)","Fiber (Dante long-haul)","3-Pin XLR (analog)","5-Pin XLR (AES/EBU)","Multi-pin audio snake","Digital coax BNC (AES3id)","MADI coax / optical"]],["cablelen","Cable Length / Quality",["10 ft (studio)","25 ft","50 ft","100 ft (touring grade)","150 ft","250 ft","Custom run"]],["_h6","Talent Audio","header"],["sportscaster","Sportscaster",["Booth A/B confirmed","Sennheiser HMD 300-XQ","Calrec Type R commentator","Commentator + analyst","Sideline RF pack","TBD"]],["_h7","Musical Performances","header"],["musicmics","Instrument / Vocal Mics",["Shure SM57","Shure Beta 52A","Sennheiser MD 46"]],["musiciem","IEM / Monitoring",["d&b audiotechnik M4","Shure PSM 1000","L-Acoustics X12"]],["backline","Backline / Stage Audio",["Radial JDI Duplex","Canare 8ch analog snake","Shure PGA Drum Kit","Countryman Type 85","Sound Devices 970"]],["_hval","Validation & Sync","header"],["hitomi","Leader LV5600",["Leader LV5600","Lip-sync validated","— none —"]],["danterf","Dante RF Channels",[],"addable"],["comtek","COMTEK / Assistive IFB",["RTS RM-325","RTS IFB-325","— none —"]]],"Cameras / Video":[["model","Camera Body",["Sony HDC-3500","Sony HDC-5500","Grass Valley LDX 86N","Sony HDC-P31"]],["count","Camera Count",[],"num"],["lens","Lens Package",["Fujinon UA107x8.4","Canon CJ45ex9.7B","Fujinon UA80x9","Canon CJ14ex4.3B"]],["config","Configuration",["Hand Held","Hard cam + handheld","Hard cam · pedestal","Jib 12 ft","Jib 30 ft","Jib 9 ft","PTZ rig","Robotic / POV","RF Steadicam","Sky cam / aerial","Spy / POV rig","Steadicam","Studio Build-Up · Vinten Vector 750","Studio Build-Up · Vinten Vector 750","Studio pedestal · Vinten Vector 750","Studio tripod"]],["signal","Signal Standard",["12G-SDI","6G-SDI","3G-SDI","HD-SDI","SMPTE 2110","NDI"]],["transport","Transport Medium",["SMPTE 311M hybrid fiber","Tactical fiber","Triax","Coax (BNC)","Single-mode fiber (TAC-12)"]],["cablelen","Run / Length Class",["150 ft","250 ft","500 ft","1000 ft","Tactical / deployable","Installed"]],["_hvf","Viewfinder / Returns / Build-Up","header"],["viewfinder","Viewfinder",["Sony HDVF-EL30","No VF (PTZ / POV)"]],["vanitymon","Vanity / Talent Monitor",["— none —","7\" on-cam","9\" talent","17\" confidence","Sony PVM-X2400","55\" talent return"]],["ccuret1","CCU Return 1",["PCR PGM 01","PCR PGM 02","Clean feed","ISO record","Match return","— none —"]],["ccuret2","CCU Return 2",["PCR PGM 01","PCR PGM 02","Clean feed","ISO record","Match return","— none —"]],["shed","Shed / CCU #",[],"text"],["buildkit","Studio Build-Up Kit",["Vinten Vector 750","No build-up (handheld/PTZ)"]],["_hprompter","Prompter","header"],["software","Autoscript WinPlus",["Autoscript WinPlus","Autoscript WinPlus","Autoscript WinPlus","CueScript CSF-17"]],["engine","Autoscript LED 17",["Autoscript LED 17"]],["controller","Controller",["CueScript CSF-17"]],["xboxip","Autoscript IP",[],"ip"],["_hhdr","Image · HDR / Color / Rate","header"],["framerate","Frame Rate",["23.98p","24p","25p","29.97p","30p","50i","59.94i","50p","59.94p","60p"]],["colorspace","Color Space / Transfer",["Rec.709 SDR","Rec.2020 HDR","HLG","PQ / ST 2084","S-Log3","V-Log","Custom LUT pipeline"]],["hdr","HDR Workflow",["SDR only","HDR PQ master + SDR sim","HLG live","Dual SDR/HDR path","Not applicable"]],["shutter","Shutter / Angle",["1/60","1/100","1/120","180°","90°","Custom"]],["whitebal","White Balance",["3200K","4300K","5600K","6500K","Preset A/B","Auto"]],["_hpos","Positions & Coverage","header"],["hardcams","Hard Camera Count",[],"num"],["handhelds","Handheld / Steadicam Count",[],"num"],["ptzcount","PTZ / Robotic Count",[],"num"],["specialcams","Specialty (Jib / Sky / RF / Spy)",[],"text"],["camplot","Camera Plot Status",["Not started","Draft","Locked · signed off","Revised after walkthrough"]],["iso","ISO / Recording Policy",["ISO all cameras","ISO hard cams only","No ISO (PGM only)","Replay ingest ISO"]]],"Transmission / Signal":[["transport","Transmission Method",["Harmonic XOS (NYNJ→Miami)","AT&T (1G fiber)","AWS Elemental","Harmonic XOS","LiveU LU800","LiveU LU800 bonded","LTN Fiber","Fiber + satellite contribution (dual-path)","Evertz 570IP + Haivision Makito X4","Satellite Truck (C-band)","Satellite Truck (Ku-band)","Haivision Makito X4 SRT","The Switch (1G internet)"]],["format","Signal Format",["16× HD-SDI","32× HD-SDI","64× SMPTE 2110","128× SMPTE 2110","256× SMPTE 2110","Mixed SDI/IP","NDI"]],["medium","Transport Medium",["HD-SDI / 3G / 12G coax","Fiber","IP over Ethernet","Satellite RF / coax","ASI (legacy)"]],["connector","Connector / Interface",["BNC","LC fiber","SC fiber","ST fiber","RJ45 / etherCON","Neutrik OpticalCON"]],["bandwidth","Required Bandwidth",[],"text"],["liveumodel","LiveU LU800 Model #",["LiveU LU800","Harmonic XOS"]],["liveuserial","LiveU LU800 Serial #",[],"text"],["_henc","Encoders / Decoders","header"],["encoder","Encoder",["Harmonic XOS","— none —"]],["encmap","ENC / DEC Mapping",[],"text"],["_hsat","Satellite Parameters","header"],["satellite","Satellite / Transponder",["Galaxy 16 / 20C","Galaxy 19 / Tp 12","Eutelsat 113 / Tp 7","SES-1 @ 101W","Intelsat (Ku)","— none —"]],["satslot","Transponder Slot / Channel",[],"text"],["confnum","Booking / Confirmation #",[],"text"],["handoff","Hand-off Location",["Double Technical Cabin · HBS Port 1/2","Salon CITO","Meta Miami","Meta NYC TOC","TC Master Control","Telmex POP","MCM Rack","CIR · MetLife","Production Office · MetLife"]],["satfreq","Satellite Dish Frequency",[],"text"],["backup","Backup Path",["Dual fiber path","LiveU LU800/U","None","Satellite (SES-1 @ 101W)","Starlink B/U","LiveU LU800 B/U"]],["_hpath","Path Engineering","header"],["primarypath","Primary Contribution Path",["Harmonic XOS (NYNJ→Miami)","LTN fiber","Dedicated dark fiber","Bonded cellular (LiveU LU800/TVU)","Ku satellite","C-band satellite","SRT over public IP","The Switch / managed Ethernet","Internal plant only"]],["latency","End-to-End Latency Budget",["<200 ms (IP local)","200–500 ms","0.5–1.5 s bonded","1.5–3 s satellite","Variable / best effort"]],["redundancy","Path Diversity",["A/B diverse fiber","Fiber + cellular B/U","Fiber + sat B/U","Single path","Triple path"]],["failover","Failover Method",["Manual switcher","Automatic hitless","Encoder auto-failover","TOC operator","Not configured"]],["returnpath","Return / Confidence",["PGM return fiber","PGM return bonded","IFB only","None"]],["toc","TOC / Master Control Hand-off",["Confirmed","Pending test","Not scheduled"]],["bitrate","Encode Bitrate / Profile",[],"text"],["nmos","NMOS / ST 2110 Control",["Not applicable (SDI)","IS-04 registered","IS-04 + IS-05 connected","Manual SDP only","Pending"]]],"Engineering":[["router","Router / Infrastructure",["Harmonic XOS","Evertz 7707 fiber Rx","Evertz EQX 32×32","Evertz MAGNUM"]],["sync","Sync / Reference",["Leader LT4610","Leader LT4610","Leader LV5600","PTP / SMPTE 2059","Leader LV5600","Tri-level + LTC","TSL tally interface"]],["cable","Connectivity / Cable",["Cat6 (control VLAN)","Cat6a shielded","Single-mode fiber LC","Multi-mode fiber SC","12G-SDI coax","ST fiber (TAC-12)","Neutrik OpticalCON"]],["_ht","Tally","header"],["remoteprod","Remote Production",["Remote Prod 1","Remote Prod 2"]],["tallysys","Tally System",["TSL TallyMan"]],["dataprobe","Data Probe",["Data Probe 1","Data Probe 2","Data Probe 3"]],["probeqty","Data Probe Qty",[],"num"],["probeip","Data Probe IP",[],"ip"],["_hv","VLAN IP Tracking","header"],["vlan_rts","VLAN IP — RTS",[],"ip"],["vlan_router","VLAN IP — Router",[],"ip"],["vlan_dante","VLAN IP — DANTE",[],"ip"],["vlan_light","VLAN IP — Lighting Console",[],"ip"],["vlan_net","VLAN IP — Internet",[],"ip"],["_hplant","Plant · Sync · Master Control","header"],["genlock","Genlock / Reference",["House black + burst","Tri-level","PTP grandmaster locked","Free-run (not for air)","External GPS-locked"]],["ptpdomain","PTP Domain #",[],"num"],["multiview","Multiviewer Layout",["Quad","8-up","16-up","Custom mosaic","Ultriscape / MVP"]],["routersize","Router Crosspoints",["32×32","64×64","128×128","256×256","IP fabric (virtual)"]],["ccupos","CCU / Base Station Location",["Truck bay","IBC tech core","Venue MDF","Remote / cloud","Mixed"]],["walkie","Radio / Walkie System",["UHF analog","Digital DMR","NXDN","Trunked","Venue-provided"]]],"Lighting":[["fixture","Primary Fixtures",["ARRI SkyPanel S60-C","ETC Source Four LED Series 3"]],["fixturetype","Fixture Types (structured)",["Fresnel","Softbox / LED panel","Leko / ellipsoidal spot","Moving head / automated fixture","Practical","Ring light","Kicker / rim light"]],["colortemp","Color Temperature",["3200K — Tungsten","5600K — Daylight","4300K — Mixed / neutral","2700K — Warm practical","6500K — Overcast daylight","Bi-color (2700K–6500K adjustable)"]],["console","Lighting Console",["MA Lighting grandMA3"]],["cabletype","Cable Type",["5-pin DMX","3-pin DMX","Cat5e EtherCON (sACN / Art-Net)","Cat6 EtherCON (sACN / Art-Net)","Socapex 19-pin (power)","TRUE1 power","Cam-Lock feeder","Edison stinger"]],["cablelen","Cable Length",["25 ft","50 ft","100 ft","250 ft","Custom run"]],["power","Power / Wattage per fixture",[],"text"]],"Power / Electrical":[["source","Power Source",["HBS (Host Broadcast Services)","Dual Generator (A/B)","Generator (on standby)","House Power","House Power + Generator","Shore Power"]],["distro","Distribution",["Motion Laboratories 400A distro"]],["generator","Backup Generator",["MQ Power DCA-70SS"]],["ups","UPS / Battery",["APC Smart-UPS SRT 8kVA"]],["redundancy","Redundant Solution",["A/B power with ATS","Generator + UPS bridge","Shore + generator failover","Dual utility feed","None"]],["_hload","Load · Safety · Bonding","header"],["loadkw","Estimated Load (kW)",[],"num"],["phases","Service Phases",["Single-phase","3-phase 208V","3-phase 480V","Mixed"]],["bonding","Grounding / Bonding",["Verified","Pending electrician","Issue logged","N/A"]],["tiein","Venue Tie-in Status",["Confirmed","Pending","Rejected — using gen"]],["ats","ATS / Transfer Switch",["Installed & tested","Installed untested","None"]],["safety","Electrical Safety Lead",[],"text"]],"Replay / EVS":[["status","Replay Status",["Provisioned · online","Channels mapped","Standby · awaiting config","Not assigned","Fault — see notes"]],["server","Server Platform",["EVS XT-VIA"]],["channels","Record / Play Channels",["4ch · 3R/1P","6ch · 4R/2P","8ch · 6R/2P","12ch · 8R/4P","16ch · 12R/4P","24ch cluster"]],["storage","Shared Storage",["Local only","XFile3 archive","XStore SAN","IP · ST 2110 fabric","Cloud proxy · C-Next"]],["_hop","Replay Operations","header"],["opsmode","Ops Mode",["Live sports multi-iso","News / package","Entertainment live","Training / dry run"]],["operators","Replay Operators",[],"num"],["pgmfeed","PGM Feed Source",["Router dest","Direct camera","Clean feed","External"]],["clipnaming","Clip Naming Convention",[],"text"],["archive","Archive Policy",["Match + hold 48h","Full event XFile3","Highlight only","Client handoff"]],["slo","Slo-Mo Profiles",["100% / 50% / 25%","Variable","Super-mo cameras only","Not used"]],["netstatus","ST 2110 / PTP Status",["Locked","Degraded","N/A (SDI)","Unknown"]]],"CAD":[["status","CAD Status",["CAD final · signed off","CAD pending approval","CAD pending upload","CAD v3 · in review"]],["version","Drawing Set Version",[],"text"],["filetype","File Type",["AutoCAD DWG","PDF set","SketchUp","Vectorworks"]],["siteplan","Site Plan",["Filed","In review","Pending survey"]]],"Monitors":[["size","Monitor Size",["17\"","27\"","40\"","43\"","55\"","65\""]],["mount","Mount",["Floor stand","RACK mount","Stand","Table top"]],["feed","Feed",["MATCH","Multiviewer","MVP","PCR Return","Routable"]],["_hmv","Confidence · Multiview","header"],["count","Monitor Count",[],"num"],["hdrcap","HDR Capable",["Yes","No","Mixed"]],["calibration","Calibration",["Factory","ISF / calibrated","Not calibrated"]],["confidence","Confidence / PGM Position",["TD desk","Producer","A1","Talent return","Truck wall"]]],"Graphics (GFX)":[["system","Graphics System",["Chyron Prime"]],["status","Package Status",["In build","Not started","Signed off"]],["_hopg","Graphics Ops","header"],["operator","GFX Operator Count",[],"num"],["templates","Template Set",["Show package locked","In review","Legacy templates","TBD"]],["scorebug","Scorebug / Bug",["Live data feed","Manual","None"]],["ar","AR / Virtual",["None","Chyron Prime","Custom AR","LED wall integration"]],["brand","Brand / Legal Bugs",["Cleared","Pending legal","N/A"]]],"Talent / Production":[["talent","Talent Status",["Anchor confirmed","Contract not executed","Full broadcast team confirmed","Host riders executed","Sportscasters confirmed","Talent TBD"]],["position","Production Position",["Anchor desk","Booth A/B","Broadway platform","Dockside","Field / sideline","Sky cam position","Studio"]],["_hh","Meta Hosts","header"],["host_role","Host Role",["Co-Host","Color Commentator","Main Host","News Anchor","Sideline Reporter","Sport Analyst","Sports Commentator"]],["host_name","Host Name",IFB_HOST_TALENT.slice()]],"Miscellaneous / Consumables":[["expendables","Expendables / Consumables",["Duracell Procell AA","Panduit PLT2S-C","ProTapes Pro Gaff","PEC-12 emulsion cleaner","PEC-PAD lint-free wipe","Giottos rocket blower","Husky clear polyethylene sheeting","Petrol rain cover","Dymo Rhino 6000","Wiha insulated driver set","Yellow Jacket cable ramp","HellermannTyton T50R"]],["qty","Quantity",[],"num"],["notes","Notes",[],"text"]],"Networking / IT":[["_hcirc","Circuits & Bandwidth","header"],["circuit","Primary Circuit",["1 GB Fiber","500 Mbps Fiber","1 GB Microwave","10 GB Fiber","100 Mbps internet","Bonded cellular","Starlink"]],["circuit2","Secondary Circuit",["1 GB Fiber","500 Mbps Fiber","1 GB Microwave","Bonded cellular","Starlink","— none —"]],["provider","Provider / Carrier",["Telmex","AT&T","Lumen","MCM","The Switch","Verizon","Starlink"]],["handoffloc","Hand-off Location",["Salon CITO","Telmex Rack","MCM Rack","TC Demarc","Venue MPOE"]],["_hsw","Switching & SD-WAN","header"],["switch","Core Switch",["Cisco Catalyst 9300"]],["sdwan","SD-WAN / Edge",["Cisco Meraki MX250","— none —"]],["datadrops","Data Drops (Cat5E/6 ports)",[],"addable"],["_hip","IP / VLAN","header"],["wanip","WAN IP / Gateway",[],"ip"],["mgmtvlan","Management VLAN IP",[],"ip"],["wifi","Wi-Fi / WAP",["Cisco Catalyst 9130AX","— none —"]],["_hsec","Security · QoS · Remote","header"],["qos","QoS / DSCP for Media",["Configured","Partial","Not configured"]],["firewall","Firewall / ACL",["Hardened","Default","Open for load-in"]],["remoteaccess","Remote Engineering Access",["VPN only","Jump host","None","Vendor remote"]],["bandwidthtest","Bandwidth Test Status",["Passed","Failed","Not run"]],["dnsntp","DNS / NTP Sources",[],"text"]],"Legal / Rights":[["rights","Rights Status",["Fully executed","In progress","In review","Pending"]],["clearances","Clearances",["All music cleared","Archive in review","FAA drone waiver","Permits pending (DCAS/FAA)","Rights & insurance in progress"]],["_hcomp","Compliance · Insurance · Talent","header"],["coi","Vendor COI Status",["All current","1+ expiring ≤30d","1+ expired","Not tracked"]],["union","Union / Labor Notices",["Filed","Pending","N/A"]],["talentrel","Talent Releases",["Complete","Partial","Outstanding"]],["music","Music / ASCAP-BMI",["Cleared","Cue sheet pending","Live band TBD"]],["privacy","Privacy / GDPR / Likeness",["Reviewed","N/A","Issues open"]]]};
 // deep clone so edits via the gear manager don't mutate the defaults
 var deptFields=JSON.parse(JSON.stringify(DEFAULT_DEPT_FIELDS));
 
@@ -412,33 +412,33 @@ var deptFields=JSON.parse(JSON.stringify(DEFAULT_DEPT_FIELDS));
    ============================================================================ */
 var INV_CATEGORIES=["Cameras","Lenses","Audio","RF & Comms","Lighting","Transmission","IT / Network","Replay & Servers","Cable & Distribution","Power","Grip & Rigging","Cases & Carts"];
 var INV_STATUSES={
-  "available":{label:"Available",cls:"bg-emerald-50 text-emerald-700 border-emerald-200",dot:"#00A15D"},
-  "checked-out":{label:"Checked Out",cls:"bg-blue-50 text-blue-700 border-blue-200",dot:"#3b82f6"},
-  "maintenance":{label:"In Maintenance",cls:"bg-amber-50 text-amber-700 border-amber-200",dot:"#f59e0b"},
-  "missing":{label:"Missing",cls:"bg-red-50 text-red-700 border-red-200",dot:"#ef4444"}
+  "available":{label:"Available",cls:"bg-emerald-50 text-emerald-700 border-emerald-200",dot:"#31A24C"},
+  "checked-out":{label:"Checked Out",cls:"bg-blue-50 text-blue-700 border-blue-200",dot:"#3b86f6"},
+  "maintenance":{label:"In Maintenance",cls:"bg-amber-50 text-amber-700 border-amber-200",dot:"#f56c0b"},
+  "missing":{label:"Missing",cls:"bg-red-50 text-red-700 border-red-200",dot:"#ef4461"}
 };
-var INV_LOCATIONS=["Muse Live Sports — Stamford CG","Muse Live Miami","Muse Plaza — NYC","Muse Live Business — Englewood Cliffs","West Coast — Burbank","In Transit"];
+var INV_LOCATIONS=["Meta Live Events — Menlo Park MPK","Meta Miami","Meta NYC — NYC","Meta Business — Austin","West Coast — Burbank","In Transit"];
 var _invSeq=1;
 function newInvId(){return 'inv'+(Date.now().toString(36))+(_invSeq++);}
 // barcode generator: MUSE-<cat prefix>-<6 digits>
 function genBarcode(cat){var pre=(cat||'GEN').replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase();var n=Math.floor(100000+Math.random()*899999);return 'MUSE-'+pre+'-'+n;}
 var inventory=[
- {id:'inv_0001',barcode:"MUSE-EQ-341506",name:"Sony HDC-5500",category:'Cameras',serial:"",status:'checked-out',location:'In Transit',project:'worldcup',assignedTo:'Avery Nolan',value:78000,condition:'Excellent',notes:'4K/HDR system camera · World Cup hard cam 1'},
- {id:'inv_0002',barcode:"MUSE-EQ-206907",name:"Sony HDC-5500",category:'Cameras',serial:"",status:'checked-out',location:'In Transit',project:'worldcup',assignedTo:'Jordan Lane',value:78000,condition:'Excellent',notes:'Hard cam 2'},
- {id:'inv_0003',barcode:"MUSE-EQ-271113",name:"Sony HDC-5500",category:'Cameras',serial:"",status:'available',location:'Muse Live Sports — Stamford CG',project:'',assignedTo:'',value:62000,condition:'Good',notes:'System camera'},
- {id:'inv_0004',barcode:"MUSE-EQ-338198",name:"Fujinon UA80x9",category:'Lenses',serial:"",status:'checked-out',location:'In Transit',project:'worldcup',assignedTo:'Avery Nolan',value:215000,condition:'Excellent',notes:'90x box lens · long camera position'},
- {id:'inv_0005',barcode:"MUSE-EQ-932447",name:"Fujinon UA80x9",category:'Lenses',serial:"",status:'available',location:'Muse Live Sports — Stamford CG',project:'',assignedTo:'',value:198000,condition:'Good',notes:'107x box lens'},
- {id:'inv_0006',barcode:"MUSE-EQ-497365",name:"Calrec Artemis",category:'Audio',serial:"",status:'available',location:'Muse Live Sports — Stamford CG',project:'',assignedTo:'',value:340000,condition:'Excellent',notes:'96ch Dante console'},
- {id:'inv_0007',barcode:"MUSE-EQ-633334",name:"Shure Axient Digital AD4Q + AD1",category:'RF & Comms',serial:"",status:'checked-out',location:'In Transit',project:'worldcup',assignedTo:'Jordan Reyes',value:4200,condition:'Good',notes:'Quad digital receiver'},
- {id:'inv_0008',barcode:"MUSE-EQ-725025",name:"RTS ADAM",category:'RF & Comms',serial:"",status:'available',location:'Muse Live Miami',project:'',assignedTo:'',value:28000,condition:'Excellent',notes:'48ch trunked'},
- {id:'inv_0009',barcode:"MUSE-EQ-248969",name:"LiveU LU800",category:'Transmission',serial:"",status:'checked-out',location:'In Transit',project:'sail250',assignedTo:'Harbor Flypack A',value:24000,condition:'Excellent',notes:'5-band bonded cellular'},
- {id:'inv_0010',barcode:"MUSE-EQ-255338",name:"LiveU LU800",category:'Transmission',serial:"",status:'maintenance',location:'Muse Live Sports — Stamford CG',project:'',assignedTo:'',value:18000,condition:'Needs repair',notes:'Modem 3 intermittent — bench repair'},
- {id:'inv_0011',barcode:"MUSE-EQ-244274",name:"EVS XT-VIA",category:'Replay & Servers',serial:"",status:'checked-out',location:'In Transit',project:'winterolympics',assignedTo:'Shay Donovan',value:165000,condition:'Excellent',notes:'6-channel replay server · Milano IBC'},
- {id:'inv_0012',barcode:"MUSE-EQ-589622",name:"Cisco Catalyst 9300",category:'IT / Network',serial:"",status:'available',location:'Muse Live Sports — Stamford CG',project:'',assignedTo:'',value:42000,condition:'Excellent',notes:'100G spine switch · SMPTE 2110'},
+ {id:'inv_0001',barcode:"MUSE-EQ-341506",name:"Sony HDC-5500",category:'Cameras',serial:"",status:'checked-out',location:'In Transit',project:'museaitour',assignedTo:'Avery Nolan',value:78000,condition:'Excellent',notes:'4K/HDR system camera · Muse AI World Tour hard cam 1'},
+ {id:'inv_0002',barcode:"MUSE-EQ-206907",name:"Sony HDC-5500",category:'Cameras',serial:"",status:'checked-out',location:'In Transit',project:'museaitour',assignedTo:'Jordan Lane',value:78000,condition:'Excellent',notes:'Hard cam 2'},
+ {id:'inv_0003',barcode:"MUSE-EQ-271113",name:"Sony HDC-5500",category:'Cameras',serial:"",status:'available',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:62000,condition:'Good',notes:'System camera'},
+ {id:'inv_0004',barcode:"MUSE-EQ-338198",name:"Fujinon UA80x9",category:'Lenses',serial:"",status:'checked-out',location:'In Transit',project:'museaitour',assignedTo:'Avery Nolan',value:215000,condition:'Excellent',notes:'90x box lens · long camera position'},
+ {id:'inv_0005',barcode:"MUSE-EQ-932447",name:"Fujinon UA80x9",category:'Lenses',serial:"",status:'available',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:198000,condition:'Good',notes:'107x box lens'},
+ {id:'inv_0006',barcode:"MUSE-EQ-497365",name:"Calrec Artemis",category:'Audio',serial:"",status:'available',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:340000,condition:'Excellent',notes:'96ch Dante console'},
+ {id:'inv_0007',barcode:"MUSE-EQ-633334",name:"Shure Axient Digital AD4Q + AD1",category:'RF & Comms',serial:"",status:'checked-out',location:'In Transit',project:'museaitour',assignedTo:'Jordan Reyes',value:4200,condition:'Good',notes:'Quad digital receiver'},
+ {id:'inv_0008',barcode:"MUSE-EQ-725025",name:"RTS ADAM",category:'RF & Comms',serial:"",status:'available',location:'Meta Miami',project:'',assignedTo:'',value:28000,condition:'Excellent',notes:'48ch trunked'},
+ {id:'inv_0009',barcode:"MUSE-EQ-248969",name:"LiveU LU800",category:'Transmission',serial:"",status:'checked-out',location:'In Transit',project:'raybangen3',assignedTo:'Harbor Flypack A',value:24000,condition:'Excellent',notes:'5-band bonded cellular'},
+ {id:'inv_0010',barcode:"MUSE-EQ-255338",name:"LiveU LU800",category:'Transmission',serial:"",status:'maintenance',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:18000,condition:'Needs repair',notes:'Modem 3 intermittent — bench repair'},
+ {id:'inv_0011',barcode:"MUSE-EQ-244274",name:"EVS XT-VIA",category:'Replay & Servers',serial:"",status:'checked-out',location:'In Transit',project:'charm',assignedTo:'Shay Donovan',value:165000,condition:'Excellent',notes:'6-channel replay server · Milan IBC'},
+ {id:'inv_0012',barcode:"MUSE-EQ-589622",name:"Cisco Catalyst 9300",category:'IT / Network',serial:"",status:'available',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:42000,condition:'Excellent',notes:'100G spine switch · SMPTE 2110'},
  {id:'inv_0013',barcode:"MUSE-EQ-427865",name:"ARRI SkyPanel S60-C",category:'Lighting',serial:"",status:'available',location:'West Coast — Burbank',project:'',assignedTo:'',value:6500,condition:'Good',notes:'LED soft panel'},
- {id:'inv_0014',barcode:"MUSE-EQ-297027",name:"SMPTE 311M hybrid fiber",category:'Cable & Distribution',serial:"",status:'checked-out',location:'In Transit',project:'worldcup',assignedTo:'Riley Stanton',value:3800,condition:'Good',notes:'Hybrid camera fiber'},
- {id:'inv_0015',barcode:"MUSE-EQ-284187",name:"Kohler 100REOZJF",category:'Power',serial:"",status:'available',location:'Muse Live Miami',project:'',assignedTo:'',value:5200,condition:'Good',notes:'7kVA inverter generator'},
- {id:'inv_0016',barcode:"MUSE-EQ-644227",name:"Pelican 1650",category:'Cases & Carts',serial:"",status:'available',location:'Muse Live Sports — Stamford CG',project:'',assignedTo:'',value:450,condition:'Good',notes:'Watertight transit case'}
+ {id:'inv_0014',barcode:"MUSE-EQ-297027",name:"SMPTE 311M hybrid fiber",category:'Cable & Distribution',serial:"",status:'checked-out',location:'In Transit',project:'museaitour',assignedTo:'Riley Stanton',value:3800,condition:'Good',notes:'Hybrid camera fiber'},
+ {id:'inv_0015',barcode:"MUSE-EQ-284187",name:"Kohler 100REOZJF",category:'Power',serial:"",status:'available',location:'Meta Miami',project:'',assignedTo:'',value:5200,condition:'Good',notes:'7kVA inverter generator'},
+ {id:'inv_0016',barcode:"MUSE-EQ-644227",name:"Pelican 1650",category:'Cases & Carts',serial:"",status:'available',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:450,condition:'Good',notes:'Watertight transit case'}
 ];
 function saveInventory(){try{localStorage.setItem('muselive_inventory_v1',JSON.stringify(inventory));}catch(e){}}
 function loadInventory(){try{var r=localStorage.getItem('muselive_inventory_v1');if(r){var l=JSON.parse(r);if(Array.isArray(l)&&l.length)inventory=l;}}catch(e){}}
@@ -682,9 +682,9 @@ function closeCsvImport(){var ov=document.getElementById('csvOverlay');if(ov)ov.
 function csvFilePicked(e){var f=e.target.files&&e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){csvRenderPreview(r.result);};r.readAsText(f);}
 function csvPreviewFromPaste(){var t=(document.getElementById('csvPaste')||{}).value||'';if(!t.trim()){toast('Paste some CSV first');return;}csvRenderPreview(t);}
 function csvLoadSample(){var d=csvImportCtx.domain;var samples={
-  equipment:"name,category,serial,barcode,status,location,value,condition\nSony HDC-5500,Cameras,3500-99001,MUSE-CAM-200111,available,Muse Live Miami,62000,Good\nCanon CJ45ex9.7B,Lenses,CJ45-0021,MUSE-LEN-200140,available,Muse Live Sports — Stamford CG,82000,Excellent",
+  equipment:"name,category,serial,barcode,status,location,value,condition\nSony HDC-5500,Cameras,3500-99001,MUSE-CAM-200111,available,Meta Miami,62000,Good\nCanon CJ45ex9.7B,Lenses,CJ45-0021,MUSE-LEN-200140,available,Meta Live Events — Menlo Park MPK,82000,Excellent",
   vendors:'name,category,contact,title,phone,email\nLens & Friends,Lenses,Dana Pratt,Account Mgr,(212) 559-7788,dana@lensfriends.tv\nBexel,Broadcast Rental,Marco Reyes,Sales,(818) 555-3300,marco@bexel.com',
-  crew:'name,position,group,email,phone,provider\nJordan Lee,Technical Director,PCR / Control Room,jordan.lee@muselive.com,(212) 555-0190,Staff\nDrew Kessler,A1,Field & Technical,drew.k@muselive.com,(212) 556-0144,Freelance',
+  crew:'name,position,group,email,phone,provider\nJordan Lee,Technical Director,PCR / Control Room,jordan.lee@meta.com,(212) 555-0190,Staff\nDrew Kessler,A1,Field & Technical,drew.k@meta.com,(212) 556-0144,Freelance',
   travel:'name,airline,flight,dep,deptime,depgate,arr,arrtime,arrgate\nJordan Lee,AA,AA1455,JFK,2026-07-10T07:30,22,MIA,2026-07-10T10:45,D14\nDrew Kessler,DL,DL880,ATL,2026-07-10T08:00,A12,MIA,2026-07-10T09:55,E4'};
   var ta=document.getElementById('csvPaste');if(ta){ta.value=samples[d]||'';csvRenderPreview(ta.value);}}
 function csvRenderPreview(text){var parsed=csvToObjects(text);csvImportCtx.headers=parsed.headers;csvImportCtx.rows=parsed.rows;
@@ -978,7 +978,7 @@ function museSyncCalendar(key){
     var endD=Date.parse(String(r[0])+' '+String(r[1]||'09:00'));if(isNaN(endD))endD=Date.now();
     endD+=2*3600000;var en=new Date(endD);
     var end=en.getUTCFullYear()+pad(en.getUTCMonth()+1)+pad(en.getUTCDate())+'T'+pad(en.getUTCHours())+pad(en.getUTCMinutes())+'00Z';
-    lines.push('BEGIN:VEVENT','UID:muse-'+key+'-'+i+'@muselive.local','DTSTAMP:'+toIcsDate(new Date().toISOString().slice(0,10),'12:00'),
+    lines.push('BEGIN:VEVENT','UID:muse-'+key+'-'+i+'@meta.local','DTSTAMP:'+toIcsDate(new Date().toISOString().slice(0,10),'12:00'),
       'DTSTART:'+start,'DTEND:'+end,'SUMMARY:'+icsEsc('['+p.name+'] '+title),'LOCATION:'+icsEsc(loc),
       'DESCRIPTION:'+icsEsc('Exported from Muse Live'),'END:VEVENT');
   });
@@ -991,8 +991,8 @@ function museSyncCalendar(key){
 /* ---- per-production technical specs that drive the Techbook ---- */
 /* venue GPS coordinates [lat,lng] for the Locations page maps & links */
 var venueGeo={
- worldcup:[40.8135,-74.0745], sail250:[40.7033,-74.0170], superbowl:[37.4030,-121.9698],
- muse100:[40.7587,-73.9787], midterms:[25.7617,-80.1918], parade:[40.7505,-73.9878], winterolympics:[45.4642,9.1900]
+ museaitour:[40.8135,-74.0745], raybangen3:[40.7033,-74.0170], orion:[37.4030,-121.9698],
+ museailaunch:[40.7587,-73.9787], whatsapp:[25.7617,-80.1918], igcreators:[40.7505,-73.9878], charm:[45.4642,9.1900]
 };
 function projGeo(p,key){if(p.geo&&p.geo.length===2)return p.geo;return venueGeo[key]||null;}
 function mapUrls(venue,geo){var q=encodeURIComponent(venue||'');var g,a;
@@ -1000,17 +1000,17 @@ function mapUrls(venue,geo){var q=encodeURIComponent(venue||'');var g,a;
   else{g='https://www.google.com/maps/search/?api=1&query='+q;a='https://maps.apple.com/?q='+q;}
   return {google:g,apple:a};}
 var tbSpecs={
- worldcup:{cams:7,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Apollo",audioCh:32,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"Riedel Bolero",fiberType:"TAC-12 ST single-mode (Muse Live 100–102)",fiberLen:"1,500 ft TAC-12 reels · 50–1000 ft runs",transport:"Harmonic XOS",evs:"EVS XS-VIA",venueAddr:"1 MetLife Stadium Dr, East Rutherford, NJ 07073",truck:"Grass Valley Kayenne"},
- sail250:{cams:4,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Apollo",audioCh:16,micModel:"DPA 4066",rfMic:"Shure Axient Digital AD4Q",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Tactical single-mode",fiberLen:"800 ft",transport:"LiveU LU800",evs:"EVS XT-VIA",venueAddr:"NYC Harbor · Battery Park, New York, NY",truck:"Grass Valley Kayenne"},
- superbowl:{cams:24,camModel:"Sony HDC-5500",lens:"Fujinon UA80x9",console:"64ch MADI (routing TBD)",audioCh:64,micModel:"Sennheiser MKH 416",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"SMPTE 2110 (design)",fiberLen:"6,000 ft (survey pending)",transport:"SMPTE 2110 contribution",evs:"EVS XT-VIA",venueAddr:"4900 Marie P DeBartolo Way, Santa Clara, CA 95054",truck:"TBD — Engineering Kick-Off Pending"},
- muse100:{cams:8,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Artemis",audioCh:96,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"Riedel Bolero",intercom:"RTS ADAM",fiberType:"SMPTE 2110 internal plant",fiberLen:"House Plant",transport:"SMPTE 2110 internal",evs:"EVS XT-VIA",venueAddr:"1 Muse Plaza, New York, NY 10001 · Studio M1",truck:"Muse Plaza Central Plant"},
- midterms:{cams:12,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Per-market design pending",audioCh:24,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Per-market (quoting)",fiberLen:"8× markets",transport:"Mixed SDI/IP",evs:"Decision Desk · AP feed",venueAddr:"Multi-Market Remote · Decision Desk @ TC",truck:"Grass Valley Kayenne"},
- parade:{cams:12,camModel:"Sony HDC-5500",lens:"Fujinon UA80x9",console:"Calrec Artemis",audioCh:24,micModel:"Shure Axient Digital AD4Q + AD1",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Route single-mode",fiberLen:"5,400 ft",transport:"LiveU LU800",evs:"EVS XT-VIA",venueAddr:"Central Park West → Herald Square, New York, NY",truck:"Grass Valley Kayenne"},
- winterolympics:{cams:48,camModel:"Sony HDC-5500",lens:"Fujinon UA80x9",console:"Calrec Artemis",audioCh:128,micModel:"Sennheiser MKH 416",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Dual-path SMPTE 2110",fiberLen:"Dual-path + Satellite B/U",transport:"Fiber + satellite contribution",evs:"EVS XT-VIA",venueAddr:"Milano-Cortina d'Ampezzo, Italy · IBC Hall A",truck:"Muse Live Olympics IBC · Milano"}
+ museaitour:{cams:7,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Apollo",audioCh:32,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"Riedel Bolero",fiberType:"TAC-12 ST single-mode (Muse AI Launch–102)",fiberLen:"1,500 ft TAC-12 reels · 50–1000 ft runs",transport:"Harmonic XOS",evs:"EVS XS-VIA",venueAddr:"1 MetLife Stadium Dr, East Rutherford, NJ 07073",truck:"Grass Valley Kayenne"},
+ raybangen3:{cams:4,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Apollo",audioCh:16,micModel:"DPA 4066",rfMic:"Shure Axient Digital AD4Q",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Tactical single-mode",fiberLen:"800 ft",transport:"LiveU LU800",evs:"EVS XT-VIA",venueAddr:"NYC Harbor · Battery Park, New York, NY",truck:"Grass Valley Kayenne"},
+ orion:{cams:24,camModel:"Sony HDC-5500",lens:"Fujinon UA80x9",console:"64ch MADI (routing TBD)",audioCh:64,micModel:"Sennheiser MKH 416",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"SMPTE 2110 (design)",fiberLen:"6,000 ft (survey pending)",transport:"SMPTE 2110 contribution",evs:"EVS XT-VIA",venueAddr:"4900 Marie P DeBartolo Way, Santa Clara, CA 95054",truck:"TBD — Engineering Kick-Off Pending"},
+ museailaunch:{cams:8,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Artemis",audioCh:96,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"Riedel Bolero",intercom:"RTS ADAM",fiberType:"SMPTE 2110 internal plant",fiberLen:"House Plant",transport:"SMPTE 2110 internal",evs:"EVS XT-VIA",venueAddr:"1 Hacker Way, Menlo Park, CA 94025 · Studio M1",truck:"Meta NYC Central Plant"},
+ whatsapp:{cams:12,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Per-market design pending",audioCh:24,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Per-market (quoting)",fiberLen:"8× markets",transport:"Mixed SDI/IP",evs:"Live Q&A Desk · AP feed",venueAddr:"Multi-Market Remote · Live Q&A Desk @ TC",truck:"Grass Valley Kayenne"},
+ igcreators:{cams:12,camModel:"Sony HDC-5500",lens:"Fujinon UA80x9",console:"Calrec Artemis",audioCh:24,micModel:"Shure Axient Digital AD4Q + AD1",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Route single-mode",fiberLen:"5,400 ft",transport:"LiveU LU800",evs:"EVS XT-VIA",venueAddr:"Central Park West → Herald Square, New York, NY",truck:"Grass Valley Kayenne"},
+ charm:{cams:48,camModel:"Sony HDC-5500",lens:"Fujinon UA80x9",console:"Calrec Artemis",audioCh:128,micModel:"Sennheiser MKH 416",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Dual-path SMPTE 2110",fiberLen:"Dual-path + Satellite B/U",transport:"Fiber + satellite contribution",evs:"EVS XT-VIA",venueAddr:"Milan Design Week d'Ampezzo, Italy · IBC Hall A",truck:"Meta Milan IBC · Milano"}
 };
-/* World Cup packlist / fiber / sub-sites when empty so local edits win. */
+/* Muse AI World Tour packlist / fiber / sub-sites when empty so local edits win. */
 function seedWorldcupPacklist(p,key){
-  if(key!=='worldcup'||!p)return;
+  if(key!=='museaitour'||!p)return;
   try{
     /* pack list — Zócalo rooftop flypack + MetLife Final complement */
     if(!p.tbEquip||typeof p.tbEquip!=='object')p.tbEquip={};
@@ -1080,7 +1080,7 @@ function seedWorldcupPacklist(p,key){
       {item:"Magliner senior cart",qty:2,notes:''}
     ]);
 
-    /* MetLife fiber plant — Muse Live 100 / 101 / 102 */
+    /* MetLife fiber plant — Muse AI Launch / 101 / 102 */
     if(!p.fiberLoc)p.fiberLoc={};
     var mid='metlife';
     var fl=p.fiberLoc[mid];
@@ -1088,7 +1088,7 @@ function seedWorldcupPacklist(p,key){
       function tid(s){return 'ftr-fwc-'+s;}
       function sid(t,i){return 'fst-fwc-'+t+'-'+i;}
       var trunks=[
-        {id:tid('100'),label:'Muse Live 100',cable:'TAC-12 Utility',mode:'OS2 · single-mode',from:'Tech Cabin',to:'Production Office',len:'150 ft',path:'A',notes:'Utility TAC-12 · Tech Cabin → Production Office'},
+        {id:tid('100'),label:'Muse AI Launch',cable:'TAC-12 Utility',mode:'OS2 · single-mode',from:'Tech Cabin',to:'Production Office',len:'150 ft',path:'A',notes:'Utility TAC-12 · Tech Cabin → Production Office'},
         {id:tid('101'),label:'Muse Live 101',cable:'TAC-12 Utility',mode:'OS2 · single-mode',from:'Tech Cabin',to:'CIR',len:'1000 ft',path:'A',notes:'Utility TAC-12 · Tech Cabin → CIR'},
         {id:tid('102'),label:'Muse Live 102',cable:'TAC-12 Utility',mode:'OS2 · single-mode',from:'Tech Cabin',to:'CIR',len:'1001 ft',path:'B',notes:'Utility TAC-12 · Tech Cabin → CIR (secondary)'}
       ];
@@ -1123,8 +1123,8 @@ function seedWorldcupPacklist(p,key){
       p.locations.forEach(function(L){
         if(L.id==='metlife'){
           if(!L.address)L.address='1 MetLife Stadium Dr, East Rutherford, NJ 07073';
-          L.note='NYNJ Stadium · FIFA WORLD CUP 2026 FINAL · Muse Live Field Ops · Jul 19 2026';
-          L.role='FINAL · Muse Live Field Ops Flypack';
+          L.note='NYNJ Stadium · MUSE AI WORLD TOUR 2026 FINAL · Meta Field Ops · Jul 19 2026';
+          L.role='FINAL · Meta Field Ops Flypack';
         }
       });
       var hasZoc=p.locations.some(function(L){return L.id==='zocalo';});
@@ -1145,7 +1145,7 @@ function ensureTB(p,key){
   var tf=p.tbFields;
   function init(dep,obj){if(!tf[dep])tf[dep]={};for(var fk in obj){if(tf[dep][fk]===undefined&&obj[fk])tf[dep][fk]=obj[fk];}}
   var immersive=(parseInt(t.audioCh,10)||0)>=96;
-  var isFwc=(key==='worldcup');
+  var isFwc=(key==='museaitour');
   init("Audio",{console:t.console,channels:t.audioCh+"ch",mics:t.micModel,mapping:isFwc?"Presentation Studio + Outside Announce map":(immersive?"5.1.4 immersive map":"FS1 / FS2 / FS3 standard"),ifb:t.ifb,stagebox:isFwc?"Calrec Hydra2":undefined,intercom:isFwc?t.intercom:undefined});
   seedRvonFor(p,t,key);
   init("Cameras / Video",{model:t.camModel,count:""+t.cams,lens:t.lens,config:isFwc?"Studio pedestal + Porta Jib + FR7 PTZ":"Studio · Vinten Vector 750",hardcams:isFwc?"3":undefined,ptzcount:isFwc?"3":undefined,transport:isFwc?"Single-mode fiber (TAC-12)":undefined,viewfinder:isFwc?"Sony HDVF-EL30":undefined,buildkit:isFwc?"Vinten Vector 750":undefined});
@@ -1287,12 +1287,12 @@ function loadState(){try{
   var er=localStorage.getItem('muselive_edits');if(er){var e=JSON.parse(er);for(var k2 in e){if(!productions[k2])continue;var ed=e[k2];
     if(Array.isArray(ed)){if(ed.length===productions[k2].dept.length)productions[k2].dept=ed;} // legacy format
     else if(ed){if(Array.isArray(ed.dept)){ed.dept.forEach(function(sd){if(!Array.isArray(sd))return;var cur=null;for(var z=0;z<productions[k2].dept.length;z++){if(productions[k2].dept[z][0]===sd[0]){cur=productions[k2].dept[z];break;}}if(cur){cur[1]=sd[1];cur[2]=sd[2];if(sd.__customNote)cur.__customNote=sd.__customNote;}else{productions[k2].dept.push(sd.slice());}});}if(ed.tbFields)productions[k2].tbFields=ed.tbFields;if(ed.tbEquip)productions[k2].tbEquip=ed.tbEquip;if(ed.vendors)productions[k2].vendors=ed.vendors;if(ed.crewMatrix)productions[k2].crewMatrix=ed.crewMatrix;if(ed.crew)productions[k2].crew=ed.crew;if(ed.invItems)productions[k2].invItems=ed.invItems;if(ed.survey)productions[k2].survey=ed.survey;if(ed.labor)productions[k2].labor=ed.labor;if(ed.xytech)productions[k2].xytech=ed.xytech;if(ed.sched)productions[k2].sched=ed.sched;if(ed.approvals)productions[k2].approvals=ed.approvals;if(ed.activity)productions[k2].activity=ed.activity;if(ed.tasks)productions[k2].tasks=ed.tasks;if(ed.signoff)productions[k2].signoff=ed.signoff;if(ed.packStatus)productions[k2].packStatus=ed.packStatus;if(ed.deptLoc)productions[k2].deptLoc=ed.deptLoc;if(ed.surveyLoc)productions[k2].surveyLoc=ed.surveyLoc;if(ed.vendorsLoc)productions[k2].vendorsLoc=ed.vendorsLoc;if(ed.fiber)productions[k2].fiber=ed.fiber;if(ed.fiberLoc)productions[k2].fiberLoc=ed.fiberLoc;if(ed.locations)productions[k2].locations=ed.locations;if(ed.ifbRoute)productions[k2].ifbRoute=ed.ifbRoute;if(ed.deptUI)productions[k2].deptUI=ed.deptUI;if(ed.audioAssets)productions[k2].audioAssets=ed.audioAssets;if(ed.replay)productions[k2].replay=ed.replay;if(ed.gfxAssets)productions[k2].gfxAssets=ed.gfxAssets;if(ed.travelReqs)productions[k2].travelReqs=ed.travelReqs;if(ed.plan)productions[k2].plan=ed.plan;if(ed.deptChecks)productions[k2].deptChecks=ed.deptChecks;if(ed.siteCheckins)productions[k2].siteCheckins=ed.siteCheckins;if(ed.broadcastOps)productions[k2].broadcastOps=ed.broadcastOps;}}}
-  /* permanent showcase: Sail 250 always fully approved / 100% */
+  /* permanent showcase: Ray-Ban Meta Gen 3 Launch always fully approved / 100% */
   try{ensureSail250Complete();}catch(eS){}
   try{if(typeof MuseBOps!=='undefined'&&MuseBOps.seedShowcase)MuseBOps.seedShowcase();}catch(eB){}
 }catch(e){}}
 function ensureSail250Complete(){
-  var p=productions.sail250;if(!p)return;
+  var p=productions.raybangen3;if(!p)return;
   function take(name){
     var i,d=null;
     for(i=0;i<(p.dept||[]).length;i++){if(p.dept[i][0]===name){d=p.dept[i];break;}}
@@ -1338,7 +1338,7 @@ function renderTabs(){var box=document.getElementById('projectTabs');if(box){
   box.innerHTML=order.map(function(k){var p=productions[k];var c=countStatus(p);var pct=computePct(p);
     var badge=museBadgeHTML(c.missing);
     return '<button data-view="'+k+'" class="tab-inactive prod-menu-row w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg text-left">'+
-      '<span class="flex items-center gap-2 min-w-0"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[p.tagColor]||'#9ca3af')+'"></span><span class="truncate font-semibold">'+(p.tab||p.name)+'</span></span>'+
+      '<span class="flex items-center gap-2 min-w-0"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[p.tagColor]||'#9ba2b0')+'"></span><span class="truncate font-semibold">'+(p.tab||p.name)+'</span></span>'+
       '<span class="flex items-center gap-2 flex-shrink-0"><span class="mono text-[9px] font-bold '+pctColor(pct)+'">'+pct+'%</span>'+badge+'</span></button>';
   }).join('');}
 
@@ -1449,7 +1449,7 @@ function renderNavRail(){
     if(c.missing)missTotal+=c.missing;
     var letter=((name).charAt(0)||'?').toUpperCase();
     return '<button type="button" data-nav="'+k+'" class="nav-rail-btn nav-rail-prod'+(on?' is-active':'')+'" onclick="navGo(\''+k+'\')" title="'+tip.replace(/"/g,'&quot;')+'" aria-label="'+tip.replace(/"/g,'&quot;')+'" aria-current="'+(on?'page':'false')+'">'+
-      '<span class="nav-rail-ico nav-rail-prod-ico"><span class="nav-rail-prod-dot" style="background:'+(dotBg[p.tagColor]||'#9ca3af')+'"></span><span class="nav-rail-prod-letter">'+letter+'</span></span>'+
+      '<span class="nav-rail-ico nav-rail-prod-ico"><span class="nav-rail-prod-dot" style="background:'+(dotBg[p.tagColor]||'#9ba2b0')+'"></span><span class="nav-rail-prod-letter">'+letter+'</span></span>'+
       '<span class="nav-rail-label">'+esc(name)+'</span>'+miss+
     '</button>';
   }).join('');
@@ -1549,11 +1549,11 @@ function renderPortfolio(){
     return '<button onclick="setPortfolioFilter(\''+id+'\')" class="rounded-xl p-3 text-center border transition-all '+(on?'ring-2 ring-offset-1':'')+'" style="background:'+bg+';border-color:'+bd+(on?';--tw-ring-color:'+tx:'')+'">'+
       '<span class="text-2xl font-bold" style="color:'+tx+'">'+n+'</span><p class="text-[8px] font-bold uppercase tracking-wider mt-0.5" style="color:'+lx+'">'+label+'</p></button>';}
   if(stats)stats.innerHTML=
-    tile('all',total,'Total','#eff6ff','#bfdbfe','#1d4ed8','#60a5fa')+
-    tile('active',active,'Active','#f0fdf4','#bbf7d0','#15803d','#4ade80')+
-    tile('prep',prep,'Pre-Prod','#fff7ed','#fed7aa','#ea580c','#fb923c')+
-    tile('risk',risk,'At Risk','#fef2f2','#fecaca','#dc2626','#f87171')+
-    tile('plan',plan,'Planning','#f9fafb','#e5e7eb','#4b5563','#9ca3af');
+    tile('all',total,'Total','#eff5ff','#bfd8fe','#1266e3','#609efa')+
+    tile('active',active,'Active','#f0fdf3','#bbf7c9','#15802e','#4ade6d')+
+    tile('prep',prep,'Pre-Prod','#fff4ed','#fecdaa','#ea680c','#fb8c3c')+
+    tile('risk',risk,'At Risk','#fef2f4','#fecad3','#dc2644','#f87187')+
+    tile('plan',plan,'Planning','#fafafa','#e5e7eb','#54565a','#9ba2b0');
   var shownKeys=order.filter(function(k){return portfolioFilter==='all'||portfolioPhase(k)===portfolioFilter;});
   if(!shownKeys.length){rows.innerHTML='<p class="text-[11px] text-gray-400 text-center py-6">No productions in this category. <button onclick="setPortfolioFilter(\'all\')" class="text-blue-700 font-bold hover:underline">Show all</button></p>';return;}
   rows.innerHTML=(portfolioFilter!=='all'?'<div class="flex items-center justify-between mb-1"><span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Filtered: '+portfolioFilter+' ('+shownKeys.length+')</span><button onclick="setPortfolioFilter(\'all\')" class="text-[9px] font-bold text-blue-700 hover:underline">Clear filter ✕</button></div>':'')+
@@ -1582,16 +1582,16 @@ function renderEngPortfolio(){
     return '<button onclick="setEngPortFilter(\''+id+'\')" class="rounded-xl p-3 text-center border transition-all '+(on?'ring-2 ring-offset-1':'')+'" style="background:'+bg+';border-color:'+bd+(on?';--tw-ring-color:'+tx:'')+'">'+
       '<span class="text-2xl font-bold" style="color:'+tx+'">'+n+'</span><p class="text-[8px] font-bold uppercase tracking-wider mt-0.5" style="color:'+lx+'">'+label+'</p></button>';}
   if(stats)stats.innerHTML=
-    tile('all',total,'Total','#eff6ff','#bfdbfe','#1d4ed8','#60a5fa')+
-    tile('inflight',inflight,'In Flight','#fff7ed','#fed7aa','#ea580c','#fb923c')+
-    tile('complete',complete,'Complete','#f0fdf4','#bbf7d0','#15803d','#4ade80')+
-    '<button onclick="setEngPortFilter(\'planning\')" class="rounded-xl p-3 text-center border transition-all col-span-3 '+(engPortFilter==='planning'?'ring-2 ring-offset-1':'')+'" style="background:#f9fafb;border-color:#e5e7eb'+(engPortFilter==='planning'?';--tw-ring-color:#4b5563':'')+'"><span class="text-2xl font-bold" style="color:#4b5563">'+planning+'</span><p class="text-[8px] font-bold uppercase tracking-wider mt-0.5" style="color:#9ca3af">Planning / Requested</p></button>';
+    tile('all',total,'Total','#eff5ff','#bfd8fe','#1266e3','#609efa')+
+    tile('inflight',inflight,'In Flight','#fff4ed','#fecdaa','#ea680c','#fb8c3c')+
+    tile('complete',complete,'Complete','#f0fdf3','#bbf7c9','#15802e','#4ade6d')+
+    '<button onclick="setEngPortFilter(\'planning\')" class="rounded-xl p-3 text-center border transition-all col-span-3 '+(engPortFilter==='planning'?'ring-2 ring-offset-1':'')+'" style="background:#fafafa;border-color:#e5e7eb'+(engPortFilter==='planning'?';--tw-ring-color:#54565a':'')+'"><span class="text-2xl font-bold" style="color:#54565a">'+planning+'</span><p class="text-[8px] font-bold uppercase tracking-wider mt-0.5" style="color:#9ba2b0">Planning / Requested</p></button>';
   var shown=engRequests.filter(function(e){return engPortFilter==='all'||engStatusGroup(e.status)===engPortFilter;});
   if(!shown.length){rows.innerHTML='<div class="text-center py-6"><p class="text-[11px] text-gray-400">'+(total?'No ENG requests in this category. ':'No ENG requests yet. ')+'<button onclick="'+(total?'setEngPortFilter(\'all\')':'switchView(\'engrequests\')')+'" class="text-blue-700 font-bold hover:underline">'+(total?'Show all':'Create one →')+'</button></p></div>';return;}
   rows.innerHTML=(engPortFilter!=='all'?'<div class="flex items-center justify-between mb-1"><span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Filtered ('+shown.length+')</span><button onclick="setEngPortFilter(\'all\')" class="text-[9px] font-bold text-blue-700 hover:underline">Clear ✕</button></div>':'')+
     shown.map(function(e){var p=productions[e.prod]||{name:e.prod};var locked=engIsLocked(e);
     return '<div onclick="openProjEng(\''+e.id+'\')" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg -mx-1 px-1.5 py-1 transition-colors">'+
-      '<div class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[p.tagColor]||'#9ca3af')+'"></div>'+
+      '<div class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[p.tagColor]||'#9ba2b0')+'"></div>'+
       '<div class="min-w-0 flex-1"><div class="flex items-center gap-1.5"><span class="text-[11px] font-semibold text-gray-800 truncate">'+esc(e.name)+'</span></div>'+
         '<p class="text-[9px] text-gray-500 mono truncate">'+esc(p.tab||p.name)+' · '+(function(){var nc=(e.cameras&&e.cameras.length)?e.cameras.length:1;var b=(e.cameras&&e.cameras.length?e.cameras[0].camera:e.camera)||'camera TBD';return esc(nc>1?nc+'× cam · '+b:b);})()+((e.liveus&&e.liveus.length)?' · '+esc(e.liveus.length>1?e.liveus.length+"× LiveU LU800":e.liveus[0].model):'')+'</p></div>'+
       '<span class="flex-shrink-0">'+engStatusPill(e.status)+'</span>'+
@@ -1612,12 +1612,12 @@ function renderSnapFilters(){var box=document.getElementById('snapFilterPills');
     var n=(c==="All")?order.length:order.filter(function(k){return productions[k].customer===c;}).length;
     if(c==="All"){
       var allSt=active
-        ?'background:#111112;color:#fff;border:1px solid #111112'
-        :'background:#fff;color:#374151;border:1px solid #d1d5db';
-      return '<button type="button" onclick="setSnapFilter(\'All\')" class="text-xs font-bold px-3.5 py-1.5 rounded-full" style="'+allSt+'">All <span style="font-weight:800;margin-left:4px;color:'+(active?'#fff':'#111112')+'">'+n+'</span></button>';
+        ?'background:#111112;color:#ffffff;border:1px solid #111112'
+        :'background:#ffffff;color:#424346;border:1px solid #d1d4db';
+      return '<button type="button" onclick="setSnapFilter(\'All\')" class="text-xs font-bold px-3.5 py-1.5 rounded-full" style="'+allSt+'">All <span style="font-weight:800;margin-left:4px;color:'+(active?'#ffffff':'#111112')+'">'+n+'</span></button>';
     }
     var s=customerStyle[c]||customerStyle["External Productions"];
-    var st=active?('background:'+s.tx+';color:#fff;border:1px solid '+s.tx):('background:'+s.bg+';color:'+s.tx+';border:1px solid '+s.bd);
+    var st=active?('background:'+s.tx+';color:#ffffff;border:1px solid '+s.tx):('background:'+s.bg+';color:'+s.tx+';border:1px solid '+s.bd);
     return '<button onclick="setSnapFilter(\''+c.replace(/'/g,"\\'")+'\')" class="text-xs font-bold px-3.5 py-1.5 rounded-full mono" style="'+st+'">'+c+' <span style="opacity:.6">'+n+'</span></button>';
   }).join('');
 }
@@ -1646,7 +1646,7 @@ function renderSnapshot(){
 /* ---- master re-render after any data change ---- */
 /* Portfolio Risk board removed — Production Portfolio Overview is the single portfolio surface */
 function renderRiskHeatmap(){/* no-op: section removed to avoid duplicate of Portfolio Overview */}
-function renderAll(){renderTabs();renderPortfolio();try{renderEngPortfolio();}catch(e){}try{renderNPCAlert();}catch(e){}try{if(typeof renderRoutingBoard==='function')renderRoutingBoard();}catch(e){}try{commsNavBadge();}catch(e){}try{renderBurgerBadge();}catch(e){}renderSnapFilters();renderSnapshot();renderMatrix();buildCharlieChips();saveState();}
+function renderAll(){renderTabs();renderPortfolio();try{renderEngPortfolio();}catch(e){}try{renderNPCAlert();}catch(e){}try{if(typeof renderRoutingBoard==='function')renderRoutingBoard();}catch(e){}try{commsNavBadge();}catch(e){}try{renderBurgerBadge();}catch(e){}renderSnapFilters();renderSnapshot();renderMatrix();buildMuseAiChips();saveState();}
 
 /* ---- status & note editing (works on ALL projects) ---- */
 /* ===== APPROVAL + RESOURCE-LOCK WORKFLOW (Salesforce-style) ===== */
@@ -1798,11 +1798,11 @@ function syncAutoTasks(key){var p=productions[key];var tasks=getTasks(p);
 function deptOwner(dep){var map={"Audio":"Noah Barrett","Cameras / Video":"Quinn Adler","Transmission / Signal":"Sam Okada","Engineering":"Micah Trent","Prompter":"Remy Colton","Lighting":"Harper Sloan","Power / Electrical":"Riley Stanton","Networking / IT":"Casey Whitaker","Talent / Production":"Taylor Grayson"};return map[dep]||"Lila Hart";}
 // PackList "Provided By" — companies / vendors, NOT individual people (per broadcast tech-book convention)
 function deptProvider(dep){var map={
-  "Audio":"Muse Live Field Ops","Cameras / Video":"Muse Live Field Ops","Transmission / Signal":"Muse Live Transmission",
-  "Engineering":"Muse Live Engineering","Prompter":"Muse Live Field Ops","Lighting":"Muse Live Field Ops",
-  "Power / Electrical":"Aggreko","CAD":"Muse Live Engineering","Replay / EVS":"Muse Live Engineering","Monitors":"Muse Live Field Ops",
-  "Graphics (GFX)":"Muse Live GFX","Talent / Production":"Muse Live Sports",
-  "Networking / IT":"Muse Live IT","Miscellaneous / Consumables":"Muse Live Field Ops","Legal / Rights":"Muse Live Legal"};
+  "Audio":"Meta Field Ops","Cameras / Video":"Meta Field Ops","Transmission / Signal":"Meta Transmission",
+  "Engineering":"Meta Engineering","Prompter":"Meta Field Ops","Lighting":"Meta Field Ops",
+  "Power / Electrical":"Aggreko","CAD":"Meta Engineering","Replay / EVS":"Meta Engineering","Monitors":"Meta Field Ops",
+  "Graphics (GFX)":"Meta GFX","Talent / Production":"Meta Live Events",
+  "Networking / IT":"Meta IT","Miscellaneous / Consumables":"Meta Field Ops","Legal / Rights":"Meta Legal"};
   return map[dep]||"Muse Live";}
 function addTask(key){var p=productions[key];getTasks(p).push({id:'t'+Date.now(),text:'New task',dept:'',assignee:'Lila Hart',due:'',notes:'',dependency:'',blocked:false,done:false,completedOn:'',auto:false});stampEdit(key);renderProjectView(key);}
 function setTask(key,id,field,val){var p=productions[key];var t=getTasks(p).filter(function(x){return x.id===id;})[0];if(t){t[field]=val;stampEdit(key);}}
@@ -1837,7 +1837,7 @@ var signoffKey=null;
 function apprSummaryStrip(key){var p=productions[key];var r=approvalRollup(p);var signedOff=p.signoff&&p.signoff.done;
   function stat(n,label,col){return '<div class="flex items-center gap-1.5"><span class="text-lg font-bold '+col+'">'+n+'</span><span class="text-[9px] uppercase tracking-wider text-gray-400 leading-tight">'+label+'</span></div>';}
   var soBadge=signedOff?
-    '<span class="flex items-center gap-1.5 text-[11px] font-bold mono px-3 py-1.5 rounded-lg bg-emerald-600 text-white"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>SHOW LOCKED</span>':
+    '<span class="flex items-center gap-1.5 text-[11px] font-bold mono px-3 py-1.5 rounded-lg bg-emerald-600 text-white"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>SHOW LOCKED</span>':
     (r.allLocked?'<button onclick="openSignoff(\''+key+'\')" class="text-[11px] font-bold px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700">Production Sign-Off →</button>':'<span class="text-[10px] font-bold mono px-3 py-1.5 rounded-lg bg-gray-100 text-gray-500 border border-gray-200">SIGN-OFF PENDING · '+r.done+'/'+r.total+' sections</span>');
   return '<div class="bg-white rounded-2xl border '+(signedOff?'border-emerald-300':'border-gray-200/60')+' px-5 py-3 flex flex-wrap items-center justify-between gap-4" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<div class="flex items-center gap-5 flex-wrap">'+
@@ -1855,7 +1855,7 @@ function resourceLockCardHTML(key){var p=productions[key];var r=approvalRollup(p
     return '<div class="py-1.5 border-b border-gray-100 last:border-0"><div class="flex items-center justify-between"><span class="text-[11px] font-bold text-gray-800">'+d[0]+'</span><span class="text-[8px] mono px-1.5 py-0.5 rounded '+(a.state==='Locked'?'bg-blue-600 text-white':'bg-emerald-600 text-white')+'">'+(a.state==='Locked'?'Section Locked':'Section Approved')+(a.reapprove?' ⚠':'')+'</span></div><p class="text-[9px] text-gray-500 mt-0.5 leading-snug">'+(a.summary||deptLockSummary(p,d[0]))+'</p><p class="text-[8px] text-gray-400 mono mt-0.5">'+(a.by||'')+' · '+(a.on||'')+'</p></div>';
   }).join('')||'<p class="text-[10px] text-gray-400 italic">No sections approved yet. Use “Section Approval” on each category.</p>';
   var signedOff=p.signoff&&p.signoff.done;
-  var badge=signedOff?'<span class="flex items-center gap-1 text-[10px] font-bold mono px-2.5 py-1 rounded bg-emerald-600 text-white"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>SHOW LOCKED</span>':(r.allLocked?'<span class="text-[9px] font-bold mono px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">READY FOR SIGN-OFF</span>':'<span class="text-[9px] font-bold mono px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">IN PROGRESS</span>');
+  var badge=signedOff?'<span class="flex items-center gap-1 text-[10px] font-bold mono px-2.5 py-1 rounded bg-emerald-600 text-white"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>SHOW LOCKED</span>':(r.allLocked?'<span class="text-[9px] font-bold mono px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">READY FOR SIGN-OFF</span>':'<span class="text-[9px] font-bold mono px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">IN PROGRESS</span>');
   var signBtn=signedOff?'<button onclick="revokeSignoff(\''+key+'\')" class="w-full mt-3 text-[11px] font-bold text-gray-600 border border-gray-300 rounded-lg py-2 hover:bg-gray-50">Revoke Production Sign-Off</button>':'<button onclick="openSignoff(\''+key+'\')" '+(r.allLocked?'':'disabled')+' class="w-full mt-3 text-[11px] font-bold text-white rounded-lg py-2 '+(r.allLocked?'bg-emerald-600 hover:bg-emerald-700':'bg-gray-300 cursor-not-allowed')+'">'+(r.allLocked?'Production Sign-Off →':'Sign-Off — '+(r.total-r.done)+' section'+((r.total-r.done)===1?'':'s')+' left')+'</button>';
   return '<div class="bg-white rounded-2xl p-6 border '+(signedOff?'border-emerald-300 ring-1 ring-inset ring-emerald-200':'border-gray-200/60')+'" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<div class="flex items-center justify-between mb-2 gap-2"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Production Sign-Off</h3>'+badge+'</div>'+
@@ -1955,7 +1955,7 @@ function schedFacilityHTML(){
   var g='<div style="min-width:820px"><div class="grid grid-cols-8 gap-1 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider"><div></div>'+days.map(function(d){return '<div class="text-center">'+d+'</div>';}).join('')+'</div>';
   rows.forEach(function(r){g+='<div class="grid grid-cols-8 gap-1 mb-1 items-center"><div class="text-[10px] font-bold mono text-gray-600">'+r[0]+'</div><div class="col-span-7 relative bg-gray-50 rounded border border-gray-100" style="height:32px">';
     r[1].forEach(function(b){var left=(b[0]/7*100);var w=(b[1]/7*100);
-      g+='<div onclick="toast(\''+b[2]+' · '+r[0]+'\')" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:28px;left:'+left+'%;width:calc('+w+'% - 2px);background:#1f2937">'+b[2]+'</div>';});
+      g+='<div onclick="toast(\''+b[2]+' · '+r[0]+'\')" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:28px;left:'+left+'%;width:calc('+w+'% - 2px);background:#2a2b2c">'+b[2]+'</div>';});
     g+='</div></div>';});
   g+='</div>';
   return '<div class="mb-5"><div class="flex items-center justify-between mb-3"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Facility &amp; Control-Room Bookings</h3><span class="text-[10px] text-gray-500">Studio, PCR/ACR &amp; REMI room allocation · Week of June 2 — June 8, 2026</span></div><div class="overflow-x-auto">'+g+'</div></div>'+
@@ -1968,7 +1968,7 @@ function renderSchedule(){
   // ---- conflict notification bubble on the page title (never auto-dismissed) ----
   var nConf=schedConflictTotal();
   var bub=document.getElementById('schedConflictBubble');
-  if(bub)bub.innerHTML=nConf?'<button onclick="setSchedTab(\'facility\')" title="Scheduling conflicts detected — click to review" class="inline-flex items-center gap-1 text-[10px] font-bold text-white rounded-full px-2.5 py-1 align-middle" style="background:var(--live-red);box-shadow:0 2px 8px rgba(185,28,28,.4)">⚠ '+nConf+' conflict'+(nConf>1?'s':'')+'</button>':'';
+  if(bub)bub.innerHTML=nConf?'<button onclick="setSchedTab(\'facility\')" title="Scheduling conflicts detected — click to review" class="inline-flex items-center gap-1 text-[10px] font-bold text-white rounded-full px-2.5 py-1 align-middle" style="background:var(--live-red);box-shadow:0 2px 8px rgba(185,28,54,.4)">⚠ '+nConf+' conflict'+(nConf>1?'s':'')+'</button>':'';
   // ---- tab bar ----
   var bar=document.getElementById('schedTabBar');
   function tb(id,label,badge){var on=(schedTab===id);
@@ -2333,52 +2333,52 @@ var projSubTab={};
 /* Master crew roster — SYNTHETIC demo identities only (no real PII).
    Import real people via Personnel → Template / Import, or link Microsoft contacts later. */
 var CREW_FIELD=[
- {pos:"Tech Manager — Lead",name:"Riley Stanton",email:"morgan.hale@muselive.com",phone:"(212) 555-0101",prov:"Muse Live Field Ops"},
- {pos:"Coordinator, Field Operations",name:"Cameron Holt",email:"jordan.ellis@muselive.com",phone:"(212) 555-0102",prov:"Muse Live Field Ops"},
- {pos:"Production Manager",name:"Alex Marlowe",email:"riley.quinn@muselive.com",phone:"(212) 561-0103",prov:"Muse Live Sports"},
- {pos:"EIC",name:"Quinn Adler",email:"casey.navarro@muselive.com",phone:"(212) 555-0104",prov:"Muse Live Field Ops"},
- {pos:"EIC 2 / Video Shader",name:"Ellis Voss",email:"drew.patel@muselive.com",phone:"(212) 555-0105",prov:"Muse Live Field Ops"},
- {pos:"Transmission Engineer",name:"Pat Wynn",email:"sam.ortega@muselive.com",phone:"(212) 555-0106",prov:"Muse Live Field Ops"},
- {pos:"Audio / Comms Guarantee",name:"Noah Barrett",email:"alex.rivera@muselive.com",phone:"(212) 556-0107",prov:"Muse Live Field Ops"},
- {pos:"A1",name:"Kimber Rhodes",email:"taylor.brooks@muselive.com",phone:"(212) 556-0108",prov:"Muse Live Field Ops"},
- {pos:"Lighting Director",name:"Harper Sloan",email:"cameron.west@muselive.com",phone:"(212) 555-0109",prov:"Muse Live Tech Production"},
- {pos:"Lead Utility",name:"Reese Callahan",email:"jamie.soto@muselive.com",phone:"(212) 556-0110",prov:"Muse Live Field Ops"},
- {pos:"Utility",name:"Eden Walsh",email:"blair.kim@muselive.com",phone:"(212) 555-0111",prov:"Scripted"},
- {pos:"Floor / Stage Manager",name:"Jamie Calder",email:"reese.delgado@muselive.com",phone:"(212) 561-0112",prov:"Mediapro"},
- {pos:"Hard Cam Op",name:"Avery Nolan",email:"logan.cruz@muselive.com",phone:"(212) 561-0113",prov:"Mediapro"},
- {pos:"Hard Cam Op",name:"Jordan Lane",email:"harper.diaz@muselive.com",phone:"(212) 561-0114",prov:"Mediapro"},
- {pos:"Hard Cam Op",name:"Logan Pierce",email:"quinn.morales@muselive.com",phone:"(212) 561-0115",prov:"Mediapro"},
- {pos:"Steadicam Op",name:"Drew Lang",email:"avery.park@muselive.com",phone:"(212) 561-0116",prov:"Mediapro"},
- {pos:"Jib Op",name:"Skyler Boone",email:"nolan.vega@muselive.com",phone:"(212) 561-0117",prov:"Mediapro"},
- {pos:"Utility 1",name:"Dana Crowe",email:"skyler.james@muselive.com",phone:"(212) 561-0118",prov:"Mediapro"},
- {pos:"Utility 2",name:"Parker Ames",email:"hayden.cole@muselive.com",phone:"(212) 561-0119",prov:"Mediapro"}
+ {pos:"Tech Manager — Lead",name:"Riley Stanton",email:"morgan.hale@meta.com",phone:"(212) 555-0101",prov:"Meta Field Ops"},
+ {pos:"Coordinator, Field Operations",name:"Cameron Holt",email:"jordan.ellis@meta.com",phone:"(212) 555-0102",prov:"Meta Field Ops"},
+ {pos:"Production Manager",name:"Alex Marlowe",email:"riley.quinn@meta.com",phone:"(212) 561-0103",prov:"Meta Live Events"},
+ {pos:"EIC",name:"Quinn Adler",email:"casey.navarro@meta.com",phone:"(212) 555-0104",prov:"Meta Field Ops"},
+ {pos:"EIC 2 / Video Shader",name:"Ellis Voss",email:"drew.patel@meta.com",phone:"(212) 555-0105",prov:"Meta Field Ops"},
+ {pos:"Transmission Engineer",name:"Pat Wynn",email:"sam.ortega@meta.com",phone:"(212) 555-0106",prov:"Meta Field Ops"},
+ {pos:"Audio / Comms Guarantee",name:"Noah Barrett",email:"alex.rivera@meta.com",phone:"(212) 556-0107",prov:"Meta Field Ops"},
+ {pos:"A1",name:"Kimber Rhodes",email:"taylor.brooks@meta.com",phone:"(212) 556-0108",prov:"Meta Field Ops"},
+ {pos:"Lighting Director",name:"Harper Sloan",email:"cameron.west@meta.com",phone:"(212) 555-0109",prov:"Meta Live Production"},
+ {pos:"Lead Utility",name:"Reese Callahan",email:"jamie.soto@meta.com",phone:"(212) 556-0110",prov:"Meta Field Ops"},
+ {pos:"Utility",name:"Eden Walsh",email:"blair.kim@meta.com",phone:"(212) 555-0111",prov:"Scripted"},
+ {pos:"Floor / Stage Manager",name:"Jamie Calder",email:"reese.delgado@meta.com",phone:"(212) 561-0112",prov:"Mediapro"},
+ {pos:"Hard Cam Op",name:"Avery Nolan",email:"logan.cruz@meta.com",phone:"(212) 561-0113",prov:"Mediapro"},
+ {pos:"Hard Cam Op",name:"Jordan Lane",email:"harper.diaz@meta.com",phone:"(212) 561-0114",prov:"Mediapro"},
+ {pos:"Hard Cam Op",name:"Logan Pierce",email:"quinn.morales@meta.com",phone:"(212) 561-0115",prov:"Mediapro"},
+ {pos:"Steadicam Op",name:"Drew Lang",email:"avery.park@meta.com",phone:"(212) 561-0116",prov:"Mediapro"},
+ {pos:"Jib Op",name:"Skyler Boone",email:"nolan.vega@meta.com",phone:"(212) 561-0117",prov:"Mediapro"},
+ {pos:"Utility 1",name:"Dana Crowe",email:"skyler.james@meta.com",phone:"(212) 561-0118",prov:"Mediapro"},
+ {pos:"Utility 2",name:"Parker Ames",email:"hayden.cole@meta.com",phone:"(212) 561-0119",prov:"Mediapro"}
 ];
 var CREW_IT=[
- {pos:"Network Architect",name:"Casey Whitaker",email:"morgan.blake@muselive.com",phone:"(212) 555-0120",prov:"Muse Live"},
- {pos:"IT Networking Engineer",name:"Parker Amestte",email:"parker.singh@muselive.com",phone:"(212) 562-0121",prov:"Muse Live"},
- {pos:"IT Client Services",name:"Chris Dalton",email:"rowan.wells@muselive.com",phone:"(212) 563-0122",prov:"Muse Live"},
- {pos:"Director of Engineering",name:"Micah Trent",email:"dana.frost@muselive.com",phone:"—",prov:"Mediapro"},
- {pos:"Engineering Manager",name:"Morgan Pryce",email:"kai.bennett@muselive.com",phone:"(212) 561-0123",prov:"Mediapro"}
+ {pos:"Network Architect",name:"Casey Whitaker",email:"morgan.blake@meta.com",phone:"(212) 555-0120",prov:"Muse Live"},
+ {pos:"IT Networking Engineer",name:"Parker Amestte",email:"parker.singh@meta.com",phone:"(212) 562-0121",prov:"Muse Live"},
+ {pos:"IT Client Services",name:"Chris Dalton",email:"rowan.wells@meta.com",phone:"(212) 563-0122",prov:"Muse Live"},
+ {pos:"Director of Engineering",name:"Micah Trent",email:"dana.frost@meta.com",phone:"—",prov:"Mediapro"},
+ {pos:"Engineering Manager",name:"Morgan Pryce",email:"kai.bennett@meta.com",phone:"(212) 561-0123",prov:"Mediapro"}
 ];
 var CREW_PCR=[
- {pos:"Show Director",name:"Taylor Grayson",email:"jordan.vale@muselive.com",phone:"(212) 556-0124",prov:"Muse Live Tech Production"},
- {pos:"Assistant Director",name:"Blair Hendrix",email:"morgan.shaw@muselive.com",phone:"—",prov:"Muse Live Tech Production"},
- {pos:"Technical Director",name:"Sam Ellison",email:"riley.torres@muselive.com",phone:"ext. 4401",prov:"Muse Live Tech Production"},
- {pos:"PCR Tech Manager",name:"Rowan Blake",email:"casey.okonkwo@muselive.com",phone:"(212) 555-0125",prov:"Muse Live Tech Production"},
- {pos:"Graphics Operator",name:"Sasha Keene",email:"avery.lin@muselive.com",phone:"(212) 555-0126",prov:"Muse Live Tech Production"},
- {pos:"Replay Operator",name:"Shay Donovan",email:"drew.fontaine@muselive.com",phone:"ext. 4414",prov:"Muse Live Tech Production"},
- {pos:"Teleprompter Operator",name:"Remy Colton",email:"blair.santos@muselive.com",phone:"(212) 556-0127",prov:"Muse Live Tech Production"}
+ {pos:"Show Director",name:"Taylor Grayson",email:"jordan.vale@meta.com",phone:"(212) 556-0124",prov:"Meta Live Production"},
+ {pos:"Assistant Director",name:"Blair Hendrix",email:"morgan.shaw@meta.com",phone:"—",prov:"Meta Live Production"},
+ {pos:"Technical Director",name:"Sam Ellison",email:"riley.torres@meta.com",phone:"ext. 4401",prov:"Meta Live Production"},
+ {pos:"PCR Tech Manager",name:"Rowan Blake",email:"casey.okonkwo@meta.com",phone:"(212) 555-0125",prov:"Meta Live Production"},
+ {pos:"Graphics Operator",name:"Sasha Keene",email:"avery.lin@meta.com",phone:"(212) 555-0126",prov:"Meta Live Production"},
+ {pos:"Replay Operator",name:"Shay Donovan",email:"drew.fontaine@meta.com",phone:"ext. 4414",prov:"Meta Live Production"},
+ {pos:"Teleprompter Operator",name:"Remy Colton",email:"blair.santos@meta.com",phone:"(212) 556-0127",prov:"Meta Live Production"}
 ];
 var CREW_EXEC=[
- {pos:"VP, Technical Production",name:"Lila Hart",email:"avery.chen@muselive.com",phone:"—",prov:"Muse Live"},
- {pos:"VP Sports Production & Rights",name:"Finley Brooks",email:"cameron.ruiz@muselive.com",phone:"—",prov:"Mediapro"},
- {pos:"Dir. Sports Production & VAR",name:"Lee Ashford",email:"taylor.mendes@muselive.com",phone:"(954) 555-0128",prov:"Mediapro"}
+ {pos:"VP, Technical Production",name:"Lila Hart",email:"avery.chen@meta.com",phone:"—",prov:"Muse Live"},
+ {pos:"VP Sports Production & Rights",name:"Finley Brooks",email:"cameron.ruiz@meta.com",phone:"—",prov:"Mediapro"},
+ {pos:"Dir. Sports Production & VAR",name:"Lee Ashford",email:"taylor.mendes@meta.com",phone:"(954) 555-0128",prov:"Mediapro"}
 ];
 
 /* ---- Project Overview: interactive Operational Matrix (at-a-glance dept status, click to anchor) ---- */
 function projectMatrixHTML(key,p){
   var cells=p.dept.map(function(d){var s=statusMap[d[1]];var anchor='dept-'+key+'-'+d[0].replace(/[^a-z0-9]/gi,'');
-    return '<button onclick="overviewGoCat(\''+key+'\',\''+esc(d[0]).replace(/'/g,"\\'")+'\')" class="group flex flex-col items-start gap-1 rounded-xl border p-2.5 text-left transition-all hover:shadow-sm hover:-translate-y-0.5" style="border-color:#e5e7eb;background:#fff">'+
+    return '<button onclick="overviewGoCat(\''+key+'\',\''+esc(d[0]).replace(/'/g,"\\'")+'\')" class="group flex flex-col items-start gap-1 rounded-xl border p-2.5 text-left transition-all hover:shadow-sm hover:-translate-y-0.5" style="border-color:#e5e7eb;background:#ffffff">'+
       '<div class="flex items-center justify-between w-full"><span class="w-1.5 h-1.5 rounded-full bg-'+s.dot+'-500 flex-shrink-0"></span><span class="text-[7px] font-bold uppercase tracking-wider mono '+s.text+'">'+s.label+'</span></div>'+
       '<span class="text-[10px] font-semibold text-gray-700 leading-tight group-hover:text-blue-700">'+esc(d[0])+'</span></button>';
   }).join('');
@@ -2468,7 +2468,7 @@ function deptFieldControlHTML(key,dept,f,fv){var cur=fv[f[0]]||'';var ftype=f[3]
       '<input value="'+(''+cur).replace(/"/g,'&quot;')+'" onchange="setDeptField(\''+key+'\',\''+dq+'\',\''+f[0]+'\',this.value)" placeholder="'+ph+'" class="w-full text-[10px] '+(ftype==='ip'?'mono ':'')+'text-gray-700 bg-white border border-gray-200 rounded px-2 py-1.5" style="outline:none"></div>';}
   // IFB phone lines are managed ONLY on the unified IFB platform — read-only mirror here
   if(f[0]==='ifbphone'){var p2=productions[key];var rl=(typeof ifbGet==='function')?ifbGet(p2).lines.filter(function(l){return l.ref;}):[];
-    var mirrorChips=rl.map(function(l){return '<span class="inline-flex items-center gap-1 bg-white border border-gray-200 rounded px-2 py-0.5 text-[10px] mono mr-1 mb-1">'+esc(l.ref)+(l.person?' <span class="text-gray-400">·</span> <span class="font-semibold" style="font-family:Inter,sans-serif">'+esc(l.person)+'</span>':'')+'</span>';}).join('');
+    var mirrorChips=rl.map(function(l){return '<span class="inline-flex items-center gap-1 bg-white border border-gray-200 rounded px-2 py-0.5 text-[10px] mono mr-1 mb-1">'+esc(l.ref)+(l.person?' <span class="text-gray-400">·</span> <span class="font-semibold" style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">'+esc(l.person)+'</span>':'')+'</span>';}).join('');
     return '<div class="mb-1.5 dept-span-full"><label class="text-[8px] font-bold uppercase tracking-wider text-gray-500 block mb-0.5">'+f[1]+'</label>'+
       '<div class="mb-1 dept-chip-row">'+(mirrorChips||'<span class="text-[9px] text-gray-400 italic">No lines dialed yet</span>')+'</div>'+
       '<button type="button" onclick="ifbScrollTo(\''+key+'\')" class="w-full text-left text-[10px] font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-1.5 hover:bg-blue-100">⇄ Managed on the IFB Signal Routing platform — open ↓</button></div>';}
@@ -2484,7 +2484,7 @@ function deptFieldControlHTML(key,dept,f,fv){var cur=fv[f[0]]||'';var ftype=f[3]
     '</button>'+
     '</div>';
 }
-var DEPT_DOT_HEX={emerald:'#00A15D',amber:'#F7B717',red:'#E51B24',blue:'#00A0DE',gray:'#9ca3af'};
+var DEPT_DOT_HEX={emerald:'#31A24C',amber:'#F7B928',red:'#E41E3F',blue:'#0866FF',gray:'#9ba2b0'};
 /* Department workspaces keep original editors mounted when switching tabs. */
 var deptWorkspaceState=Object.create(null);
 function deptWorkspaceKey(key,dept){return JSON.stringify([key,dept]);}
@@ -2523,7 +2523,7 @@ function deptTileHTML(key,p,d,idx,alertCounts){
   var tileBorder=locked?(ap.state==='Locked'?'border-blue-300':'border-emerald-300'):s.bd;
   var aid='dept-'+key+'-'+dept.replace(/[^a-z0-9]/gi,'');
   var items=deptItemCount(p,dept);var alerts=alertCounts?(alertCounts[dept]||0):deptAlertCount(p,dept);
-  var dot=DEPT_DOT_HEX[s.dot]||'#9ca3af';
+  var dot=DEPT_DOT_HEX[s.dot]||'#9ba2b0';
   if(!open){
     return '<div id="'+aid+'" data-deptcat="'+esc(dept)+'" onclick="deptTileToggle(\''+key+'\',\''+dq+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();deptTileToggle(\''+key+'\',\''+dq+'\');}" role="button" tabindex="0" title="'+esc(dept)+' — click to expand" class="dept-t dept-t-closed '+tileBorder+' '+s.bg+'">'+
       '<div class="flex items-center justify-between gap-2"><span class="flex items-center gap-1.5 min-w-0"><span style="width:8px;height:8px;border-radius:9999px;flex-shrink:0;background:'+dot+'"></span><span class="text-[11px] font-bold text-gray-800 truncate">'+esc(dept)+'</span>'+lockIcon+'</span><span class="text-[8px] mono font-bold uppercase tracking-wider '+s.text+' flex-shrink-0">'+s.label+'</span></div>'+
@@ -2634,7 +2634,7 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
       '<div class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><div class="flex items-center justify-between mb-2"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Status</h3><span class="text-[9px] mono text-gray-400">'+(p.version||'')+'</span></div><p class="text-base font-semibold text-gray-900">'+phaseFor(p).label+'</p><progress class="w-full '+progClass(pct)+' mt-2" style="height:10px" value="'+pct+'" max="100"></progress><div class="flex items-center justify-between mt-2"><span class="text-[10px] text-gray-600">Target Air</span><span class="text-[11px] font-bold mono text-gray-800">'+(p.date||'TBD')+'</span></div>'+
         '<div class="mt-2 pt-2 border-t border-gray-100"><select onchange="setCustomer(\''+key+'\',this.value)" class="w-full text-[11px] border border-gray-300 rounded-lg px-2 py-1.5 bg-white" style="outline:none">'+customerList.map(function(cc){return '<option value="'+cc+'"'+(p.customer===cc?' selected':'')+'>'+cc+'</option>';}).join('')+'</select></div></div>'+
       resourceLockCardHTML(key)+
-      '<div class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">Outstanding — Pending &amp; Missing</h3><div class="-mb-1.5 max-h-32 overflow-y-auto">'+warnList+'</div><button onclick="charlieAsk(\'What is missing for '+p.name.replace(/'/g,"")+'?\')" class="w-full bg-gray-900 text-white text-[11px] font-bold rounded-lg py-2 hover:bg-gray-800 mt-2">Ask Charlie</button></div>'+
+      '<div class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">Outstanding — Pending &amp; Missing</h3><div class="-mb-1.5 max-h-32 overflow-y-auto">'+warnList+'</div><button onclick="museaiAsk(\'What is missing for '+p.name.replace(/'/g,"")+'?\')" class="w-full bg-gray-900 text-white text-[11px] font-bold rounded-lg py-2 hover:bg-gray-800 mt-2">Ask Muse</button></div>'+
     '</div>'+
     // ---- FULL-WIDTH Department Status — tile board (v30 Module 0) ----
     '<div class="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><div class="flex flex-wrap items-center justify-between gap-2 mb-3"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Department Status — Production Areas</h3><span class="flex items-center gap-2 flex-wrap"><span class="text-[9px] mono text-gray-400 hidden sm:inline">click a tile to expand · '+c.approved+' approved · '+c.pending+' pending · '+c.missing+' missing</span>'+((typeof xlsxBtns==='function')?xlsxBtns('tile_equipment',key):'')+'</span></div>'+
@@ -2671,7 +2671,7 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
       '<div><div class="flex items-center space-x-2 text-xs text-blue-700 font-semibold mb-1"><span class="cursor-pointer hover:underline" onclick="switchView(\'dashboard\')">Portfolio</span><span>/</span><span class="text-gray-900">'+esc(p.name)+'</span></div>'+
       '<h1 class="text-2xl font-semibold tracking-tight text-gray-900">'+esc(p.name)+'</h1><div class="flex items-center gap-2 mt-1.5">'+custChip(p.customer)+'<p class="text-sm text-gray-600">'+meta.join(' · ')+'</p></div>'+(p.desc?'<p class="text-xs text-gray-500 mt-1 max-w-xl">'+esc(p.desc)+'</p>':'')+'</div></div>'+
       '<div class="text-right flex-shrink-0"><span id="projPct-'+key+'" class="text-4xl font-bold '+pctColor(pct)+' mono">'+pct+'%</span><p class="text-[10px] text-gray-500 uppercase tracking-wider">Requirements Cleared</p>'+
-        '<div class="flex items-center justify-end gap-2 mt-2 flex-wrap"><button onclick="openOmniForProject(\''+key+'\')" class="text-[10px] font-bold text-white rounded-lg px-2.5 py-1.5 hover:opacity-90" style="background:#632E8A">💬 Omni</button><button onclick="openSchedule(\''+key+'\')" class="text-[10px] font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-2.5 py-1.5 hover:bg-blue-100">📅 Edit Schedule</button><button onclick="downloadTechbook(\''+key+'\')" title="Always exports current live production data — not a saved snapshot" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">⬇ Techbook PDF · live</button></div>'+(delBtn?'<div class="mt-2">'+delBtn+'</div>':'')+'</div></div>';
+        '<div class="flex items-center justify-end gap-2 mt-2 flex-wrap"><button onclick="openOmniForProject(\''+key+'\')" class="text-[10px] font-bold text-white rounded-lg px-2.5 py-1.5 hover:opacity-90" style="background:#0866FF">💬 Omni</button><button onclick="openSchedule(\''+key+'\')" class="text-[10px] font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-2.5 py-1.5 hover:bg-blue-100">📅 Edit Schedule</button><button onclick="downloadTechbook(\''+key+'\')" title="Always exports current live production data — not a saved snapshot" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">⬇ Techbook PDF · live</button></div>'+(delBtn?'<div class="mt-2">'+delBtn+'</div>':'')+'</div></div>';
   var opsBadge='';
   try{if(typeof MuseBOps!=='undefined'&&MuseBOps.computeGoNoGo){var _gng=MuseBOps.computeGoNoGo(key);if(_gng.decision==='NO-GO')opsBadge=' <span class="text-red-500">●</span>';else if(_gng.decision==='CONDITIONAL')opsBadge=' <span class="text-amber-500">●</span>';else opsBadge=' <span class="text-emerald-500">●</span>';}}catch(eBg){}
   var barHTML='<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 flex-wrap justify-center">'+subBtn('overview','Overview')+subBtn('ops','Broadcast Ops'+opsBadge)+subBtn('survey','Site Survey')+((typeof permCan!=='function'||permCan('finance'))?subBtn('finance','Finance'+finTabBadge(key)):'')+((typeof permCan!=='function'||permCan('xytech'))?subBtn('xytech','Xytech'):'')+subBtn('schedule','Schedule')+subBtn('travel','Travel'+travelTabBadge(key))+subBtn('crew','Crew')+((typeof permCan!=='function'||permCan('vendors'))?subBtn('vendors','Vendors'):'')+subBtn('tracking','Tracking'+trkTabBadge(key))+subBtn('workflow','Workflow')+subBtn('packlist','PackList')+subBtn('omni','Omni'+omniTabBadge(key))+'</div>';
@@ -2785,7 +2785,7 @@ function schedType(r){if(r[6])return r[6];var a=(r[2]||'').toLowerCase();var bc=
   if(/lunch|meal|breakfast|dinner|cater/.test(a))return 'Lunch / Meal';
   if(/\bbreak\b|rest/.test(a))return 'Break';
   if(bc&&bc!=='—')return 'Broadcast';
-  if(/live|broadcast|on air|ceremony|parade|match|kickoff|show start/.test(a))return 'Broadcast';
+  if(/live|broadcast|on air|keynote|reveal|launch|showcase|match|kickoff|show start/.test(a))return 'Broadcast';
   if(/fax|facilit|load.?in|build|rig|commission|rehears|setup|cabling|fiber|signal|cam map|survey/.test(a))return 'Facilities / FAX';
   if(/crew call|in position|wheels up|\bcall\b|arrive|depart/.test(a))return 'Crew Call';
   return 'Crew Call';}
@@ -2854,7 +2854,7 @@ function packItems(p){ // build shippable line items from each section's equipme
     // skip if the item was checked back in elsewhere (no longer on this project)
     if(live&&live.project&&live.project!==Object.keys(productions).filter(function(k){return productions[k]===p;})[0])return;
     var pid='inv_'+(ii.invId||idx);
-    items.push({id:pid,dept:ii.category||'Equipment',name:ii.name+(ii.serial?' (SN '+ii.serial+')':''),qty:1,detail:'Barcode '+ii.barcode,owner:'Muse Live Inventory',locked:true,
+    items.push({id:pid,dept:ii.category||'Equipment',name:ii.name+(ii.serial?' (SN '+ii.serial+')':''),qty:1,detail:'Barcode '+ii.barcode,owner:'Meta Inventory',locked:true,
       apprState:'Approved',apprBy:'Inventory',apprOn:'',packStatus:p.packStatus[pid]||'Approved',src:'inventory'});
   });}
   return items;
@@ -2904,7 +2904,7 @@ function packlistPaneHTML(key){var p=productions[key];var all=packItems(p);
     }).join('');
     return '<div class="mb-4 rounded-xl border border-gray-200/70 overflow-hidden">'+
       '<div class="flex items-center justify-between gap-2 px-3 py-2 bg-gray-50 border-b border-gray-200">'+
-        '<h4 class="text-[11px] font-bold text-gray-700 flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:'+(dotBg[(productions[key].tagColor)]||'#64748b')+'"></span>'+esc(dep)+'</h4>'+
+        '<h4 class="text-[11px] font-bold text-gray-700 flex items-center gap-2"><span class="w-2 h-2 rounded-full" style="background:'+(dotBg[(productions[key].tagColor)]||'#74767b')+'"></span>'+esc(dep)+'</h4>'+
         '<span class="text-[9px] mono text-gray-500">'+its.length+' item'+(its.length>1?'s':'')+' · '+groupQty+' qty</span></div>'+
       '<div class="grid items-center gap-2 px-3 py-1.5 bg-white border-b border-gray-100 text-[8px] font-bold uppercase tracking-wider text-gray-400" style="'+COLS+'">'+
         '<span>Item</span><span class="text-center">Qty</span><span>Provided By</span><span>Pack Status</span><span class="text-right">Advance Status</span></div>'+
@@ -2917,7 +2917,7 @@ function packlistPaneHTML(key){var p=productions[key];var all=packItems(p);
   return '<div class="space-y-4">'+
     '<div class="flex flex-wrap items-center justify-between gap-2">'+
       '<p class="text-xs text-gray-500">Shippable items grouped by category, with provider and pack status. Draft items come from sections not yet locked.</p>'+
-      '<button onclick="exportPackListPDF(\''+key+'\')" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-4 py-2 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>Print / Export Pack List</button>'+
+      '<button onclick="exportPackListPDF(\''+key+'\')" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-4 py-2 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg>Print / Export Pack List</button>'+
     '</div>'+
     statsGrid+
     (missingInfo>0?'<p class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">⚠ '+missingInfo+' item'+(missingInfo>1?'s are':' is')+' from sections not yet locked — shown as DRAFT. Lock the section to finalize for shipping.</p>':'')+
@@ -2946,30 +2946,30 @@ function exportPackListPDF(key){var p=productions[key];var all=packItems(p);
   var pm=(CREW_FIELD.filter(function(m){return /Production Manager/.test(m.pos);})[0]||{}).name||'—';
   var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pack List — '+esc(p.name)+'</title><style>'+
     '@page{size:A4;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
-    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222}'+
+    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#212223}'+
     '.bar{display:flex;height:5px}.bar i{flex:1}'+
-    '.hd{background:#111112;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
-    '.hd h1{font-size:19px;margin:0;letter-spacing:1px}.hd .s{font-size:11px;color:#bbb;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#bbb;line-height:1.5}'+
+    '.hd{background:#111112;color:#ffffff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
+    '.hd h1{font-size:19px;margin:0;letter-spacing:1px}.hd .s{font-size:11px;color:#b3b8c3;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#b3b8c3;line-height:1.5}'+
     '.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 18px;border-bottom:1px solid #e5e7eb}'+
-    '.meta .k{font-size:7px;text-transform:uppercase;color:#999;letter-spacing:1px}.meta .v{font-size:10px;font-weight:600;margin-top:2px}'+
-    '.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 18px;background:#f8f9fb;border-bottom:1px solid #e5e7eb}'+
-    '.stat{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:8px;text-align:center}'+
-    '.stat .n{font-size:18px;font-weight:700;color:#111}.stat .n.g{color:#059669}.stat .n.r{color:#dc2626}'+
-    '.stat .l{font-size:7px;text-transform:uppercase;letter-spacing:1px;color:#999;margin-top:2px}'+
+    '.meta .k{font-size:7px;text-transform:uppercase;color:#8D95A5;letter-spacing:1px}.meta .v{font-size:10px;font-weight:600;margin-top:2px}'+
+    '.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:12px 18px;background:#fafafa;border-bottom:1px solid #e5e7eb}'+
+    '.stat{background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:8px;text-align:center}'+
+    '.stat .n{font-size:18px;font-weight:700;color:#101112}.stat .n.g{color:#059627}.stat .n.r{color:#dc2644}'+
+    '.stat .l{font-size:7px;text-transform:uppercase;letter-spacing:1px;color:#8D95A5;margin-top:2px}'+
     'table{width:100%;border-collapse:collapse;font-size:10px;margin-top:4px}'+
     'thead{display:table-header-group}'+
-    'th{background:#f3f4f6;text-align:left;padding:5px 18px;font-size:8px;text-transform:uppercase;color:#555;border-bottom:1px solid #ddd}'+
+    'th{background:#f3f4f6;text-align:left;padding:5px 18px;font-size:8px;text-transform:uppercase;color:#525458;border-bottom:1px solid #d9dce1}'+
     'th.c{text-align:center}'+
-    'td{padding:5px 18px;border-bottom:0.5px solid #eee;vertical-align:top}'+
-    'td.c{text-align:center;font-weight:700;font-family:monospace}td.it{font-weight:600}td .d{font-size:8px;color:#999;font-weight:400;margin-top:1px}'+
-    'td .st{font-size:8px;font-weight:700;text-transform:uppercase}td .dr{font-size:7px;font-weight:700;color:#b91c1c;border:0.5px solid #fca5a5;border-radius:3px;padding:0 3px}'+
-    'tr.cat td{background:#111112;color:#fff;font-weight:700;font-size:9px;text-transform:uppercase;padding:5px 18px}'+
+    'td{padding:5px 18px;border-bottom:0.5px solid #ecedf0;vertical-align:top}'+
+    'td.c{text-align:center;font-weight:700;font-family:monospace}td.it{font-weight:600}td .d{font-size:8px;color:#8D95A5;font-weight:400;margin-top:1px}'+
+    'td .st{font-size:8px;font-weight:700;text-transform:uppercase}td .dr{font-size:7px;font-weight:700;color:#b91c36;border:0.5px solid #fca5b3;border-radius:3px;padding:0 3px}'+
+    'tr.cat td{background:#111112;color:#ffffff;font-weight:700;font-size:9px;text-transform:uppercase;padding:5px 18px}'+
     'tr{page-break-inside:avoid}'+
-    '.foot{margin-top:10px;padding:8px 18px;display:flex;justify-content:space-between;font-size:8px;color:#999;border-top:0.5px solid #ddd}'+
-    '@media screen{body{background:#777;padding:18px}.page{background:#fff;max-width:820px;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.3)}}'+
-    '@media print{body{background:#fff}.page{box-shadow:none;max-width:none}}'+
+    '.foot{margin-top:10px;padding:8px 18px;display:flex;justify-content:space-between;font-size:8px;color:#8D95A5;border-top:0.5px solid #d9dce1}'+
+    '@media screen{body{background:#73767B;padding:18px}.page{background:#ffffff;max-width:820px;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.3)}}'+
+    '@media print{body{background:#ffffff}.page{box-shadow:none;max-width:none}}'+
     '</style></head><body><div class="page">'+
-    '<div class="bar"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>'+
+    '<div class="bar"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>'+
     '<div class="hd"><div><h1>PACK LIST</h1><div class="s">'+esc(p.name)+' · '+esc(p.customer||'')+'</div></div><div class="r">MUSE LIVE · Broadcast Operations<br>Generated '+esc(nowStamp())+'</div></div>'+
     '<div class="meta">'+
       '<div><div class="k">Venue / Destination</div><div class="v">'+esc(p.venue||'TBD')+'</div></div>'+
@@ -2985,7 +2985,7 @@ function exportPackListPDF(key){var p=productions[key];var all=packItems(p);
       '<div class="stat"><div class="n r">'+notLocked+'</div><div class="l">Not Locked</div></div>'+
     '</div>'+
     '<table><thead><tr><th>Item</th><th class="c">Qty</th><th>Provided By</th><th>Pack Status</th></tr></thead><tbody>'+rowsHTML+'</tbody></table>'+
-    '<div class="foot"><span>Muse Live Broadcast Telemetry · Confidential</span><span>'+esc(p.name)+' · Pack List · '+all.length+' items / '+totalQty+' qty</span></div>'+
+    '<div class="foot"><span>Meta Broadcast Telemetry · Confidential</span><span>'+esc(p.name)+' · Pack List · '+all.length+' items / '+totalQty+' qty</span></div>'+
     '</div></body></html>';
   var w=window.open('','_blank');if(!w){toast('Allow pop-ups to export the Pack List');return;}
   w.document.open();w.document.write(html);w.document.close();
@@ -2994,9 +2994,9 @@ function exportPackListPDF(key){var p=productions[key];var all=packItems(p);
 }
 
 function workflowPaneHTML(key){var p=productions[key];syncAutoTasks(key);var rd=readiness(key?p:p);rd=readiness(p);
-  function bar(label,val,col){return '<div class="bg-white rounded-xl border border-gray-200/60 p-3"><div class="flex items-center justify-between mb-1"><span class="text-[9px] font-bold uppercase tracking-wider text-gray-500">'+label+'</span><span class="text-[11px] font-bold mono '+(val>=80?'text-emerald-600':val>=50?'text-amber-600':'text-red-600')+'">'+val+'%</span></div><div style="height:7px;background:#eef0f2;border-radius:4px;overflow:hidden"><div style="width:'+val+'%;height:100%;background:'+col+'"></div></div></div>';}
-  var air=rd.air;var airCol=air>=80?'#059669':air>=50?'#d97706':'#dc2626';
-  var readyGrid='<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">'+bar('Techbook',rd.techbook,'#3b82f6')+bar('Department',rd.dept,'#00A15D')+bar('Schedule',rd.schedule,'#8b5cf6')+bar('Vendor',rd.vendor,'#f59e0b')+bar('Crew Confirmed',rd.crew,'#14b8a6')+bar('Legal / Rights',rd.legal,'#ef4444')+'</div>';
+  function bar(label,val,col){return '<div class="bg-white rounded-xl border border-gray-200/60 p-3"><div class="flex items-center justify-between mb-1"><span class="text-[9px] font-bold uppercase tracking-wider text-gray-500">'+label+'</span><span class="text-[11px] font-bold mono '+(val>=80?'text-emerald-600':val>=50?'text-amber-600':'text-red-600')+'">'+val+'%</span></div><div style="height:7px;background:#eeeff2;border-radius:4px;overflow:hidden"><div style="width:'+val+'%;height:100%;background:'+col+'"></div></div></div>';}
+  var air=rd.air;var airCol=air>=80?'#059627':air>=50?'#d95e06':'#dc2644';
+  var readyGrid='<div class="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">'+bar('Techbook',rd.techbook,'#3b86f6')+bar('Department',rd.dept,'#31A24C')+bar('Schedule',rd.schedule,'#5c9af6')+bar('Vendor',rd.vendor,'#f56c0b')+bar('Crew Confirmed',rd.crew,'#14a8b8')+bar('Legal / Rights',rd.legal,'#ef4461')+'</div>';
   // tasks — clean toggle, metadata, filters, live completion %
   var tasks=getTasks(p);var doneN=tasks.filter(function(t){return t.done;}).length;var openN=tasks.length-doneN;
   var compPct=tasks.length?Math.round(doneN/tasks.length*100):0;
@@ -3031,7 +3031,7 @@ function workflowPaneHTML(key){var p=productions[key];syncAutoTasks(key);var rd=
   var shown=tasks.filter(function(t){return filt==='all'?true:taskState(t)===filt;});
   var taskList=shown.map(taskRow).join('')||'<p class="text-[11px] text-gray-400 py-2">No '+(filt==='all'?'':filt+' ')+'tasks.</p>';
   var tasksHeader='<div class="flex items-center justify-between mb-1"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Tasks · '+openN+' open / '+tasks.length+'</h3><button onclick="addTask(\''+key+'\')" class="text-[10px] font-bold text-blue-700 hover:underline">+ Add Task</button></div>'+
-    '<div class="flex items-center gap-2 mb-2"><div class="flex-1" style="height:6px;background:#eef0f2;border-radius:3px;overflow:hidden"><div style="width:'+compPct+'%;height:100%;background:#00A15D"></div></div><span class="text-[9px] mono font-bold text-emerald-600">'+compPct+'%</span></div>'+filterBar;
+    '<div class="flex items-center gap-2 mb-2"><div class="flex-1" style="height:6px;background:#eeeff2;border-radius:3px;overflow:hidden"><div style="width:'+compPct+'%;height:100%;background:#31A24C"></div></div><span class="text-[9px] mono font-bold text-emerald-600">'+compPct+'%</span></div>'+filterBar;
   // activity timeline
   var acts=(p.activity||[]).slice(0,40).map(function(a){return '<div class="flex gap-2 py-1.5 border-b border-gray-50"><span class="w-1.5 h-1.5 rounded-full bg-gray-300 mt-1.5 flex-shrink-0"></span><div class="flex-1"><p class="text-[11px] text-gray-800">'+a.text+'</p><p class="text-[8px] text-gray-400 mono">'+a.actor+' · '+a.when+'</p></div></div>';}).join('')||'<p class="text-[11px] text-gray-400 py-2">No activity yet.</p>';
   // approval history
@@ -3042,7 +3042,7 @@ function workflowPaneHTML(key){var p=productions[key];syncAutoTasks(key);var rd=
     '<div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
       '<div class="flex items-center justify-between mb-3"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Air Readiness</h3>'+
       '<div class="flex items-center gap-2"><span class="text-2xl font-bold mono" style="color:'+airCol+'">'+air+'%</span><span class="text-[9px] uppercase tracking-wider text-gray-400">Final Air<br>Readiness</span></div></div>'+
-      '<div style="height:10px;background:#eef0f2;border-radius:5px;overflow:hidden;margin-bottom:12px"><div style="width:'+air+'%;height:100%;background:'+airCol+'"></div></div>'+
+      '<div style="height:10px;background:#eeeff2;border-radius:5px;overflow:hidden;margin-bottom:12px"><div style="width:'+air+'%;height:100%;background:'+airCol+'"></div></div>'+
       readyGrid+
       (rd.risks>0?'<p class="text-[11px] text-red-700 font-semibold mt-2">⚠ '+rd.risks+' critical risk'+(rd.risks>1?'s':'')+' remaining — see Tasks & Outstanding Items.</p>':'<p class="text-[11px] text-emerald-700 font-semibold mt-2">No critical risks flagged.</p>')+
     '</div>'+
@@ -3063,7 +3063,7 @@ function schedListPaneHTML(key){var p=productions[key];var rows=p.schedule||[];
     ["Strike / Load-Out",["Strike / Load-Out"],"purple"]];
   var sections=buckets.map(function(bk){
     var br=rows.filter(function(r){return bk[1].indexOf(schedType(r))>-1;});
-    var dot={amber:'#f59e0b',blue:'#3b82f6',emerald:'#00A15D',red:'#ef4444',purple:'#a855f7',indigo:'#6366f1'}[bk[2]];
+    var dot={amber:'#f56c0b',blue:'#3b86f6',emerald:'#31A24C',red:'#ef4461',purple:'#5596f7',indigo:'#629cf2'}[bk[2]];
     var body=br.length?'<div class="overflow-x-auto"><table class="w-full text-left text-xs" style="min-width:680px"><thead><tr class="text-gray-500 uppercase tracking-wider text-[9px] border-b border-gray-200"><th class="pb-2 pr-3">Date(s)</th><th class="pb-2 pr-3">Time</th><th class="pb-2 pr-3">Activity</th><th class="pb-2 pr-3">Crew Call</th><th class="pb-2 pr-3">Broadcast</th><th class="pb-2">Location / Notes</th></tr></thead><tbody class="divide-y divide-gray-100">'+
       br.map(function(r){return '<tr class="hover:bg-gray-50/60"><td class="py-2 pr-3 mono text-gray-700">'+fmtDate(r[0])+'</td><td class="py-2 pr-3 mono text-gray-600">'+(r[1]||'')+'</td><td class="py-2 pr-3 font-semibold text-gray-800">'+(r[2]||'')+'</td><td class="py-2 pr-3 mono text-amber-700">'+(r[3]||'')+'</td><td class="py-2 pr-3 mono text-red-600 font-bold">'+fmtDate(r[4])+'</td><td class="py-2 text-gray-600">'+(r[5]?mapLink(r[5]):'')+'</td></tr>';}).join('')+
       '</tbody></table></div>':'<p class="text-[11px] text-gray-500 italic py-1">No entries in this category yet.</p>';
@@ -3079,7 +3079,7 @@ var CREW_PHASE_LABELS={start:"Start / Travel",loadin:"Load-In",camblock:"Camera 
 function crewMilestones(p){ // derive a date for each phase from the project's schedule, else TBD
   var rows=p.schedule||[];
   function firstDate(re){for(var i=0;i<rows.length;i++){if(re.test((rows[i][2]||'').toLowerCase()))return rows[i][0]||'';}return '';}
-  function bcDate(){for(var i=0;i<rows.length;i++){if((rows[i][4]||'').trim()&&rows[i][4]!=='—')return rows[i][0]||rows[i][4];}return firstDate(/live|broadcast|ceremony|match|parade|election|show/);}
+  function bcDate(){for(var i=0;i<rows.length;i++){if((rows[i][4]||'').trim()&&rows[i][4]!=='—')return rows[i][0]||rows[i][4];}return firstDate(/live|broadcast|ceremony|match|takeover|summit|show/);}
   var m={
     start:firstDate(/crew call|wheels up|arrive|travel|depart/)||(rows[0]?rows[0][0]:'TBD'),
     loadin:firstDate(/load.?in|rigging|build|setup|mount|pull/)||'TBD',
@@ -3103,7 +3103,7 @@ function crewPhasesFor(pos){ // which phases a role attends, by position keyword
 }
 function crewIsOn(p,name,pos,ph){var ov=p.crewMatrix&&p.crewMatrix[name];if(ov&&ov[ph]!==undefined)return ov[ph];return crewPhasesFor(pos).indexOf(ph)>-1;}
 function toggleCrewCell(key,name,pos,ph){var p=productions[key];if(!p.crewMatrix)p.crewMatrix={};if(!p.crewMatrix[name])p.crewMatrix[name]={};p.crewMatrix[name][ph]=!crewIsOn(p,name,pos,ph);stampEdit(key);renderProjectView(key);}
-var PHASE_COLOR={start:"#6366f1",loadin:"#f59e0b",camblock:"#0ea5e9",txcheck:"#8b5cf6",rehearsal:"#14b8a6",broadcast:"#ef4444",strike:"#64748b"};
+var PHASE_COLOR={start:"#629cf2",loadin:"#f56c0b",camblock:"#0e66e9",txcheck:"#5c9af6",rehearsal:"#14a8b8",broadcast:"#ef4461",strike:"#74767b"};
 /* ============================================================================
    VENUE CHECK-IN (geofence)
    Free browser Geolocation + haversine radius against the production venue GPS.
@@ -3255,7 +3255,7 @@ function checkinBadgeHTML(key,name){
     var t=checkinFmtTime(c.ts);
     var tip=esc((c.venueName||'Venue')+(c.method==='manual'?' · manual':(' · GPS '+(c.distM!=null?c.distM+' m':'')))+(c.by?' · by '+c.by:''));
     return '<button type="button" onclick="event.stopPropagation();checkinToggleManual(\''+key+'\',\''+String(name).replace(/'/g,"\\'")+'\')" title="'+tip+' — click to clear" class="muse-checkin-on">'+
-      '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400" style="box-shadow:0 0 0 2px rgba(52,211,153,.25)"></span>ON SITE'+(t?' · '+t:'')+'</button>';
+      '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400" style="box-shadow:0 0 0 2px rgba(52,211,89,.25)"></span>ON SITE'+(t?' · '+t:'')+'</button>';
   }
   return '<button type="button" onclick="event.stopPropagation();checkinToggleManual(\''+key+'\',\''+String(name).replace(/'/g,"\\'")+'\')" title="Not checked in — click to mark on site (manager)" class="muse-checkin-off">—</button>';
 }
@@ -3278,16 +3278,16 @@ function crewScheduleHTML(key){var p=productions[key];var m=crewMilestones(p);
       '<span class="text-[8px] mono text-gray-400 leading-none">'+(m[ph]?fmtDate(m[ph]).replace(/, \d{4}/,''):'TBD')+'</span>'+
       '<span class="text-[8px] font-bold mono leading-none mt-0.5 '+(allOn?'text-emerald-600':'text-gray-400')+'">'+colCount[ph]+'/'+N+'</span>'+
     '</button></th>';}).join('');
-  var bodyRows=allCrew.map(function(mem){var gc=CREW_GROUP_COLOR[mem.group]||'#9ca3af';
+  var bodyRows=allCrew.map(function(mem){var gc=CREW_GROUP_COLOR[mem.group]||'#9ba2b0';
     var onArr=CREW_PHASES.map(function(ph){return crewIsOn(p,mem.name,mem.pos,ph);});
     var onCount=onArr.filter(Boolean).length;
     var cells=CREW_PHASES.map(function(ph,j){var on=onArr[j];var prevOn=j>0&&onArr[j-1];var nextOn=j<CREW_PHASES.length-1&&onArr[j+1];
       var rl=(!prevOn)?'8px':'0';var rr=(!nextOn)?'8px':'0';var inner;
-      if(on){inner='<span class="flex items-center justify-center w-full" style="height:26px;background:'+hexA(PHASE_COLOR[ph],0.92)+';border-radius:'+rl+' '+rr+' '+rr+' '+rl+'"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" style="opacity:.9"><path d="M20 6L9 17l-5-5"/></svg></span>';}
+      if(on){inner='<span class="flex items-center justify-center w-full" style="height:26px;background:'+hexA(PHASE_COLOR[ph],0.92)+';border-radius:'+rl+' '+rr+' '+rr+' '+rl+'"><svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="4" style="opacity:.9"><path d="M20 6L9 17l-5-5"/></svg></span>';}
       else{inner='<span class="flex items-center justify-center w-full text-gray-300 group-hover:text-gray-500 transition-colors" style="height:26px;background:#f3f4f6;border-radius:6px;font-size:14px;line-height:1">+</span>';}
       return '<td class="p-0"><button onclick="toggleCrewCell(\''+key+'\',\''+mem.name.replace(/'/g,"\\'")+'\',\''+mem.pos.replace(/'/g,"\\'")+'\',\''+ph+'\')" title="'+esc(mem.name)+' \u00B7 '+shortLbl[ph]+(on?' (called \u2014 click to clear)':' (off \u2014 click to call)')+'" class="group block w-full" style="cursor:pointer">'+inner+'</button></td>';}).join('');
     var arrCell='<td class="py-1 px-1.5 align-middle whitespace-nowrap">'+checkinBadgeHTML(key,mem.name)+'</td>';
-    return '<tr class="hover:bg-gray-50/40"><td class="py-1 pr-3 whitespace-nowrap align-middle" style="position:sticky;left:0;background:#fff;z-index:1"><button onclick="openCrewCard(\''+mem.name.replace(/'/g,"\\'")+'\',\''+key+'\')" class="text-[11px] font-semibold text-gray-800 hover:text-blue-700 hover:underline block leading-tight">'+esc(mem.name)+'</button><span class="text-[9px] text-gray-500 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:'+gc+'" title="'+esc(mem.group||'')+'"></span>'+esc(mem.pos)+' <span class="text-gray-300">\u00B7</span> <span class="mono">'+onCount+'/7</span></span></td>'+arrCell+cells+'</tr>';
+    return '<tr class="hover:bg-gray-50/40"><td class="py-1 pr-3 whitespace-nowrap align-middle" style="position:sticky;left:0;background:#ffffff;z-index:1"><button onclick="openCrewCard(\''+mem.name.replace(/'/g,"\\'")+'\',\''+key+'\')" class="text-[11px] font-semibold text-gray-800 hover:text-blue-700 hover:underline block leading-tight">'+esc(mem.name)+'</button><span class="text-[9px] text-gray-500 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:'+gc+'" title="'+esc(mem.group||'')+'"></span>'+esc(mem.pos)+' <span class="text-gray-300">\u00B7</span> <span class="mono">'+onCount+'/7</span></span></td>'+arrCell+cells+'</tr>';
   }).join('')||'<tr><td colspan="'+(CREW_PHASES.length+2)+'" class="py-6 text-center text-[11px] text-gray-400">'+(cf?'No crew match this arrival filter. <button onclick="setCheckinFilter(\''+key+'\',\'\')" class="text-blue-700 font-bold hover:underline">Show all</button>':'No one assigned yet \u2014 assign people to positions above and they\'ll appear here.')+'</td></tr>';
   var fchip=function(val,label,n,onCls){
     var on=(cf===val);
@@ -3297,7 +3297,7 @@ function crewScheduleHTML(key){var p=productions[key];var m=crewMilestones(p);
     '<div class="flex items-center gap-3 flex-wrap min-w-0">'+
       '<div class="leading-tight"><p class="muse-arrive-kicker">Venue arrival</p>'+
       '<p class="text-[12px] mono muse-arrive-count"><span>'+sum.on+'</span><span class="muse-arrive-muted"> / '+sum.total+'</span> on site</p></div>'+
-      '<div class="h-8 w-px hidden sm:block" style="background:rgba(167,243,208,.22)"></div>'+
+      '<div class="h-8 w-px hidden sm:block" style="background:rgba(167,243,185,.22)"></div>'+
       '<div class="flex items-center gap-1.5 flex-wrap">'+
         fchip('','All',sum.total)+
         fchip('on','On site',sum.on,'on-on')+
@@ -3316,7 +3316,7 @@ function crewScheduleHTML(key){var p=productions[key];var m=crewMilestones(p);
     arriveBar+
     '<div class="flex flex-wrap items-end justify-between gap-2 mb-1.5"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Personnel Call Matrix</h3><span class="text-[9px] text-gray-500">Arrival shows who is <b class="text-emerald-700">on site</b> \u00B7 click a milestone to call/clear \u00B7 click a cell to toggle</span></div>'+
     '<div class="overflow-x-auto"><table class="text-left" style="border-collapse:separate;border-spacing:0 4px;min-width:100%"><thead><tr>'+
-      '<th class="pb-1 pr-3 text-[8px] font-bold uppercase tracking-wider text-gray-500 align-bottom" style="position:sticky;left:0;background:#fff;z-index:2;min-width:150px">Crew</th>'+
+      '<th class="pb-1 pr-3 text-[8px] font-bold uppercase tracking-wider text-gray-500 align-bottom" style="position:sticky;left:0;background:#ffffff;z-index:2;min-width:150px">Crew</th>'+
       '<th class="pb-1 px-1 text-[8px] font-bold uppercase tracking-wider text-emerald-700 align-bottom" style="min-width:88px" title="Venue geofence check-in">Arrival</th>'+
       headCells+'</tr></thead><tbody>'+bodyRows+'</tbody></table></div>'+
     '<div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 mt-3 pt-3 border-t border-gray-100"><span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Dept</span>'+CREW_GROUPS.map(function(g){return '<span class="flex items-center gap-1.5 text-[9px] text-gray-600"><span class="w-1.5 h-1.5 rounded-full" style="background:'+CREW_GROUP_COLOR[g]+'"></span>'+g+'</span>';}).join('')+'<span class="text-[9px] text-gray-400 sm:ml-auto">Green ON SITE = inside venue fence (or manager mark). PDF still exports call cells only.</span></div>'+
@@ -3374,7 +3374,7 @@ function setCrewSearch(v){crewSearchQ=(v||'').toLowerCase();var act=document.que
    Full CRUD on positions and people lives in the project Crew tab.
    ============================================================================ */
 var CREW_GROUPS=["Field & Technical","IT / Network & Engineering","PCR / Control Room","Production & Executive"];
-var CREW_GROUP_COLOR={"Field & Technical":"#3b82f6","IT / Network & Engineering":"#8b5cf6","PCR / Control Room":"#14b8a6","Production & Executive":"#f59e0b"};
+var CREW_GROUP_COLOR={"Field & Technical":"#3b86f6","IT / Network & Engineering":"#5c9af6","PCR / Control Room":"#14a8b8","Production & Executive":"#f56c0b"};
 // common positions offered when defining a project (positions-first picker)
 ;
 var _crewSlotSeq=1;
@@ -3436,7 +3436,7 @@ function renderAssignList(q){q=(q||'').toLowerCase();var box=document.getElement
   var list=roster.filter(function(m){if(!q)return true;return (m.name+' '+m.pos+' '+m.group+' '+m.email+' '+m.prov).toLowerCase().indexOf(q)>-1;});
   _assignRoster=list;
   if(!list.length){box.innerHTML='<p class="text-[11px] text-gray-400 text-center py-4">No matching personnel. Use the manual entry below.</p>';return;}
-  box.innerHTML=list.slice(0,40).map(function(m,idx){var col=CREW_GROUP_COLOR[m.group]||'#64748b';var match=(s&&m.pos===s.pos);
+  box.innerHTML=list.slice(0,40).map(function(m,idx){var col=CREW_GROUP_COLOR[m.group]||'#74767b';var match=(s&&m.pos===s.pos);
     return '<button onclick="assignPick('+idx+')" class="w-full text-left flex items-center justify-between gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 border '+(match?'border-blue-200 bg-blue-50/40':'border-transparent hover:border-gray-200')+'">'+
       '<div class="min-w-0"><p class="text-[12px] font-semibold text-gray-900 truncate">'+esc(m.name)+(match?' <span class="text-[8px] font-bold text-blue-700">· exact role</span>':'')+'</p>'+
         '<p class="text-[10px] text-gray-500 truncate"><span class="inline-block w-1.5 h-1.5 rounded-full align-middle mr-1" style="background:'+col+'"></span>'+esc(m.pos)+(m.prov?' · '+esc(m.prov):'')+'</p></div>'+
@@ -3474,7 +3474,7 @@ function crewPaneHTML(key){var p=productions[key];
       if(multi&&lf){if(lf==='__prod'){if((s.locId||''))return false;}else if((s.locId||'')!==lf)return false;}
       return !q||((s.name||'')+' '+s.pos+' '+(s.email||'')+' '+(s.prov||'')).toLowerCase().indexOf(q)>-1;});
     if(!filtered.length&&q)return '';
-    var col=CREW_GROUP_COLOR[gName]||'#64748b';
+    var col=CREW_GROUP_COLOR[gName]||'#74767b';
     /* with a venue filter on, the header must describe what is actually shown */
     var counted=(multi&&lf)?filtered:slots;
     var openInGroup=counted.filter(function(s){return !(s.name||'').trim();}).length;
@@ -3485,7 +3485,7 @@ function crewPaneHTML(key){var p=productions[key];
         // name / assignment
         '<td class="py-2 pr-3" style="min-width:150px">'+(isOpen?
           '<button onclick="openAssign(\''+key+'\',\''+s.id+'\')" class="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-700 bg-amber-100 border border-amber-200 rounded-lg px-2.5 py-1 hover:bg-amber-200"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>Open — Assign</button>':
-          '<div class="flex items-center gap-1.5"><button onclick="openCrewCard(\''+s.name.replace(/'/g,"\\'")+'\',\''+key+'\')" class="text-gray-900 hover:text-blue-700 hover:underline font-medium inline-flex items-center gap-1">'+esc(s.name)+(hasF?' <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>':'')+'</button>'+
+          '<div class="flex items-center gap-1.5"><button onclick="openCrewCard(\''+s.name.replace(/'/g,"\\'")+'\',\''+key+'\')" class="text-gray-900 hover:text-blue-700 hover:underline font-medium inline-flex items-center gap-1">'+esc(s.name)+(hasF?' <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#2374ed" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>':'')+'</button>'+
             '<button onclick="crewUnassign(\''+key+'\',\''+s.id+'\')" title="Unassign (keep position open)" class="text-gray-300 hover:text-amber-600 text-[10px]">⊘</button></div>')+'</td>'+
         // email
         '<td class="py-2 pr-3 mono text-[10px]" style="min-width:160px">'+(isOpen?'<span class="text-gray-300">—</span>':'<input value="'+esc(s.email||'').replace(/"/g,'&quot;')+'" onchange="crewSetField(\''+key+'\',\''+s.id+'\',\'email\',this.value)" placeholder="email" class="w-full bg-transparent text-blue-700 border border-transparent hover:border-gray-200 focus:border-blue-300 rounded px-1.5 py-1" style="outline:none">')+'</td>'+
@@ -3534,7 +3534,7 @@ function crewPaneHTML(key){var p=productions[key];
 
 /* ---- Browser history (back / forward) ---------------------------------
    SPA views used to swap panes without history, so the back button left the site.
-   Hash routes: #/dashboard · #/schedule · #/worldcup · #/worldcup/ops
+   Hash routes: #/dashboard · #/schedule · #/museaitour · #/museaitour/ops
    --------------------------------------------------------------------------- */
 var _museHistSilent=false;
 var _museHistView='dashboard';
@@ -3658,9 +3658,9 @@ function switchView(view,opts){
 }
 
 function toast(msg){var box=document.getElementById('toastBox');if(!box)return;var el=document.createElement('div');el.className='toast-msg';
-  el.style.cssText='background:#111112;color:#fff;border:1px solid rgba(255,255,255,.08)';
+  el.style.cssText='background:#111112;color:#ffffff;border:1px solid rgba(255,255,255,.08)';
   var dot=document.createElement('span');dot.className='toast-dot';
-  var tx=document.createElement('span');tx.style.color='#fff';tx.textContent=String(msg==null?'':msg);
+  var tx=document.createElement('span');tx.style.color='#ffffff';tx.textContent=String(msg==null?'':msg);
   el.appendChild(dot);el.appendChild(tx);box.appendChild(el);
   setTimeout(function(){el.style.transition='opacity .3s';el.style.opacity='0';setTimeout(function(){el.remove();},300);},3200);}
 
@@ -3687,7 +3687,7 @@ function openCrewCard(name,key){var m=crewMember(name,key);if(!m){toast(name);re
         '<p class="text-[9px] mono text-gray-500 mt-0.5">CS '+esc(al.phone)+'</p></div></div>'+
       '<div class="flex items-center gap-2 bg-gray-50 rounded-lg p-2 border border-gray-100">'+
         '<div class="flex-1 min-w-0"><p class="text-[8px] text-gray-400 uppercase tracking-wider font-bold">Depart</p><p class="text-[12px] font-bold text-gray-900">'+fmtLocalTime(f.dep.localTime)+'</p><p class="text-[9px] text-gray-600 truncate">'+esc(da.city)+' ('+f.dep.code+') · '+esc(f.dep.terminal||'')+' '+esc(f.dep.gate?'G'+f.dep.gate:'')+'</p></div>'+
-        '<svg width="20" height="10" viewBox="0 0 20 10"><line x1="1" y1="5" x2="15" y2="5" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2 2"/><path d="M14 2 L18 5 L14 8" fill="none" stroke="#94a3b8" stroke-width="1.2"/></svg>'+
+        '<svg width="20" height="10" viewBox="0 0 20 10"><line x1="1" y1="5" x2="15" y2="5" stroke="#d1d4db" stroke-width="1" stroke-dasharray="2 2"/><path d="M14 2 L18 5 L14 8" fill="none" stroke="#9ba2b1" stroke-width="1.2"/></svg>'+
         '<div class="flex-1 min-w-0 text-right"><p class="text-[8px] text-gray-400 uppercase tracking-wider font-bold">Arrive</p><p class="text-[12px] font-bold text-gray-900">'+fmtLocalTime(f.arr.localTime)+'</p><p class="text-[9px] text-gray-600 truncate">'+esc(ar.city)+' ('+f.arr.code+') · '+esc(f.arr.terminal||'')+' '+esc(f.arr.gate?'G'+f.arr.gate:'')+'</p></div>'+
       '</div><p class="text-[8px] text-gray-400 mono mt-1 text-center">Times shown in each airport\u2019s local time</p></div>';
   }
@@ -3864,7 +3864,7 @@ function _renderPersonnelModal(o,isNew){
         '<div class="col-span-2"><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Full Name</label><input id="per_name" value="'+esc(o.name).replace(/"/g,'&quot;')+'" placeholder="First Last" class="w-full text-[12px] border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>'+
         '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Position</label><input id="per_pos" value="'+esc(o.pos||'').replace(/"/g,'&quot;')+'" placeholder="e.g. Technical Director" class="w-full text-[12px] border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>'+
         '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Group</label><select id="per_group" class="w-full text-[12px] border border-gray-300 rounded-lg px-2 py-2 bg-white" style="outline:none">'+grpOpts+'</select></div>'+
-        '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Email</label><input id="per_email" value="'+esc(o.email||'').replace(/"/g,'&quot;')+'" placeholder="name@muselive.com" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>'+
+        '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Email</label><input id="per_email" value="'+esc(o.email||'').replace(/"/g,'&quot;')+'" placeholder="name@meta.com" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>'+
         '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Phone</label><input id="per_phone" value="'+esc(o.phone||'').replace(/"/g,'&quot;')+'" placeholder="(212) 555-0100" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>'+
         '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Passport / ID #</label><input id="per_passport" value="'+esc(o.passport||'').replace(/"/g,'&quot;')+'" placeholder="X1234567" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>'+
         '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Home Base (IATA)</label><input id="per_home" value="'+esc(o.homeBase||'').replace(/"/g,'&quot;')+'" placeholder="MIA" maxlength="3" class="w-full text-[12px] mono uppercase border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>'+
@@ -3983,7 +3983,7 @@ function renderPersonnelDir(){
   if(!filtered.length){body.innerHTML="<tr><td colspan=\"9\" class=\"py-6 text-center text-gray-400\">No personnel match your search. <button onclick=\"openPersonnelAdd()\" class=\"text-blue-700 font-bold hover:underline\">+ Add one</button></td></tr>";}
   else{
     body.innerHTML=filtered.map(function(pp){var m=pp.m;
-      var grpColor={"Field & Technical":"#3b82f6","IT / Network & Engineering":"#8b5cf6","PCR / Control Room":"#14b8a6","Production & Executive":"#f59e0b"}[m.group]||"#64748b";
+      var grpColor={"Field & Technical":"#3b86f6","IT / Network & Engineering":"#5c9af6","PCR / Control Room":"#14a8b8","Production & Executive":"#f56c0b"}[m.group]||"#74767b";
       var statusPill=pp.onShift?'<span class="inline-block whitespace-nowrap px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[9px] mono">\u25cf On Shift</span>':'<span class="inline-block whitespace-nowrap px-2 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-500 text-[9px] mono">Off Shift</span>';
       var od=personnelInfo(m.name);var nm=m.name.replace(/'/g,"\\'");
       var catColor={"Employee":"bg-blue-50 border-blue-200 text-blue-700","Freelancer":"bg-violet-50 border-violet-200 text-violet-700","Vendor":"bg-orange-50 border-orange-200 text-orange-700","Talent / On-Air":"bg-pink-50 border-pink-200 text-pink-700"}[m.category]||"bg-gray-100 border-gray-200 text-gray-600";
@@ -4043,11 +4043,11 @@ function stylizedMap(seed){
   var rnd=function(){h=(h*1103515245+12345)>>>0;return (h&0xffff)/0xffff;};
   var roadsH=[],roadsV=[];for(var r=0;r<3;r++)roadsH.push(12+rnd()*46);for(var v=0;v<4;v++)roadsV.push(20+rnd()*200);
   var px=40+rnd()*160, py=18+rnd()*34;
-  var hroad=roadsH.map(function(y){return '<path d="M0 '+y.toFixed(0)+' H240" stroke="#fff" stroke-width="3"/>';}).join('');
-  var vroad=roadsV.map(function(x){return '<path d="M'+x.toFixed(0)+' 0 V70" stroke="#fff" stroke-width="3"/>';}).join('');
-  var water=rnd()>0.5?'<path d="M0 '+(50+rnd()*10).toFixed(0)+' Q120 '+(40+rnd()*20).toFixed(0)+' 240 '+(48+rnd()*12).toFixed(0)+' V70 H0 Z" fill="#bcd6ee"/>':'';
-  return '<rect width="240" height="70" fill="#E8EDE4"/>'+water+'<g>'+hroad+vroad+'</g>'+
-    '<g transform="translate('+px.toFixed(0)+','+py.toFixed(0)+')"><path d="M0 -11 C7 -11 9 -5 4 1 L0 7 L-4 1 C-9 -5 -7 -11 0 -11 Z" fill="#E51B24" stroke="#fff" stroke-width="0.8"/><circle cx="0" cy="-6" r="2.4" fill="#fff"/></g>';
+  var hroad=roadsH.map(function(y){return '<path d="M0 '+y.toFixed(0)+' H240" stroke="#ffffff" stroke-width="3"/>';}).join('');
+  var vroad=roadsV.map(function(x){return '<path d="M'+x.toFixed(0)+' 0 V70" stroke="#ffffff" stroke-width="3"/>';}).join('');
+  var water=rnd()>0.5?'<path d="M0 '+(50+rnd()*10).toFixed(0)+' Q120 '+(40+rnd()*20).toFixed(0)+' 240 '+(48+rnd()*12).toFixed(0)+' V70 H0 Z" fill="#bcd0ee"/>':'';
+  return '<rect width="240" height="70" fill="#E6E8EB"/>'+water+'<g>'+hroad+vroad+'</g>'+
+    '<g transform="translate('+px.toFixed(0)+','+py.toFixed(0)+')"><path d="M0 -11 C7 -11 9 -5 4 1 L0 7 L-4 1 C-9 -5 -7 -11 0 -11 Z" fill="#E41E3F" stroke="#ffffff" stroke-width="0.8"/><circle cx="0" cy="-6" r="2.4" fill="#ffffff"/></g>';
 }
 function updateMapPreview(){var loc=document.getElementById('np_location');var map=document.getElementById('np_map');if(map)map.innerHTML=stylizedMap(loc?loc.value:'');}
 /* taller, more detailed stylized map for the project header (240x150) */
@@ -4108,7 +4108,7 @@ function museRasterStyle(mode,forceLight){
   var dark=forceLight?false:museMapIsDark();
   var url=dark?TILE_CARTO_DARK:TILE_CARTO_LIGHT;
   return {version:8,sources:{carto:{type:'raster',tiles:[url],tileSize:256,maxzoom:20,attribution:'© OpenStreetMap contributors © CARTO'}},
-    layers:[{id:'carto-bg',type:'background',paint:{'background-color':dark?'#0b0e14':'#e8ede4'}},{id:'carto',type:'raster',source:'carto'}]};
+    layers:[{id:'carto-bg',type:'background',paint:{'background-color':dark?'#0f0f10':'#e6e8eb'}},{id:'carto',type:'raster',source:'carto'}]};
 }
 
 /* ============================================================================
@@ -4128,24 +4128,24 @@ function _ofmAttr(style){try{var s=style.sources||{};for(var k in s){if(s[k]&&(s
 /* recolor the liberty style for dark mode (heuristic by layer type + id) */
 function darkenOFMStyle(style){
   try{var s=style;(s.layers||[]).forEach(function(L){var p=L.paint=L.paint||{};var id=(L.id||'').toLowerCase();
-    if(L.type==='background'){p['background-color']='#0b0e14';}
+    if(L.type==='background'){p['background-color']='#0f0f10';}
     else if(L.type==='fill'){
-      if(/water|ocean|sea|river|lake|bay|pond|reservoir/.test(id))p['fill-color']='#0d1a2b';
-      else if(/building/.test(id))p['fill-color']='#1b2230';
-      else if(/wood|forest|grass|park|garden|golf|pitch|scrub|meadow|farmland|vegetation|nature/.test(id))p['fill-color']='#0f1720';
-      else if(/sand|beach|desert/.test(id))p['fill-color']='#1a1c1a';
-      else if(/residential|landuse|industrial|commercial|earth|land|background/.test(id))p['fill-color']='#11151d';
-      else p['fill-color']='#141922';
-      if('fill-outline-color' in p)p['fill-outline-color']='#232a37';}
-    else if(L.type==='fill-extrusion'){p['fill-extrusion-color']='#232c3d';}
+      if(/water|ocean|sea|river|lake|bay|pond|reservoir/.test(id))p['fill-color']='#1b1c1d';
+      else if(/building/.test(id))p['fill-color']='#242527';
+      else if(/wood|forest|grass|park|garden|golf|pitch|scrub|meadow|farmland|vegetation|nature/.test(id))p['fill-color']='#171718';
+      else if(/sand|beach|desert/.test(id))p['fill-color']='#1a1b1c';
+      else if(/residential|landuse|industrial|commercial|earth|land|background/.test(id))p['fill-color']='#161718';
+      else p['fill-color']='#1A1B1C';
+      if('fill-outline-color' in p)p['fill-outline-color']='#2c2d2e';}
+    else if(L.type==='fill-extrusion'){p['fill-extrusion-color']='#2f3031';}
     else if(L.type==='line'){
-      if(/water|river|canal/.test(id))p['line-color']='#1a2c44';
-      else if(/motorway|trunk/.test(id))p['line-color']='#40485c';
-      else if(/primary|secondary|tertiary|main/.test(id))p['line-color']='#333c4d';
-      else if(/rail|transit|subway|tram/.test(id))p['line-color']='#2a3140';
-      else if(/boundary|admin|border/.test(id))p['line-color']='#2f3646';
-      else p['line-color']='#222a37';}
-    else if(L.type==='symbol'){p['text-color']=/water|river|ocean|sea|marine/.test(id)?'#5b7fb0':'#93a0b4';p['text-halo-color']='#0b0e14';p['text-halo-width']=1.2;}
+      if(/water|river|canal/.test(id))p['line-color']='#1a2b44';
+      else if(/motorway|trunk/.test(id))p['line-color']='#4c4d50';
+      else if(/primary|secondary|tertiary|main/.test(id))p['line-color']='#3e3f42';
+      else if(/rail|transit|subway|tram/.test(id))p['line-color']='#333437';
+      else if(/boundary|admin|border/.test(id))p['line-color']='#393a3c';
+      else p['line-color']='#2b2c2e';}
+    else if(L.type==='symbol'){p['text-color']=/water|river|ocean|sea|marine/.test(id)?'#1e71ed':'#99a0ae';p['text-halo-color']='#0f0f10';p['text-halo-width']=1.2;}
   });}catch(e){}
   return s;
 }
@@ -4302,7 +4302,7 @@ function museStaticMap(lat,lng,opts,cb){
     var y0=Math.floor(originY/tileDraw),y1=Math.floor((originY+cvH)/tileDraw);
     var cv=document.createElement('canvas');cv.width=cvW;cv.height=cvH;var ctx=cv.getContext('2d');
     ctx.imageSmoothingEnabled=true;if(ctx.imageSmoothingQuality)ctx.imageSmoothingQuality='high';
-    ctx.fillStyle=dark?'#0b0e14':'#e8ede4';ctx.fillRect(0,0,cvW,cvH);
+    ctx.fillStyle=dark?'#0f0f10':'#e6e8eb';ctx.fillRect(0,0,cvW,cvH);
     var retina=!sat&&scale>=2;
     var tiles=[];
     for(var tx=x0;tx<=x1;tx++){for(var ty=y0;ty<=y1;ty++){
@@ -4321,12 +4321,12 @@ function museStaticMap(lat,lng,opts,cb){
       ctx.save();
       ctx.translate(px,py);
       ctx.rotate(-Math.PI/4);
-      ctx.fillStyle='#dc2626';ctx.strokeStyle='#ffffff';ctx.lineWidth=2.5*s;
+      ctx.fillStyle='#dc2644';ctx.strokeStyle='#ffffff';ctx.lineWidth=2.5*s;
       ctx.beginPath();
       ctx.moveTo(0,0);ctx.bezierCurveTo(-11*s,-16*s,-14*s,-30*s,0,-30*s);ctx.bezierCurveTo(14*s,-30*s,11*s,-16*s,0,0);ctx.closePath();
       ctx.fill();ctx.stroke();
       ctx.rotate(Math.PI/4);
-      ctx.beginPath();ctx.arc(0,-18*s,4.2*s,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+      ctx.beginPath();ctx.arc(0,-18*s,4.2*s,0,Math.PI*2);ctx.fillStyle='#ffffff';ctx.fill();
       ctx.restore();
       if(okTiles<1){cb(null);return;} /* no tiles painted → reject (was black/empty) */
       try{cb(cv.toDataURL('image/jpeg',0.92));}catch(e){cb(null);}};
@@ -4529,9 +4529,9 @@ function liveMapHTML(opts){
   // data-* drive the lazy mount; SVG shows until MapLibre upgrades it
   return '<div class="livemap-wrap" style="position:relative;width:100%;height:'+h+'">'+
     '<div id="'+id+'" class="livemap" data-lat="'+lat+'" data-lng="'+lng+'" data-zoom="'+zoom+'" data-mode="'+mode+'" data-label="'+esc(opts.label||'').replace(/"/g,'&quot;')+'" style="position:absolute;inset:0;width:100%;height:100%">'+fallback+'</div>'+
-    '<div class="livemap-toggle" style="position:absolute;top:8px;right:8px;z-index:5;display:flex;gap:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.12)">'+
-      '<button type="button" onclick="setMapMode(\''+id+'\',\'streets\')" data-mode-btn="streets" style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 9px;border:0;cursor:pointer;background:'+(sat?'#fff':'#111827')+';color:'+(sat?'#6b7280':'#fff')+'">MAP</button>'+
-      '<button type="button" onclick="setMapMode(\''+id+'\',\'satellite\')" data-mode-btn="satellite" style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 9px;border:0;cursor:pointer;background:'+(sat?'#111827':'#fff')+';color:'+(sat?'#fff':'#6b7280')+'">SATELLITE</button>'+
+    '<div class="livemap-toggle" style="position:absolute;top:8px;right:8px;z-index:5;display:flex;gap:0;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.12)">'+
+      '<button type="button" onclick="setMapMode(\''+id+'\',\'streets\')" data-mode-btn="streets" style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 9px;border:0;cursor:pointer;background:'+(sat?'#ffffff':'#1B1C1D')+';color:'+(sat?'#727479':'#ffffff')+'">MAP</button>'+
+      '<button type="button" onclick="setMapMode(\''+id+'\',\'satellite\')" data-mode-btn="satellite" style="font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 9px;border:0;cursor:pointer;background:'+(sat?'#1B1C1D':'#ffffff')+';color:'+(sat?'#ffffff':'#727479')+'">SATELLITE</button>'+
     '</div></div>';
 }
 function add3DBuildings(map){try{
@@ -4539,17 +4539,17 @@ function add3DBuildings(map){try{
   var layers=map.getStyle().layers||[];var labelLayer;
   for(var i=0;i<layers.length;i++){if(layers[i].type==='symbol'&&layers[i].layout&&layers[i].layout['text-field']){labelLayer=layers[i].id;break;}}
   map.addLayer({id:'muse-3d-buildings',source:'openmaptiles','source-layer':'building',type:'fill-extrusion',minzoom:13,
-    paint:{'fill-extrusion-color':['interpolate',['linear'],['get','render_height'],0,'#dbe3ec',60,'#c3cdda',200,'#aab6c6'],
+    paint:{'fill-extrusion-color':['interpolate',['linear'],['get','render_height'],0,'#dbe2ec',60,'#c9cdd4',200,'#afb5c1'],
       'fill-extrusion-height':['interpolate',['linear'],['zoom'],13,0,15.5,['coalesce',['get','render_height'],10]],
       'fill-extrusion-base':['coalesce',['get','render_min_height'],0],
       'fill-extrusion-opacity':0.88}},labelLayer);
 }catch(e){}}
 function addVenueMarker(maplib,map,lat,lng,label){try{
   var elm=document.createElement('div');
-  elm.style.cssText='width:18px;height:18px;border-radius:50% 50% 50% 0;background:#dc2626;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);transform:rotate(-45deg)';
-  var dot=document.createElement('div');dot.style.cssText='width:6px;height:6px;background:#fff;border-radius:50%;position:absolute;top:4px;left:4px';elm.appendChild(dot);
+  elm.style.cssText='width:18px;height:18px;border-radius:50% 50% 50% 0;background:#dc2644;border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,.4);transform:rotate(-45deg)';
+  var dot=document.createElement('div');dot.style.cssText='width:6px;height:6px;background:#ffffff;border-radius:50%;position:absolute;top:4px;left:4px';elm.appendChild(dot);
   var m=new maplib.Marker({element:elm,anchor:'bottom'}).setLngLat([lng,lat]);
-  if(label)m.setPopup(new maplib.Popup({offset:18,closeButton:false}).setHTML('<div style="font:600 11px/1.3 Inter,sans-serif;color:#111">'+esc(label)+'</div>'));
+  if(label)m.setPopup(new maplib.Popup({offset:18,closeButton:false}).setHTML('<div style="font:600 11px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#101112">'+esc(label)+'</div>'));
   m.addTo(map);
   return m; // v28 (WI6): callers keep the marker so it can follow location changes
 }catch(e){}}
@@ -4574,7 +4574,7 @@ function mountLiveMap(el){
           cached.map.flyTo({center:[lng,lat],zoom:cached.zoom||zoom,essential:true});
           try{if(cached.marker){cached.marker.setLngLat([lng,lat]);
             var pp=cached.marker.getPopup&&cached.marker.getPopup();
-            if(pp&&label)pp.setHTML('<div style="font:600 11px/1.3 Inter,sans-serif;color:#111">'+esc(label)+'</div>');}}catch(e3){}
+            if(pp&&label)pp.setHTML('<div style="font:600 11px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#101112">'+esc(label)+'</div>');}}catch(e3){}
           cached.lat=lat;cached.lng=lng;cached.label=label;
         }else cached.map.setCenter([cached.lng,cached.lat]);}catch(e){}},30);
       return;
@@ -4631,7 +4631,7 @@ function setMapMode(id,mode){
   mode=museMapMode(mode);
   var entry=_liveMaps[id];var el=document.getElementById(id);
   // update toggle buttons
-  if(el){var wrap=el.parentNode;if(wrap){var btns=wrap.querySelectorAll('[data-mode-btn]');for(var i=0;i<btns.length;i++){var on=btns[i].getAttribute('data-mode-btn')===mode;btns[i].style.background=on?'#111827':'#fff';btns[i].style.color=on?'#fff':'#6b7280';}}
+  if(el){var wrap=el.parentNode;if(wrap){var btns=wrap.querySelectorAll('[data-mode-btn]');for(var i=0;i<btns.length;i++){var on=btns[i].getAttribute('data-mode-btn')===mode;btns[i].style.background=on?'#1B1C1D':'#ffffff';btns[i].style.color=on?'#ffffff':'#727479';}}
     el.setAttribute('data-mode',mode);}
   if(!entry||!entry.map){if(el){el.setAttribute('data-mounted','');mountLiveMap(el);}return;}
   var map=entry.map;entry.mode=mode;
@@ -4733,7 +4733,7 @@ function _shadeSyncExtrusion(map,feats){try{
   if(map.getSource('muse-bldgs')){map.getSource('muse-bldgs').setData(data);return;}
   map.addSource('muse-bldgs',{type:'geojson',data:data});
   map.addLayer({id:'muse-bldgs-3d',type:'fill-extrusion',source:'muse-bldgs',minzoom:13,paint:{
-    'fill-extrusion-color':['interpolate',['linear'],['get','height'],0,'#c9d3e0',40,'#aeb9c9',120,'#96a2b6'],
+    'fill-extrusion-color':['interpolate',['linear'],['get','height'],0,'#cfd3da',40,'#b3b9c4',120,'#9ba2b1'],
     'fill-extrusion-height':['get','height'],'fill-extrusion-base':0,'fill-extrusion-opacity':0.92}});
 }catch(e){}}
 
@@ -4752,12 +4752,12 @@ function museShadeBox(opts){
     '</div>'+
     '<div class="rounded-xl overflow-hidden border border-gray-200 bg-gray-900 relative" style="height:'+h+'">'+
       '<div id="'+id+'" class="shadebox" data-lat="'+lat+'" data-lng="'+lng+'" data-zoom="'+zoom+'" data-tz="'+esc(tz).replace(/"/g,'&quot;')+'" data-label="'+esc(opts.label||'').replace(/"/g,'&quot;')+'"'+(opts.date?' data-date="'+esc(opts.date)+'"':'')+' style="position:absolute;inset:0;width:100%;height:100%">'+
-        '<div class="w-full h-full flex items-center justify-center text-center px-4" style="background:linear-gradient(135deg,#0b1220,#111a2e)"><p class="text-[10px] text-gray-400 mono">Loading 3D sun &amp; shadow view…<br><span class="text-gray-500">buildings + terrain + solar position</span></p></div>'+
+        '<div class="w-full h-full flex items-center justify-center text-center px-4" style="background:linear-gradient(135deg,#151516,#1f1f20)"><p class="text-[10px] text-gray-400 mono">Loading 3D sun &amp; shadow view…<br><span class="text-gray-500">buildings + terrain + solar position</span></p></div>'+
       '</div>'+
     '</div>'+
     '<div class="flex items-center gap-2 mt-1.5">'+
       '<button type="button" onclick="shadeNow(\''+id+'\')" class="text-[9px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800 flex-shrink-0">◉ Now</button>'+
-      '<input id="'+id+'_scrub" type="range" min="0" max="1439" step="5" value="720" oninput="shadeScrub(\''+id+'\',this.value)" class="flex-1" style="accent-color:#f59e0b" title="Scrub time of day">'+
+      '<input id="'+id+'_scrub" type="range" min="0" max="1439" step="5" value="720" oninput="shadeScrub(\''+id+'\',this.value)" class="flex-1" style="accent-color:#f56c0b" title="Scrub time of day">'+
       '<span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 flex-shrink-0" style="min-width:88px;text-align:right">time of day</span>'+
     '</div>'+
   '</div>';
@@ -4792,7 +4792,7 @@ function mountShadeBox(el){
   var zoom=parseFloat(el.getAttribute('data-zoom'))||16;
   if(isNaN(lat)||isNaN(lng)||lat==null||lng==null){
     el.setAttribute('data-mounted','1');
-    el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8b949e;font:600 11px Inter,sans-serif;padding:12px;text-align:center">No GPS for this site — set lat/lng on Location &amp; Map to enable sun shadows</div>';
+    el.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8890a1;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:12px;text-align:center">No GPS for this site — set lat/lng on Location &amp; Map to enable sun shadows</div>';
     return;
   }
   var tz=el.getAttribute('data-tz')||museTzGuess(lat,lng);
@@ -4835,7 +4835,7 @@ function mountShadeBox(el){
         try{
           if(useVector)_shadeAddVectorBuildings(map);
           var date=(S.mode==='fixed'&&S.fixedDate)?S.fixedDate:_shadeAbsDate(S);
-          var shade=new SM({apiKey:SHADEMAP_KEY,date:date,color:'#0a0f1e',opacity:0.58,
+          var shade=new SM({apiKey:SHADEMAP_KEY,date:date,color:'#131415',opacity:0.58,
             terrainSource:_shadeTerrain(),
             getFeatures:useVector
               ?function(){return _shadeVectorFeatures(map);}
@@ -4877,12 +4877,12 @@ function _shadeAddVectorBuildings(map,forceLight){try{
   if(map.getLayer('muse-bldgs-3d')||!map.getSource('openmaptiles'))return;
   var dark=forceLight?false:museMapIsDark();
   map.addLayer({id:'muse-bldgs-3d',type:'fill-extrusion',source:'openmaptiles','source-layer':'building',minzoom:13,
-    paint:{'fill-extrusion-color':dark?'#2a3547':'#cdd6e2',
+    paint:{'fill-extrusion-color':dark?'#37383a':'#d3d6dc',
       'fill-extrusion-height':['coalesce',['get','render_height'],['get','height'],6],
       'fill-extrusion-base':['coalesce',['get','render_min_height'],0],
       'fill-extrusion-opacity':0.92}});
 }catch(e){}}
-function _shadeFail(el){if(!el)return;try{el.innerHTML='<div class="w-full h-full flex items-center justify-center text-center px-4" style="background:linear-gradient(135deg,#0b1220,#111a2e)">'+
+function _shadeFail(el){if(!el)return;try{el.innerHTML='<div class="w-full h-full flex items-center justify-center text-center px-4" style="background:linear-gradient(135deg,#151516,#1f1f20)">'+
   '<p class="text-[10px] text-gray-400 mono">Sun &amp; Shadow view unavailable — the ShadeMap/MapLibre service could not be reached on this network.<br><span class="text-gray-500">The location map &amp; weather above are unaffected.</span></p></div>';}catch(e){}}
 /* force the shadow layer to re-pull features for the current view */
 function _shadeRefresh(id){var S=_shadeMaps[id];if(!S||!S.shade)return;try{S.shade.setDate(_shadeAbsDate(S));}catch(e){}}
@@ -4976,7 +4976,7 @@ function museShadeStatic(lat,lng,opts,cb){
             if(done)return;
             if(first)baseImg=first;
             try{
-              shade=new SM({apiKey:SHADEMAP_KEY,date:date,color:'#0a0f1e',opacity:0.62,terrainSource:_shadeTerrain(),
+              shade=new SM({apiKey:SHADEMAP_KEY,date:date,color:'#131415',opacity:0.62,terrainSource:_shadeTerrain(),
                 getFeatures:useVector
                   ?function(){return _shadeVectorFeatures(map);}
                   :function(){return museBuildingsForBounds(map.getBounds(),map.getZoom()).then(function(feats){try{_shadeSyncExtrusion(map,feats);}catch(e){}return feats;});},
@@ -5043,15 +5043,15 @@ function _dpApply(){if(!_dp.start){museCloseDatePop();return;}
 function _dpRender(){var pop=document.getElementById('museDatePop');if(!pop)return;
   var y=_dp.y,mo=_dp.mo;var first=new Date(y,mo,1);var startDow=first.getDay();var days=new Date(y,mo+1,0).getDate();
   var dow=['S','M','T','W','T','F','S'];
-  var cells=dow.map(function(d){return '<div style="text-align:center;font-size:8px;font-weight:700;color:#9ca3af;padding:2px 0">'+d+'</div>';}).join('');
+  var cells=dow.map(function(d){return '<div style="text-align:center;font-size:8px;font-weight:700;color:#9ba2b0;padding:2px 0">'+d+'</div>';}).join('');
   for(var i=0;i<startDow;i++)cells+='<div></div>';
   for(var dn=1;dn<=days;dn++){var d=new Date(y,mo,dn);var sel=_dpIsSel(d),inr=_dpInRange(d);
     cells+='<button type="button" onclick="_dpPick('+dn+')" style="text-align:center;font-size:11px;padding:5px 0;border:0;cursor:pointer;border-radius:6px;'+
-      (sel?'background:#111827;color:#fff;font-weight:700':(inr?'background:#dbeafe;color:#1e3a8a':'background:transparent;color:#374151'))+'">'+dn+'</button>';}
-  pop.innerHTML='<div style="background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:10px;width:282px">'+
+      (sel?'background:#1B1C1D;color:#ffffff;font-weight:700':(inr?'background:#dbe9fe;color:#0d469b':'background:transparent;color:#424346'))+'">'+dn+'</button>';}
+  pop.innerHTML='<div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.18);padding:10px;width:282px">'+
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
       '<button type="button" onclick="_dpNav(-1)" style="border:0;background:#f3f4f6;border-radius:8px;width:26px;height:26px;cursor:pointer;font-weight:700">‹</button>'+
-      '<span style="font-size:12px;font-weight:800;color:#111827">'+DP_MON[mo]+' '+y+'</span>'+
+      '<span style="font-size:12px;font-weight:800;color:#1B1C1D">'+DP_MON[mo]+' '+y+'</span>'+
       '<button type="button" onclick="_dpNav(1)" style="border:0;background:#f3f4f6;border-radius:8px;width:26px;height:26px;cursor:pointer;font-weight:700">›</button>'+
     '</div>'+
     '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">'+cells+'</div>'+
@@ -5060,11 +5060,11 @@ function _dpRender(){var pop=document.getElementById('museDatePop');if(!pop)retu
       '<input id="_dpTz" value="'+esc(_dp.tz)+'" maxlength="5" placeholder="TZ" style="width:54px;font-size:11px;border:1px solid #e5e7eb;border-radius:8px;padding:4px 6px;text-transform:uppercase">'+
     '</div>')+
     '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;gap:6px">'+
-      '<span style="font-size:9px;color:#6b7280;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(_dpSummary())+'</span>'+
-      '<span style="display:flex;gap:6px;flex-shrink:0"><button type="button" onclick="_dpClear()" style="font-size:10px;border:1px solid #e5e7eb;background:#fff;border-radius:8px;padding:4px 8px;cursor:pointer">Clear</button>'+
-      '<button type="button" onclick="_dpApply()" style="font-size:10px;font-weight:700;border:0;background:#111827;color:#fff;border-radius:8px;padding:4px 10px;cursor:pointer">Apply</button></span>'+
+      '<span style="font-size:9px;color:#727479;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(_dpSummary())+'</span>'+
+      '<span style="display:flex;gap:6px;flex-shrink:0"><button type="button" onclick="_dpClear()" style="font-size:10px;border:1px solid #e5e7eb;background:#ffffff;border-radius:8px;padding:4px 8px;cursor:pointer">Clear</button>'+
+      '<button type="button" onclick="_dpApply()" style="font-size:10px;font-weight:700;border:0;background:#1B1C1D;color:#ffffff;border-radius:8px;padding:4px 10px;cursor:pointer">Apply</button></span>'+
     '</div>'+
-    '<p style="font-size:8px;color:#9ca3af;margin-top:5px">Click start date, then end date in this calendar'+(_dp.noTime?'':' · time &amp; TZ optional')+'.</p>'+
+    '<p style="font-size:8px;color:#9ba2b0;margin-top:5px">Click start date, then end date in this calendar'+(_dp.noTime?'':' · time &amp; TZ optional')+'.</p>'+
   '</div>';}
 
 /* ============================================================================
@@ -5080,7 +5080,7 @@ var _mmaps={};     // mapId -> {map,node,maplib,markers:{pinId:Marker}}
 var _mmapFocus={}; // v37: mapId -> pinId the map is following ('' = fit all). Pure camera state —
                    // deliberately NOT the "active location", which also re-binds departments/galleries/logs.
 function multiMapSVG(pins,focusId){var W=860,H=430;
-  if(!pins.length)return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%;display:block"><rect width="'+W+'" height="'+H+'" fill="#E8EDE4"/><text x="'+(W/2)+'" y="'+(H/2)+'" text-anchor="middle" font-family="Inter,Arial" font-size="13" fill="#9ca3af">No mappable locations yet</text></svg>';
+  if(!pins.length)return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%;display:block"><rect width="'+W+'" height="'+H+'" fill="#E6E8EB"/><text x="'+(W/2)+'" y="'+(H/2)+'" text-anchor="middle" font-family="Inter,Arial" font-size="13" fill="#9ba2b0">No mappable locations yet</text></svg>';
   var minLa=90,maxLa=-90,minLo=180,maxLo=-180;
   var foc=null;if(focusId){for(var fi=0;fi<pins.length;fi++)if(pins[fi].id===focusId)foc=pins[fi];}
   if(foc){/* offline fallback still "follows" the dropdown — frame a tight window on the chosen venue */
@@ -5091,26 +5091,26 @@ function multiMapSVG(pins,focusId){var W=860,H=430;
   var X=function(lng){return (lng-minLo)/(maxLo-minLo)*(W-90)+45;};
   var Y=function(lat){return (H-46)-((lat-minLa)/(maxLa-minLa)*(H-92));};
   var grid='';var gi;
-  for(gi=1;gi<6;gi++){grid+='<line x1="'+(gi*W/6).toFixed(0)+'" y1="0" x2="'+(gi*W/6).toFixed(0)+'" y2="'+H+'" stroke="#fff" stroke-width="1.5"/>';}
-  for(gi=1;gi<4;gi++){grid+='<line x1="0" y1="'+(gi*H/4).toFixed(0)+'" x2="'+W+'" y2="'+(gi*H/4).toFixed(0)+'" stroke="#fff" stroke-width="1.5"/>';}
+  for(gi=1;gi<6;gi++){grid+='<line x1="'+(gi*W/6).toFixed(0)+'" y1="0" x2="'+(gi*W/6).toFixed(0)+'" y2="'+H+'" stroke="#ffffff" stroke-width="1.5"/>';}
+  for(gi=1;gi<4;gi++){grid+='<line x1="0" y1="'+(gi*H/4).toFixed(0)+'" x2="'+W+'" y2="'+(gi*H/4).toFixed(0)+'" stroke="#ffffff" stroke-width="1.5"/>';}
   var pinsSorted=pins.slice().sort(function(a,b){return b.lat-a.lat;});
-  var g=pinsSorted.map(function(p){var x=X(p.lng).toFixed(1),y=Y(p.lat).toFixed(1);var col=p.color||(p.active?'#dc2626':'#2563eb');
+  var g=pinsSorted.map(function(p){var x=X(p.lng).toFixed(1),y=Y(p.lat).toFixed(1);var col=p.color||(p.active?'#dc2644':'#2374ed');
     var isFoc=!!(foc&&p.id===foc.id);
-    return '<g transform="translate('+x+','+y+')">'+(isFoc?'<circle cx="0" cy="-8.5" r="17" fill="none" stroke="#f59e0b" stroke-width="3"/>':'')+
-      '<path d="M0 -16 C10 -16 13 -7.5 5.5 2 L0 10 L-5.5 2 C-13 -7.5 -10 -16 0 -16 Z" fill="'+col+'" stroke="#fff" stroke-width="1.6"/><circle cx="0" cy="-8.5" r="3.6" fill="#fff"/>'+
-      '<text x="0" y="23" text-anchor="middle" font-family="Inter,Arial" font-size="11" font-weight="700" fill="#111827" stroke="#ffffff" stroke-width="3" paint-order="stroke">'+esc(p.name)+'</text></g>';}).join('');
-  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%;display:block" preserveAspectRatio="xMidYMid slice"><rect width="'+W+'" height="'+H+'" fill="#E8EDE4"/>'+grid+g+
-    '<text x="10" y="'+(H-10)+'" font-size="9" fill="#9aa6b1" font-family="monospace">PIN MAP (offline) — live tiles load when the network allows</text></svg>';}
+    return '<g transform="translate('+x+','+y+')">'+(isFoc?'<circle cx="0" cy="-8.5" r="17" fill="none" stroke="#f56c0b" stroke-width="3"/>':'')+
+      '<path d="M0 -16 C10 -16 13 -7.5 5.5 2 L0 10 L-5.5 2 C-13 -7.5 -10 -16 0 -16 Z" fill="'+col+'" stroke="#ffffff" stroke-width="1.6"/><circle cx="0" cy="-8.5" r="3.6" fill="#ffffff"/>'+
+      '<text x="0" y="23" text-anchor="middle" font-family="Inter,Arial" font-size="11" font-weight="700" fill="#1B1C1D" stroke="#ffffff" stroke-width="3" paint-order="stroke">'+esc(p.name)+'</text></g>';}).join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%;display:block" preserveAspectRatio="xMidYMid slice"><rect width="'+W+'" height="'+H+'" fill="#E6E8EB"/>'+grid+g+
+    '<text x="10" y="'+(H-10)+'" font-size="9" fill="#9ba2b0" font-family="monospace">PIN MAP (offline) — live tiles load when the network allows</text></svg>';}
 function multiMapHTML(opts){var id=opts.id;_mmapPins[id]=(opts.pins||[]).filter(function(p){return !p.hidden;});
   if('focus' in opts)_mmapFocus[id]=opts.focus||'';
   var foc=_mmapFocus[id]||'';
   return '<div class="livemap-wrap" style="position:relative;width:100%;height:'+(opts.height||'100%')+'">'+
     '<div id="'+id+'" class="livemulti" style="position:absolute;inset:0;width:100%;height:100%">'+multiMapSVG(_mmapPins[id],foc)+'</div>'+
-    '<button type="button" onclick="multiFitAll(\''+id+'\',1)" style="position:absolute;top:8px;right:8px;z-index:5;font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 9px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;background:#fff;color:#374151;box-shadow:0 2px 8px rgba(0,0,0,.12)">FIT ALL</button></div>';}
-function multiPinElm(p){var col=(p&&p.color)||((p&&p.active)?'#dc2626':'#2563eb');
+    '<button type="button" onclick="multiFitAll(\''+id+'\',1)" style="position:absolute;top:8px;right:8px;z-index:5;font-size:9px;font-weight:800;letter-spacing:.04em;padding:5px 9px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer;background:#ffffff;color:#424346;box-shadow:0 2px 8px rgba(0,0,0,.12)">FIT ALL</button></div>';}
+function multiPinElm(p){var col=(p&&p.color)||((p&&p.active)?'#dc2644':'#2374ed');
   var elm=document.createElement('div');
-  elm.style.cssText='width:18px;height:18px;border-radius:50% 50% 50% 0;background:'+col+';border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4);transform:rotate(-45deg);cursor:pointer';
-  var dot=document.createElement('div');dot.style.cssText='width:6px;height:6px;background:#fff;border-radius:50%;position:absolute;top:4px;left:4px';elm.appendChild(dot);return elm;}
+  elm.style.cssText='width:18px;height:18px;border-radius:50% 50% 50% 0;background:'+col+';border:2px solid #ffffff;box-shadow:0 2px 6px rgba(0,0,0,.4);transform:rotate(-45deg);cursor:pointer';
+  var dot=document.createElement('div');dot.style.cssText='width:6px;height:6px;background:#ffffff;border-radius:50%;position:absolute;top:4px;left:4px';elm.appendChild(dot);return elm;}
 function multiSyncMarkers(id){var M=_mmaps[id];if(!M||!M.map||!M.maplib)return;var pins=_mmapPins[id]||[];
   /* v30 Module 13: only rebuild markers when pin DATA actually changed — unrelated
      pane re-renders (or resizes) no longer tear down and recreate every marker */
@@ -5128,9 +5128,9 @@ function multiSyncMarkers(id){var M=_mmaps[id];if(!M||!M.map||!M.maplib)return;v
   if(moved)setTimeout(function(){try{if(_mmapFocus[id])multiFocusPin(id,_mmapFocus[id]);else multiFitAll(id);}catch(e){}},60);
   pins.forEach(function(p){try{
     var mk=new M.maplib.Marker({element:multiPinElm(p),anchor:'bottom'}).setLngLat([p.lng,p.lat]);
-    var pop='<div style="font:600 11px/1.4 Inter,sans-serif;color:#111">'+esc(p.name)+(p.city?'<div style="font:500 9px/1.3 Inter,sans-serif;color:#6b7280">'+esc(p.city)+'</div>':'')+
-      (p.active?'<div style="font:700 9px Inter,sans-serif;color:#dc2626;margin-top:3px">● ACTIVE SITE</div>'
-        :(p.key?'<button onclick="setActiveLoc(\''+p.key+'\',\''+p.id+'\')" style="margin-top:4px;font:700 9px Inter,sans-serif;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:3px 8px;cursor:pointer">Make active →</button>':''))+'</div>';
+    var pop='<div style="font:600 11px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#101112">'+esc(p.name)+(p.city?'<div style="font:500 9px/1.3 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#727479">'+esc(p.city)+'</div>':'')+
+      (p.active?'<div style="font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#dc2644;margin-top:3px">● ACTIVE SITE</div>'
+        :(p.key?'<button onclick="setActiveLoc(\''+p.key+'\',\''+p.id+'\')" style="margin-top:4px;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1266e3;background:#eff5ff;border:1px solid #bfd8fe;border-radius:6px;padding:3px 8px;cursor:pointer">Make active →</button>':''))+'</div>';
     mk.setPopup(new M.maplib.Popup({offset:18,closeButton:false}).setHTML(pop));
     mk.addTo(M.map);M.markers[p.id]=mk;
   }catch(e){}});}
@@ -5211,17 +5211,17 @@ function projectMapSVG(seed){
   var rnd=function(){h=(h*1103515245+12345)>>>0;return (h&0xffff)/0xffff;};
   var W=240,H=150;
   var hroad='',vroad='';
-  for(var r=0;r<5;r++){var y=(14+rnd()*128).toFixed(0);hroad+='<path d="M0 '+y+' H'+W+'" stroke="#fff" stroke-width="'+(rnd()>0.6?4:2.5)+'"/>';}
-  for(var v=0;v<6;v++){var x=(16+rnd()*210).toFixed(0);vroad+='<path d="M'+x+' 0 V'+H+'" stroke="#fff" stroke-width="'+(rnd()>0.6?4:2.5)+'"/>';}
+  for(var r=0;r<5;r++){var y=(14+rnd()*128).toFixed(0);hroad+='<path d="M0 '+y+' H'+W+'" stroke="#ffffff" stroke-width="'+(rnd()>0.6?4:2.5)+'"/>';}
+  for(var v=0;v<6;v++){var x=(16+rnd()*210).toFixed(0);vroad+='<path d="M'+x+' 0 V'+H+'" stroke="#ffffff" stroke-width="'+(rnd()>0.6?4:2.5)+'"/>';}
   // a couple of green blocks (parks) and a water body sometimes
-  var parks='';for(var b=0;b<3;b++){var bx=(rnd()*200).toFixed(0),by=(rnd()*120).toFixed(0),bw=(18+rnd()*36).toFixed(0),bh=(14+rnd()*30).toFixed(0);parks+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="3" fill="#d7e4cb"/>';}
-  var water=rnd()>0.45?'<path d="M0 '+(95+rnd()*30).toFixed(0)+' Q120 '+(80+rnd()*30).toFixed(0)+' '+W+' '+(92+rnd()*28).toFixed(0)+' V'+H+' H0 Z" fill="#bcd6ee"/>':'';
+  var parks='';for(var b=0;b<3;b++){var bx=(rnd()*200).toFixed(0),by=(rnd()*120).toFixed(0),bw=(18+rnd()*36).toFixed(0),bh=(14+rnd()*30).toFixed(0);parks+='<rect x="'+bx+'" y="'+by+'" width="'+bw+'" height="'+bh+'" rx="3" fill="#cbe4d1"/>';}
+  var water=rnd()>0.45?'<path d="M0 '+(95+rnd()*30).toFixed(0)+' Q120 '+(80+rnd()*30).toFixed(0)+' '+W+' '+(92+rnd()*28).toFixed(0)+' V'+H+' H0 Z" fill="#bcd0ee"/>':'';
   var px=(50+rnd()*140).toFixed(0),py=(40+rnd()*70).toFixed(0);
-  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%;display:block"><rect width="'+W+'" height="'+H+'" fill="#E8EDE4"/>'+water+'<g>'+parks+'</g><g>'+hroad+vroad+'</g>'+
-    '<g transform="translate('+px+','+py+')"><path d="M0 -15 C9 -15 12 -7 5 2 L0 9 L-5 2 C-12 -7 -9 -15 0 -15 Z" fill="#E51B24" stroke="#fff" stroke-width="1"/><circle cx="0" cy="-8" r="3.4" fill="#fff"/></g></svg>';
+  return '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%;display:block"><rect width="'+W+'" height="'+H+'" fill="#E6E8EB"/>'+water+'<g>'+parks+'</g><g>'+hroad+vroad+'</g>'+
+    '<g transform="translate('+px+','+py+')"><path d="M0 -15 C9 -15 12 -7 5 2 L0 9 L-5 2 C-12 -7 -9 -15 0 -15 Z" fill="#E41E3F" stroke="#ffffff" stroke-width="1"/><circle cx="0" cy="-8" r="3.4" fill="#ffffff"/></g></svg>';
 }
 function previewThumb(e){var f=e.target.files&&e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(){npThumb=r.result;var w=document.getElementById('np_thumbwrap');if(w)w.innerHTML='<img src="'+npThumb+'" style="width:100%;height:100%;object-fit:cover">';};r.readAsDataURL(f);}
-function buildColorSwatches(){var box=document.getElementById('np_colors');if(!box)return;box.innerHTML=tagColorList.map(function(col){return '<button onclick="pickColor(\''+col+'\',this)" title="'+col+'" style="width:22px;height:22px;border-radius:6px;background:'+dotBg[col]+';border:2px solid '+(col===npColor?'#111':'transparent')+'"></button>';}).join('');}
+function buildColorSwatches(){var box=document.getElementById('np_colors');if(!box)return;box.innerHTML=tagColorList.map(function(col){return '<button onclick="pickColor(\''+col+'\',this)" title="'+col+'" style="width:22px;height:22px;border-radius:6px;background:'+dotBg[col]+';border:2px solid '+(col===npColor?'#101112':'transparent')+'"></button>';}).join('');}
 function pickColor(col,btn){npColor=col;buildColorSwatches();}
 /* Production Manager picker — managers / directors / technical managers / VPs / execs only */
 function isProdManagerRole(pos){
@@ -5446,22 +5446,22 @@ function saveSchedule(){if(!schedKey)return;var p=productions[schedKey];
 /* ===== TECHBOOK PDF ===== */
 /* standard 12-strand fiber color code → swatch colors for the Fiber Schedule */
 var FIBER_HEX={
- "Blue":{bg:[37,99,235],tx:[255,255,255],css:"#2563eb",ctx:"#fff"},
- "Orange":{bg:[234,88,12],tx:[255,255,255],css:"#ea580c",ctx:"#fff"},
- "Green":{bg:[21,128,61],tx:[255,255,255],css:"#15803d",ctx:"#fff"},
- "Brown":{bg:[120,53,15],tx:[255,255,255],css:"#78350f",ctx:"#fff"},
- "Slate":{bg:[71,85,105],tx:[255,255,255],css:"#475569",ctx:"#fff"},
- "White":{bg:[241,245,249],tx:[31,41,55],css:"#f1f5f9",ctx:"#1f2937"},
- "Red":{bg:[220,38,38],tx:[255,255,255],css:"#dc2626",ctx:"#fff"},
- "Black":{bg:[17,17,17],tx:[255,255,255],css:"#111111",ctx:"#fff"},
- "Yellow":{bg:[250,204,21],tx:[60,40,0],css:"#facc15",ctx:"#3c2800"},
- "Violet":{bg:[124,58,237],tx:[255,255,255],css:"#7c3aed",ctx:"#fff"},
- "Rose":{bg:[225,29,72],tx:[255,255,255],css:"#e11d48",ctx:"#fff"},
- "Aqua":{bg:[6,182,212],tx:[255,255,255],css:"#06b6d4",ctx:"#fff"}
+ "Blue":{bg:[37,99,235],tx:[255,255,255],css:"#2374ed",ctx:"#ffffff"},
+ "Orange":{bg:[234,88,12],tx:[255,255,255],css:"#ea680c",ctx:"#ffffff"},
+ "Green":{bg:[21,128,61],tx:[255,255,255],css:"#15802e",ctx:"#ffffff"},
+ "Brown":{bg:[120,53,15],tx:[255,255,255],css:"#783b0f",ctx:"#ffffff"},
+ "Slate":{bg:[71,85,105],tx:[255,255,255],css:"#55575B",ctx:"#ffffff"},
+ "White":{bg:[241,245,249],tx:[31,41,55],css:"#f1f4f9",ctx:"#2a2b2c"},
+ "Red":{bg:[220,38,38],tx:[255,255,255],css:"#dc2644",ctx:"#ffffff"},
+ "Black":{bg:[17,17,17],tx:[255,255,255],css:"#101112",ctx:"#ffffff"},
+ "Yellow":{bg:[250,204,21],tx:[60,40,0],css:"#fab915",ctx:"#3c2b00"},
+ "Violet":{bg:[124,58,237],tx:[255,255,255],css:"#3881ef",ctx:"#ffffff"},
+ "Rose":{bg:[225,29,72],tx:[255,255,255],css:"#e11d3e",ctx:"#ffffff"},
+ "Aqua":{bg:[6,182,212],tx:[255,255,255],css:"#0658d4",ctx:"#ffffff"}
 };
-var MUSE_SPECTRUM_SRC='assets/brand/muse-live-mark.svg';
+var MUSE_SPECTRUM_SRC='assets/brand/meta-mark.svg';
 /* Official spectrum viewBox 215.84 × 124.97 → aspect ~1.727 — never force square */
-var MUSE_SPECTRUM_AR=215.84055/124.96647;
+var MUSE_SPECTRUM_AR=290/191;
 function spectrumPNG(cb){
   /* Rasterize assets/brand spectrum SVG → PNG for jsPDF.
      Fetch SVG text, force pixel width/height from viewBox (mm units / Image() natural size
@@ -5601,15 +5601,15 @@ function tbWeatherSection(p,wx){
 /* shared: Master Schedule content (facility bookings + production milestone overview) */
 function masterScheduleBlocks(){
   var fac=[
-    ["PCR 1","World Cup Tech Rehearsal","Mon–Tue","Compound"],
-    ["PCR 1","Sail 250 Setup","Fri–Sat","Compound"],
-    ["PCR 4","Sail 250 Remote Test","Mon–Wed","Harbor"],
-    ["PCR 4","Parade Cam Map","Sat–Sun","Route"],
-    ["PCR 6","Muse Live 100th GFX Build","Wed–Thu","Studio M1"],
-    ["Studio M1","Muse Live 100th Rehearsal","Thu–Sat","Muse Plaza"],
+    ["PCR 1","Muse AI World Tour Tech Rehearsal","Mon–Tue","Compound"],
+    ["PCR 1","Ray-Ban Meta Gen 3 Launch Setup","Fri–Sat","Compound"],
+    ["PCR 4","Ray-Ban Meta Gen 3 Launch Remote Test","Mon–Wed","Harbor"],
+    ["PCR 4","Creator Week Cam Map","Sat–Sun","Route"],
+    ["PCR 6","Muse AI Launchth GFX Build","Wed–Thu","Studio M1"],
+    ["Studio M1","Muse AI Launchth Rehearsal","Thu–Sat","Meta NYC"],
     ["ACR 2","Calrec Artemis","Mon–Tue","Audio"],
     ["ACR 2","Mix Check","Fri","Audio"],
-    ["REMI Bay","Midterm Survey Calls","Tue–Fri","Multi-Market"]];
+    ["REMI Bay","WhatsApp Summit Survey Calls","Tue–Fri","Multi-Market"]];
   var prod=order.map(function(k){var p=productions[k];var m=crewMilestones(p);
     return [p.name,p.customer||"—",m.loadin?fmtDate(m.loadin):"TBD",m.broadcast?fmtDate(m.broadcast):"TBD",m.strike?fmtDate(m.strike):"TBD"];});
   return [
@@ -5793,16 +5793,16 @@ function techbookSections(p){
   // 5) CREW LIST
   S("Crew List",[
     B("Field & Technical Crew",["Position","Name","Provided By","Contact","On-Site"],[
-      ["Tech Manager / EIC","Riley Stanton","Muse Live Field Ops","(212) 555-0101","Yes"],
-      ["Production Manager","Alex Marlowe","Muse Live Sports","(212) 561-0103","Yes"],
+      ["Tech Manager / EIC","Riley Stanton","Meta Field Ops","(212) 555-0101","Yes"],
+      ["Production Manager","Alex Marlowe","Meta Live Events","(212) 561-0103","Yes"],
       ["EIC / Video Shader","Quinn Adler","Scripted","(212) 555-0104","Yes"],
-      ["Transmission","Sam Okada","Muse Live Field Ops","(212) 557-0129","Yes"],
-      ["Sat Operator / Driver","Chris Vega","Muse Live Field Ops","(212) 555-0131","Yes"],
-      ["Audio Engineer","Noah Barrett","Muse Live Field Ops","(212) 556-0107","Yes"],
-      ["A1","Drew Hale","Muse Live Tech Production","—","Yes"],
-      ["RF Tech / A2","Jordan Reyes","Muse Live Field Ops","(212) 556-0108","Yes"],
-      ["Lighting Director","Harper Sloan","Muse Live Tech Production","(212) 555-0109","Yes"],
-      ["Lead Utility","Reese Callahan","Muse Live Field Ops","(212) 556-0110","Yes"],
+      ["Transmission","Sam Okada","Meta Field Ops","(212) 557-0129","Yes"],
+      ["Sat Operator / Driver","Chris Vega","Meta Field Ops","(212) 555-0131","Yes"],
+      ["Audio Engineer","Noah Barrett","Meta Field Ops","(212) 556-0107","Yes"],
+      ["A1","Drew Hale","Meta Live Production","—","Yes"],
+      ["RF Tech / A2","Jordan Reyes","Meta Field Ops","(212) 556-0108","Yes"],
+      ["Lighting Director","Harper Sloan","Meta Live Production","(212) 555-0109","Yes"],
+      ["Lead Utility","Reese Callahan","Meta Field Ops","(212) 556-0110","Yes"],
       ["Utility","Eden Walsh","Scripted","(212) 555-0111","Yes"],
       ["Floor / Stage Manager","Jamie Calder","Mediapro","(212) 561-0112","Yes"],
       ["Hard Cam Op","Avery Nolan","Mediapro","(212) 561-0113","Yes"],
@@ -5817,12 +5817,12 @@ function techbookSections(p){
       ["Director of Engineering","Micah Trent","Mediapro","—"],
       ["Engineering Manager","Morgan Pryce","Mediapro","(212) 561-0123"]]),
     B("PCR / Control Room Crew",["Position","Name","Provided By","Contact"],[
-      ["Show Director","Taylor Grayson","Muse Live Tech Production","(212) 556-0124"],
-      ["Technical Director","Sam Ellison","Muse Live Tech Production","ext. 4401"],
-      ["PCR Tech Manager","Rowan Blake","Muse Live Tech Production","(212) 555-0125"],
-      ["Graphics Operator","Sasha Keene","Muse Live Tech Production","(212) 555-0126"],
-      ["Replay Operator","Shay Donovan","Muse Live Tech Production","ext. 4414"],
-      ["Teleprompter Operator","Remy Colton","Muse Live Tech Production","(212) 556-0127"]]),
+      ["Show Director","Taylor Grayson","Meta Live Production","(212) 556-0124"],
+      ["Technical Director","Sam Ellison","Meta Live Production","ext. 4401"],
+      ["PCR Tech Manager","Rowan Blake","Meta Live Production","(212) 555-0125"],
+      ["Graphics Operator","Sasha Keene","Meta Live Production","(212) 555-0126"],
+      ["Replay Operator","Shay Donovan","Meta Live Production","ext. 4414"],
+      ["Teleprompter Operator","Remy Colton","Meta Live Production","(212) 556-0127"]]),
     B("Production & Executive",["Position","Name","Provided By","Contact"],[
       ["VP, Technical Production","Lila Hart","Muse Live","—"],
       ["VP Sports Production & Rights","Finley Brooks","Mediapro","—"],
@@ -5906,9 +5906,9 @@ function techbookSections(p){
   var cn=camShow;
   S("Cabling",[
     B("Fiber Cable Runs (TAC-12)",["Cable #","Description","Type","Length","Start","End"],[
-      ["Muse Live 100","Video Main","TAC-12",s.fiberLen,"Salon / MDF","Tech World Position"],
+      ["Muse AI Launch","Video Main","TAC-12",s.fiberLen,"Salon / MDF","Tech World Position"],
       ["Muse Live 101","Video Back-Up","TAC-12",s.fiberLen,"Salon / MDF","Tech World Position"],
-      ["Muse Live 102","Evertz 7707 fiber Rx","TAC-12",s.fiberLen,"Muse Live 100/101","Evertz 7707 fiber Rx"],
+      ["Muse Live 102","Evertz 7707 fiber Rx","TAC-12",s.fiberLen,"Muse AI Launch/101","Evertz 7707 fiber Rx"],
       ["Muse Live 103","SAT TX / IT","TAC-12",s.fiberLen,"Salon / MDF","Tech World Position"],
       ["Muse Live 104","Audio Main","TAC-12",s.fiberLen,"Salon / MDF","Tech World Position"],
       ["Muse Live 105","Audio Back-Up","TAC-12",s.fiberLen,"Salon / MDF","Tech World Position"],
@@ -5961,7 +5961,7 @@ function techbookSections(p){
     }
     if(!fiberBlocks.length){
       var COLORS=["Blue","Orange","Green","Brown","Slate","White","Red","Black","Yellow","Violet","Rose","Aqua"];
-      function fiberRun(map){return COLORS.map(function(col,i){var m=map[i]||["",""];return [col,i+1,m[1]||"",m[0]||"—","Muse Live Fiber"];});}
+      function fiberRun(map){return COLORS.map(function(col,i){var m=map[i]||["",""];return [col,i+1,m[1]||"",m[0]||"—","Meta Fiber"];});}
       var mainMap=[];for(var fi=0;fi<cn&&fi<6;fi++){mainMap[fi*2]=["CCU "+(fi+1)+"A","TX"];mainMap[fi*2+1]=["CCU "+(fi+1)+"B","RX"];}
       mainMap[8]=mainMap[8]||["Evertz 7707 fiber Rx","TX"];mainMap[9]=mainMap[9]||["Evertz 7707 fiber Rx","RX"];
       fiberBlocks.push(B("Schematic placeholder — author live strands under Transmission → Fiber Schedule",
@@ -6078,8 +6078,8 @@ function techbookSections(p){
   S("Networking & IT",[B(null,["Requirement","Bandwidth","Hand-off","Location","Provided By"],[
     ["Public DHCP","500 Mbps","RJ45","Truck BSP LAN 1",p.venue||"Venue"],
     ["Public DHCP","500 Mbps","RJ45","Truck BSP LAN 2",p.venue||"Venue"],
-    ["Muse Live Corp","Varies","Wi-Fi","Compound Loop","Muse Live Truck WAP"],
-    ["Muse Live Corp","Varies","Wi-Fi","Set / Cabanas","Muse Live Truck"]])]);
+    ["Meta Corp","Varies","Wi-Fi","Compound Loop","Meta Truck WAP"],
+    ["Meta Corp","Varies","Wi-Fi","Set / Cabanas","Meta Truck"]])]);
 
   // 18) TRANSMISSION
   var bcDates=(p.schedule||[]).filter(function(r){return (r[4]||'').trim()&&r[4]!=='—';});
@@ -6240,7 +6240,7 @@ function downloadTechbook(key,opts){
       doc.setFillColor(17,17,18);doc.rect(0,0,W,H,'F');
       var sw=W/SEG.length;for(var i=0;i<SEG.length;i++){doc.setFillColor(SEG[i][0],SEG[i][1],SEG[i][2]);doc.rect(i*sw,0,sw,7,'F');doc.rect(i*sw,H-7,sw,7,'F');}
       var ty=68;
-      var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(215.84/124.97);
+      var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(290/191);
       var logoW=150, logoH=Math.round(logoW/ar); /* ~87 pt — natural wide spectrum */
       if(logo){
         try{doc.addImage(logo,'PNG',(W-logoW)/2,ty,logoW,logoH);}catch(eLogo){logo=null;}
@@ -6385,20 +6385,20 @@ function downloadTechbook(key,opts){
 function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function spectrumSVGmarkup(sz,bodyFill){
   /* Official Muse Live Spectrum from assets/brand — natural aspect (~1.727:1) */
-  var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(215.84/124.97);
+  var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(290/191);
   var w=sz||150,h=Math.round(w/ar);
-  return '<img src="assets/brand/muse-live-mark.svg" alt="Muse Live" width="'+w+'" height="'+h+'" style="width:'+w+'px;height:'+h+'px;object-fit:contain;object-position:center;display:block;margin:0 auto" />';
+  return '<img src="assets/brand/meta-mark.svg" alt="Meta" width="'+w+'" height="'+h+'" style="width:'+w+'px;height:'+h+'px;object-fit:contain;object-position:center;display:block;margin:0 auto" />';
 }
 function techbookHTML(p,opts){opts=opts||{};
   var c=countStatus(p);var pct=computePct(p);var secs=opts.sections||techbookSections(p);
   var TBLABEL=opts.titleLabel||'PRODUCTION TECHBOOK · LIVE DATA';
-  var pcol=pct>=90?'#00A15D':pct>=40?'#d97706':'#dc2626';
-  var bar='<div class="pkbar"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>';
+  var pcol=pct>=90?'#31A24C':pct>=40?'#d95e06':'#dc2644';
+  var bar='<div class="pkbar"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>';
   var sections=secs.map(function(sec,si){
     var blocks=sec.blocks.map(function(blk){
       var isStatus=sec.title.indexOf('Department Status')===0;
       var isKV=(blk.head.length===2&&blk.head[0]==='Field');var isFiber=(blk.head[0]==='Color');var isMatrix=(blk.kind==='crewmatrix');
-      var MPCcss=['#6366f1','#f59e0b','#0ea5e9','#8b5cf6','#14b8a6','#ef4444','#64748b'];
+      var MPCcss=['#629cf2','#f56c0b','#0e66e9','#5c9af6','#14a8b8','#ef4461','#74767b'];
       var thead='<tr>'+blk.head.map(function(h){return '<th'+(isMatrix?' style="text-align:center;white-space:pre-line"':'')+'>'+esc(h)+'</th>';}).join('')+'</tr>';
       var tbody=blk.rows.map(function(r){
         return '<tr>'+r.map(function(cell,ci){
@@ -6414,51 +6414,51 @@ function techbookHTML(p,opts){opts=opts||{};
     }).join('');
     var mapBlock='';
     if(sec.venueMap){
-      mapBlock='<div style="margin:0 40px 4px"><div style="font-size:18px;font-weight:800;color:#111">'+esc(sec.venue)+'</div><div style="font-size:9px;color:#6b7280;margin-top:2px">'+esc(sec.venueAddr||'')+'</div></div>'+
-        '<div style="margin:8px 40px 0;border-radius:8px;overflow:hidden;border:1px solid #e0e0e4;height:230px">'+projectMapSVG(sec.venue||p.name)+'</div>'+
+      mapBlock='<div style="margin:0 40px 4px"><div style="font-size:18px;font-weight:800;color:#101112">'+esc(sec.venue)+'</div><div style="font-size:9px;color:#727479;margin-top:2px">'+esc(sec.venueAddr||'')+'</div></div>'+
+        '<div style="margin:8px 40px 0;border-radius:8px;overflow:hidden;border:1px solid #dfe1e5;height:230px">'+projectMapSVG(sec.venue||p.name)+'</div>'+
         '<div style="margin:8px 40px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'+
-          '<div><div style="font-size:8px;font-weight:700;letter-spacing:1px;color:#9ca3af">GPS COORDINATES</div><div style="font-size:11px;color:#1e1e22;font-family:monospace">'+(sec.geo?(sec.geo[0].toFixed(5)+', '+sec.geo[1].toFixed(5)):'Set in project')+'</div></div>'+
+          '<div><div style="font-size:8px;font-weight:700;letter-spacing:1px;color:#9ba2b0">GPS COORDINATES</div><div style="font-size:11px;color:#1f2021;font-family:monospace">'+(sec.geo?(sec.geo[0].toFixed(5)+', '+sec.geo[1].toFixed(5)):'Set in project')+'</div></div>'+
           '<div style="text-align:right;font-size:10px">'+
-            '<a href="'+sec.urls.google+'" target="_blank" style="color:#2563eb;text-decoration:none;font-weight:600;display:block">Open in Maps ↗</a>'+
-            '<a href="'+sec.urls.apple+'" target="_blank" style="color:#111;text-decoration:none;font-weight:600;display:block;margin-top:3px">Open in Apple Maps ↗</a>'+
+            '<a href="'+sec.urls.google+'" target="_blank" style="color:#2374ed;text-decoration:none;font-weight:600;display:block">Open in Maps ↗</a>'+
+            '<a href="'+sec.urls.apple+'" target="_blank" style="color:#101112;text-decoration:none;font-weight:600;display:block;margin-top:3px">Open in Apple Maps ↗</a>'+
           '</div></div>';
     }
     return '<section class="pg"><div class="sechead">'+bar+'<div class="sh-row"><h2>'+esc(sec.title)+'</h2><span class="sh-idx">SECTION '+(si+1)+' / '+secs.length+'</span></div><p>'+esc(p.name)+'  ·  '+esc(p.customer||'')+'  ·  LIVE DATA</p></div>'+mapBlock+blocks+'<div class="foot">Muse Live · LIVE DATA EXPORT · Confidential · '+esc(p.version||'')+'<span>'+esc(p.name)+'</span></div></section>';
   }).join('');
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Muse Live Techbook (live) — '+esc(p.name)+'</title><style>'+
     '@page{size:A4;margin:0;}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact;}'+
-    'body{margin:0;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222;}'+
+    'body{margin:0;font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#212223;}'+
     '.pkbar{display:flex;height:7px;width:100%;}.pkbar i{flex:1;display:block;}'+
-    '.title{background:#111112;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;page-break-after:always;position:relative;padding:48px 56px 56px;}'+
+    '.title{background:#111112;color:#ffffff;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;page-break-after:always;position:relative;padding:48px 56px 56px;}'+
     '.title .pkbar{position:absolute;left:0;right:0;}.title .top{top:0;}.title .bot{bottom:0;}'+
     '.title .pk-logo{display:flex;justify-content:center;align-items:center;width:100%;margin:0 0 20px;}'+
     '.title .pk-logo img{display:block;width:150px;height:auto;max-width:42%;object-fit:contain;margin:0 auto;}'+
     '.title .nm{font-size:28px;font-weight:800;margin:14px 0 6px;line-height:1.2;max-width:520px;text-align:center;}'+
-    '.title .vn{font-size:13px;color:#c3c3c8;margin-bottom:6px;max-width:480px;text-align:center;}'+
+    '.title .vn{font-size:13px;color:#bfc3cc;margin-bottom:6px;max-width:480px;text-align:center;}'+
     '.title .brand{font-size:14px;font-weight:700;letter-spacing:0.22em;margin-top:0;text-align:center;width:100%;}'+
-    '.title .sub{font-size:9px;color:#969699;letter-spacing:0.08em;margin-top:8px;text-align:center;width:100%;}'+
-    '.title hr{width:180px;border:none;border-top:1px solid #3c3c42;margin:16px auto;}'+
-    '.title .ml{font-size:8px;color:#787880;letter-spacing:0.14em;margin-top:18px;font-weight:700;}'+
-    '.title .mv{font-size:12px;color:#eee;margin-top:5px;line-height:1.35;max-width:460px;}'+
+    '.title .sub{font-size:9px;color:#8B93A4;letter-spacing:0.08em;margin-top:8px;text-align:center;width:100%;}'+
+    '.title hr{width:180px;border:none;border-top:1px solid #3d3e41;margin:16px auto;}'+
+    '.title .ml{font-size:8px;color:#787B80;letter-spacing:0.14em;margin-top:18px;font-weight:700;}'+
+    '.title .mv{font-size:12px;color:#ecedf0;margin-top:5px;line-height:1.35;max-width:460px;}'+
     'section.pg{page-break-before:always;padding:0 0 40px;position:relative;min-height:100vh;}'+
-    '.sechead{background:#111112;color:#fff;padding:14px 40px 10px;position:relative;}'+
+    '.sechead{background:#111112;color:#ffffff;padding:14px 40px 10px;position:relative;}'+
     '.sechead .pkbar{position:absolute;left:0;right:0;bottom:0;height:3px;}'+
     '.sh-row{display:flex;justify-content:space-between;align-items:baseline;}'+
     '.sechead h2{font-size:15px;margin:0;font-weight:800;}'+
-    '.sh-idx{font-size:8px;color:#8a8a92;letter-spacing:1px;}'+
-    '.sechead p{font-size:8px;color:#aaa;margin:4px 0 0;}'+
-    '.subt{font-weight:700;font-size:10px;color:#3c3c42;margin:16px 40px 6px;}'+
+    '.sh-idx{font-size:8px;color:#80899c;letter-spacing:1px;}'+
+    '.sechead p{font-size:8px;color:#a0a7b4;margin:4px 0 0;}'+
+    '.subt{font-weight:700;font-size:10px;color:#3d3e41;margin:16px 40px 6px;}'+
     'table{border-collapse:collapse;width:calc(100% - 80px);margin:8px 40px 0;font-size:8.5px;}'+
-    'th{background:#111112;color:#fff;text-align:left;padding:5px 6px;font-size:8px;font-weight:700;}'+
-    'td{border:0.5px solid #e0e0e4;padding:5px 6px;vertical-align:top;color:#2d2d32;}'+
-    'tr:nth-child(even) td{background:#f7f7f9;}'+
+    'th{background:#111112;color:#ffffff;text-align:left;padding:5px 6px;font-size:8px;font-weight:700;}'+
+    'td{border:0.5px solid #dfe1e5;padding:5px 6px;vertical-align:top;color:#2e2f31;}'+
+    'tr:nth-child(even) td{background:#f8f8f8;}'+
     'td.kv{font-weight:700;background:#f3f4f6;width:34%;}'+
-    'td.st-a{background:#d1fae5;color:#047857;font-weight:700;}td.st-p{background:#fef3c7;color:#b45309;font-weight:700;}td.st-m{background:#fee2e2;color:#b91c1c;font-weight:700;}'+
-    '.foot{position:absolute;bottom:14px;left:40px;right:40px;display:flex;justify-content:space-between;font-size:7px;color:#9a9aa0;}'+
-    '@media screen{body{background:#888;}.title,section.pg{width:794px;margin:16px auto;box-shadow:0 6px 30px rgba(0,0,0,.4);min-height:1123px;}}'+
+    'td.st-a{background:#d1fadb;color:#04781F;font-weight:700;}td.st-p{background:#feeec7;color:#b45009;font-weight:700;}td.st-m{background:#fee2e7;color:#b91c36;font-weight:700;}'+
+    '.foot{position:absolute;bottom:14px;left:40px;right:40px;display:flex;justify-content:space-between;font-size:7px;color:#9199a9;}'+
+    '@media screen{body{background:#7A8396;}.title,section.pg{width:794px;margin:16px auto;box-shadow:0 6px 30px rgba(0,0,0,.4);min-height:1123px;}}'+
     '</style></head><body>'+
-    '<div class="title"><div class="pkbar top"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>'+
-    '<div class="pkbar bot"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>'+
+    '<div class="title"><div class="pkbar top"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>'+
+    '<div class="pkbar bot"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>'+
     '<div class="pk-logo">'+spectrumSVGmarkup(150)+'</div>'+
     '<div class="brand">MUSE LIVE</div><div class="sub">BROADCAST OPS CRM · '+esc(TBLABEL)+'</div><hr>'+
     '<div class="nm">'+esc(p.name)+'</div><div class="vn">'+esc(p.venue||'')+'</div>'+
@@ -6488,7 +6488,7 @@ function sectionHeader(doc,W,title,p,idx,total){
   if(idx){doc.setFontSize(7.5);doc.setTextColor(130,130,138);doc.text('SECTION '+idx+' / '+total,W-40,30,{align:'right',charSpace:1});}
 }
 
-/* ===== SPELL / TYPO TOLERANCE (Charlie + global search) =====
+/* ===== SPELL / TYPO TOLERANCE (Muse + global search) =====
    People misspell show names, depts, and ops terms. We correct tokens before
    matching so "superbow", "personel", "transmision" still work. */
 function museEditDist(a,b){
@@ -6520,11 +6520,11 @@ function museFuzzyOk(token,cand){
 }
 /* Common Muse-domain misspellings → canonical form */
 var MUSE_TYPO_MAP={
-  superbow:'superbowl',superbowl:'superbowl',superbol:'superbowl',supperbowl:'superbowl',siperbowl:'superbowl',
-  worldcupe:'worldcup',worldcup:'worldcup',worlcup:'worldcup',wordcup:'worldcup',worldcupp:'worldcup',
-  midterm:'midterms',midtermes:'midterms',elecion:'election',electon:'election',
-  parrade:'parade',thankgiving:'thanksgiving',macys:'macy',
-  olimpics:'olympics',olympics:'olympics',olympiad:'olympics',winterolympics:'olympics',
+  orien:'orion',oriun:'orion',orrion:'orion',raiban:'rayban',raybans:'rayban',rayban:'rayban',
+  worldtoor:'tour',wordtour:'tour',worldtour:'tour',
+  whatsap:'whatsapp',watsapp:'whatsapp',whatsupp:'whatsapp',instagam:'instagram',instgram:'instagram',
+  creater:'creator',creators:'creator',sumit:'summit',summitt:'summit',
+  charms:'charm',wearabel:'wearable',wearables:'wearable',keynot:'keynote',
   personel:'personnel',personell:'personnel',personnal:'personnel',perssonel:'personnel',
   equpiment:'equipment',equipement:'equipment',equpment:'equipment',inventry:'inventory',inventary:'inventory',
   transmision:'transmission',transmition:'transmission',transmisson:'transmission',transmisionn:'transmission',
@@ -6561,8 +6561,8 @@ function museLexicon(){
   ['audio','camera','cameras','video','power','crew','travel','finance','equipment','inventory','vendor',
    'personnel','schedule','packlist','techbook','broadcast','transmission','satellite','fiber','missing',
    'pending','approved','ready','status','overview','dashboard','production','show','venue','location',
-   'charlie','muse','ops','signal','truck','rf','ifb','omni','portal','workflow','tracking','survey',
-   'superbowl','worldcup','olympics','parade','midterms','sail','bowl','cup'].forEach(function(w){lex[w]=1;});
+   'museai','muse','ops','signal','truck','rf','ifb','omni','portal','workflow','tracking','survey',
+   'orion','museaitour','olympics','igcreators','whatsapp','sail','bowl','cup'].forEach(function(w){lex[w]=1;});
   try{if(typeof order!=='undefined')order.forEach(function(pk){
     var p=productions[pk];if(!p)return;
     String(p.name||'').toLowerCase().split(/[^a-z0-9]+/).forEach(function(w){if(w.length>2)lex[w]=1;});
@@ -6608,8 +6608,8 @@ function museCorrectQuery(raw){
   var corrections=[];
   /* phrase-level domain fixes only */
   var phrases=[
-    [/super\s*bowls?\b/g,'superbowl'],[/superbow\b/g,'superbowl'],[/supper\s*bowl\b/g,'superbowl'],[/superbol\b/g,'superbowl'],
-    [/world\s*cupe?\b/g,'world cup'],[/worl\s*cup\b/g,'world cup'],
+    [/ray[\s-]*bans?\b/g,'rayban'],[/what'?s\s*app\b/g,'whatsapp'],[/insta\s*gram\b/g,'instagram'],
+    [/world\s*toure?\b/g,'world tour'],[/worl\s*tour\b/g,'world tour'],
     [/person+el+\b/g,'personnel'],[/equip+ment\b/g,'equipment'],
     [/transmi+s+i+on\b/g,'transmission'],[/tech\s*bok\b/g,'techbook'],
     [/pack\s*lst\b/g,'packlist'],[/sched+ual?e?\b/g,'schedule']
@@ -6660,15 +6660,15 @@ function museCorrectHint(corr){
   return '(Took “'+bits.join('”, “')+'” as a spelling fix.)';
 }
 
-/* ===== CHARLIE — data-driven assistant over all production data ===== */
-var prodSyn={worldcup:["world cup","worldcup","world-cup","fifa","wc","worldcupe","worlcup"],sail250:["sail 250","sail250","sail","harbor","nyrr"],superbowl:["super bowl","superbowl","superbow","superbol","supperbowl","super-bowl","sb lxi","sb lx","sblxi","sblx","lxi","levis","levi's","sb"],muse100:["100th","muse live 100","anniversary","centennial","muse plaza","studio m1"],midterms:["midterm","midterms","election","elections","decision desk","elecion"],parade:["parade","parrade","thanksgiving","thankgiving","macy","macys","macy's"],winterolympics:["olympics","olimpics","olympiad","winter olympics","milano","cortina"]};
+/* ===== MUSEAI — data-driven assistant over all production data ===== */
+var prodSyn={museaitour:["world tour","muse ai world tour","museaitour","tour","metlife","finale","mawt","mawt26"],raybangen3:["ray-ban","rayban","ray ban","gen 3","glasses","smart glasses","harbor"],orion:["orion","ar glasses","levis","levi's","santa clara","reveal"],museailaunch:["muse ai","muse ai launch","launch keynote","keynote","studio m1","hudson yards"],whatsapp:["whatsapp","whats app","business summit","summit","q&a desk","channels"],igcreators:["instagram","creator week","creators","creator","reels","herald"],charm:["charm","meta charm","wearable","wearables","milan","design week","fiera"]};
 var deptSyn=[
  ["Audio",["audio","audoi","audioo","sound","a1","a2"," mix","dante","madi","calrec","console"]],
  ["Cameras / Video",["camera","camra","camara","cam ","cams","video","vedio","lens","ldx","hdc"]],
  ["Transmission / Signal",["transmission","transmision","transmition","signal","fiber","encode","liveu","ltn","tvu","smpte","feed","bond","2110"]],
  ["Power / Electrical",["power","powr","electrical","eletrical","distro","generator","generater","gen ","amp","400a","200a","shore","watt"]],
  /* v30 review-sweep fix: these rows pointed at LEGACY department names that are not in
-    the canonical p.dept arrays, so deptByName() returned null and charlieAnswer crashed
+    the canonical p.dept arrays, so deptByName() returned null and museaiAnswer crashed
     on any comms/RF/CAD-flavored question — remapped onto the canonical departments. */
  ["Engineering",["engineering","enginering","serial","node"]],
  ["Replay / EVS",["replay","evs","clip","playout","slo-mo","slomo"]],
@@ -6717,10 +6717,10 @@ function findDept(q){
 }
 function deptByName(p,name){for(var i=0;i<p.dept.length;i++){if(p.dept[i][0]===name)return p.dept[i];}return null;}
 function listByStatus(p,st){return p.dept.filter(function(d){return d[1]===st;}).map(function(d){return d[0];});}
-function charlieWikiHits(q, limit){
+function museaiWikiHits(q, limit){
   try{
     if(typeof MuseKB==='undefined')return [];
-    if(MuseKB.chunksForCharlie)return MuseKB.chunksForCharlie(q, limit||6)||[];
+    if(MuseKB.chunksForMuseAi)return MuseKB.chunksForMuseAi(q, limit||6)||[];
     if(typeof MuseKB.search!=='function')return [];
     var n=limit||6;
     var raw=String(q||'').toLowerCase();
@@ -6741,13 +6741,13 @@ function charlieWikiHits(q, limit){
     return [];
   }catch(e){return [];}
 }
-function charlieWikiAnswer(qRaw){
+function museaiWikiAnswer(qRaw){
   var q=String(qRaw||'').toLowerCase();
   if(!q)return '';
   var askWiki=/(wiki|knowledge base|procedure|how do i|how to|spec for|troubleshooting|decision tree|incident log|teach me|what is the (sop|procedure))/.test(q)
     ||/(fiber bulkhead|rf (clash|200)|gng weather|hdc-?5500|liveu|calrec|axient|nexus|no picture|voltage sag)/.test(q);
   if(!askWiki)return '';
-  var hits=charlieWikiHits(q,6);
+  var hits=museaiWikiHits(q,6);
   if(!hits.length)return '';
   var h=hits[0];
   var more=hits.slice(1,4).map(function(x){return x.title;}).filter(Boolean);
@@ -6757,31 +6757,31 @@ function charlieWikiAnswer(qRaw){
   var extra=more.length?(' Related: '+more.join('; ')+'.'):'';
   return (h.title+': '+body+cite+extra).replace(/\s+/g,' ').trim();
 }
-function charlieAnswer(qRaw){
+function museaiAnswer(qRaw){
   var _corr=null;try{_corr=museCorrectQuery(qRaw);}catch(e){_corr=null;}
   var q=(_corr&&_corr.q?_corr.q:String(qRaw||'')).toLowerCase().trim();
-  if(!q)return "Ask me anything about Muse Live (any module or show) or any real-world question — e.g. \"Is audio ready for Super Bowl?\" or \"What causes RF interference?\"";
-  if(/^(hi|hey|hello|yo|sup|good (morning|afternoon|evening))/.test(q))return "Hi — I'm Charlie. I answer every Muse Live question (all modules + live data across all productions) and general real-world questions too. Try \"What is Muse Live?\", \"How does PackList work?\", or \"When is the next Dolphins preseason game?\"";
+  if(!q)return "Ask me anything about Muse Live (any module or show) or any real-world question — e.g. \"Is audio ready for Orion Reveal?\" or \"What causes RF interference?\"";
+  if(/^(hi|hey|hello|yo|sup|good (morning|afternoon|evening))/.test(q))return "Hi — I'm Muse. I answer every Muse Live question (all modules + live data across all productions) and general real-world questions too. Try \"What is Muse Live?\", \"How does PackList work?\", or \"When is the next Dolphins preseason game?\"";
   try{
-    var wikiA=charlieWikiAnswer(qRaw||q);
+    var wikiA=museaiWikiAnswer(qRaw||q);
     if(wikiA)return wikiA;
   }catch(eW){}
   // product overview / how Muse Live works
   if(/(what is (muse live )?muse|what does muse do|explain (muse live )?muse|how does (muse live )?muse work|product overview|whole (app|product)|know muse live)/.test(q)){
-    var overview="Muse Live is the Muse Live Broadcast Operations CRM — the plan-of-record hub for multi-venue live shows (not a switcher or NLE). One browser app covers Department Status, Broadcast Ops (signal path · truck power · RF clash · satellite · go/no-go), techbook fields + live PDF + change diff, packlist, fiber plant, crew + Call Matrix with venue check-in, Site Survey (Event Check List air-readiness nested there — drawings + vendor meeting and venue schedule + site walk feed Tasks then LBA), Graphics Playback (16:9 player, tap the picture to play/pause, frame step; fill+matte uploads get a Fill and Matte Tally; each show has Open/Bumper/Wipe environment sims with the clip's own soundtrack), read-only CAD viewer with note dots, Broadcast 360 Shot Designer, TX bookings, finance (PO/WO/AP), CPM/EVM project controls, travel + manifest, ENG requests, barcode inventory, Omni comms, and Xytech rooms. Launch locally with ./start-muse.sh (HTTP required for DWG WASM). I'm Charlie — ask how any module works or dig into a show.";
-    try{if(typeof MuseKB!=='undefined')overview+=' The Wiki holds procedures, specs, schematics, troubleshooting, and incidents — tagged by department for Charlie and the truck.';}catch(eKb){}
+    var overview="Muse Live is the Meta Broadcast Operations — the plan-of-record hub for multi-venue live shows (not a switcher or NLE). One browser app covers Department Status, Broadcast Ops (signal path · truck power · RF clash · satellite · go/no-go), techbook fields + live PDF + change diff, packlist, fiber plant, crew + Call Matrix with venue check-in, Site Survey (Event Check List air-readiness nested there — drawings + vendor meeting and venue schedule + site walk feed Tasks then LBA), Graphics Playback (16:9 player, tap the picture to play/pause, frame step; fill+matte uploads get a Fill and Matte Tally; each show has Open/Bumper/Wipe environment sims with the clip's own soundtrack), read-only CAD viewer with note dots, Broadcast 360 Shot Designer, TX bookings, finance (PO/WO/AP), CPM/EVM project controls, travel + manifest, ENG requests, barcode inventory, Omni comms, and Xytech rooms. Launch locally with ./start-muse.sh (HTTP required for DWG WASM). I'm Muse — ask how any module works or dig into a show.";
+    try{if(typeof MuseKB!=='undefined')overview+=' The Wiki holds procedures, specs, schematics, troubleshooting, and incidents — tagged by department for Muse and the truck.';}catch(eKb){}
     return overview;
   }
   if(/(what.?s new|whats new|new in muse|recent (change|update)|learn what.?s new)/.test(q))
     return "What's new: (1) Site Survey → Air-readiness holds the Event Check List (not GFX). Workflow is Drawings + vendor meeting, and schedule-with-venue + site survey, both feeding Tasks then LBA. (2) Graphics Playback is 16:9 — tap the video to play/pause, use ‹ Frame / Frame › to step, no color-background chips, no MIRA label. Upload fill+matte (filenames with fill and matte/key) for a Fill and Matte Tally. Each production has Open / Bumper / Wipe environment sims; soundtrack is the clip's own music/SFX (no extra sine or noise beds). (3) Left rail: native scroll with hidden scrollbar; Search/+ fades with no rounded card; Projects scroll above Search.";
   if(/(graphics playback|gfx player|fill and matte|mira tally|show open|gfx (sim|wipe|bumper)|tap.*video|click.*video.*pause)/.test(q))
-    return "Graphics Playback lives on Department Status → Graphics (GFX). Player is always 16:9. Tap or click the picture to play/pause. ‹ Frame / Frame › steps one frame. Cue / Loop still work. There is no MIRA tally and no black/white/green/checker chips. Upload one file, or a fill + matte pair (names containing fill and matte or key) to open a Fill and Matte Tally. Environment sims (Open, Bumper, Wipe) are injected per show — World Cup, Winter Games, Super Bowl, Sail 250, Muse Live 100, Midterms, Parade — and play the video's own soundtrack. Probe/preview convert uses FFmpeg (libavcodec / libavformat).";
+    return "Graphics Playback lives on Department Status → Graphics (GFX). Player is always 16:9. Tap or click the picture to play/pause. ‹ Frame / Frame › steps one frame. Cue / Loop still work. There is no MIRA tally and no black/white/green/checker chips. Upload one file, or a fill + matte pair (names containing fill and matte or key) to open a Fill and Matte Tally. Environment sims (Open, Bumper, Wipe) are injected per show — Muse AI World Tour, Winter Games, Orion Reveal, Ray-Ban Meta Gen 3 Launch, Muse AI Launch, WhatsApp Summit, Creator Week — and play the video's own soundtrack. Probe/preview convert uses FFmpeg (libavcodec / libavformat).";
   if(/(air.?readiness|event check list|lba|live before air)/.test(q))
     return "Air-readiness is the Event Check List nested under Site Survey → Air-readiness (not under GFX). It covers truck, fiber/ingest, switcher, cameras, audio, lighting, power, grip, schedule, data/TX, venue, labor/EHS. The mind-tree workflow is Drawings → Vendor meeting, and Schedule with venue → Site Survey; both feed Tasks → LBA (live before air). Workflow tab chips jump to those gates. Auto-tasks fire when drawings, vendor meeting, venue schedule, or the checklist are thin.";
   // Broadcast Ops / signal path / go-no-go / RF / sat / power
   if(/(broadcast ops|signal path|go.?no.?go|go\/no|power (load|bus)|rf (clash|coord)|satellite (booking|card|window)|truck (profile|plant)|techbook (diff|change))/.test(q)){
-    var bk=findProd(q)||charlieFocusKey();
-    var brief=null;try{if(bk&&typeof MuseBOps!=='undefined'&&MuseBOps.charlieBrief)brief=MuseBOps.charlieBrief(bk);}catch(eB){}
+    var bk=findProd(q)||museaiFocusKey();
+    var brief=null;try{if(bk&&typeof MuseBOps!=='undefined'&&MuseBOps.museaiBrief)brief=MuseBOps.museaiBrief(bk);}catch(eB){}
     var liveB=brief?(' '+(productions[bk]?productions[bk].name:bk)+': '+brief.decision+' ('+brief.score+'%) — '+brief.summary+'; signal hops '+brief.signal_hops+(brief.signal_red?' ('+brief.signal_red+' red)':'')+'; power '+brief.power_pct+'% ('+brief.power_level+'); RF '+brief.rf_services+' service(s)'+(brief.rf_clashes?', '+brief.rf_clashes+' clash(es)':'')+'; sat '+brief.sat_bookings+'.'):'';
     return "Broadcast Ops (Wave C) is the remote truck engineer's book of record: (1) Signal Path Integrity — visual hop chain + table (source→embed→contrib fiber/sat/LiveU LU800/SRT→RX→plant→encoder→TOC) with green/amber/red + last-known-good; (2) Truck/Plant — matrix, fiber/coax bulkhead, bay map, HVAC, weight; (3) Power bus rollup vs shore/gen (≥80% amber, ≥100% red); (4) REMI delay budget (contrib+return ms vs budget); (5) RF coordination + 200 kHz clash detector; (6) Satellite cards (bird/TP/pol/FEC/symbol rate/uplink truck/UTC window/contingency); (7) Day-of Go/No-Go including weather hold + crew check-in; (8) Techbook live PDF sections + change-diff vs last export. Open production → Broadcast Ops tab; portfolio risk board shows GNG per show."+liveB;
   }
@@ -6796,7 +6796,7 @@ function charlieAnswer(qRaw){
     return "Map layout: Overview always shows the primary venue map. Single-venue shows: Location tab is sun & shadows only — no second identical map. Multi-venue (2+ sites) unlocks the multi-pin Location map + venue picker + shadows. Techbook PDF maps use a static light CARTO Voyager image (museStaticMap) so covers never go black. Tracking tab has its own fleet telemetry basemap that follows light/dark theme.";
   // venue check-in / geofence / arrival
   if(/(check.?in|geofence|on site|on-site|arriv(ed|al)|call matrix|who.*(here|arrived|on site)|fence radius)/.test(q)){
-    var ck=findProd(q)||charlieFocusKey();
+    var ck=findProd(q)||museaiFocusKey();
     var pck=ck&&productions[ck]?productions[ck]:null;
     var sumC=null;try{if(ck&&typeof checkinSummary==='function')sumC=checkinSummary(ck);}catch(eC){}
     var liveC='';
@@ -6811,10 +6811,10 @@ function charlieAnswer(qRaw){
   }
   // packlist how-to
   if(/(how does (the )?pack.?list|packlist work|what is (the )?pack.?list)/.test(q))
-    return "PackList merges equipment lines (tbEquip) with techbook dropdown fields into shippable rows: department, name, qty, detail, pack status, owner, lock/approval. Open a production → PackList tab. Gear also flows in from ENG requests. I can list pack lines for the focus show from live data — ask \"packlist for World Cup\" or open that production and ask \"summarize packlist\".";
+    return "PackList merges equipment lines (tbEquip) with techbook dropdown fields into shippable rows: department, name, qty, detail, pack status, owner, lock/approval. Open a production → PackList tab. Gear also flows in from ENG requests. I can list pack lines for the focus show from live data — ask \"packlist for Muse AI World Tour\" or open that production and ask \"summarize packlist\".";
   // fiber how-to
   if(/(how does fiber|fiber (plant|schedule|editor)|tia.?598|tac.?12)/.test(q)&&/(how|what|work|explain)/.test(q))
-    return "Fiber plant is per-venue (fiberLoc): TAC-style trunks plus a TIA strand schedule (position, signal, from/to, status, path, connectors, optional CAD ref). Edit under Transmission / Signal on the production. Techbook PDF exports the fiber section. Ask for a specific trunk or \"Muse Live 100 strands\" on World Cup for live strand data.";
+    return "Fiber plant is per-venue (fiberLoc): TAC-style trunks plus a TIA strand schedule (position, signal, from/to, status, path, connectors, optional CAD ref). Edit under Transmission / Signal on the production. Techbook PDF exports the fiber section. Ask for a specific trunk or \"Muse AI Launch strands\" on Muse AI World Tour for live strand data.";
   // roles & permissions (Work Item 1)
   if(/(role|permission|access|restricted|who am i|viewing as|what can i see|locked)/.test(q)&&typeof permRoleDef==='function'){
     var _rd=permRoleDef();var hid=[];
@@ -6860,9 +6860,9 @@ function charlieAnswer(qRaw){
     var openInv=finInvoices.filter(function(v){return v.prod===fk&&v.status!=='Paid';});
     return prodName(fk)+" finance workspace: budget "+$fmt(FT.budget)+", EFC "+$fmt(FT.efc)+" ("+(FT.variance<0?$fmt(Math.abs(FT.variance))+" projected over":$fmt(FT.variance)+" under")+"). Labor estimate "+$fmt(LT.total)+" incl. "+$fmt(LT.ot)+" OT, "+$fmt(LT.kit)+" kit, "+$fmt(LT.pd||0)+" per diems. AP: "+openInv.length+" open invoice(s), "+$fmt(openInv.reduce(function(s,v){return s+v.amount;},0))+" outstanding. Open the production's Finance tab for the sortable Cost Report / Labor / AP Ledger workspace — Excel templates, validated .xlsx import, and .xlsx/PDF export live in the toolbar.";}
   // project controls — CPM / EVM / critical path / resources / gates / what-if (v36)
-  if(/(critical path|\bfloat\b|\bslack\b|schedule (variance|health|risk|performance)|behind schedule|ahead of schedule|on schedule|\bspi\b|\bcpi\b|earned value|\bevm\b|\beac\b|\bvac\b|forecast finish|finish date|\bgantt\b|resource (level|allocation|conflict|overallocat|demand|leveling)|stage.?gate|\bgate\b|what.?if|scenario|monte.?carlo|primavera|when (does|will).*(air|finish|wrap|complete))/.test(q)&&typeof planCharlieSummary==='function'){
+  if(/(critical path|\bfloat\b|\bslack\b|schedule (variance|health|risk|performance)|behind schedule|ahead of schedule|on schedule|\bspi\b|\bcpi\b|earned value|\bevm\b|\beac\b|\bvac\b|forecast finish|finish date|\bgantt\b|resource (level|allocation|conflict|overallocat|demand|leveling)|stage.?gate|\bgate\b|what.?if|scenario|monte.?carlo|primavera|when (does|will).*(air|finish|wrap|complete))/.test(q)&&typeof planMuseAiSummary==='function'){
     var pkc=order[0];var actvc=document.querySelector('.view-pane.active');if(actvc){var akkc=actvc.id.replace('view-','');if(productions[akkc])pkc=akkc;}
-    var pc=null;try{pc=planCharlieSummary(pkc);}catch(e){}
+    var pc=null;try{pc=planMuseAiSummary(pkc);}catch(e){}
     if(!pc)return "Open a production to see its project controls — the Schedule tab has the CPM Gantt, resource histogram, EVM S-curve, stage-gates and what-if scenarios.";
     var critc=pc.criticalPath.slice(0,6).join(' → ');
     var healthc=pc.SPI>=0.98?'on or ahead of schedule':(pc.SPI>=0.9?'slightly behind schedule':'behind schedule');
@@ -6917,9 +6917,9 @@ function charlieAnswer(qRaw){
       (trAll.length>8?' — +'+(trAll.length-8)+' more.':'.')+" Expense policy is per employment category (e.g. Vendors get no per diems; Talent books business class).";
   }
   // crew travel
-  // book / search a flight via Travelpayouts (Charlie auto-fill)
+  // book / search a flight via Travelpayouts (Muse auto-fill)
   if(/(book|search|find|need|get).{0,20}(flight|ticket|airfare|fare)|fly (someone|crew|him|her|them)|travelpayouts/.test(q)){
-    return "Open a production's Travel tab — under \"Book Crew Flights\" pick a crew member from the ✦ Charlie dropdown and I'll auto-fill their home-base origin, the show's destination airport, and stage their passport/email into the Travelpayouts search. From there you confirm the fare and it moves into Booked.";
+    return "Open a production's Travel tab — under \"Book Crew Flights\" pick a crew member from the ✦ Muse dropdown and I'll auto-fill their home-base origin, the show's destination airport, and stage their passport/email into the Travelpayouts search. From there you confirm the fare and it moves into Booked.";
   }
   if(/(flight|travel|flying|airport|boarding|departs?|arrives?|airline)/.test(q)&&typeof crewFlights!=='undefined'){
     var names=Object.keys(crewFlights);
@@ -6949,7 +6949,7 @@ function charlieAnswer(qRaw){
     var roleHits=allCrewQ.filter(function(m){return q.split(/[^a-z]+/).some(function(w){return w.length>3&&m.pos.toLowerCase().indexOf(w)>-1;});});
     if(roleHits.length)return roleHits.slice(0,4).map(function(m){return m.pos+": "+m.name+(m.phone&&m.phone!=='—'?" ("+m.phone+")":"")+" · "+(m.email||'');}).join("  |  ");}
   // customer / division query (e.g. "which sports productions", "show me news shows")
-  var custMatch=null;var custSyn={"News":["news"],"Entertainment":["entertainment"],"Sports":["sports","sport"],"Muse Live":["muse live network","muse live division"],"Muse Live+":["muse live plus"],"Digital":["digital"],"External Productions":["external"]};
+  var custMatch=null;var custSyn={"News":["news"],"Entertainment":["entertainment"],"Sports":["sports","sport"],"Muse Live":["muse live network","muse live division"],"Meta Horizon":["muse live plus"],"Digital":["digital"],"External Productions":["external"]};
   if(!pk){for(var ck in custSyn){for(var ci=0;ci<custSyn[ck].length;ci++){if(hasKw(q,custSyn[ck][ci])){custMatch=ck;break;}}if(custMatch)break;}}
   if(custMatch&&!dn){var inCust=order.filter(function(k){return productions[k].customer===custMatch;});
     if(!inCust.length)return "No productions are currently assigned to "+custMatch+".";
@@ -7019,50 +7019,50 @@ function charlieAnswer(qRaw){
     var lines=order.map(function(k){var p=productions[k];var c=countStatus(p);return p.name+": "+p.pct+"% ("+p.status+") — "+c.approved+"✓ "+c.pending+"⋯ "+c.missing+"✕";});
     return "Portfolio status:\n"+lines.join("\n");
   }
-  return "I can help with every Muse Live surface (dashboard, Broadcast Ops, techbook, packlist, crew, CAD, 360, finance, TX, travel, Omni, inventory, Wiki…) and live data across all productions — and any other question you ask. Try \"What is Muse Live?\", \"Is power ready for Super Bowl?\", or \"Weather in Miami\".";
+  return "I can help with every Muse Live surface (dashboard, Broadcast Ops, techbook, packlist, crew, CAD, 360, finance, TX, travel, Omni, inventory, Wiki…) and live data across all productions — and any other question you ask. Try \"What is Muse Live?\", \"Is power ready for Orion Reveal?\", or \"Weather in Miami\".";
 }
-var charlieOpen=false;
-function toggleCharlie(){charlieOpen=!charlieOpen;var d=document.getElementById('charlieDrawer');var l=document.getElementById('charlieLauncher');
-  /* Charlie must sit above Omni (drawer z-index 66) — raise stack + close Omni when opening */
-  if(charlieOpen){
+var museaiOpen=false;
+function toggleMuseAi(){museaiOpen=!museaiOpen;var d=document.getElementById('museaiDrawer');var l=document.getElementById('museaiLauncher');
+  /* Muse must sit above Omni (drawer z-index 66) — raise stack + close Omni when opening */
+  if(museaiOpen){
     try{if(typeof closeOmniDrawer==='function')closeOmniDrawer();}catch(eO){}
     try{d.style.zIndex='70';}catch(eZ){}
   }else{
     try{d.style.zIndex='70';}catch(eZ2){}
   }
-  d.style.transform=charlieOpen?'translateX(0)':'translateX(100%)';
+  d.style.transform=museaiOpen?'translateX(0)':'translateX(100%)';
   try{if(typeof museSyncEdgeTabs==='function')museSyncEdgeTabs();
-  else l.style.display=charlieOpen?'none':'flex';}catch(eTab){l.style.display=charlieOpen?'none':'flex';}
-  if(charlieOpen){
-    try{if(typeof badgeAckWrite==='function')badgeAckWrite('charlie',typeof attentionCount==='function'?attentionCount():0);}catch(eA){}
+  else l.style.display=museaiOpen?'none':'flex';}catch(eTab){l.style.display=museaiOpen?'none':'flex';}
+  if(museaiOpen){
+    try{if(typeof badgeAckWrite==='function')badgeAckWrite('museai',typeof attentionCount==='function'?attentionCount():0);}catch(eA){}
     try{if(typeof omniFabBadge==='function')omniFabBadge();}catch(eB){}
   }
-  if(charlieOpen&&!document.getElementById('charlieMessages').childElementCount){
-    charliePush("Hi, I'm Charlie. Ask me anything about Muse Live — every screen, workflow, and live show — or any other question.","bot");
+  if(museaiOpen&&!document.getElementById('museaiMessages').childElementCount){
+    museaiPush("Hi, I'm Muse. Ask me anything about Muse Live — every screen, workflow, and live show — or any other question.","bot");
   }
   /* Do not auto-start a heavy local model on open — user loads from Settings if wanted */
 }
-function charliePush(text,who){var m=document.getElementById('charlieMessages');var el=document.createElement('div');
+function museaiPush(text,who){var m=document.getElementById('museaiMessages');var el=document.createElement('div');
   var safe=String(text==null?'':text).replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  if(who==='user'){el.className='flex justify-end min-w-0 w-full';el.innerHTML='<div class="charlie-bubble-user text-xs rounded-2xl rounded-br-sm px-3 py-2">'+safe+'</div>';}
-  else{el.className='flex justify-start min-w-0 w-full';el.innerHTML='<div class="charlie-bubble-bot text-xs rounded-2xl rounded-bl-sm px-3 py-2">'+safe+'</div>';}
+  if(who==='user'){el.className='flex justify-end min-w-0 w-full';el.innerHTML='<div class="museai-bubble-user text-xs rounded-2xl rounded-br-sm px-3 py-2">'+safe+'</div>';}
+  else{el.className='flex justify-start min-w-0 w-full';el.innerHTML='<div class="museai-bubble-bot text-xs rounded-2xl rounded-bl-sm px-3 py-2">'+safe+'</div>';}
   m.appendChild(el);m.scrollTop=m.scrollHeight;}
-function charliePushHtml(html){
-  var m=document.getElementById('charlieMessages');if(!m)return;
+function museaiPushHtml(html){
+  var m=document.getElementById('museaiMessages');if(!m)return;
   var el=document.createElement('div');
   el.className='flex justify-start min-w-0 w-full';
-  el.innerHTML='<div class="charlie-bubble-bot text-xs rounded-2xl rounded-bl-sm px-3 py-2">'+html+'</div>';
+  el.innerHTML='<div class="museai-bubble-bot text-xs rounded-2xl rounded-bl-sm px-3 py-2">'+html+'</div>';
   m.appendChild(el);m.scrollTop=m.scrollHeight;
 }
-var _charliePending=null;
-var _charlieUndo=null;
-function charlieParseAction(qRaw){
+var _museaiPending=null;
+var _museaiUndo=null;
+function museaiParseAction(qRaw){
   var q=String(qRaw||'').toLowerCase().trim();
   if(!q)return null;
   if(/^(restore|import) (a |my |the )?(muse live )?backup[.!]?$/.test(q))return {kind:'restoreBackup'};
   if(/^(export|download|save) (a |my |the )?(muse live )?backup[.!]?$/.test(q))return {kind:'exportBackup'};
   var key=findProd(q);
-  if(!key&&typeof charlieFocusKey==='function')key=charlieFocusKey();
+  if(!key&&typeof museaiFocusKey==='function')key=museaiFocusKey();
   if(!key||!productions[key])return null;
   var wantsWrite=/\b(mark|set|make|change|move|flag|approve|lock)\b/.test(q);
   var st=null;
@@ -7091,8 +7091,8 @@ function charlieParseAction(qRaw){
   if(/\b(export|download|generate)\b/.test(q)&&/tech.?book/.test(q))return {kind:'techbook',key:key};
   return null;
 }
-function charlieOfferAction(act){
-  _charliePending=act;
+function museaiOfferAction(act){
+  _museaiPending=act;
   var p=productions[act.key];
   var name=p?p.name:act.key;
   var msg='';
@@ -7102,49 +7102,49 @@ function charlieOfferAction(act){
   else if(act.kind==='restoreBackup')msg='Choose a Muse Live backup to validate and restore? You will review the record count before any changes are made.';
   else if(act.kind==='exportBackup')msg='Download a recovery backup of your current work, including unsaved changes?';
   else return false;
-  charliePushHtml(msg+'<div class="mt-2 flex flex-wrap gap-1.5">'+
-    '<button type="button" onclick="charlieConfirmAction()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Confirm</button>'+
-    '<button type="button" onclick="charlieCancelAction()" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1">Cancel</button></div>');
+  museaiPushHtml(msg+'<div class="mt-2 flex flex-wrap gap-1.5">'+
+    '<button type="button" onclick="museaiConfirmAction()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Confirm</button>'+
+    '<button type="button" onclick="museaiCancelAction()" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1">Cancel</button></div>');
   return true;
 }
-function charlieCancelAction(){
-  _charliePending=null;
-  charliePush('Cancelled — no change.','bot');
+function museaiCancelAction(){
+  _museaiPending=null;
+  museaiPush('Cancelled — no change.','bot');
 }
-function charlieConfirmAction(){
-  var act=_charliePending;_charliePending=null;
-  if(!act){charliePush('Nothing pending to confirm.','bot');return;}
+function museaiConfirmAction(){
+  var act=_museaiPending;_museaiPending=null;
+  if(!act){museaiPush('Nothing pending to confirm.','bot');return;}
   if(act.kind==='restoreBackup'){MuseRecovery.chooseFile();return;}
   if(act.kind==='exportBackup'){museExportStateBackup();return;}
   if(act.kind==='deptStatus'){
-    var p=productions[act.key];if(!p||!p.dept){charliePush('That production is not loaded.','bot');return;}
+    var p=productions[act.key];if(!p||!p.dept){museaiPush('That production is not loaded.','bot');return;}
     var idx=-1;for(var i=0;i<p.dept.length;i++){if(p.dept[i][0]===act.dept){idx=i;break;}}
-    if(idx<0){charliePush('I could not find '+act.dept+' on '+p.name+'.','bot');return;}
+    if(idx<0){museaiPush('I could not find '+act.dept+' on '+p.name+'.','bot');return;}
     var prev=p.dept[idx][1];
-    _charlieUndo={kind:'deptStatus',key:act.key,idx:idx,prev:prev,dept:act.dept};
+    _museaiUndo={kind:'deptStatus',key:act.key,idx:idx,prev:prev,dept:act.dept};
     setDeptStatus(act.key,idx,act.status);
-    charliePushHtml('Done — <b>'+esc(act.dept)+'</b> is now <b>'+esc(act.status)+'</b> on <b>'+esc(p.name)+'</b>.'+
-      '<div class="mt-2"><button type="button" onclick="charlieUndoAction()" class="text-[10px] font-bold text-orange-900 border border-orange-300 bg-orange-50 rounded-lg px-2.5 py-1">Undo</button></div>');
+    museaiPushHtml('Done — <b>'+esc(act.dept)+'</b> is now <b>'+esc(act.status)+'</b> on <b>'+esc(p.name)+'</b>.'+
+      '<div class="mt-2"><button type="button" onclick="museaiUndoAction()" class="text-[10px] font-bold text-orange-900 border border-orange-300 bg-orange-50 rounded-lg px-2.5 py-1">Undo</button></div>');
     return;
   }
   if(act.kind==='nav'){
     try{if(typeof switchView==='function')switchView(act.key);if(typeof setProjTab==='function')setProjTab(act.key,act.tab);}catch(eN){}
-    charliePush('Opened '+act.tab+' on '+(productions[act.key]?productions[act.key].name:act.key)+'.','bot');
+    museaiPush('Opened '+act.tab+' on '+(productions[act.key]?productions[act.key].name:act.key)+'.','bot');
     return;
   }
   if(act.kind==='techbook'){
     try{if(typeof downloadTechbook==='function')downloadTechbook(act.key);}catch(eT){}
-    charliePush('Exporting live techbook for '+(productions[act.key]?productions[act.key].name:act.key)+'.','bot');
+    museaiPush('Exporting live techbook for '+(productions[act.key]?productions[act.key].name:act.key)+'.','bot');
   }
 }
-function charlieUndoAction(){
-  var u=_charlieUndo;_charlieUndo=null;
-  if(!u||u.kind!=='deptStatus'){charliePush('Nothing to undo.','bot');return;}
+function museaiUndoAction(){
+  var u=_museaiUndo;_museaiUndo=null;
+  if(!u||u.kind!=='deptStatus'){museaiPush('Nothing to undo.','bot');return;}
   setDeptStatus(u.key,u.idx,u.prev);
-  charliePush('Undone — '+u.dept+' is back to '+u.prev+'.','bot');
+  museaiPush('Undone — '+u.dept+' is back to '+u.prev+'.','bot');
 }
-/* ===== CHARLIE — free real-world data (ESPN / Open-Meteo) — no paid edge AI ===== */
-var CHARLIE_NFL_TEAMS={
+/* ===== MUSEAI — free real-world data (ESPN / Open-Meteo) — no paid edge AI ===== */
+var MUSEAI_NFL_TEAMS={
   ari:{id:'ari',name:'Arizona Cardinals',aliases:['cardinals','arizona cardinals','ari']},
   atl:{id:'atl',name:'Atlanta Falcons',aliases:['falcons','atlanta falcons','atl']},
   bal:{id:'bal',name:'Baltimore Ravens',aliases:['ravens','baltimore ravens','bal']},
@@ -7178,36 +7178,36 @@ var CHARLIE_NFL_TEAMS={
   ten:{id:'ten',name:'Tennessee Titans',aliases:['titans','tennessee titans','ten']},
   wsh:{id:'wsh',name:'Washington Commanders',aliases:['commanders','washington commanders','wsh','washington']}
 };
-function charlieDetectNflTeam(q){
+function museaiDetectNflTeam(q){
   q=String(q||'').toLowerCase();
   var best=null,bestLen=0;
-  Object.keys(CHARLIE_NFL_TEAMS).forEach(function(id){
-    var t=CHARLIE_NFL_TEAMS[id];
+  Object.keys(MUSEAI_NFL_TEAMS).forEach(function(id){
+    var t=MUSEAI_NFL_TEAMS[id];
     (t.aliases||[]).forEach(function(a){
       if(a.length>=3&&q.indexOf(a)!==-1&&a.length>bestLen){best=t;bestLen=a.length;}
     });
   });
   return best;
 }
-function charlieFmtGameWhen(iso){
+function museaiFmtGameWhen(iso){
   try{
     var d=new Date(iso);
     if(isNaN(d.getTime()))return String(iso||'');
     return d.toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit',timeZoneName:'short'});
   }catch(e){return String(iso||'');}
 }
-function charlieLooksRealWorld(q){
+function museaiLooksRealWorld(q){
   q=String(q||'').toLowerCase();
-  if(charlieDetectNflTeam(q))return true;
+  if(museaiDetectNflTeam(q))return true;
   if(/\b(nfl|pre.?season|regular season|super ?bowl|world series|mlb|nba|nhl|mls)\b/.test(q))return true;
   if(/\b(when is|next game|kickoff|who (do|does).*(play|face)|schedule for)\b/.test(q))return true;
   if(/\b(weather|forecast|temperature|how (hot|cold|warm)|rain (in|for)|aqi|air quality)\b/.test(q))return true;
   if(/\b(what time is it in|timezone|utc offset)\b/.test(q))return true;
   return false;
 }
-function charlieSportsAnswer(qRaw){
+function museaiSportsAnswer(qRaw){
   var q=String(qRaw||'').toLowerCase().trim();
-  var team=charlieDetectNflTeam(q);
+  var team=museaiDetectNflTeam(q);
   var wantsNext=/\b(next|upcoming|when|schedule|play|game|kickoff|pre.?season|regular season)\b/.test(q)||/\?/.test(q);
   if(!team&&!/\bnfl\b/.test(q))return Promise.resolve(null);
   if(team&&!wantsNext&&!/\b(game|play|schedule|when|next|pre.?season)\b/.test(q))return Promise.resolve(null);
@@ -7220,7 +7220,7 @@ function charlieSportsAnswer(qRaw){
         var lines=events.slice(0,8).map(function(ev){
           var name=ev.name||ev.shortName||'Game';
           var st=((ev.status||{}).type||{}).description||'';
-          var when=charlieFmtGameWhen(ev.date);
+          var when=museaiFmtGameWhen(ev.date);
           return '• '+name+(st?' — '+st:'')+(when?' ('+when+')':'');
         });
         return 'NFL scoreboard (live public data):\n'+lines.join('\n');
@@ -7266,7 +7266,7 @@ function charlieSportsAnswer(qRaw){
           var d=(((ev.competitions||[{}])[0].status||{}).type||{}).detail;
           if(d)return d;
         }catch(e){}
-        return charlieFmtGameWhen(ev.date);
+        return museaiFmtGameWhen(ev.date);
       }
       var pool=events.slice();
       if(wantPre)pool=pool.filter(isPre);
@@ -7327,7 +7327,7 @@ function charlieSportsAnswer(qRaw){
       return bits.join(' ');
     }).catch(function(){return null;});
 }
-function charlieWeatherAnswer(qRaw){
+function museaiWeatherAnswer(qRaw){
   var q=String(qRaw||'').toLowerCase();
   if(!/\b(weather|forecast|temperature|how (hot|cold|warm)|rain|humidity|wind)\b/.test(q))return Promise.resolve(null);
   /* city: "weather in Miami" / "Miami weather" */
@@ -7338,7 +7338,7 @@ function charlieWeatherAnswer(qRaw){
   if(!city||city.length<2){
     /* try venue of focus production */
     try{
-      var fk=typeof charlieFocusKey==='function'?charlieFocusKey():null;
+      var fk=typeof museaiFocusKey==='function'?museaiFocusKey():null;
       var p=fk&&productions[fk]?productions[fk]:null;
       if(p&&p.location)city=String(p.location).split(',')[0].trim();
     }catch(e){}
@@ -7357,47 +7357,47 @@ function charlieWeatherAnswer(qRaw){
     });
   }).catch(function(){return null;});
 }
-function charlieRealWorldTry(q){
-  if(!charlieLooksRealWorld(q))return Promise.resolve(null);
-  return charlieSportsAnswer(q).then(function(ans){
+function museaiRealWorldTry(q){
+  if(!museaiLooksRealWorld(q))return Promise.resolve(null);
+  return museaiSportsAnswer(q).then(function(ans){
     if(ans)return ans;
-    return charlieWeatherAnswer(q);
-  }).catch(function(){return charlieWeatherAnswer(q).catch(function(){return null;});});
+    return museaiWeatherAnswer(q);
+  }).catch(function(){return museaiWeatherAnswer(q).catch(function(){return null;});});
 }
 
-/* ===== CHARLIE — rules + free real-world APIs · optional on-device model · no edge AI ===== */
-var charlieHistory=[];var charlieBusy=false;
-function charlieDeliver(q){
+/* ===== MUSEAI — rules + free real-world APIs · optional on-device model · no edge AI ===== */
+var museaiHistory=[];var museaiBusy=false;
+function museaiDeliver(q){
   var rawQ=q;
   var corr=null;try{corr=museCorrectQuery(q);if(corr&&corr.q)q=corr.q;}catch(eC){}
-  charlieHistory.push({role:'user',content:rawQ});if(charlieHistory.length>24)charlieHistory.splice(0,charlieHistory.length-24);
-  charlieBusy=true;charlieTyping(true);
+  museaiHistory.push({role:'user',content:rawQ});if(museaiHistory.length>24)museaiHistory.splice(0,museaiHistory.length-24);
+  museaiBusy=true;museaiTyping(true);
   var spellNote=(corr&&corr.corrections&&corr.corrections.length)?museCorrectHint(corr):'';
 
   function finishBot(text,note){
-    charlieTyping(false);charlieBusy=false;
+    museaiTyping(false);museaiBusy=false;
     var t=(text==null?'':String(text)).trim();
     /* Never show garbage model output (!!!! etc.) — prefer live Muse Live rules */
     if(!t||/^[\s!?.,…]+$/.test(t)||/([!?])\1{4,}/.test(t)||((t.match(/!/g)||[]).length>10&&t.replace(/[^!]/g,'').length/t.length>0.2)){
-      t=(typeof charlieAnswer==='function')?charlieAnswer(q):'No answer available.';
+      t=(typeof museaiAnswer==='function')?museaiAnswer(q):'No answer available.';
     }
-    if(!t){t=(typeof charlieAnswer==='function')?charlieAnswer(q):'No answer available.';}
+    if(!t){t=(typeof museaiAnswer==='function')?museaiAnswer(q):'No answer available.';}
     /* Only quietly note domain spelling fixes (e.g. superbow) — never dump the whole rewrite */
     if(spellNote&&t&&t.indexOf(spellNote)<0)t=t+' '+spellNote;
-    charlieHistory.push({role:'assistant',content:t});
-    charliePush(t,'bot');
-    if(note)charliePush(note,'bot');
+    museaiHistory.push({role:'assistant',content:t});
+    museaiPush(t,'bot');
+    if(note)museaiPush(note,'bot');
   }
   function rulesAnswer(){
-    try{return (typeof charlieAnswer==='function')?charlieAnswer(q):'Charlie rules unavailable.';}
-    catch(e){return 'Charlie could not answer from rules.';}
+    try{return (typeof museaiAnswer==='function')?museaiAnswer(q):'Muse rules unavailable.';}
+    catch(e){return 'Muse could not answer from rules.';}
   }
   function tryModelOrRules(){
-    if(typeof CharlieCharlie!=='undefined'&&CharlieCharlie.ask){
-      CharlieCharlie.ask(q).then(function(ans){finishBot(ans,null);})
+    if(typeof MuseAiMuseAi!=='undefined'&&MuseAiMuseAi.ask){
+      MuseAiMuseAi.ask(q).then(function(ans){finishBot(ans,null);})
         .catch(function(){
-          if(typeof charlieLocalEnabled==='function'&&charlieLocalEnabled()&&typeof CharlieLocal!=='undefined'&&CharlieLocal.chat){
-            CharlieLocal.chat(q,charlieHistory.slice(0,-1)).then(function(ans){finishBot(ans,null);})
+          if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'&&MuseAiLocal.chat){
+            MuseAiLocal.chat(q,museaiHistory.slice(0,-1)).then(function(ans){finishBot(ans,null);})
               .catch(function(){finishBot(rulesAnswer(),null);});
             return;
           }
@@ -7405,8 +7405,8 @@ function charlieDeliver(q){
         });
       return;
     }
-    if(typeof charlieLocalEnabled==='function'&&charlieLocalEnabled()&&typeof CharlieLocal!=='undefined'&&CharlieLocal.chat){
-      CharlieLocal.chat(q,charlieHistory.slice(0,-1)).then(function(ans){finishBot(ans,null);})
+    if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'&&MuseAiLocal.chat){
+      MuseAiLocal.chat(q,museaiHistory.slice(0,-1)).then(function(ans){finishBot(ans,null);})
         .catch(function(err){
           var em2=(err&&err.message)?String(err.message):'';
           finishBot(rulesAnswer(), stateNote(em2));
@@ -7421,12 +7421,12 @@ function charlieDeliver(q){
     setTimeout(function(){finishBot(rulesAnswer(),null);},120);
   }
 
-  /* 0) Confirmed Action Charlie — mutate / navigate only after Confirm */
+  /* 0) Confirmed Action Muse — mutate / navigate only after Confirm */
   try{
-    var act=charlieParseAction(q);
+    var act=museaiParseAction(q);
     if(act){
-      charlieTyping(false);charlieBusy=false;
-      if(charlieOfferAction(act))return;
+      museaiTyping(false);museaiBusy=false;
+      if(museaiOfferAction(act))return;
     }
   }catch(eAct){}
 
@@ -7434,9 +7434,9 @@ function charlieDeliver(q){
   try{
     var ql=q.toLowerCase();
     var looksStatus=/\b(audio|camera|power|transmission|missing|pending|ready|looking|status|approved|blocked)\b/i.test(ql)
-      && /\b(super ?bow|world ?cup|sail|parade|midterm|olympi|muse live|show|production|for the)\b/i.test(ql);
-    if(looksStatus&&typeof charlieAnswer==='function'){
-      var quick=charlieAnswer(q);
+      && /\b(world ?tour|ray-?ban|orion|whatsapp|instagram|creator|charm|muse ai|muse live|show|production|for the)\b/i.test(ql);
+    if(looksStatus&&typeof museaiAnswer==='function'){
+      var quick=museaiAnswer(q);
       if(quick&&quick.length>20&&!/^I (track|can help)/i.test(quick)){
         finishBot(quick,null);
         return;
@@ -7445,8 +7445,8 @@ function charlieDeliver(q){
   }catch(eSt){}
 
   /* 1) Free real-world data (ESPN schedules, Open-Meteo weather) — no edge AI, no refusal */
-  if(typeof charlieRealWorldTry==='function'&&charlieLooksRealWorld(q)){
-    charlieRealWorldTry(q).then(function(ans){
+  if(typeof museaiRealWorldTry==='function'&&museaiLooksRealWorld(q)){
+    museaiRealWorldTry(q).then(function(ans){
       if(ans&&String(ans).trim()){finishBot(ans,null);return;}
       tryModelOrRules();
     }).catch(function(){tryModelOrRules();});
@@ -7458,18 +7458,18 @@ function charlieDeliver(q){
 
   function stateNote(em){
     var detail=(em||'').slice(0,100);
-    if(/WebGPU|adapter/i.test(em))return '⚠ Local model needs WebGPU. Charlie still answers from Muse Live without it.';
+    if(/WebGPU|adapter/i.test(em))return '⚠ Local model needs WebGPU. Muse still answers from Muse Live without it.';
     return detail?('⚠ '+detail):'';
   }
 }
-function charlieSend(){if(charlieBusy)return;var inp=document.getElementById('charlieInput');var q=inp.value.trim();if(!q)return;inp.value='';charliePush(q,'user');charlieDeliver(q);}
-function charlieAsk(q){if(!charlieOpen)toggleCharlie();if(charlieBusy)return;charliePush(q,'user');charlieDeliver(q);}
-function charlieTyping(on){var m=document.getElementById('charlieMessages');var ex=document.getElementById('charlieTypingRow');
+function museaiSend(){if(museaiBusy)return;var inp=document.getElementById('museaiInput');var q=inp.value.trim();if(!q)return;inp.value='';museaiPush(q,'user');museaiDeliver(q);}
+function museaiAsk(q){if(!museaiOpen)toggleMuseAi();if(museaiBusy)return;museaiPush(q,'user');museaiDeliver(q);}
+function museaiTyping(on){var m=document.getElementById('museaiMessages');var ex=document.getElementById('museaiTypingRow');
   if(!on){if(ex)ex.remove();return;}
-  if(ex)return;var el=document.createElement('div');el.id='charlieTypingRow';el.className='flex justify-start';
-  el.innerHTML='<div class="charlie-bubble-bot charlie-typing-bubble rounded-2xl rounded-bl-sm px-3 py-2.5 flex items-center gap-1"><span class="charlie-dot"></span><span class="charlie-dot" style="animation-delay:.15s"></span><span class="charlie-dot" style="animation-delay:.3s"></span></div>';
+  if(ex)return;var el=document.createElement('div');el.id='museaiTypingRow';el.className='flex justify-start';
+  el.innerHTML='<div class="museai-bubble-bot museai-typing-bubble rounded-2xl rounded-bl-sm px-3 py-2.5 flex items-center gap-1"><span class="museai-dot"></span><span class="museai-dot" style="animation-delay:.15s"></span><span class="museai-dot" style="animation-delay:.3s"></span></div>';
   m.appendChild(el);m.scrollTop=m.scrollHeight;}
-function charlieChip(b){document.getElementById('charlieInput').value=b.textContent;charlieSend();}
+function museaiChip(b){document.getElementById('museaiInput').value=b.textContent;museaiSend();}
 
 /* ---- THEME (light / dark) ---- */
 function museThemePref(){
@@ -7485,7 +7485,7 @@ function musePaintTheme(scheme,pref){
   document.documentElement.setAttribute('data-theme-pref',pref||museThemePref());
   document.documentElement.style.colorScheme=(pref==='system'||!pref)?'light dark':scheme;
   try{
-    var bar=dark?'#0b1018':'#f7f8fb';
+    var bar=dark?'#111112':'#f7f9fb';
     var metas=document.querySelectorAll('meta[name="theme-color"]');
     if(metas[0])metas[0].setAttribute('content',bar);
     document.cookie='Muse-Theme='+scheme+'; Path=/; Max-Age=31536000; SameSite=Lax';
@@ -7531,13 +7531,13 @@ function syncThemeBtn(){var b=document.getElementById('themeBtn');if(!b)return;v
     /* single compact toggle — dual segment is too wide on phones */
     var next=dark?'light':'dark';
     var lab=dark?'Switch to light mode':'Switch to dark mode';
-    var bg=dark?'background:#1c2436;color:#eef2fb;border:1px solid #2c3a57':'background:#f3f4f6;color:#111112;border:1px solid #e5e7eb';
+    var bg=dark?'background:#28292a;color:#eef3fb;border:1px solid #2c3d57':'background:#f3f4f6;color:#111112;border:1px solid #e5e7eb';
     b.classList.add('muse-theme-mobile');
     b.innerHTML='<button onclick="applyTheme(\''+next+'\')" title="'+lab+'" aria-label="'+lab+'" style="display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:10px;cursor:pointer;'+bg+'">'+(dark?themeSunSVG(15):themeMoonSVG(14))+'</button>';
     return;
   }
   b.classList.remove('muse-theme-mobile');
-  function seg(on,icon,t,label){var st=on?(dark?'background:#3a4a6e;color:#eef2fb;box-shadow:0 1px 3px rgba(0,0,0,.4)':'background:#ffffff;color:#111112;box-shadow:0 1px 3px rgba(0,0,0,.16)'):'background:transparent;color:'+(dark?'#71809a':'#9ca3af');
+  function seg(on,icon,t,label){var st=on?(dark?'background:#0d469b;color:#eef3fb;box-shadow:0 1px 3px rgba(0,0,0,.4)':'background:#ffffff;color:#111112;box-shadow:0 1px 3px rgba(0,0,0,.16)'):'background:transparent;color:'+(dark?'#778194':'#9ba2b0');
     return '<button onclick="applyTheme(\''+t+'\')" title="'+label+'" aria-label="'+label+'" aria-pressed="'+(on?'true':'false')+'" style="display:flex;align-items:center;justify-content:center;width:27px;height:22px;border-radius:999px;border:none;cursor:pointer;transition:background .15s,color .15s;'+st+'">'+icon+'</button>';}
   b.innerHTML=seg(!dark,themeSunSVG(13),'light','Light mode')+seg(dark,themeMoonSVG(12),'dark','Dark mode');}
 /* re-render theme control when crossing phone/desktop breakpoint */
@@ -7574,7 +7574,7 @@ function initApp(){
     try{renderSnapFilters();}catch(e){}
     try{renderSnapshot();}catch(e){}
     try{renderMatrix();}catch(e){}
-    try{buildCharlieChips();}catch(e){}
+    try{buildMuseAiChips();}catch(e){}
     try{renderSchedule();}catch(e){}
     try{var nav=document.getElementById('tabNav');if(nav&&!nav.getAttribute('data-wired')){nav.setAttribute('data-wired','1');nav.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.getAttribute('data-view'))switchView(b.getAttribute('data-view'));});}}catch(e){}
     try{renderPersonnelDir();}catch(e){}
@@ -7582,11 +7582,11 @@ function initApp(){
     try{setInterval(function(){if(typeof portalTick==='function')portalTick();},1000);}catch(e){}
     try{trackInit();}catch(e){}
     try{opsInit();}catch(e){}
-    try{charlieAssistInit();}catch(e){}
+    try{museaiAssistInit();}catch(e){}
     try{
       if(typeof museIsPhone==='function'&&museIsPhone()){ /* skip the local model on phones — it can run out of memory */ }
-      else if(typeof charlieLocalEnabled==='function'&&charlieLocalEnabled()){
-        var warm=function(){try{if(typeof CharlieLocal!=='undefined'&&CharlieLocal.warmOnIdle)CharlieLocal.warmOnIdle();}catch(e0){}};
+      else if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()){
+        var warm=function(){try{if(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.warmOnIdle)MuseAiLocal.warmOnIdle();}catch(e0){}};
         if(typeof MuseLazy!=='undefined'&&MuseLazy.ensureLocal)MuseLazy.ensureLocal().then(warm).catch(function(){});
         else warm();
       }
@@ -7686,8 +7686,8 @@ function seedRvonFor(p,t,key){if(!p)return;if(!p.tbFields)p.tbFields={};if(!p.tb
       if(!curE.some(function(e){return e.a===up;}))curE.push(rvonNormEntry(al));});
     delete p.tbFields.Audio.rvonalphas;return;}
   delete p.tbFields.Audio.rvonalphas;
-  /* World Cup intercom & alphas (MetLife NYNJ Final) */
-  if(key==='worldcup'||(t&&t._fwc)){
+  /* Muse AI World Tour intercom & alphas (MetLife NYNJ Final) */
+  if(key==='museaitour'||(t&&t._fwc)){
     var fwcPairs=[
       ["NK89",'IFB','Presentation Studio IFB-1'],["PM85",'PL','Presentation Studio HM-1'],
       ["YX77",'IFB','Presentation Studio IFB-2'],["SU19",'PL','Presentation Studio HM-2'],
@@ -7782,14 +7782,14 @@ var deptPickerCtx=null;
 function ensureDeptPicker(){var ov=document.getElementById('deptPickerOverlay');if(ov)return ov;
   ov=document.createElement('div');ov.id='deptPickerOverlay';ov.style.cssText='position:fixed;inset:0;z-index:60;display:none';
   ov.innerHTML='<div id="deptPickerBackdrop" style="position:absolute;inset:0;background:rgba(17,17,18,.08)"></div>'+
-    '<div id="deptPickerBox" style="position:absolute;width:300px;max-width:92vw;background:#fff;border:1px solid rgba(0,0,0,.1);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.22);overflow:hidden">'+
+    '<div id="deptPickerBox" style="position:absolute;width:300px;max-width:92vw;background:#ffffff;border:1px solid rgba(0,0,0,.1);border-radius:12px;box-shadow:0 18px 50px rgba(0,0,0,.22);overflow:hidden">'+
       '<div style="padding:8px 8px 6px"><div id="deptPickerTitle" class="text-[10px] font-bold uppercase tracking-wider text-gray-500" style="margin-bottom:5px"></div>'+
-        '<div style="position:relative"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.5" style="position:absolute;left:8px;top:8px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>'+
+        '<div style="position:relative"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ba2b0" stroke-width="2.5" style="position:absolute;left:8px;top:8px"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>'+
         '<input id="deptPickerSearch" oninput="deptPickerFilter(this.value)" onkeydown="deptPickerKey(event)" placeholder="Search…" autocomplete="off" class="mono" style="width:100%;font-size:11px;border:1px solid #e5e7eb;border-radius:8px;padding:6px 8px 6px 26px;outline:none"></div></div>'+
       '<div id="deptPickerList" style="max-height:240px;overflow-y:auto;padding:0 6px 6px"></div>'+
-      '<div style="border-top:1px solid #f1f1f4;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;gap:6px">'+
+      '<div style="border-top:1px solid #f1f2f4;padding:6px 8px;display:flex;justify-content:space-between;align-items:center;gap:6px">'+
         '<span id="deptPickerHint" class="text-[9px] text-gray-400"></span>'+
-        '<button onclick="closeDeptPicker()" class="text-[10px] font-bold text-gray-700" style="padding:3px 10px;border:1px solid #e5e7eb;border-radius:7px;background:#fff;cursor:pointer">Done</button></div>'+
+        '<button onclick="closeDeptPicker()" class="text-[10px] font-bold text-gray-700" style="padding:3px 10px;border:1px solid #e5e7eb;border-radius:7px;background:#ffffff;cursor:pointer">Done</button></div>'+
     '</div>';
   document.body.appendChild(ov);
   ov.querySelector('#deptPickerBackdrop').addEventListener('click',closeDeptPicker);
@@ -7862,7 +7862,7 @@ function setDeptTab(key,cat){deptTileOpen(key)[cat]=1;
      • one signal can carry one OR many REM/TIFF lines
      • REM lines link to Host names; TIFF lines link to Camera Operators / Producers
    ================================================================================ */
-var IFB_SIG_TYPES={LiveU:{c:'#7c3aed',bg:'#f5f3ff',bd:'#ddd6fe',dk:'#8b5cf6'},Fiber:{c:'#1d4ed8',bg:'#eff6ff',bd:'#bfdbfe',dk:'#60a5fa'},Satellite:{c:'#b45309',bg:'#fffbeb',bd:'#fde68a',dk:'#fbbf24'}};
+var IFB_SIG_TYPES={LiveU:{c:'#3881ef',bg:'#f3f8ff',bd:'#d6e6fe',dk:'#5c9af6'},Fiber:{c:'#1266e3',bg:'#eff5ff',bd:'#bfd8fe',dk:'#609efa'},Satellite:{c:'#b45009',bg:'#fff9eb',bd:'#fddc8a',dk:'#fbbe24'}};
 var IFB_ROLES=['Host','Guest','Backup'];
 /* curated Muse Live on-air talent for REM (host) linking — supplements any host crew */
 /* IFB_HOST_TALENT moved above DEFAULT_DEPT_FIELDS (v30 Module 8) so the Talent tile's
@@ -7891,7 +7891,7 @@ function ifbScrollTo(key){try{
     if(ui.secHidden.Audio&&ui.secHidden.Audio._ifbboard){delete ui.secHidden.Audio._ifbboard;changed=true;}}
   if(changed&&typeof renderDeptBoard==='function'){saveState();renderDeptBoard(key);}
   deptWorkspaceSelect(key,'Audio','routing');
-  setTimeout(function(){var b=document.getElementById('ifbBoard-'+key);if(b){b.scrollIntoView({behavior:'smooth',block:'center'});b.style.transition='box-shadow .3s';b.style.boxShadow='0 0 0 3px rgba(59,130,246,.45)';setTimeout(function(){b.style.boxShadow='';},1400);}},changed?80:0);
+  setTimeout(function(){var b=document.getElementById('ifbBoard-'+key);if(b){b.scrollIntoView({behavior:'smooth',block:'center'});b.style.transition='box-shadow .3s';b.style.boxShadow='0 0 0 3px rgba(59,134,246,.45)';setTimeout(function(){b.style.boxShadow='';},1400);}},changed?80:0);
 }catch(e){}}
 function ifbPhonePool(){
   /* REM/TIFF phone lines live under the "Audio" department (Comms & IFB is a sub-header,
@@ -8107,7 +8107,7 @@ function audioDrawWave(id){var cv=document.getElementById('audwf_'+id);if(!cv)re
   var n=peaks?peaks.length:120;var bw=W/n;
   for(var i=0;i<n;i++){var amp=peaks?peaks[i]:0.18;
     var h=Math.max(2,amp*(H-4));var x=i*bw;var played=(i/n)<=frac&&frac>0;
-    ctx.fillStyle=played?'#2563eb':(dark?'#3f4a63':'#cbd5e1');
+    ctx.fillStyle=played?'#2374ed':(dark?'#4f5053':'#d1d4db');
     ctx.fillRect(x,(H-h)/2,Math.max(1,bw-1),h);}}
 function audioWaveformsMount(key){var p=productions[key];if(!p||!p.audioAssets)return;
   p.audioAssets.forEach(function(asset){
@@ -8200,24 +8200,24 @@ function powerLightingBackNoteHTML(key){var w=lightingLoadW(key);if(!w)return ''
 
    Model: p.fiber={trunks:[],strands:[]} — per VENUE on multi-venue productions
    (p.fiberLoc[locId], same alias pattern as surveyLoc/vendorsLoc), because a
-   World Cup site each has its own fibre plant.
+   Muse AI World Tour site each has its own fibre plant.
    ================================================================================ */
-var FIBER_TIA=[['Blue','#1d4ed8','#fff'],['Orange','#ea580c','#fff'],['Green','#15803d','#fff'],
-  ['Brown','#78350f','#fff'],['Slate','#64748b','#fff'],['White','#f8fafc','#0f172a'],
-  ['Red','#dc2626','#fff'],['Black','#171717','#fff'],['Yellow','#facc15','#0f172a'],
-  ['Violet','#7c3aed','#fff'],['Rose','#f9a8d4','#0f172a'],['Aqua','#06b6d4','#fff']];
-var FIBER_MODES=[['OS2 · single-mode','#facc15','#0f172a'],['OS1 · single-mode','#facc15','#0f172a'],
-  ['OM1 · 62.5/125','#ea580c','#fff'],['OM2 · 50/125','#ea580c','#fff'],
-  ['OM3 · 50/125','#06b6d4','#fff'],['OM4 · 50/125','#7c3aed','#fff'],['OM5 · 50/125','#84cc16','#0f172a']];
+var FIBER_TIA=[['Blue','#1266e3','#ffffff'],['Orange','#ea680c','#ffffff'],['Green','#15802e','#ffffff'],
+  ['Brown','#783b0f','#ffffff'],['Slate','#74767b','#ffffff'],['White','#f8fafc','#1c1c1d'],
+  ['Red','#dc2644','#ffffff'],['Black','#161718','#ffffff'],['Yellow','#fab915','#1c1c1d'],
+  ['Violet','#3881ef','#ffffff'],['Rose','#a8c8f9','#1c1c1d'],['Aqua','#0658d4','#ffffff']];
+var FIBER_MODES=[['OS2 · single-mode','#fab915','#1c1c1d'],['OS1 · single-mode','#fab915','#1c1c1d'],
+  ['OM1 · 62.5/125','#ea680c','#ffffff'],['OM2 · 50/125','#ea680c','#ffffff'],
+  ['OM3 · 50/125','#0658d4','#ffffff'],['OM4 · 50/125','#3881ef','#ffffff'],['OM5 · 50/125','#16cc40','#1c1c1d']];
 var FIBER_CONN=['LC/UPC',"LC/APC",'SC/UPC',"SC/APC",'ST','FC','MPO / MTP-12',
   'Neutrik opticalCON DUO','Neutrik opticalCON QUAD','SMPTE 311M hybrid'];
-var FIBER_STATUS=[['Spare','#94a3b8'],['Pulled','#0ea5e9'],['Terminated','#8b5cf6'],
-  ['Tested OK','#00A15D'],['In service','#059669'],['Fault','#dc2626'],['Dark','#475569']];
+var FIBER_STATUS=[['Spare','#9ba2b1'],['Pulled','#0e66e9'],['Terminated','#5c9af6'],
+  ['Tested OK','#31A24C'],['In service','#059627'],['Fault','#dc2644'],['Dark','#55575B']];
 var FIBER_PATH=['A','B','—'];
 
 function fiberTia(pos){var i=((parseInt(pos,10)||1)-1)%12;if(i<0)i=0;return FIBER_TIA[i];}
 function fiberModeDef(m){for(var i=0;i<FIBER_MODES.length;i++)if(FIBER_MODES[i][0]===m)return FIBER_MODES[i];return FIBER_MODES[0];}
-function fiberStatusColor(st){for(var i=0;i<FIBER_STATUS.length;i++)if(FIBER_STATUS[i][0]===st)return FIBER_STATUS[i][1];return '#94a3b8';}
+function fiberStatusColor(st){for(var i=0;i<FIBER_STATUS.length;i++)if(FIBER_STATUS[i][0]===st)return FIBER_STATUS[i][1];return '#9ba2b1';}
 function fiberId(pfx){return pfx+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);}
 
 /* per-venue store — alias pattern: p.fiber always points at the ACTIVE venue's
@@ -8381,8 +8381,8 @@ function fiberScheduleHTML(key){
         '<p class="text-[9px] text-gray-500 mt-0.5">One row per strand, grouped by trunk — TIA-598-C colour code (strand 1-12 Blue→Aqua, jacket colour by fibre type), A/B path, panel/port endpoints, signal, length, test loss and status.</p>'+
         fiberLegendHTML()+(typeof fiberCadLinksHTML==='function'?fiberCadLinksHTML(key):'')+'</div>'+
       '<div class="flex items-center gap-1.5 flex-wrap justify-end">'+
-        chip('strands',counts.total,'#334155')+chip('in service',counts.live,'#059669')+
-        chip('spare',counts.spare,'#64748b')+(counts.fault?chip('fault',counts.fault,'#dc2626'):'')+
+        chip('strands',counts.total,'#424346')+chip('in service',counts.live,'#059627')+
+        chip('spare',counts.spare,'#74767b')+(counts.fault?chip('fault',counts.fault,'#dc2644'):'')+
       '</div></div>'+
     (f.trunks.length||loose.length?(trunkBlocks+looseBlock)
       :'<p class="text-[11px] text-gray-400 text-center py-4">No fiber logged yet — add a 12-strand trunk to lay in a full TIA-598-C group.</p>')+
@@ -8408,7 +8408,7 @@ function txByVenueHTML(key){
       return '<td class="py-1.5 pr-3 text-[10px] '+(v?'text-gray-700':'text-gray-300')+'">'+(v?esc(v):'—')+'</td>';}).join('');
     var st=(L.id===bound)?p.dept:(p.deptLoc&&p.deptLoc[L.id]&&p.deptLoc[L.id].dept);
     var stRow=null;if(st)for(var i2=0;i2<st.length;i2++){if(st[i2][0]==='Transmission / Signal'){stRow=st[i2];break;}}
-    var dot=stRow?(stRow[1]==='approved'?'#00A15D':(stRow[1]==='pending'?'#f59e0b':'#ef4444')):'#d1d5db';
+    var dot=stRow?(stRow[1]==='approved'?'#31A24C':(stRow[1]==='pending'?'#f56c0b':'#ef4461')):'#d1d4db';
     return '<tr class="border-b border-gray-100'+(on?' bg-blue-50/40':'')+'">'+
       '<td class="py-1.5 pr-3 whitespace-nowrap"><span class="inline-flex items-center gap-1.5 text-[11px] font-bold text-gray-800"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+dot+'"></span>'+(L.flag||'\uD83D\uDCCD')+' '+esc(L.name)+'</span><br><span class="text-[8px] text-gray-400 mono">'+esc(L.city||'')+'</span></td>'+
       cells+
@@ -8658,7 +8658,7 @@ function replayPaneHTML(key){var p=productions[key];var r=replayGet(p);var pool=
         kv('Capacity (TB)','<input value="'+esc(''+(r.store.capTb||'')).replace(/"/g,'&quot;')+'" onchange="replayEditStore(\''+key+'\',\'capTb\',this.value)" class="w-full text-[10px] mono border border-gray-200 rounded px-1.5 py-1 bg-white" style="outline:none">')+
         kv('Used (TB)','<input value="'+esc(''+(r.store.usedTb||'')).replace(/"/g,'&quot;')+'" onchange="replayEditStore(\''+key+'\',\'usedTb\',this.value)" class="w-full text-[10px] mono border border-gray-200 rounded px-1.5 py-1 bg-white" style="outline:none">')+
       '</div>'+
-      (pctUsed!=null?'<div class="mt-2"><div class="w-full bg-gray-100 rounded-full" style="height:8px"><div class="rounded-full" style="height:8px;width:'+pctUsed+'%;background:'+(pctUsed>90?'#dc2626':pctUsed>75?'#f59e0b':'#00A15D')+'"></div></div><p class="text-[9px] mono text-gray-500 mt-0.5">'+pctUsed+'% of shared media network used</p></div>':'')+
+      (pctUsed!=null?'<div class="mt-2"><div class="w-full bg-gray-100 rounded-full" style="height:8px"><div class="rounded-full" style="height:8px;width:'+pctUsed+'%;background:'+(pctUsed>90?'#dc2644':pctUsed>75?'#f56c0b':'#31A24C')+'"></div></div><p class="text-[9px] mono text-gray-500 mt-0.5">'+pctUsed+'% of shared media network used</p></div>':'')+
       kv('Shared With (servers on the media network)','<input value="'+esc(r.store.shared||'').replace(/"/g,'&quot;')+'" onchange="replayEditStore(\''+key+'\',\'shared\',this.value)" placeholder="e.g. Server A, Server B, edit bay 2" class="w-full text-[10px] border border-gray-200 rounded px-1.5 py-1 bg-white mt-2" style="outline:none">')+
       kv('Archive Target','<input value="'+esc(r.store.archive||'').replace(/"/g,'&quot;')+'" onchange="replayEditStore(\''+key+'\',\'archive\',this.value)" placeholder="e.g. LTO / NAS / cloud bucket" class="w-full text-[10px] border border-gray-200 rounded px-1.5 py-1 bg-white mt-1" style="outline:none">'))+
     '</div>'+
@@ -8676,13 +8676,13 @@ function replayPaneHTML(key){var p=productions[key];var r=replayGet(p);var pool=
 var _gfxBlobs={};  // id -> {url, previewConverted:bool, matteUrl?}
 var _gfxUi={};     // id -> {bg, loop, cue} transient player UI state
 var GFX_SIM_SHOWS={
-  worldcup:{open:'Show Open — World Cup 2026',bumper:'Bumper — World Cup',wipe:'Wipe — World Cup'},
-  winterolympics:{open:'Show Open — Winter Games',bumper:'Bumper — Winter Games',wipe:'Wipe — Winter Games'},
-  superbowl:{open:'Show Open — Super Bowl',bumper:'Bumper — Super Bowl',wipe:'Wipe — Super Bowl'},
-  sail250:{open:'Show Open — Sail 250',bumper:'Bumper — Sail 250',wipe:'Wipe — Sail 250'},
-  muse100:{open:'Show Open — Muse Live 100',bumper:'Bumper — Muse Live 100',wipe:'Wipe — Muse Live 100'},
-  midterms:{open:'Show Open — Midterms',bumper:'Bumper — Midterms',wipe:'Wipe — Midterms'},
-  parade:{open:'Show Open — Parade',bumper:'Bumper — Parade',wipe:'Wipe — Parade'}
+  museaitour:{open:'Show Open — Muse AI World Tour 2026',bumper:'Bumper — Muse AI World Tour',wipe:'Wipe — Muse AI World Tour'},
+  charm:{open:'Show Open — Winter Games',bumper:'Bumper — Winter Games',wipe:'Wipe — Winter Games'},
+  orion:{open:'Show Open — Orion Reveal',bumper:'Bumper — Orion Reveal',wipe:'Wipe — Orion Reveal'},
+  raybangen3:{open:'Show Open — Ray-Ban Meta Gen 3 Launch',bumper:'Bumper — Ray-Ban Meta Gen 3 Launch',wipe:'Wipe — Ray-Ban Meta Gen 3 Launch'},
+  museailaunch:{open:'Show Open — Muse AI Launch',bumper:'Bumper — Muse AI Launch',wipe:'Wipe — Muse AI Launch'},
+  whatsapp:{open:'Show Open — WhatsApp Summit',bumper:'Bumper — WhatsApp Summit',wipe:'Wipe — WhatsApp Summit'},
+  igcreators:{open:'Show Open — Creator Week',bumper:'Bumper — Creator Week',wipe:'Wipe — Creator Week'}
 };
 function gfxProdKey(p){
   if(!p)return '';
@@ -8713,7 +8713,7 @@ function gfxEnsureEnvSims(p,key){
     });
   });
 }
-var GFX_BGS=[['black','#000','Black'],['white','#fff','White'],['green','#00b140','Green'],['checker','','Checker'],['onair','','On-air']];
+var GFX_BGS=[['black','#000000','Black'],['white','#ffffff','White'],['green','#00b129','Green'],['checker','','Checker'],['onair','','On-air']];
 var GFX_SCANS=['1080i','1080p','720p','2160p (UHD)','Other'];
 var GFX_RATES=['59.94','50','29.97','25','23.976','60','Other'];
 var GFX_CODECS=['AVC-Intra','DVCPro-HD','ProRes 4444','ProRes 422','H.264','HEVC','VP9 (WebM)','Animation / QT RLE','Other'];
@@ -8722,7 +8722,7 @@ var GFX_ALPHA=['Unknown','Yes','No'];
 var GFX_ALPHAQC=['Not checked','Confirmed clean','Fringing / halo issues'];
 function gfxAssets(p){if(!p.gfxAssets)p.gfxAssets=[];gfxEnsureEnvSims(p,gfxProdKey(p));return p.gfxAssets;}
 function gfxUi(id){if(!_gfxUi[id])_gfxUi[id]={bg:'checker',loop:false,cue:0};return _gfxUi[id];}
-function gfxBgCss(bg){return bg==='black'?'#000':bg==='white'?'#fff':bg==='green'?'#00b140':bg==='onair'?'#1e3a8a':'repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%) 50% / 20px 20px';}
+function gfxBgCss(bg){return bg==='black'?'#000000':bg==='white'?'#ffffff':bg==='green'?'#00b129':bg==='onair'?'#0d469b':'repeating-conic-gradient(#d1d4db 0% 25%, #f8fafc 0% 50%) 50% / 20px 20px';}
 function gfxAssetById(key,id){var a=gfxAssets(productions[key]);for(var i=0;i<a.length;i++){if(a[i].id===id)return a[i];}return null;}
 function gfxSrcFor(a,which){var rb=_gfxBlobs[a.id];
   if(which==='matte'){if(rb&&rb.matteUrl)return rb.matteUrl;return a.matteSrc||a.matteDataUri||null;}
@@ -8839,13 +8839,13 @@ function gfxMarkFrame(id){
   el.textContent='f '+n;
 }
 function gfxSetBg(id,bg){gfxUi(id).bg=bg;var w=document.getElementById('gfxwrap_'+id);if(!w)return;
-  if(bg==='checker'){w.style.background='repeating-conic-gradient(#cbd5e1 0% 25%, #f8fafc 0% 50%) 50% / 20px 20px';}
-  else if(bg==='onair'){var c=document.getElementById('gfxbgc_'+id);w.style.background=(c&&c.value)||'#1e3a8a';}
-  else{w.style.background=(bg==='black'?'#000':bg==='white'?'#fff':'#00b140');}
+  if(bg==='checker'){w.style.background='repeating-conic-gradient(#d1d4db 0% 25%, #f8fafc 0% 50%) 50% / 20px 20px';}
+  else if(bg==='onair'){var c=document.getElementById('gfxbgc_'+id);w.style.background=(c&&c.value)||'#0d469b';}
+  else{w.style.background=(bg==='black'?'#000000':bg==='white'?'#ffffff':'#00b129');}
   var row=document.getElementById('gfxbgs_'+id);
   if(row){Array.prototype.forEach.call(row.querySelectorAll('button[data-bg]'),function(b){
     var on=b.getAttribute('data-bg')===bg;
-    b.style.outline=on?'2px solid #2563eb':'none';});}}
+    b.style.outline=on?'2px solid #2374ed':'none';});}}
 /* ---- Ingest tally + alpha / fill-matte gates ---- */
 function gfxTally(a){var d=a.declared||{};var ingest=[];var alpha=[];var fill=[];var matte=[];
   function line(arr,label,state,note){arr.push({label:label,state:state,note:note||''});}
@@ -8876,7 +8876,7 @@ function gfxTally(a){var d=a.declared||{};var ingest=[];var alpha=[];var fill=[]
     ingestVerdict:verdict(ingest),alphaVerdict:verdict(alpha),fillVerdict:verdict(fill),matteVerdict:verdict(matte)};}
 function gfxTallyHTML(key,a){var t=gfxTally(a);
   function rows(arr){return arr.map(function(l){
-    var ic=l.state==='pass'?'<span style="color:#00A15D">●</span>':l.state==='fail'?'<span style="color:#dc2626">●</span>':'<span style="color:#f59e0b">●</span>';
+    var ic=l.state==='pass'?'<span style="color:#31A24C">●</span>':l.state==='fail'?'<span style="color:#dc2644">●</span>':'<span style="color:#f56c0b">●</span>';
     return '<div class="flex items-start gap-1.5 text-[10px] py-0.5"><span>'+ic+'</span><span class="font-semibold text-gray-700">'+l.label+'</span>'+(l.note?'<span class="text-gray-400">— '+esc(l.note)+'</span>':'')+'</div>';}).join('');}
   function vchip(v,label){var cls=v==='pass'?'bg-emerald-500 text-white':v==='fail'?'bg-red-600 text-white':'bg-amber-100 text-amber-700';
     var txt=v==='pass'?'GREEN — all checks pass':v==='fail'?'RED — check failed':'INCOMPLETE — declare/probe remaining fields';
@@ -8993,8 +8993,8 @@ function gfxSectionHTML(key){var p=productions[key];var assets=gfxAssets(p,key);
         '<select onchange="gfxDeclare(\''+key+'\',\''+a.id+'\',\''+f+'\',this.value)" class="w-full text-[9px] text-gray-700 border border-gray-200 rounded px-1 py-0.5 bg-white" style="outline:none;min-width:0;max-width:100%">'+
         '<option value=""'+(cur?'':' selected')+'>—</option>'+opts.map(function(o){return '<option'+(cur===o?' selected':'')+'>'+o+'</option>';}).join('')+'</select></label>';};
     var audioEl=a.audioSrc?'<audio id="gfxa_'+a.id+'" src="'+a.audioSrc+'" preload="auto"></audio>':'';
-    var vidStyle='display:block;width:100%;height:100%;object-fit:contain;background:#0b0f17';
-    var stageStyle='aspect-ratio:16/9;width:100%;overflow:hidden;background:#0b0f17;cursor:pointer;-webkit-tap-highlight-color:transparent';
+    var vidStyle='display:block;width:100%;height:100%;object-fit:contain;background:#101112';
+    var stageStyle='aspect-ratio:16/9;width:100%;overflow:hidden;background:#101112;cursor:pointer;-webkit-tap-highlight-color:transparent';
     var fillVid=src?'<video id="gfxv_'+a.id+'" src="'+src+'"'+(a.poster?' poster="'+a.poster+'"':'')+(ui.loop?' loop':'')+(a.audioSrc?' muted':'')+' preload="metadata" playsinline webkit-playsinline ontimeupdate="gfxMarkFrame(\''+a.id+'\')" onclick="gfxToggle(\''+a.id+'\',event)" style="'+vidStyle+'"></video>':'';
     var matteVid=matteSrc?'<video id="gfxv_'+a.id+'_matte" src="'+matteSrc+'"'+(ui.loop?' loop':'')+' preload="metadata" playsinline webkit-playsinline onclick="gfxToggle(\''+a.id+'\',event)" style="'+vidStyle+'"></video>':'';
     var stage=a.pair&&fillVid&&matteVid
@@ -9116,13 +9116,13 @@ var WXC_TTL=10*60*1000;
 var WXC_FORCE_FALLBACK=false; /* set true in the console to demo the fallback path */
 
 function wxcCompass(deg){var pts=['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];return pts[Math.round((((deg%360)+360)%360)/22.5)%16];}
-function wxcAqiBand(a){if(a==null)return {label:'—',c:'#9ca3af',bg:'#f3f4f6'};
-  if(a<=50)return {label:'Good',c:'#047857',bg:'#d1fae5'};
-  if(a<=100)return {label:'Moderate',c:'#a16207',bg:'#fef9c3'};
-  if(a<=150)return {label:'Unhealthy (Sensitive)',c:'#c2410c',bg:'#ffedd5'};
-  if(a<=200)return {label:'Unhealthy',c:'#b91c1c',bg:'#fee2e2'};
-  if(a<=300)return {label:'Very Unhealthy',c:'#7e22ce',bg:'#f3e8ff'};
-  return {label:'Hazardous',c:'#881337',bg:'#ffe4e6'};}
+function wxcAqiBand(a){if(a==null)return {label:'—',c:'#9ba2b0',bg:'#f3f4f6'};
+  if(a<=50)return {label:'Good',c:'#04781F',bg:'#d1fadb'};
+  if(a<=100)return {label:'Moderate',c:'#a14707',bg:'#feedc3'};
+  if(a<=150)return {label:'Unhealthy (Sensitive)',c:'#c2580c',bg:'#ffe7d5'};
+  if(a<=200)return {label:'Unhealthy',c:'#b91c36',bg:'#fee2e7'};
+  if(a<=300)return {label:'Very Unhealthy',c:'#1264de',bg:'#e8f1ff'};
+  return {label:'Hazardous',c:'#881326',bg:'#ffe4e8'};}
 
 /* ---- Windy decoder: ts[] + <param>-surface arrays → normalized model ---- */
 function wxcFromWindy(j){
@@ -9241,7 +9241,7 @@ function wxcRender(i){var bx=document.getElementById('wxCityBox');if(!bx)return;
       var wet=(h.precipMm||0)>=0.2;
       return '<div class="wxc-hour'+(wet?' wxc-wet':'')+'"><p class="text-[8px] text-gray-500">'+t+'</p>'+
         '<p class="text-[11px] font-bold text-gray-900 mono">'+n(h.tempF)+'°</p>'+
-        '<p class="text-[7px] mono '+(wet?'font-bold':'text-gray-400')+'"'+(wet?' style="color:#0369a1"':'')+'>'+n(h.precipMm,1)+'mm</p>'+
+        '<p class="text-[7px] mono '+(wet?'font-bold':'text-gray-400')+'"'+(wet?' style="color:#0342a1"':'')+'>'+n(h.precipMm,1)+'mm</p>'+
         '<p class="text-[7px] text-gray-400 mono">'+n(h.windMph)+'mph</p></div>';}).join('')+'</div>':'';
   var foot='<div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-100">'+
     '<span class="text-[8px] mono text-gray-400">fetched '+new Date(d.ts).toLocaleTimeString()+' · cached 10 min</span>'+
@@ -9344,7 +9344,7 @@ function wxNotifyCrew(key){var p=productions[key];WX_NOTIFIED[key]=true;
   // count checked-in crew for this production from the barcode/crew model where available
   var n=0;try{if(p&&p.crewMatrix)n=Object.keys(p.crewMatrix).length;}catch(e){}
   if(!n)n=(CREW_FIELD.length);
-  console.groupCollapsed('%c[WEATHER] Crew disruption alert (SIMULATED)','color:#b45309;font-weight:bold');
+  console.groupCollapsed('%c[WEATHER] Crew disruption alert (SIMULATED)','color:#b45009;font-weight:bold');
   console.log('Production :',p?p.name:key);
   console.log('Recipients :',n+' checked-in crew');
   console.log('Channel    :','SMS + Email (Graph sendMail / Teams channel post)');

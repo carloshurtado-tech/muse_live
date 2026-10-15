@@ -1,7 +1,7 @@
 /**
  * Muse Live — Ops OS layer
  * Shared plan-of-record (BroadcastChannel + LWW) · day-of show board ·
- * field offline queue · Action Charlie hooks.
+ * field offline queue · Action Muse hooks.
  * ES5 IIFE. No deploy backend required — live across tabs in this origin.
  */
 (function (global) {
@@ -285,8 +285,8 @@
       var score = 0;
       if (/live/i.test(p.status || '')) score += 50;
       if (p.risk) score += 20;
-      if (k === 'superbowl') score += 15;
-      if (k === 'worldcup') score += 10;
+      if (k === 'orion') score += 15;
+      if (k === 'museaitour') score += 10;
       if (typeof p.pct === 'number') score += Math.max(0, 40 - Math.abs(70 - p.pct) / 2);
       if (score > bestScore) { bestScore = score; best = k; }
     }
@@ -403,7 +403,7 @@
     var audit = log.filter(function (e) { return !key || e.key === key || !e.key; }).slice(0, compact ? 4 : 8).map(function (e) {
       return '<li><span class="os-log-t">' + esc(String(e.ts || '').replace('T', ' ').slice(11, 16) || 'now') +
         '</span><b>' + esc(e.actor || 'Ops') + '</b> ' + esc(e.text || e.kind) + '</li>';
-    }).join('') || '<li class="os-muted">No writes yet — mark a department or ask Charlie.</li>';
+    }).join('') || '<li class="os-muted">No writes yet — mark a department or ask Muse.</li>';
 
     var blockRows = bl.slice(0, compact ? 4 : 8).map(function (b) {
       return '<li class="' + levelCls(b.level) + '"><b>' + esc(b.label) + '</b> ' + esc(b.detail) + '</li>';
@@ -453,7 +453,7 @@
       '<div class="os-actions">' +
         '<button type="button" class="os-btn" onclick="' + openProdTab(key, 'ops') + '">Broadcast Ops</button>' +
         '<button type="button" class="os-btn" onclick="' + openProdTab(key, 'survey') + '">Site survey</button>' +
-        '<button type="button" class="os-btn" onclick="try{if(!charlieOpen)toggleCharlie();charlieAsk(\'What is blocking ' + esc(p.name).replace(/'/g, '') + '?\')}catch(e){}">Ask Charlie</button>' +
+        '<button type="button" class="os-btn" onclick="try{if(!museaiOpen)toggleMuseAi();museaiAsk(\'What is blocking ' + esc(p.name).replace(/'/g, '') + '?\')}catch(e){}">Ask Muse</button>' +
         '<button type="button" class="os-btn os-btn-quiet" onclick="MuseOS.promptNote(\'' + key + '\')">Field note</button>' +
       '</div>' +
       '</section>'
@@ -501,8 +501,8 @@
     } catch (e) {}
   }
 
-  /* ---------- Charlie ---------- */
-  function parseCharlie(qRaw) {
+  /* ---------- Muse ---------- */
+  function parseMuseAi(qRaw) {
     var q = String(qRaw || '').toLowerCase().trim();
     if (!q) return null;
     if (/\b(what('?s| is)|whats)\b/.test(q) && /\b(block|blocking|missing|pending|holding)\b/.test(q))
@@ -517,7 +517,7 @@
     return null;
   }
 
-  function offerCharlie(act) {
+  function offerMuseAi(act) {
     if (!act) return false;
     if (act.kind === 'blockers') {
       var bl = blockers(act.key);
@@ -525,46 +525,46 @@
         ? bl.map(function (b) { return '• <b>' + esc(b.label) + '</b> — ' + esc(b.detail); }).join('<br>')
         : 'No blockers on the plan of record.';
       var g = gng(act.key);
-      if (typeof global.charliePushHtml === 'function')
-        global.charliePushHtml('<b>' + esc(prodName(act.key)) + '</b> is <b>' + esc(g.decision) + '</b> (' + g.score + '%).<br>' + lines +
+      if (typeof global.museaiPushHtml === 'function')
+        global.museaiPushHtml('<b>' + esc(prodName(act.key)) + '</b> is <b>' + esc(g.decision) + '</b> (' + g.score + '%).<br>' + lines +
           '<div class="mt-2"><button type="button" onclick="MuseOS.openBoard(\'' + act.key + '\')" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Open production</button></div>');
       return true;
     }
     if (act.kind === 'onsite') {
       var c = crewOnSite(act.key);
-      if (typeof global.charliePushHtml === 'function')
-        global.charliePushHtml('<b>' + c.on + ' / ' + c.total + '</b> on site at ' + esc(prodName(act.key)) +
+      if (typeof global.museaiPushHtml === 'function')
+        global.museaiPushHtml('<b>' + c.on + ' / ' + c.total + '</b> on site at ' + esc(prodName(act.key)) +
           (c.off ? (' · ' + c.off + ' not yet.') : ' · all checked in.') +
           '<div class="mt-2"><button type="button" onclick="' + openProdTab(act.key, 'crew') + '" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Open crew</button></div>');
       return true;
     }
     if (act.kind === 'fieldNote') {
-      global._charliePending = act;
-      if (typeof global.charliePushHtml === 'function') {
+      global._museaiPending = act;
+      if (typeof global.museaiPushHtml === 'function') {
         var preview = act.text ? esc(act.text) : '(you will be asked for the note)';
-        global.charliePushHtml('Queue a field note on <b>' + esc(prodName(act.key)) + '</b>: <i>' + preview + '</i>?' +
+        global.museaiPushHtml('Queue a field note on <b>' + esc(prodName(act.key)) + '</b>: <i>' + preview + '</i>?' +
           '<div class="mt-2 flex flex-wrap gap-1.5">' +
-          '<button type="button" onclick="charlieConfirmAction()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Confirm</button>' +
-          '<button type="button" onclick="charlieCancelAction()" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1">Cancel</button></div>');
+          '<button type="button" onclick="museaiConfirmAction()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Confirm</button>' +
+          '<button type="button" onclick="museaiCancelAction()" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1">Cancel</button></div>');
       }
       return true;
     }
     return false;
   }
 
-  function confirmCharlie(act) {
+  function confirmMuseAi(act) {
     if (!act || act.kind !== 'fieldNote') return false;
     var text = act.text;
     if (!text) {
       try { text = window.prompt('Field note for ' + prodName(act.key), ''); } catch (e) { text = ''; }
     }
     if (!text || !String(text).trim()) {
-      if (typeof global.charliePush === 'function') global.charliePush('Cancelled — empty note.', 'bot');
+      if (typeof global.museaiPush === 'function') global.museaiPush('Cancelled — empty note.', 'bot');
       return true;
     }
     fieldNote(act.key, String(text).trim());
-    if (typeof global.charliePushHtml === 'function')
-      global.charliePushHtml('Queued to the plan of record' + (isOnline() ? ' and synced.' : ' (offline — will flush with signal).') +
+    if (typeof global.museaiPushHtml === 'function')
+      global.museaiPushHtml('Queued to the plan of record' + (isOnline() ? ' and synced.' : ' (offline — will flush with signal).') +
         '<div class="mt-2"><button type="button" onclick="MuseOS.openBoard(\'' + act.key + '\')" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Open production</button></div>');
     return true;
   }
@@ -612,22 +612,22 @@
       orig.switchView.apply(this, arguments);
       hello(view);
     });
-    wrap('charlieParseAction', function (q) {
-      var extra = parseCharlie(q);
+    wrap('museaiParseAction', function (q) {
+      var extra = parseMuseAi(q);
       if (extra) return extra;
-      return orig.charlieParseAction.apply(this, arguments);
+      return orig.museaiParseAction.apply(this, arguments);
     });
-    wrap('charlieOfferAction', function (act) {
-      if (act && offerCharlie(act)) return true;
-      return orig.charlieOfferAction.apply(this, arguments);
+    wrap('museaiOfferAction', function (act) {
+      if (act && offerMuseAi(act)) return true;
+      return orig.museaiOfferAction.apply(this, arguments);
     });
-    wrap('charlieConfirmAction', function () {
-      var act = global._charliePending;
-      if (act && confirmCharlie(act)) { global._charliePending = null; return; }
-      return orig.charlieConfirmAction.apply(this, arguments);
+    wrap('museaiConfirmAction', function () {
+      var act = global._museaiPending;
+      if (act && confirmMuseAi(act)) { global._museaiPending = null; return; }
+      return orig.museaiConfirmAction.apply(this, arguments);
     });
-    wrap('buildCharlieChips', function () {
-      orig.buildCharlieChips.apply(this, arguments);
+    wrap('buildMuseAiChips', function () {
+      orig.buildMuseAiChips.apply(this, arguments);
     });
 
     window.addEventListener('online', function () { flushQueue(); hello(); });
@@ -641,7 +641,7 @@
       if (global.MuseLazy && global.MuseLazy.ensureBOps) global.MuseLazy.ensureBOps().then(function () { render(); }).catch(function () { render(); });
     } catch (e2) {}
     render();
-    try { if (typeof global.buildCharlieChips === 'function') global.buildCharlieChips(); } catch (e3) {}
+    try { if (typeof global.buildMuseAiChips === 'function') global.buildMuseAiChips(); } catch (e3) {}
     setTimeout(flushQueue, 400);
   }
 
@@ -654,7 +654,7 @@
     promptNote: promptNote,
     flush: flushQueue,
     queued: queued,
-    parseCharlie: parseCharlie,
+    parseMuseAi: parseMuseAi,
     focusKey: focusKey
   };
 

@@ -14,7 +14,7 @@
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
   Link: </css/muse-shell.css?v=0535>; rel=preload; as=style
   Link: </css/muse-dark.css?v=0528>; rel=preload; as=style
-  Link: </assets/brand/muse-live-mark.svg>; rel=preload; as=image
+  Link: </assets/brand/meta-mark.svg>; rel=preload; as=image
 
 /*.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate

@@ -2,13 +2,13 @@
 (function(root){
  'use strict';
  var planets=['Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune'];
- var primary={worldcup:'Jupiter',sail250:'Venus',superbowl:'Mars',muse100:'Earth',midterms:'Mercury',parade:'Saturn',winterolympics:'Neptune'};
- var uplinks={worldcup:'Neptune',sail250:'Mercury',superbowl:'Neptune',muse100:'Venus',midterms:'Uranus',parade:'Mars',winterolympics:'Uranus'};
+ var primary={museaitour:'Jupiter',raybangen3:'Venus',orion:'Mars',museailaunch:'Earth',whatsapp:'Mercury',igcreators:'Saturn',charm:'Neptune'};
+ var uplinks={museaitour:'Neptune',raybangen3:'Mercury',orion:'Neptune',museailaunch:'Venus',whatsapp:'Uranus',igcreators:'Mars',charm:'Uranus'};
  var aliases={
   'NEP ND1 — Supershooter 23':'Jupiter','NEP ND1':'Jupiter','Supershooter 23':'Jupiter','ND1':'Jupiter',
   'Game Creek — Edge':'Mars','Game Creek Edge':'Mars','OB Truck A · Edge':'Mars',
   'NEP Sat-4':'Neptune','K2 Ku Uplink':'Neptune','Ku Uplink 118':'Neptune','Uplink / TX Bay':'Neptune',
-  'Muse Live Field Ops Flypack · Double Technical Cabin':'Jupiter','Jupiter A':'Jupiter','Jupiter':'Jupiter',
+  'Meta Field Ops Flypack · Double Technical Cabin':'Jupiter','Jupiter A':'Jupiter','Jupiter':'Jupiter',
   'Double Technical Cabin':'Saturn','Double Tech Cabin':'Saturn','Harbor Contrib Cart':'Uranus',
   'Harbor Flypack A':'Venus','Harbor flypack':'Venus','HB-2 Flypack':'Venus','HB-2':'Venus','Dockside TX':'Mercury',
   'OB Truck B · Compound':'Earth','OB Truck A':'Earth','OB Truck B':'Saturn',

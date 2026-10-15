@@ -1,4 +1,4 @@
-/* Headless Muse Live — discover / describe / dispatch. Charlie-branded. Writes Confirm-to-act. */
+/* Headless Muse Live — discover / describe / dispatch. MuseAi-branded. Writes Confirm-to-act. */
 (function (root) {
   'use strict';
   var OPS = [
@@ -35,7 +35,7 @@
       if (k) return k;
     }
     if (q && typeof productions !== 'undefined' && productions[q]) return q;
-    if (typeof charlieFocusKey === 'function') return charlieFocusKey();
+    if (typeof museaiFocusKey === 'function') return museaiFocusKey();
     return (typeof order !== 'undefined' && order[0]) || null;
   }
   function dispatchReadonly(name, args) {
@@ -51,12 +51,12 @@
       var c = typeof countStatus === 'function' ? countStatus(p) : {};
       return { show: p.name, key: key, pct: pct, missing: c.missing || 0, depts: (p.dept || []).map(function (d) { return d[0] + '=' + d[1]; }) };
     }
-    if (name === 'wiki.search' && typeof MuseKB !== 'undefined' && MuseKB.chunksForCharlie) {
-      return MuseKB.chunksForCharlie(String((args && args.q) || ''), 8).map(function (d) {
+    if (name === 'wiki.search' && typeof MuseKB !== 'undefined' && MuseKB.chunksForMuseAi) {
+      return MuseKB.chunksForMuseAi(String((args && args.q) || ''), 8).map(function (d) {
         return { title: d.title, slug: d.slug, body: String(d.body || '').slice(0, 400) };
       });
     }
-    if (name === 'crew.open_seats') return { note: 'Ask Charlie: Who is open on crew?' };
+    if (name === 'crew.open_seats') return { note: 'Ask Muse: Who is open on crew?' };
     return { error: 'unknown or write-only op', name: name };
   }
   function dispatch(name, args) {

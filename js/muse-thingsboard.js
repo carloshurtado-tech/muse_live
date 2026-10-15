@@ -8,7 +8,7 @@
 
   var HISTORY_CAP = 40;
   var TICK_MS = 1500;
-  var MAJOR = { superbowl: 1, worldcup: 1, sail250: 1 };
+  var MAJOR = { orion: 1, museaitour: 1, raybangen3: 1 };
   var SENSOR_KEYS = ['tempC', 'vibrationMmS', 'voltageV', 'networkMbps', 'humidityPct', 'cpuLoad', 'upsLoadPct'];
   var HIST_KEYS = ['tempC', 'vibrationMmS', 'voltageV', 'networkMbps', 'humidityPct', 'cpuLoad', 'upsLoadPct'];
 
@@ -131,21 +131,21 @@
   }
 
   function truckSeeds(key) {
-    if (key === 'superbowl') {
+    if (key === 'orion') {
       return [
         makeTruck('TB-1', "Mars", { tempC: 26, vibrationMmS: 0.9, voltageV: 119, networkMbps: 310 }, 'online'),
         makeTruck('TB-2', "Earth", { tempC: 31, vibrationMmS: 1.8, voltageV: 114, networkMbps: 95 }, 'degraded'),
         makeTruck('TB-3', "Neptune", { tempC: 24, vibrationMmS: 0.5, voltageV: 121, networkMbps: 480 }, 'online')
       ];
     }
-    if (key === 'worldcup') {
+    if (key === 'museaitour') {
       return [
         makeTruck('TB-1', "Jupiter", { tempC: 25, vibrationMmS: 0.7, voltageV: 120, networkMbps: 380 }, 'online'),
         makeTruck('TB-2', "Saturn", { tempC: 27, vibrationMmS: 1.1, voltageV: 118, networkMbps: 290 }, 'online'),
         makeTruck('TB-3', "Uranus", { tempC: 29, vibrationMmS: 1.4, voltageV: 116, networkMbps: 140 }, 'degraded')
       ];
     }
-    if (key === 'sail250') {
+    if (key === 'raybangen3') {
       return [
         makeTruck('TB-1', "Venus", { tempC: 24, vibrationMmS: 0.8, voltageV: 120, networkMbps: 210 }, 'online'),
         makeTruck('TB-2', "Mercury", { tempC: 23, vibrationMmS: 0.6, voltageV: 121, networkMbps: 175 }, 'online')
@@ -758,17 +758,17 @@
       return (
         '<button type="button" onclick="' +
         fn +
-        '" style="appearance:none;cursor:pointer;border-radius:9px;padding:6px 10px;font:700 10px Inter,system-ui,sans-serif;' +
-        'border:1px solid #e5e7eb;background:#fff;color:#111827">' +
+        '" style="appearance:none;cursor:pointer;border-radius:9px;padding:6px 10px;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;' +
+        'border:1px solid #e5e7eb;background:#ffffff;color:#1B1C1D">' +
         esc(lab) +
         '</button>'
       );
     };
     var log = (hil.log || []).slice(0, 8).map(function (row) {
-      var col = row.kind === 'sign' ? '#15803d' : row.kind === 'inject' ? '#dc2626' : '#1d4ed8';
+      var col = row.kind === 'sign' ? '#15802e' : row.kind === 'inject' ? '#dc2644' : '#1266e3';
       return (
-        '<div style="display:flex;gap:8px;font:500 11px/1.4 Inter,system-ui,sans-serif;color:#374151">' +
-        '<span style="font-variant-numeric:tabular-nums;color:#9ca3af;min-width:54px">' +
+        '<div style="display:flex;gap:8px;font:500 11px/1.4 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#424346">' +
+        '<span style="font-variant-numeric:tabular-nums;color:#9ba2b0;min-width:54px">' +
         esc(row.ts) +
         '</span>' +
         '<span style="font-weight:800;color:' +
@@ -782,7 +782,7 @@
       );
     }).join('');
     var signed = hil.signed
-      ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;font:700 11px Inter,system-ui,sans-serif">' +
+      ? '<div style="margin-top:8px;padding:8px 10px;border-radius:10px;background:#f0fdf3;border:1px solid #bbf7c9;color:#166528;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">' +
         'Signed ' +
         esc(hil.signed.result) +
         ' · ' +
@@ -794,13 +794,13 @@
     return (
       '<div class="hil-loop" style="margin:0 0 12px;padding:12px 14px;border-radius:14px;border:1px solid #e5e7eb;background:#fafafa">' +
       '<div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px">' +
-      '<div><div style="font:800 13px Inter,system-ui,sans-serif;color:#111827">Hardware-in-the-loop</div>' +
-      '<div style="font:500 10px Inter,system-ui,sans-serif;color:#6b7280;margin-top:2px">Closed loop: inject a plant fault · act from Muse Live · sign the run. Simulated — not live ingest.</div></div>' +
+      '<div><div style="font:800 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1B1C1D">Hardware-in-the-loop</div>' +
+      '<div style="font:500 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#727479;margin-top:2px">Closed loop: inject a plant fault · act from Muse Live · sign the run. Simulated — not live ingest.</div></div>' +
       (hil.fault
-        ? '<span style="font:800 9px Inter,sans-serif;padding:3px 8px;border-radius:999px;background:#fef2f2;color:#dc2626;border:1px solid #fecaca">FAULT · ' +
+        ? '<span style="font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:3px 8px;border-radius:999px;background:#fef2f4;color:#dc2644;border:1px solid #fecad3">FAULT · ' +
           esc(hil.fault) +
           '</span>'
-        : '<span style="font:800 9px Inter,sans-serif;padding:3px 8px;border-radius:999px;background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0">PLANT NOMINAL</span>') +
+        : '<span style="font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:3px 8px;border-radius:999px;background:#f0fdf3;color:#15802e;border:1px solid #bbf7c9">PLANT NOMINAL</span>') +
       '</div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
       btn('Voltage sag', "MuseThingsBoard.injectFault('" + k + "','voltage')") +
@@ -814,10 +814,10 @@
       btn('Restore plant', "MuseThingsBoard.operatorAct('" + k + "','restore')") +
       '<button type="button" onclick="MuseThingsBoard.signRun(\'' +
       k +
-      '\')" style="appearance:none;cursor:pointer;border-radius:9px;padding:6px 12px;font:700 10px Inter,system-ui,sans-serif;border:0;background:#632E8A;color:#fff">Sign HIL run</button>' +
+      '\')" style="appearance:none;cursor:pointer;border-radius:9px;padding:6px 12px;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;border:0;background:#0866FF;color:#ffffff">Sign HIL run</button>' +
       '</div>' +
       '<div data-hil-log style="display:flex;flex-direction:column;gap:4px;max-height:132px;overflow:auto">' +
-      (log || '<div style="font:500 11px Inter,sans-serif;color:#9ca3af">No events yet. Inject a fault to close the loop.</div>') +
+      (log || '<div style="font:500 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#9ba2b0">No events yet. Inject a fault to close the loop.</div>') +
       '</div>' +
       signed +
       '</div>'

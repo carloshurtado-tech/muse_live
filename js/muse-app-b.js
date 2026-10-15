@@ -4,18 +4,18 @@
    1. Live Asset Tracking — trackers, geofence arrival alerts, fleet map
    2. Broadcast Operations Grid — work orders, transmission bookings,
       conflict/capacity engine, network visualizer  (Fabric / Xytech-inspired)
-   3. Charlie — Muse Live rules + free real-world APIs + optional on-device model
+   3. Muse — Muse Live rules + free real-world APIs + optional on-device model
    ================================================================================ */
 
 /* ---------------- venue & origin presets ---------------- */
 var TRK_VENUES={
- worldcup:{label:"Hard Rock Stadium · Miami",lat:25.958,lng:-80.2389},
- sail250:{label:"Battery Park · NYC Harbor",lat:40.7033,lng:-74.0170},
- superbowl:{label:"Levi's Stadium · Santa Clara",lat:37.4032,lng:-121.9697},
- muse100:{label:"Muse Plaza · Studio M1",lat:40.7587,lng:-73.9787},
- midterms:{label:"Muse Live Miami",lat:25.7906,lng:-80.3164},
- parade:{label:"Herald Square · NYC",lat:40.7496,lng:-73.9876},
- winterolympics:{label:"Milano-Cortina IBC",lat:45.4781,lng:9.1240}};
+ museaitour:{label:"Hard Rock Stadium · Miami",lat:25.958,lng:-80.2389},
+ raybangen3:{label:"Battery Park · NYC Harbor",lat:40.7033,lng:-74.0170},
+ orion:{label:"Levi's Stadium · Santa Clara",lat:37.4032,lng:-121.9697},
+ museailaunch:{label:"Meta NYC · Studio M1",lat:40.7587,lng:-73.9787},
+ whatsapp:{label:"Meta Miami",lat:25.7906,lng:-80.3164},
+ igcreators:{label:"Herald Square · NYC",lat:40.7496,lng:-73.9876},
+ charm:{label:"Milan Design Week IBC",lat:45.4781,lng:9.1240}};
 /* ============================================================================
    LIVE FLEET TRACKING — Traccar-style console (self-contained, no map tiles)
    Data model mirrors Traccar (Device / Position / Geofence / Event) so it can
@@ -102,14 +102,14 @@ function trkBearing(a,b){var y=Math.sin((b.lng-a.lng)*Math.PI/180)*Math.cos(b.la
 function trkCompass(b){return ['N','NE','E','SE','S','SW','W','NW'][Math.round(((b||0)%360)/45)%8];}
 
 var TRK_CATS={
-  truck:{label:'Mobile Unit',icon:'🚚',color:'#3b82f6'},
-  uplink:{label:'Uplink Truck',icon:'📡',color:'#8b5cf6'},
-  van:{label:'Crew Shuttle',icon:'🚐',color:'#06b6d4'},
-  car:{label:'Talent Vehicle',icon:'🚗',color:'#ec4899'},
-  gen:{label:'Generator',icon:'⚡',color:'#f59e0b'},
-  case:{label:'Camera Case',icon:'🎥',color:'#00A15D'},
-  security:{label:'Security Patrol',icon:'🛡️',color:'#ef4444'},
-  boat:{label:'Camera Boat',icon:'⛵',color:'#0ea5e9'}
+  truck:{label:'Mobile Unit',icon:'🚚',color:'#3b86f6'},
+  uplink:{label:'Uplink Truck',icon:'📡',color:'#5c9af6'},
+  van:{label:'Crew Shuttle',icon:'🚐',color:'#0658d4'},
+  car:{label:'Talent Vehicle',icon:'🚗',color:'#ec4863'},
+  gen:{label:'Generator',icon:'⚡',color:'#f56c0b'},
+  case:{label:'Camera Case',icon:'🎥',color:'#31A24C'},
+  security:{label:'Security Patrol',icon:'🛡️',color:'#ef4461'},
+  boat:{label:'Camera Boat',icon:'⛵',color:'#0e66e9'}
 };
 
 var trkDevices=[],trkPos={},trkRoutes={},trkGeos={},trkPOI={},trkEvents=[],trkView={};
@@ -118,8 +118,8 @@ var TRK_SPEED_FACTOR=5; /* accelerate motion so movement is visible in a live de
 
 function trkFleetSpec(key){
   var real={
-    worldcup:[['truck','NEP ND1 — Supershooter 23','compound'],['uplink','K2 Ku Uplink','compound'],['van','Crew Shuttle — IBC','loopHV'],['car','Talent Coach','airportRun'],['security','Perimeter Security','perimeter'],['gen','IBC Genset A','compound'],['case','RF Camera Case','loopVC']],
-    superbowl:[['truck','Game Creek — Edge','compound'],['uplink','Ku Uplink 118','compound'],['van','Crew Shuttle A','loopHV'],['car','Talent SUV','airportRun'],['security','Field Security','perimeter'],['gen','Compound Genset','compound'],['case','Handheld Case','loopVC']]
+    museaitour:[['truck','NEP ND1 — Supershooter 23','compound'],['uplink','K2 Ku Uplink','compound'],['van','Crew Shuttle — IBC','loopHV'],['car','Talent Coach','airportRun'],['security','Perimeter Security','perimeter'],['gen','IBC Genset A','compound'],['case','RF Camera Case','loopVC']],
+    orion:[['truck','Game Creek — Edge','compound'],['uplink','Ku Uplink 118','compound'],['van','Crew Shuttle A','loopHV'],['car','Talent SUV','airportRun'],['security','Field Security','perimeter'],['gen','Compound Genset','compound'],['case','Handheld Case','loopVC']]
   };
   if(real[key])return real[key];
   return [['truck','Mobile Unit 1','compound'],['uplink','Uplink Truck','compound'],['van','Crew Shuttle','loopHV'],['car','Talent Vehicle','airportRun'],['security','Security Patrol','perimeter'],['gen','Genset A','compound'],['case','RF Camera Case','loopVC']];
@@ -138,10 +138,10 @@ function trkBuildLayout(key){
   trkPOI[key]=pois;
   var P={};pois.forEach(function(p){P[p.id]=p.pos;});
   trkGeos[key]=[
-    {id:key+'_venue',name:pois[0].name,center:P.venue,radius:250,color:'#f1f5f9'},
-    {id:key+'_comp',name:'Compound',center:P.compound,radius:210,color:'#3b82f6'},
-    {id:key+'_hotel',name:'Media Hotel',center:P.hotel,radius:170,color:'#06b6d4'},
-    {id:key+'_air',name:'Airport',center:P.airport,radius:260,color:'#8b5cf6'}
+    {id:key+'_venue',name:pois[0].name,center:P.venue,radius:250,color:'#f1f4f9'},
+    {id:key+'_comp',name:'Compound',center:P.compound,radius:210,color:'#3b86f6'},
+    {id:key+'_hotel',name:'Media Hotel',center:P.hotel,radius:170,color:'#0658d4'},
+    {id:key+'_air',name:'Airport',center:P.airport,radius:260,color:'#5c9af6'}
   ];
   // named routes
   var per=[trkOffset(c.lat,c.lng,230,230),trkOffset(c.lat,c.lng,-230,230),trkOffset(c.lat,c.lng,-230,-230),trkOffset(c.lat,c.lng,230,-230)];
@@ -235,7 +235,7 @@ function trkTogglePause(){trkPaused=!trkPaused;try{toast&&toast(trkPaused?'Telem
   document.querySelectorAll('[data-trkpause]').forEach(function(b){b.textContent=trkPaused?'▶ Resume':'⏸ Pause';});}
 
 /* ---------------- HTML fragments ---------------- */
-function trkStatDot(dev){var ps=trkPos[dev.id]||{};if(dev.status==='offline')return '#94a3b8';return ps.motion?'#00A15D':'#f59e0b';}
+function trkStatDot(dev){var ps=trkPos[dev.id]||{};if(dev.status==='offline')return '#9ba2b1';return ps.motion?'#31A24C':'#f56c0b';}
 function trkSummaryHTML(scope){var s=trkStats(scope);
   function chip(lbl,val,col){return '<span class="inline-flex items-center gap-1 text-[10px] font-bold mono px-2 py-1 rounded-lg border '+col+'">'+val+' <span class="font-semibold opacity-70">'+lbl+'</span></span>';}
   return chip('assets',s.total,'bg-gray-50 border-gray-200 text-gray-700')+
@@ -246,10 +246,10 @@ function trkSummaryHTML(scope){var s=trkStats(scope);
 function trkListHTML(scope){var devs=trkDevs(scope);var vw=trkView2(scope);
   devs.sort(function(a,b){function r(d){var ps=trkPos[d.id]||{};if(d.status==='offline')return 2;return ps.motion?0:1;}return r(a)-r(b);});
   if(!devs.length)return '<div class="text-[10px] text-gray-400 p-4 text-center">No assets in this scope.</div>';
-  return devs.map(function(d){var ps=trkPos[d.id]||{};var cat=TRK_CATS[d.cat]||{icon:'📍',color:'#64748b',label:d.cat};
+  return devs.map(function(d){var ps=trkPos[d.id]||{};var cat=TRK_CATS[d.cat]||{icon:'📍',color:'#74767b',label:d.cat};
     var sel=vw.sel===d.id;var off=d.status==='offline';
     var right=off?'<span class="text-[9px] font-bold text-gray-400 mono">OFFLINE</span>':(ps.motion?'<span class="text-[11px] font-bold mono text-blue-700">'+Math.round(ps.speed)+'<span class="text-[8px] text-gray-400"> mph</span></span>':'<span class="text-[9px] font-bold mono text-amber-600">PARKED</span>');
-    var bat=Math.round(ps.battery||0);var batcol=bat<20?'#ef4444':(bat<45?'#f59e0b':'#00A15D');
+    var bat=Math.round(ps.battery||0);var batcol=bat<20?'#ef4461':(bat<45?'#f56c0b':'#31A24C');
     return '<button onclick="trkSelect(\''+scope+'\',\''+d.id+'\');trkRenderScope(\''+scope+'\')" class="w-full text-left flex items-center gap-2.5 p-2 rounded-xl border transition-colors '+(sel?'border-blue-300 bg-blue-50/60':'border-gray-200 hover:bg-gray-50')+'">'+
       '<span class="relative flex-shrink-0"><span class="w-8 h-8 rounded-lg flex items-center justify-center text-[13px]" style="background:'+hexA(cat.color,0.14)+'">'+cat.icon+'</span>'+
         '<span class="absolute -right-0.5 -top-0.5 w-2.5 h-2.5 rounded-full border-2 border-white" style="background:'+trkStatDot(d)+'"></span></span>'+
@@ -259,7 +259,7 @@ function trkListHTML(scope){var devs=trkDevs(scope);var vw=trkView2(scope);
     '</button>';}).join('');}
 function trkDetailHTML(scope){var vw=trkView2(scope);var d=vw.sel?trkDevById(vw.sel):null;
   if(!d)return '<div class="text-[10px] text-gray-400 text-center py-8 px-4">Select an asset to see demo telemetry, position and history (local simulation — not a live Traccar feed).</div>';
-  var ps=trkPos[d.id]||{};var cat=TRK_CATS[d.cat]||{icon:'📍',color:'#64748b',label:d.cat};var off=d.status==='offline';
+  var ps=trkPos[d.id]||{};var cat=TRK_CATS[d.cat]||{icon:'📍',color:'#74767b',label:d.cat};var off=d.status==='offline';
   function kv(l,v){return '<div class="bg-gray-50 rounded-lg p-2 border border-gray-100"><p class="text-[8px] font-bold uppercase tracking-wider text-gray-500">'+l+'</p><p class="text-[12px] font-bold mono text-gray-900 leading-tight">'+v+'</p></div>';}
   var spark=(ps.spark||[]);var mx=Math.max(1,Math.max.apply(null,spark.concat([1])));
   var sparkHTML=spark.map(function(v){return '<span style="display:inline-block;width:3px;height:'+Math.max(2,Math.round(v/mx*22))+'px;background:'+cat.color+';opacity:.75;border-radius:1px"></span>';}).join('');
@@ -276,7 +276,7 @@ function trkEventsHTML(scope){var evs=trkEvents.filter(function(e){return scope=
   if(!evs.length)return '<div class="text-[10px] text-gray-400 text-center py-3">No events yet.</div>';
   var ic={geofenceEnter:'📍',geofenceExit:'↗',deviceOffline:'⚠',deviceOnline:'✓',overspeed:'⏱'};
   var tx={geofenceEnter:'entered',geofenceExit:'left',deviceOffline:'went offline',deviceOnline:'back online',overspeed:'overspeed'};
-  return evs.map(function(e){var cat=TRK_CATS[e.cat]||{color:'#64748b'};
+  return evs.map(function(e){var cat=TRK_CATS[e.cat]||{color:'#74767b'};
     return '<div class="flex items-start gap-2 py-1.5 border-b border-gray-100 last:border-0"><span class="text-[11px] leading-none mt-0.5">'+(ic[e.type]||'•')+'</span>'+
       '<div class="min-w-0 flex-1"><p class="text-[10px] text-gray-700 leading-tight"><span class="font-bold" style="color:'+cat.color+'">'+esc(e.name)+'</span> '+(tx[e.type]||e.type)+(e.zone?' <span class="font-semibold">'+esc(e.zone)+'</span>':'')+'</p>'+
       '<p class="text-[8px] mono text-gray-400">'+trkAgo(e.t)+'</p></div></div>';}).join('');}
@@ -375,60 +375,60 @@ function trkDrawCanvas(cv){var scope=cv.getAttribute('data-scope');var vw=trkVie
   cv.__proj={clat:clat,clng:clng,mpp:mpp,w:w,h:h,WORLDpx:WORLDpx,mcx:mcx,mcy:mcy};
   var darkMap=trkIsDark();
   // background: theme-aware basemap (falls back to a grid until tiles load)
-  ctx.fillStyle=darkMap?'#0e1526':'#e8eef5';ctx.fillRect(0,0,w,h);
+  ctx.fillStyle=darkMap?'#191a1b':'#e8edf5';ctx.fillRect(0,0,w,h);
   var drewTiles=_trkDrawTiles(ctx,cv.__proj);
   if(!drewTiles){
-    ctx.strokeStyle=darkMap?'rgba(80,110,160,0.10)':'rgba(100,116,139,0.18)';ctx.lineWidth=1;
+    ctx.strokeStyle=darkMap?'rgba(18,100,222,0.10)':'rgba(116,118,123,0.18)';ctx.lineWidth=1;
     var gstep=Math.max(40,Math.min(120,mpp>0?(500/mpp):80));
     for(var gx=w/2%gstep;gx<w;gx+=gstep){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,h);ctx.stroke();}
     for(var gy=h/2%gstep;gy<h;gy+=gstep){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(w,gy);ctx.stroke();}
   }
   var local=mpp<40;
-  var ink=darkMap?'rgba(226,232,240,0.9)':'rgba(30,41,59,0.92)';
-  var inkMuted=darkMap?'rgba(148,163,184,0.9)':'rgba(71,85,105,0.95)';
-  var labelBg=darkMap?'rgba(9,14,26,0.82)':'rgba(255,255,255,0.92)';
-  var labelFg=darkMap?'#e2e8f0':'#0f172a';
-  var scaleInk=darkMap?'rgba(226,232,240,0.6)':'rgba(51,65,85,0.75)';
+  var ink=darkMap?'rgba(226,232,240,0.9)':'rgba(43,44,46,0.92)';
+  var inkMuted=darkMap?'rgba(155,162,177,0.9)':'rgba(85,87,91,0.95)';
+  var labelBg=darkMap?'rgba(17,17,18,0.82)':'rgba(255,255,255,0.92)';
+  var labelFg=darkMap?'#e2e8f0':'#1c1c1d';
+  var scaleInk=darkMap?'rgba(226,232,240,0.6)':'rgba(66,67,70,0.75)';
   // roads between POIs (local only — skipped when the real basemap is drawn)
-  if(local&&pois.length&&!drewTiles){ctx.strokeStyle=darkMap?'rgba(148,163,184,0.22)':'rgba(100,116,139,0.35)';ctx.lineWidth=6;ctx.lineCap='round';
+  if(local&&pois.length&&!drewTiles){ctx.strokeStyle=darkMap?'rgba(155,162,177,0.22)':'rgba(116,118,123,0.35)';ctx.lineWidth=6;ctx.lineCap='round';
     var byId={};pois.forEach(function(p){byId[p.id]=p;});
     [['venue','compound'],['venue','catering'],['compound','lot'],['venue','hotel'],['hotel','airport'],['venue','lot']].forEach(function(pair){var a=byId[pair[0]],b=byId[pair[1]];if(a&&b){var pa=PX(a.pos),pb=PX(b.pos);ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();}});
-    ctx.strokeStyle=darkMap?'rgba(226,232,240,0.14)':'rgba(51,65,85,0.2)';ctx.lineWidth=2;
+    ctx.strokeStyle=darkMap?'rgba(226,232,240,0.14)':'rgba(66,67,70,0.2)';ctx.lineWidth=2;
     [['venue','compound'],['venue','catering'],['compound','lot'],['venue','hotel'],['hotel','airport'],['venue','lot']].forEach(function(pair){var a=byId[pair[0]],b=byId[pair[1]];if(a&&b){var pa=PX(a.pos),pb=PX(b.pos);ctx.beginPath();ctx.moveTo(pa.x,pa.y);ctx.lineTo(pb.x,pb.y);ctx.stroke();}});}
   // geofences (local only)
   if(local){geos.forEach(function(g){var c=PX(g.center);var rp=g.radius/mpp;if(rp<3)return;
     ctx.beginPath();ctx.arc(c.x,c.y,rp,0,Math.PI*2);ctx.fillStyle=hexA(g.color,darkMap?0.08:0.12);ctx.fill();
     ctx.setLineDash([5,4]);ctx.strokeStyle=hexA(g.color,darkMap?0.55:0.7);ctx.lineWidth=1.2;ctx.stroke();ctx.setLineDash([]);
-    ctx.fillStyle=hexA(g.color,darkMap?0.85:1);ctx.font='700 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText(g.name.toUpperCase(),c.x,c.y-rp-4);});}
+    ctx.fillStyle=hexA(g.color,darkMap?0.85:1);ctx.font='700 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';ctx.textAlign='center';ctx.fillText(g.name.toUpperCase(),c.x,c.y-rp-4);});}
   // POI markers (local only)
   if(local){pois.forEach(function(p){var c=PX(p.pos);ctx.fillStyle=ink;
     ctx.beginPath();ctx.moveTo(c.x,c.y-4);ctx.lineTo(c.x+4,c.y);ctx.lineTo(c.x,c.y+4);ctx.lineTo(c.x-4,c.y);ctx.closePath();ctx.fill();
-    ctx.fillStyle=inkMuted;ctx.font='600 8px DM Mono,monospace';ctx.textAlign='left';ctx.fillText(p.name,c.x+7,c.y+3);});}
+    ctx.fillStyle=inkMuted;ctx.font='600 8px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';ctx.textAlign='left';ctx.fillText(p.name,c.x+7,c.y+3);});}
   // trails
-  if(local){devs.forEach(function(d){var ps=trkPos[d.id];if(!ps||!ps.trail||ps.trail.length<2)return;var col=(TRK_CATS[d.cat]||{}).color||'#38bdf8';
+  if(local){devs.forEach(function(d){var ps=trkPos[d.id];if(!ps||!ps.trail||ps.trail.length<2)return;var col=(TRK_CATS[d.cat]||{}).color||'#3885f8';
     for(var i=1;i<ps.trail.length;i++){var a=PX(ps.trail[i-1]),b=PX(ps.trail[i]);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
       ctx.strokeStyle=hexA(col,0.06+0.4*(i/ps.trail.length));ctx.lineWidth=2.2;ctx.stroke();}});}
   // devices
-  devs.forEach(function(d){var ps=trkPos[d.id];if(!ps)return;var c=PX(ps);var cat=TRK_CATS[d.cat]||{color:'#64748b'};
-    var col=d.status==='offline'?'#94a3b8':cat.color;var sel=(vw.sel===d.id);
+  devs.forEach(function(d){var ps=trkPos[d.id];if(!ps)return;var c=PX(ps);var cat=TRK_CATS[d.cat]||{color:'#74767b'};
+    var col=d.status==='offline'?'#9ba2b1':cat.color;var sel=(vw.sel===d.id);
     if(sel){var pr=(Date.now()%1400)/1400;ctx.beginPath();ctx.arc(c.x,c.y,9+pr*10,0,Math.PI*2);ctx.strokeStyle=hexA(col,0.5*(1-pr));ctx.lineWidth=2;ctx.stroke();}
     if(ps.motion&&d.status!=='offline'){var ang=(ps.course-90)*Math.PI/180;ctx.save();ctx.translate(c.x,c.y);ctx.rotate(ang);
       ctx.beginPath();ctx.moveTo(9,0);ctx.lineTo(-4,-5);ctx.lineTo(-4,5);ctx.closePath();ctx.fillStyle=col;ctx.fill();ctx.restore();}
-    ctx.beginPath();ctx.arc(c.x,c.y,sel?6:5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=sel?'#ffffff':(darkMap?'rgba(14,21,38,0.9)':'rgba(255,255,255,0.95)');ctx.stroke();
+    ctx.beginPath();ctx.arc(c.x,c.y,sel?6:5,0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=sel?'#ffffff':(darkMap?'rgba(25,26,27,0.9)':'rgba(255,255,255,0.95)');ctx.stroke();
     // label
     if(local||sel){var lbl=d.name.length>18?d.name.slice(0,17)+'…':d.name;var spd=ps.motion?'  '+Math.round(ps.speed)+' mph':(d.status==='offline'?'  offline':'');
-      ctx.font='700 9px DM Mono,monospace';var tw=ctx.measureText(lbl+spd).width;var lx=c.x+9,ly=c.y-8;
+      ctx.font='700 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';var tw=ctx.measureText(lbl+spd).width;var lx=c.x+9,ly=c.y-8;
       ctx.fillStyle=labelBg;if(ctx.roundRect){ctx.beginPath();ctx.roundRect(lx-3,ly-9,tw+9,13,3);ctx.fill();}else{ctx.fillRect(lx-3,ly-9,tw+9,13);}
-      if(!darkMap){ctx.strokeStyle='rgba(15,23,42,0.12)';ctx.lineWidth=1;if(ctx.roundRect){ctx.beginPath();ctx.roundRect(lx-3,ly-9,tw+9,13,3);ctx.stroke();}else{ctx.strokeRect(lx-3,ly-9,tw+9,13);}}
+      if(!darkMap){ctx.strokeStyle='rgba(28,28,29,0.12)';ctx.lineWidth=1;if(ctx.roundRect){ctx.beginPath();ctx.roundRect(lx-3,ly-9,tw+9,13,3);ctx.stroke();}else{ctx.strokeRect(lx-3,ly-9,tw+9,13);}}
       ctx.fillStyle=labelFg;ctx.textAlign='left';ctx.fillText(lbl,lx,ly);
       if(spd){ctx.fillStyle=hexA(col,1);ctx.fillText(spd,lx+ctx.measureText(lbl).width,ly);}}
   });
   // scale bar
   var target=w*0.22;var meters=target*mpp;var nice=Math.pow(10,Math.floor(Math.log(meters)/Math.LN10));var mult=meters/nice;mult=mult>=5?5:(mult>=2?2:1);var barM=nice*mult;var barPx=barM/mpp;
   ctx.strokeStyle=scaleInk;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(12,h-14);ctx.lineTo(12+barPx,h-14);ctx.stroke();
-  ctx.fillStyle=scaleInk;ctx.font='600 8px DM Mono,monospace';ctx.textAlign='left';ctx.fillText(barM>=1000?(barM/1000)+' km':Math.round(barM)+' m',12,h-18);
+  ctx.fillStyle=scaleInk;ctx.font='600 8px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';ctx.textAlign='left';ctx.fillText(barM>=1000?(barM/1000)+' km':Math.round(barM)+' m',12,h-18);
   // north arrow
-  ctx.fillStyle=scaleInk;ctx.font='700 9px DM Mono,monospace';ctx.textAlign='center';ctx.fillText('N',w-16,h-22);
+  ctx.fillStyle=scaleInk;ctx.font='700 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace';ctx.textAlign='center';ctx.fillText('N',w-16,h-22);
   ctx.beginPath();ctx.moveTo(w-16,h-32);ctx.lineTo(w-19,h-24);ctx.lineTo(w-13,h-24);ctx.closePath();ctx.fillStyle=scaleInk;ctx.fill();
   if(!cv.__trkWired)trkWireCanvas(cv);
 }
@@ -483,14 +483,14 @@ var INV_FLOW=['Received','Approved','Scheduled','Paid'];
 var TX_FLOW=['Hold','Booked','Line-Up','Live','Complete'];
 
 var workOrders=[
- {id:'WO-2641',prod:'worldcup',desc:'IBC Compound Power Distro',res:'Aggreko 400A + spider boxes',cost:48200,status:'Confirmed'},
- {id:'WO-2644',prod:'worldcup',desc:'Fiber Pull — Hard Rock ring',res:'LTN field crew ×6',cost:36750,status:'In Progress'},
- {id:'WO-2668',prod:'worldcup',desc:'MetLife Final · Muse Live 100–102 TAC-12 plant',res:'Muse Live Field Ops fiber crew',cost:28500,status:'Confirmed'},
- {id:'WO-2669',prod:'worldcup',desc:'MetLife Final · HBS power + UPS in-line',res:'HBS + Muse Live power',cost:18400,status:'Confirmed'},
- {id:'WO-2650',prod:'superbowl',desc:'Venue Power Survey',res:'Engineering survey team',cost:12400,status:'Draft'},
- {id:'WO-2652',prod:'muse100',desc:'Studio M1 Lighting Rig',res:'House LD + 4 electrics',cost:29800,status:'Confirmed'},
- {id:'WO-2657',prod:'parade',desc:'Float Cam Mounts ×6',res:'Rigging crew + fab shop',cost:18650,status:'In Progress'},
- {id:'WO-2660',prod:'sail250',desc:'Dockside Shore Power 200A',res:'Marine electrician',cost:9400,status:'Complete'}];
+ {id:'WO-2641',prod:'museaitour',desc:'IBC Compound Power Distro',res:'Aggreko 400A + spider boxes',cost:48200,status:'Confirmed'},
+ {id:'WO-2644',prod:'museaitour',desc:'Fiber Pull — Hard Rock ring',res:'LTN field crew ×6',cost:36750,status:'In Progress'},
+ {id:'WO-2668',prod:'museaitour',desc:'MetLife Final · Muse AI Launch–102 TAC-12 plant',res:'Meta Field Ops fiber crew',cost:28500,status:'Confirmed'},
+ {id:'WO-2669',prod:'museaitour',desc:'MetLife Final · HBS power + UPS in-line',res:'HBS + Muse Live power',cost:18400,status:'Confirmed'},
+ {id:'WO-2650',prod:'orion',desc:'Venue Power Survey',res:'Engineering survey team',cost:12400,status:'Draft'},
+ {id:'WO-2652',prod:'museailaunch',desc:'Studio M1 Lighting Rig',res:'House LD + 4 electrics',cost:29800,status:'Confirmed'},
+ {id:'WO-2657',prod:'igcreators',desc:'Float Cam Mounts ×6',res:'Rigging crew + fab shop',cost:18650,status:'In Progress'},
+ {id:'WO-2660',prod:'raybangen3',desc:'Dockside Shore Power 200A',res:'Marine electrician',cost:9400,status:'Complete'}];
 
 var TX_RES={
  'Galaxy-19 Tp 12':{cap:72,type:'Satellite'},
@@ -517,72 +517,72 @@ var TX_RES={
  'TOC Router 2110':{cap:4000,type:'Router'},
  'Muse Live 2110 Spine':{cap:6000,type:'Router'},
  'IBC Nevion Fabric':{cap:8000,type:'Router'},
- 'Muse Live+ Cloud Ingest':{cap:5000,type:'Cloud'},
+ 'Meta Cloud Ingest':{cap:5000,type:'Cloud'},
  'AWS MediaConnect East':{cap:10000,type:'Cloud'},
  'MediaKind Encode Farm':{cap:4000,type:'Cloud'}};
 var TX_TYPE_TAG={'Satellite':'SAT','Fiber':'FIBER',"LiveU LU800":'LIVEU','Router':'RTR','Cloud':'CLOUD'};
 
 var txBookings=[
- // ---- FIFA World Cup 2026 — multi-path contribution out of Hard Rock + Zócalo ----
- {id:'TX-121',prod:'worldcup',src:'Hard Rock Stadium',res:'LTN Fiber A',dst:'Muse Live Miami',bw:600,cost:28400,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
- {id:'TX-122',prod:'worldcup',src:'Hard Rock Stadium',res:'Galaxy-19 Tp 12',dst:'Muse Plaza TOC',bw:72,cost:9600,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
- {id:'TX-127',prod:'worldcup',src:'Hard Rock Stadium',res:'AT&T Vyvx 10G',dst:'IBC — Dallas',bw:4800,cost:51200,start:'2026-07-12T10:00',end:'2026-07-12T23:00',status:'Live'},
- {id:'TX-128',prod:'worldcup',src:'Hard Rock Stadium',res:"LiveU LU800",dst:'Muse Live Miami',bw:110,cost:5200,start:'2026-07-12T11:00',end:'2026-07-12T21:00',status:'Line-Up'},
- {id:'TX-129',prod:'worldcup',src:'Zócalo CDMX Set',res:'SES-11 Ku Tp 21',dst:'IBC — Dallas',bw:96,cost:14200,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Booked'},
- {id:'TX-130',prod:'worldcup',src:'Zócalo CDMX Set',res:"Harmonic XOS",dst:'Muse Live Miami',bw:180,cost:6800,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Live'},
- {id:'TX-131',prod:'worldcup',src:'IBC — Dallas',res:'IBC Nevion Fabric',dst:'Muse Live+ Cloud Ingest',bw:7200,cost:38400,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Live'},
- {id:'TX-132',prod:'worldcup',src:'IBC — Dallas',res:'Muse Live 2110 Spine',dst:'Muse Live Miami',bw:5400,cost:0,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Line-Up'},
- {id:'TX-133',prod:'worldcup',src:'IBC — Dallas',res:'AWS MediaConnect East',dst:'Muse Live+ Cloud Ingest',bw:8600,cost:21400,start:'2026-07-12T10:00',end:'2026-07-12T23:59',status:'Booked'},
- // MetLife NYNJ → Muse Live Miami (Evertz 570IP + LiveU B/U)
- {id:'TX-141',prod:'worldcup',src:'MetLife · Presentation Studio Cam 1',res:"Harmonic XOS (ENC1)",dst:"Muse Live Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-142',prod:'worldcup',src:'MetLife · Presentation Studio Cam 2',res:"Harmonic XOS (ENC2)",dst:"Muse Live Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-143',prod:'worldcup',src:'MetLife · Presentation Studio Cam 3',res:"Harmonic XOS (ENC3)",dst:"Muse Live Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-144',prod:'worldcup',src:'MetLife · Presentation Studio Cam 4',res:"Harmonic XOS (ENC4)",dst:"Muse Live Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-145',prod:'worldcup',src:'MetLife · Outside Announce Cam 1',res:"Harmonic XOS (ENC5)",dst:"Muse Live Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-146',prod:'worldcup',src:'MetLife · Outside Announce Cam 2',res:"Harmonic XOS (ENC6)",dst:"Muse Live Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-147',prod:'worldcup',src:'MetLife · Presentation Studio Cam 2',res:"LiveU LU800",dst:'Muse Live Miami · MIA Spare',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
- {id:'TX-148',prod:'worldcup',src:'MetLife · Outside Announce Cam 1',res:"LiveU LU800 #2",dst:'Muse Live Miami',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
- {id:'TX-149',prod:'worldcup',src:"Muse Live Miami · Harmonic XOS Special 1–4",res:"Harmonic XOS",dst:'MetLife FlyPack Dec 1–4',bw:120,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- // ---- Sail 250 — NYC Harbor ----
- {id:'TX-118',prod:'sail250',src:'NYC Harbor Remote',res:"LiveU LU800 #2",dst:'Muse Plaza TOC',bw:80,cost:5200,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Booked'},
- {id:'TX-119',prod:'sail250',src:'NYC Harbor Remote',res:"LiveU LU800",dst:'Muse Plaza TOC',bw:45,cost:1800,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Hold'},
- {id:'TX-120',prod:'sail250',src:'NYC Harbor Remote',res:'Level3 Diverse Ring',dst:'Muse Live+ Cloud Ingest',bw:1200,cost:9400,start:'2026-06-26T05:30',end:'2026-06-26T14:00',status:'Booked'},
- // ---- Midterms — multi-market (shares Galaxy-19 with World Cup → conflict) ----
- {id:'TX-123',prod:'midterms',src:'Muse Live Miami',res:'Galaxy-19 Tp 12',dst:'Muse Live+ Cloud Ingest',bw:36,cost:4100,start:'2026-07-12T14:00',end:'2026-07-12T18:00',status:'Hold'},
- {id:'TX-126',prod:'midterms',src:'8× Market Remotes',res:'TOC Router 2110',dst:'Muse Plaza TOC',bw:1600,cost:22500,start:'2026-11-03T12:00',end:'2026-11-04T02:00',status:'Hold'},
- {id:'TX-134',prod:'midterms',src:'8× Market Remotes',res:'MediaKind Encode Farm',dst:'Muse Live+ Cloud Ingest',bw:3200,cost:18600,start:'2026-11-03T12:00',end:'2026-11-04T03:00',status:'Hold'},
- {id:'TX-135',prod:'midterms',src:'DC Bureau',res:'Intelsat 30 Tp 9',dst:'Muse Plaza TOC',bw:48,cost:5200,start:'2026-11-03T18:00',end:'2026-11-04T02:00',status:'Hold'},
- // ---- Macy's Parade ----
- {id:'TX-125',prod:'parade',src:'Herald Square',res:'LTN Fiber B',dst:'Muse Plaza TOC',bw:400,cost:16800,start:'2026-11-27T05:00',end:'2026-11-27T13:00',status:'Hold'},
- {id:'TX-136',prod:'parade',src:'Herald Square',res:'Galaxy-17 Tp 04',dst:'Muse Plaza TOC',bw:60,cost:7200,start:'2026-11-27T05:00',end:'2026-11-27T13:00',status:'Hold'},
- // ---- Winter Olympics — Milano IBC ----
- {id:'TX-137',prod:'winterolympics',src:'Milano IBC',res:'AT&T Vyvx 10G',dst:'Stamford TOC',bw:6400,cost:88200,start:'2026-02-06T08:00',end:'2026-02-22T23:00',status:'Booked'},
- {id:'TX-138',prod:'winterolympics',src:'Milano IBC',res:'Eutelsat 113 Tp 7',dst:'Muse Plaza TOC',bw:72,cost:42000,start:'2026-02-06T08:00',end:'2026-02-22T23:00',status:'Booked'},
- {id:'TX-139',prod:'winterolympics',src:'Cortina Alpine',res:"LiveU LU800",dst:'Milano IBC',bw:75,cost:6200,start:'2026-02-08T07:00',end:'2026-02-19T18:00',status:'Line-Up'},
- // ---- Super Bowl LXI ----
- {id:'TX-140',prod:'superbowl',src:"Levi's Stadium",res:'Level3 Diverse Ring',dst:'Muse Plaza TOC',bw:2400,cost:64000,start:'2027-02-07T12:00',end:'2027-02-08T01:00',status:'Hold'},
- {id:'TX-141',prod:'superbowl',src:"Levi's Stadium",res:'LTN Fiber C (MIA)',dst:'Muse Live+ Cloud Ingest',bw:1800,cost:38400,start:'2027-02-07T12:00',end:'2027-02-08T01:00',status:'Hold'}];
+ // ---- Muse AI World Tour 2026 — multi-path contribution out of Hard Rock + Zócalo ----
+ {id:'TX-121',prod:'museaitour',src:'Hard Rock Stadium',res:'LTN Fiber A',dst:'Meta Miami',bw:600,cost:28400,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
+ {id:'TX-122',prod:'museaitour',src:'Hard Rock Stadium',res:'Galaxy-19 Tp 12',dst:'Meta NYC TOC',bw:72,cost:9600,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
+ {id:'TX-127',prod:'museaitour',src:'Hard Rock Stadium',res:'AT&T Vyvx 10G',dst:'IBC — Dallas',bw:4800,cost:51200,start:'2026-07-12T10:00',end:'2026-07-12T23:00',status:'Live'},
+ {id:'TX-128',prod:'museaitour',src:'Hard Rock Stadium',res:"LiveU LU800",dst:'Meta Miami',bw:110,cost:5200,start:'2026-07-12T11:00',end:'2026-07-12T21:00',status:'Line-Up'},
+ {id:'TX-129',prod:'museaitour',src:'Zócalo CDMX Set',res:'SES-11 Ku Tp 21',dst:'IBC — Dallas',bw:96,cost:14200,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Booked'},
+ {id:'TX-130',prod:'museaitour',src:'Zócalo CDMX Set',res:"Harmonic XOS",dst:'Meta Miami',bw:180,cost:6800,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Live'},
+ {id:'TX-131',prod:'museaitour',src:'IBC — Dallas',res:'IBC Nevion Fabric',dst:'Meta Cloud Ingest',bw:7200,cost:38400,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Live'},
+ {id:'TX-132',prod:'museaitour',src:'IBC — Dallas',res:'Muse Live 2110 Spine',dst:'Meta Miami',bw:5400,cost:0,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Line-Up'},
+ {id:'TX-133',prod:'museaitour',src:'IBC — Dallas',res:'AWS MediaConnect East',dst:'Meta Cloud Ingest',bw:8600,cost:21400,start:'2026-07-12T10:00',end:'2026-07-12T23:59',status:'Booked'},
+ // MetLife NYNJ → Meta Miami (Evertz 570IP + LiveU B/U)
+ {id:'TX-141',prod:'museaitour',src:'MetLife · Presentation Studio Cam 1',res:"Harmonic XOS (ENC1)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-142',prod:'museaitour',src:'MetLife · Presentation Studio Cam 2',res:"Harmonic XOS (ENC2)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-143',prod:'museaitour',src:'MetLife · Presentation Studio Cam 3',res:"Harmonic XOS (ENC3)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-144',prod:'museaitour',src:'MetLife · Presentation Studio Cam 4',res:"Harmonic XOS (ENC4)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-145',prod:'museaitour',src:'MetLife · Outside Announce Cam 1',res:"Harmonic XOS (ENC5)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-146',prod:'museaitour',src:'MetLife · Outside Announce Cam 2',res:"Harmonic XOS (ENC6)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-147',prod:'museaitour',src:'MetLife · Presentation Studio Cam 2',res:"LiveU LU800",dst:'Meta Miami · MIA Spare',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
+ {id:'TX-148',prod:'museaitour',src:'MetLife · Outside Announce Cam 1',res:"LiveU LU800 #2",dst:'Meta Miami',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
+ {id:'TX-149',prod:'museaitour',src:"Meta Miami · Harmonic XOS Special 1–4",res:"Harmonic XOS",dst:'MetLife FlyPack Dec 1–4',bw:120,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ // ---- Ray-Ban Meta Gen 3 Launch — NYC Harbor ----
+ {id:'TX-118',prod:'raybangen3',src:'NYC Harbor Remote',res:"LiveU LU800 #2",dst:'Meta NYC TOC',bw:80,cost:5200,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Booked'},
+ {id:'TX-119',prod:'raybangen3',src:'NYC Harbor Remote',res:"LiveU LU800",dst:'Meta NYC TOC',bw:45,cost:1800,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Hold'},
+ {id:'TX-120',prod:'raybangen3',src:'NYC Harbor Remote',res:'Level3 Diverse Ring',dst:'Meta Cloud Ingest',bw:1200,cost:9400,start:'2026-06-26T05:30',end:'2026-06-26T14:00',status:'Booked'},
+ // ---- WhatsApp Summit — multi-market (shares Galaxy-19 with Muse AI World Tour → conflict) ----
+ {id:'TX-123',prod:'whatsapp',src:'Meta Miami',res:'Galaxy-19 Tp 12',dst:'Meta Cloud Ingest',bw:36,cost:4100,start:'2026-07-12T14:00',end:'2026-07-12T18:00',status:'Hold'},
+ {id:'TX-126',prod:'whatsapp',src:'8× Market Remotes',res:'TOC Router 2110',dst:'Meta NYC TOC',bw:1600,cost:22500,start:'2026-11-03T12:00',end:'2026-11-04T02:00',status:'Hold'},
+ {id:'TX-134',prod:'whatsapp',src:'8× Market Remotes',res:'MediaKind Encode Farm',dst:'Meta Cloud Ingest',bw:3200,cost:18600,start:'2026-11-03T12:00',end:'2026-11-04T03:00',status:'Hold'},
+ {id:'TX-135',prod:'whatsapp',src:'DC Bureau',res:'Intelsat 30 Tp 9',dst:'Meta NYC TOC',bw:48,cost:5200,start:'2026-11-03T18:00',end:'2026-11-04T02:00',status:'Hold'},
+ // ---- Instagram Creator Week ----
+ {id:'TX-125',prod:'igcreators',src:'Herald Square',res:'LTN Fiber B',dst:'Meta NYC TOC',bw:400,cost:16800,start:'2026-11-27T05:00',end:'2026-11-27T13:00',status:'Hold'},
+ {id:'TX-136',prod:'igcreators',src:'Herald Square',res:'Galaxy-17 Tp 04',dst:'Meta NYC TOC',bw:60,cost:7200,start:'2026-11-27T05:00',end:'2026-11-27T13:00',status:'Hold'},
+ // ---- Meta Charm Launch — Milan IBC ----
+ {id:'TX-137',prod:'charm',src:'Milan IBC',res:'AT&T Vyvx 10G',dst:'Menlo Park TOC',bw:6400,cost:88200,start:'2026-02-06T08:00',end:'2026-02-22T23:00',status:'Booked'},
+ {id:'TX-138',prod:'charm',src:'Milan IBC',res:'Eutelsat 113 Tp 7',dst:'Meta NYC TOC',bw:72,cost:42000,start:'2026-02-06T08:00',end:'2026-02-22T23:00',status:'Booked'},
+ {id:'TX-139',prod:'charm',src:'Brera District',res:"LiveU LU800",dst:'Milan IBC',bw:75,cost:6200,start:'2026-02-08T07:00',end:'2026-02-19T18:00',status:'Line-Up'},
+ // ---- Orion AR Glasses Reveal ----
+ {id:'TX-140',prod:'orion',src:"Levi's Stadium",res:'Level3 Diverse Ring',dst:'Meta NYC TOC',bw:2400,cost:64000,start:'2027-02-07T12:00',end:'2027-02-08T01:00',status:'Hold'},
+ {id:'TX-141',prod:'orion',src:"Levi's Stadium",res:'LTN Fiber C (MIA)',dst:'Meta Cloud Ingest',bw:1800,cost:38400,start:'2027-02-07T12:00',end:'2027-02-08T01:00',status:'Hold'}];
 
-var finBudgets={worldcup:2400000,sail250:320000,superbowl:5800000,muse100:1150000,midterms:1900000,parade:880000,winterolympics:7200000};
+var finBudgets={museaitour:2400000,raybangen3:320000,orion:5800000,museailaunch:1150000,whatsapp:1900000,igcreators:880000,charm:7200000};
 
 var finPOs=[
- {id:'PO-88121',prod:'worldcup',vendor:'NEP Group',desc:'ND1 mobile unit — World Cup package',amount:412000,status:'Issued',wo:'',docs:['NEP_ND1_Quote_v3.pdf']},
- {id:'PO-88134',prod:'worldcup',vendor:'Aggreko',desc:'IBC compound power distro',amount:48200,status:'Acknowledged',wo:'WO-2641',docs:['Aggreko_PO_88134.pdf']},
- {id:'PO-88140',prod:'worldcup',vendor:'LTN Global',desc:'Fiber ring + Jul 8–19 transmission',amount:96500,status:'Issued',wo:'WO-2644',docs:[]},
- {id:'PO-88102',prod:'sail250',vendor:'Game Creek Video',desc:'Harbor flypack rental',amount:38500,status:'Fulfilled',wo:'',docs:['GC_Rental_Agreement.pdf']},
- {id:'PO-88107',prod:'sail250',vendor:'ConEd Marine Services',desc:'Dockside shore power 200A',amount:9400,status:'Fulfilled',wo:'WO-2660',docs:[]},
- {id:'PO-88155',prod:'muse100',vendor:'PRG',desc:'Studio M1 lighting rig',amount:29800,status:'Acknowledged',wo:'WO-2652',docs:['PRG_Lighting_Quote.pdf']},
- {id:'PO-88160',prod:'parade',vendor:'All Mobile Video',desc:'Float cam fabrication ×6',amount:18650,status:'Issued',wo:'WO-2657',docs:[]},
- {id:'PO-88149',prod:'superbowl',vendor:'Internal Engineering',desc:'Venue power survey',amount:12400,status:'Draft',wo:'WO-2650',docs:[]},
- {id:'PO-87990',prod:'winterolympics',vendor:"Replay operations",desc:'XT-VIA cluster — Milano IBC',amount:268000,status:'Closed',wo:'',docs:['EVS_Master_Agreement.pdf','EVS_Delivery_Note.pdf']}];
+ {id:'PO-88121',prod:'museaitour',vendor:'NEP Group',desc:'ND1 mobile unit — Muse AI World Tour package',amount:412000,status:'Issued',wo:'',docs:['NEP_ND1_Quote_v3.pdf']},
+ {id:'PO-88134',prod:'museaitour',vendor:'Aggreko',desc:'IBC compound power distro',amount:48200,status:'Acknowledged',wo:'WO-2641',docs:['Aggreko_PO_88134.pdf']},
+ {id:'PO-88140',prod:'museaitour',vendor:'LTN Global',desc:'Fiber ring + Jul 8–19 transmission',amount:96500,status:'Issued',wo:'WO-2644',docs:[]},
+ {id:'PO-88102',prod:'raybangen3',vendor:'Game Creek Video',desc:'Harbor flypack rental',amount:38500,status:'Fulfilled',wo:'',docs:['GC_Rental_Agreement.pdf']},
+ {id:'PO-88107',prod:'raybangen3',vendor:'ConEd Marine Services',desc:'Dockside shore power 200A',amount:9400,status:'Fulfilled',wo:'WO-2660',docs:[]},
+ {id:'PO-88155',prod:'museailaunch',vendor:'PRG',desc:'Studio M1 lighting rig',amount:29800,status:'Acknowledged',wo:'WO-2652',docs:['PRG_Lighting_Quote.pdf']},
+ {id:'PO-88160',prod:'igcreators',vendor:'All Mobile Video',desc:'Float cam fabrication ×6',amount:18650,status:'Issued',wo:'WO-2657',docs:[]},
+ {id:'PO-88149',prod:'orion',vendor:'Internal Engineering',desc:'Venue power survey',amount:12400,status:'Draft',wo:'WO-2650',docs:[]},
+ {id:'PO-87990',prod:'charm',vendor:"Replay operations",desc:'XT-VIA cluster — Milan IBC',amount:268000,status:'Closed',wo:'',docs:['EVS_Master_Agreement.pdf','EVS_Delivery_Note.pdf']}];
 
 var finInvoices=[
- {id:'INV-30298',prod:'winterolympics',vendor:"Replay operations",ref:'PO-87990',amount:268000,recd:'2026-02-20',due:'2026-03-15',status:'Paid',paidOn:'2026-03-11',docs:['EVS_Invoice_30298.pdf']},
- {id:'INV-30377',prod:'sail250',vendor:'ConEd Marine Services',ref:'PO-88107',amount:9400,recd:'2026-05-18',due:'2026-06-02',status:'Approved',paidOn:'',docs:[]},
- {id:'INV-30412',prod:'sail250',vendor:'Game Creek Video',ref:'PO-88102',amount:38500,recd:'2026-05-28',due:'2026-06-22',status:'Scheduled',paidOn:'',docs:['GC_Invoice_30412.pdf']},
- {id:'INV-30391',prod:'worldcup',vendor:'Aggreko',ref:'PO-88134',amount:24100,recd:'2026-05-30',due:'2026-06-20',status:'Scheduled',paidOn:'',docs:[]},
- {id:'INV-30401',prod:'muse100',vendor:'PRG',ref:'PO-88155',amount:14900,recd:'2026-06-02',due:'2026-06-30',status:'Received',paidOn:'',docs:[]},
- {id:'INV-30355',prod:'parade',vendor:'All Mobile Video',ref:'PO-88160',amount:9325,recd:'2026-05-22',due:'2026-07-01',status:'Approved',paidOn:'',docs:[]}];
+ {id:'INV-30298',prod:'charm',vendor:"Replay operations",ref:'PO-87990',amount:268000,recd:'2026-02-20',due:'2026-03-15',status:'Paid',paidOn:'2026-03-11',docs:['EVS_Invoice_30298.pdf']},
+ {id:'INV-30377',prod:'raybangen3',vendor:'ConEd Marine Services',ref:'PO-88107',amount:9400,recd:'2026-05-18',due:'2026-06-02',status:'Approved',paidOn:'',docs:[]},
+ {id:'INV-30412',prod:'raybangen3',vendor:'Game Creek Video',ref:'PO-88102',amount:38500,recd:'2026-05-28',due:'2026-06-22',status:'Scheduled',paidOn:'',docs:['GC_Invoice_30412.pdf']},
+ {id:'INV-30391',prod:'museaitour',vendor:'Aggreko',ref:'PO-88134',amount:24100,recd:'2026-05-30',due:'2026-06-20',status:'Scheduled',paidOn:'',docs:[]},
+ {id:'INV-30401',prod:'museailaunch',vendor:'PRG',ref:'PO-88155',amount:14900,recd:'2026-06-02',due:'2026-06-30',status:'Received',paidOn:'',docs:[]},
+ {id:'INV-30355',prod:'igcreators',vendor:'All Mobile Video',ref:'PO-88160',amount:9325,recd:'2026-05-22',due:'2026-07-01',status:'Approved',paidOn:'',docs:[]}];
 
 function saveOps(){try{localStorage.setItem('muselive_ops_v1',JSON.stringify({wo:workOrders,tx:txBookings}));
   localStorage.setItem('muselive_fin_v1',JSON.stringify({po:finPOs,inv:finInvoices,budgets:finBudgets,costreport:(typeof finCostReport!=='undefined'?finCostReport:{})}));}catch(e){}}
@@ -705,7 +705,7 @@ function finThSort(key,pane,col,label,align){var s=finWsSort[key+'.'+pane]||{};
 function apStatusLabel(v){if(v.status==='Paid')return 'Paid';if(v.status==='Approved'||v.status==='Scheduled')return 'Approved';return 'Open';}
 function apAgingDays(v){try{var from=new Date(v.recd||finToday());var to=v.status==='Paid'?new Date(v.paidOn||finToday()):new Date(finToday());
   return Math.max(0,Math.round((to-from)/86400000));}catch(e){return 0;}}
-function apAgingBucket(d){if(d<=30)return {l:'0–30',c:'#00A15D'};if(d<=60)return {l:'31–60',c:'#f59e0b'};if(d<=90)return {l:'61–90',c:'#f97316'};return {l:'90+',c:'#dc2626'};}
+function apAgingBucket(d){if(d<=30)return {l:'0–30',c:'#31A24C'};if(d<=60)return {l:'31–60',c:'#f56c0b'};if(d<=90)return {l:'61–90',c:'#f97516'};return {l:'90+',c:'#dc2644'};}
 function apSetFilter(key,f){apFilter[key]=(apFilter[key]===f)?'all':f;renderProjectView(key);}
 /* sortable + filterable AP Ledger table (Work Item 7) */
 function apTablePaneHTML(key){
@@ -740,7 +740,7 @@ function apTablePaneHTML(key){
     '<div class="flex flex-wrap items-center justify-between gap-2 mb-2"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">AP Ledger — sortable · click a row for the document</h3>'+
       '<div class="flex items-center gap-1.5 flex-wrap">'+chips+
       '<input value="'+esc(q).replace(/"/g,'&quot;')+'" onchange="finWsQSet(\''+key+'\',\'ap\',this.value)" placeholder="Search vendor, #, PO…" class="text-[10px] border border-gray-200 rounded-lg px-2 py-1" style="outline:none;width:150px"></div></div>'+
-    '<div class="flex items-center gap-2 mb-2 text-[8px] mono text-gray-500 flex-wrap">Aging (unpaid): '+Object.keys(buckets).map(function(b){var col=b==='0–30'?'#00A15D':(b==='31–60'?'#f59e0b':(b==='61–90'?'#f97316':'#dc2626'));
+    '<div class="flex items-center gap-2 mb-2 text-[8px] mono text-gray-500 flex-wrap">Aging (unpaid): '+Object.keys(buckets).map(function(b){var col=b==='0–30'?'#31A24C':(b==='31–60'?'#f56c0b':(b==='61–90'?'#f97516':'#dc2644'));
       return '<span class="px-1.5 py-0.5 rounded" style="background:'+col+'18;color:'+col+'">'+b+'d · '+$fmt(buckets[b])+'</span>';}).join('')+'</div>'+
     '<div class="overflow-x-auto"><table class="w-full" style="min-width:640px"><thead><tr>'+
       finThSort(key,'ap','vendor','Vendor')+finThSort(key,'ap','id','Invoice #')+finThSort(key,'ap','po','PO')+
@@ -753,23 +753,23 @@ function finAnalyticsHTML(key){
   var maxV=1;cats.forEach(function(c){maxV=Math.max(maxV,finCatBudget(key,c),finCatEFC(key,c));});
   var bw=460,rh=13,gap=5,lh=cats.length*(rh*2+gap+4)+8;
   var bars=cats.map(function(c,i){var y=i*(rh*2+gap+4);var b=finCatBudget(key,c),e=finCatEFC(key,c);var over=e>b;
-    return '<text x="0" y="'+(y+10)+'" font-size="8" fill="#6b7280" font-family="Inter,sans-serif">'+esc((c||'—')+' '+finCatName(c)).slice(0,34)+'</text>'+
-      '<rect x="150" y="'+(y+2)+'" width="'+Math.max(1,b/maxV*(bw-230))+'" height="'+rh+'" rx="2" fill="#94a3b8" opacity="0.55"><title>Budget '+$fmt(b)+'</title></rect>'+
-      '<rect x="150" y="'+(y+rh+4)+'" width="'+Math.max(1,e/maxV*(bw-230))+'" height="'+rh+'" rx="2" fill="'+(over?'#dc2626':'#00A15D')+'"><title>EFC '+$fmt(e)+'</title></rect>'+
-      '<text x="'+(152+Math.max(1,e/maxV*(bw-230)))+'" y="'+(y+rh+14)+'" font-size="7.5" font-family="ui-monospace,monospace" fill="'+(over?'#dc2626':'#00A15D')+'">'+$fmt(e)+'</text>';
+    return '<text x="0" y="'+(y+10)+'" font-size="8" fill="#727479" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">'+esc((c||'—')+' '+finCatName(c)).slice(0,34)+'</text>'+
+      '<rect x="150" y="'+(y+2)+'" width="'+Math.max(1,b/maxV*(bw-230))+'" height="'+rh+'" rx="2" fill="#9ba2b1" opacity="0.55"><title>Budget '+$fmt(b)+'</title></rect>'+
+      '<rect x="150" y="'+(y+rh+4)+'" width="'+Math.max(1,e/maxV*(bw-230))+'" height="'+rh+'" rx="2" fill="'+(over?'#dc2644':'#31A24C')+'"><title>EFC '+$fmt(e)+'</title></rect>'+
+      '<text x="'+(152+Math.max(1,e/maxV*(bw-230)))+'" y="'+(y+rh+14)+'" font-size="7.5" font-family="ui-monospace,monospace" fill="'+(over?'#dc2644':'#31A24C')+'">'+$fmt(e)+'</text>';
   }).join('');
   var chart1='<svg viewBox="0 0 '+bw+' '+Math.max(lh,40)+'" style="width:100%;height:auto">'+bars+'</svg>';
   var all=finInvoices.filter(function(v){return v.prod===key&&v.status!=='Paid';});
   var bkt={'0–30':0,'31–60':0,'61–90':0,'90+':0};all.forEach(function(v){bkt[apAgingBucket(apAgingDays(v)).l]+=(v.amount||0);});
   var bkeys=Object.keys(bkt);var bmax=Math.max.apply(null,bkeys.map(function(b){return bkt[b];}).concat([1]));
-  var cols={'0–30':'#00A15D','31–60':'#f59e0b','61–90':'#f97316','90+':'#dc2626'};
+  var cols={'0–30':'#31A24C','31–60':'#f56c0b','61–90':'#f97516','90+':'#dc2644'};
   var chart2='<svg viewBox="0 0 200 120" style="width:100%;height:auto">'+bkeys.map(function(b,i){var h=Math.max(2,bkt[b]/bmax*82);
     return '<rect x="'+(14+i*47)+'" y="'+(94-h)+'" width="32" height="'+h+'" rx="3" fill="'+cols[b]+'"><title>'+b+'d — '+$fmt(bkt[b])+'</title></rect>'+
-      '<text x="'+(30+i*47)+'" y="105" text-anchor="middle" font-size="7.5" fill="#6b7280" font-family="Inter,sans-serif">'+b+'d</text>'+
-      '<text x="'+(30+i*47)+'" y="'+(90-h)+'" text-anchor="middle" font-size="7" font-family="ui-monospace,monospace" fill="#6b7280">'+(bkt[b]?Math.round(bkt[b]/1000)+'k':'')+'</text>';}).join('')+'</svg>';
+      '<text x="'+(30+i*47)+'" y="105" text-anchor="middle" font-size="7.5" fill="#727479" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">'+b+'d</text>'+
+      '<text x="'+(30+i*47)+'" y="'+(90-h)+'" text-anchor="middle" font-size="7" font-family="ui-monospace,monospace" fill="#727479">'+(bkt[b]?Math.round(bkt[b]/1000)+'k':'')+'</text>';}).join('')+'</svg>';
   var mix=cats.map(function(c){return {c:c,v:finCatActual(key,c)};}).filter(function(x){return x.v>0;}).sort(function(a,b){return b.v-a.v;});
   var mixTot=mix.reduce(function(s,x){return s+x.v;},0)||1;
-  var MIXCOLS=['#3b82f6','#8b5cf6','#00A15D','#f59e0b','#ef4444','#14b8a6','#f97316','#6366f1','#84cc16'];
+  var MIXCOLS=['#3b86f6','#5c9af6','#31A24C','#f56c0b','#ef4461','#14a8b8','#f97516','#629cf2','#16cc40'];
   var a0=-Math.PI/2,dSegs='',legend='';
   mix.slice(0,7).concat(mix.length>7?[{c:'other',v:mix.slice(7).reduce(function(s,x){return s+x.v;},0)}]:[]).forEach(function(x,i){
     var frac=x.v/mixTot;var a1=a0+frac*Math.PI*2;
@@ -823,10 +823,10 @@ function financePaneHTML(key){var p=productions[key];var conf=txConflicts();
       card('Open AP',$fmt(openAP),openAP>0?'text-amber-600':'text-gray-900',invs.filter(function(v){return v.status!=='Paid';}).length+' open invoice(s)')+
       card('Overdue',od.length?$fmt(odSum):'$0',od.length?'text-red-600':'text-gray-900',od.length?od.length+' invoice(s) past due':'all current')+'</div>'+
     '<div class="h-2.5 rounded-full bg-gray-100 overflow-hidden flex">'+
-      '<div style="width:'+pPaid+'%;background:linear-gradient(90deg,#2dd4bf,#00A15D)" title="Paid"></div>'+
-      '<div style="width:'+pOpen+'%;background:linear-gradient(90deg,#fbbf24,#f59e0b)" title="Open AP"></div>'+
-      '<div style="width:'+pCom+'%;background:linear-gradient(90deg,#93c5fd,#60a5fa)" title="Committed, not yet invoiced"></div></div>'+
-    '<div class="flex items-center gap-3 mt-1.5 text-[8px] mono text-gray-500"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#00A15D"></span>paid</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#f59e0b"></span>open AP</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#60a5fa"></span>committed unbilled</span><span class="ml-auto">budget bar</span></div></div>';
+      '<div style="width:'+pPaid+'%;background:linear-gradient(90deg,#2dc3d4,#31A24C)" title="Paid"></div>'+
+      '<div style="width:'+pOpen+'%;background:linear-gradient(90deg,#fbbe24,#f56c0b)" title="Open AP"></div>'+
+      '<div style="width:'+pCom+'%;background:linear-gradient(90deg,#93bdfd,#609efa)" title="Committed, not yet invoiced"></div></div>'+
+    '<div class="flex items-center gap-3 mt-1.5 text-[8px] mono text-gray-500"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#31A24C"></span>paid</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#f56c0b"></span>open AP</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#609efa"></span>committed unbilled</span><span class="ml-auto">budget bar</span></div></div>';
   var exHTML='<div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">AP Exceptions — what\u2019s missing or past due</h3>'+
     (ex.length?ex.map(function(e2){var red=e2.sev==='red';
@@ -906,7 +906,7 @@ function renderOps(){
     var health=od.length?'<span class="text-[8px] font-bold mono bg-red-50 text-red-700 border border-red-200 rounded px-1.5 py-0.5">'+od.length+' OVERDUE</span>':
       (openAP>0?'<span class="text-[8px] font-bold mono bg-amber-50 text-amber-700 border border-amber-200 rounded px-1.5 py-0.5">'+$fmt(openAP)+' OPEN</span>':'<span class="text-[8px] font-bold mono bg-emerald-50 text-emerald-700 border border-emerald-200 rounded px-1.5 py-0.5">CURRENT</span>');
     return '<tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="openProjFinance(\''+k+'\')">'+
-      '<td class="py-2 pr-3"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[productions[k].tagColor]||'#9ca3af')+'"></span><span class="text-[10px] font-bold text-gray-900">'+esc(prodName(k))+'</span></span></td>'+
+      '<td class="py-2 pr-3"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[productions[k].tagColor]||'#9ba2b0')+'"></span><span class="text-[10px] font-bold text-gray-900">'+esc(prodName(k))+'</span></span></td>'+
       '<td class="py-2 pr-3 text-right text-[10px] mono text-gray-600">'+$fmt(b)+'</td>'+
       '<td class="py-2 pr-3 text-right text-[10px] mono font-bold text-blue-700">'+$fmt(c)+'</td>'+
       '<td class="py-2 pr-3 text-right text-[10px] mono text-gray-700">'+$fmt(iv)+'</td>'+
@@ -924,29 +924,29 @@ function renderOps(){
 function opsInit(){loadOps();renderOps();}
 
 /* ================================================================================
-   3. CHARLIE — on-device answers optional · cloud key off
-   UI never shows third-party AI product names; only “Charlie”.
+   3. MUSEAI — on-device answers optional · cloud key off
+   UI never shows third-party AI product names; only “Muse”.
    ================================================================================ */
-function charlieAiEnabled(){
+function museaiAiEnabled(){
   if(typeof window==='undefined')return false;
   /* On-device answers are optional; a paid key is not required. */
-  if(window.CHARLIE_LOCAL_ENABLED===false)return false;
+  if(window.MUSEAI_LOCAL_ENABLED===false)return false;
   return true;
 }
-function charlieCharlieEnabled(){return charlieAiEnabled();} /* legacy alias */
+function museaiMuseAiEnabled(){return museaiAiEnabled();} /* legacy alias */
 function assistantKey(){
-  /* Optional paid cloud fallback only — not required for Charlie. */
-  if(window.CHARLIE_CLOUD_ENABLED!==true&&window.CHARLIE_AI_CLOUD!==true)return '';
+  /* Optional paid cloud fallback only — not required for Muse. */
+  if(window.MUSEAI_CLOUD_ENABLED!==true&&window.MUSEAI_AI_CLOUD!==true)return '';
   var raw='';
   try{
-    var lk=localStorage.getItem('muselive_charlie_key');
+    var lk=localStorage.getItem('muselive_museai_key');
     if(lk&&String(lk).trim())raw=String(lk).trim();
   }catch(e){}
-  if(!raw&&typeof museCfg==='function')raw=museCfg('CHARLIE_KEY')||museCfg('CHARLIE_KEY')||'';
+  if(!raw&&typeof museCfg==='function')raw=museCfg('MUSEAI_KEY')||museCfg('MUSEAI_KEY')||'';
   raw=String(raw||'').trim();
   return raw;
 }
-function charlieModelPick(){try{var m=localStorage.getItem('muselive_charlie_model');if(m&&m.trim())return m.trim();}catch(e){}return 'charlie-4';}
+function museaiModelPick(){try{var m=localStorage.getItem('muselive_museai_model');if(m&&m.trim())return m.trim();}catch(e){}return 'museai-4';}
 function assistantExtractText(j){
   if(!j)return '';
   if(typeof j==='string')return j;
@@ -998,21 +998,21 @@ function assistantErrMsg(r,j){
   if(!msg)msg='HTTP '+(r?r.status:'?');
   var raw=String(msg);
   if(/Incorrect API key|invalid.*api.?key|api key provided/i.test(raw)||(r&&r.status===401))
-    msg='Charlie key rejected — set a valid key in config/config.local.js (the server) or Charlie Settings.';
+    msg='Muse key rejected — set a valid key in config/config.local.js (the server) or Muse Settings.';
   else if(/credits or licenses|purchase those on/i.test(raw)||(r&&r.status===403&&/credit|license|billing/i.test(raw)))
-    msg='Charlie account has no credits yet — add prepaid credits at the server, then retry.';
-  else if(r&&r.status===403)msg='Charlie access refused (403).';
-  else if(r&&r.status===404)msg='Charlie model not available (404).';
+    msg='Muse account has no credits yet — add prepaid credits at the server, then retry.';
+  else if(r&&r.status===403)msg='Muse access refused (403).';
+  else if(r&&r.status===404)msg='Muse model not available (404).';
   else if(r&&r.status===410||/live search is deprecated/i.test(raw))
-    msg='Charlie search path outdated — refresh the page (deployed fix removes live search).';
-  else if(r&&r.status===429)msg='Charlie is busy (rate limit). Wait a moment and retry.';
-  else if(r&&r.status>=500)msg='Charlie service error ('+r.status+'). Retry shortly.';
+    msg='Muse search path outdated — refresh the page (deployed fix removes live search).';
+  else if(r&&r.status===429)msg='Muse is busy (rate limit). Wait a moment and retry.';
+  else if(r&&r.status>=500)msg='Muse service error ('+r.status+'). Retry shortly.';
   return String(msg);
 }
-var charlieClient={
+var museaiClient={
   baseUrl:'https://the assistant service/v1',
   enabled:function(){return !!assistantKey();},
-  disabledReason:function(){return 'Charlie is offline — check network or deployment config.';},
+  disabledReason:function(){return 'Muse is offline — check network or deployment config.';},
   /* Build chat messages for /v1/chat/completions */
   _messages:function(opts){
     var msgs=[];
@@ -1046,7 +1046,7 @@ var charlieClient={
     var key=opts.key||assistantKey();
     if(!key)return Promise.reject(new Error(this.disabledReason()));
     key=String(key).trim();
-    var model=opts.model||charlieModelPick();
+    var model=opts.model||museaiModelPick();
     var messages=this._messages(opts);
     /* Reasoning models burn tokens on thinking — do NOT cap at 1024 or answers come back empty. */
     var maxTok=opts.maxTokens!=null?opts.maxTokens:8192;
@@ -1058,7 +1058,7 @@ var charlieClient={
       max_completion_tokens:maxTok,
       temperature:opts.temperature!=null?opts.temperature:0.4
     };
-    /* Do NOT send search_parameters — Live Search is deprecated (410) and Charlie
+    /* Do NOT send search_parameters — Live Search is deprecated (410) and Muse
        must ground on Muse Live context only. Omit entirely = no web/X search. */
     return fetch(self.baseUrl+'/chat/completions',{
       method:'POST',
@@ -1068,8 +1068,8 @@ var charlieClient={
       return r.text().then(function(raw){
         var j=null;
         try{j=raw?JSON.parse(raw):{};}catch(pe){
-          if(!r.ok)throw new Error('Charlie HTTP '+r.status+(raw?': '+String(raw).slice(0,180):''));
-          throw new Error('Charlie returned non-JSON');
+          if(!r.ok)throw new Error('Muse HTTP '+r.status+(raw?': '+String(raw).slice(0,180):''));
+          throw new Error('Muse returned non-JSON');
         }
         /* If chat/completions rejects (e.g. legacy search), try Responses API */
         if(!r.ok){
@@ -1077,7 +1077,7 @@ var charlieClient={
           if(r.status===410||/live search|search_parameters|Agent Tools/i.test(em)){
             return self._generateResponses(opts,key,model,maxTok).then(function(t2){
               if(t2==null||t2==='')throw new Error(em);
-              return {_charlieText:t2};
+              return {_museaiText:t2};
             });
           }
           throw new Error(em);
@@ -1085,11 +1085,11 @@ var charlieClient={
         return j;
       });
     }).then(function(j){
-      if(j&&j._charlieText!=null){
-        var pre=j._charlieText;
+      if(j&&j._museaiText!=null){
+        var pre=j._museaiText;
         if(opts.jsonSchema){
           try{return JSON.parse(String(pre).replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim());}
-          catch(e){throw new Error('Charlie returned invalid JSON');}
+          catch(e){throw new Error('Muse returned invalid JSON');}
         }
         return pre;
       }
@@ -1097,13 +1097,13 @@ var charlieClient={
       if(!txt){
         /* last resort: try /v1/responses once (some accounts prefer it) */
         return self._generateResponses(opts,key,model,maxTok).then(function(t2){
-          if(!t2)throw new Error('Charlie returned an empty answer. Retry in a moment.');
+          if(!t2)throw new Error('Muse returned an empty answer. Retry in a moment.');
           return t2;
         });
       }
       if(opts.jsonSchema){
         try{return JSON.parse(txt.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim());}
-        catch(e){throw new Error('Charlie returned invalid JSON');}
+        catch(e){throw new Error('Muse returned invalid JSON');}
       }
       return txt;
     }).catch(function(err){
@@ -1149,7 +1149,7 @@ var charlieClient={
         var txt=assistantExtractText(j).trim();
         if(opts.jsonSchema&&txt){
           try{return JSON.parse(txt.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim());}
-          catch(e2){throw new Error('Charlie returned invalid JSON');}
+          catch(e2){throw new Error('Muse returned invalid JSON');}
         }
         return txt;
       });
@@ -1162,45 +1162,45 @@ var charlieClient={
       jsonSchema:{type:'object',properties:{vendor:{type:'string'},date:{type:'string'},total:{type:'number'},currency:{type:'string'},category:{type:'string',enum:['flight','hotel','perdiem','ground','misc']}},required:['vendor','total']}});
   }
 };
-var geminiClient=charlieClient;
+var geminiClient=museaiClient;
 function geminiKey(){return assistantKey();}
-function geminiModel(){return charlieModelPick();}
-function charlieEdgeEnabled(){
+function geminiModel(){return museaiModelPick();}
+function museaiEdgeEnabled(){
   /* Remote assistant is off */
   return false;
 }
-function charlieLocalEnabled(){
+function museaiLocalEnabled(){
   try{if(localStorage.getItem('muselive_local_force')==='1')return true;}catch(e){}
-  return !!(typeof window!=='undefined'&&window.CHARLIE_LOCAL_ENABLED===true);
+  return !!(typeof window!=='undefined'&&window.MUSEAI_LOCAL_ENABLED===true);
 }
 function museEnsureLocal(thenFn){
   thenFn=thenFn||function(){};
-  if(typeof CharlieLocal!=='undefined'){thenFn();return;}
+  if(typeof MuseAiLocal!=='undefined'){thenFn();return;}
   if(typeof MuseLazy!=='undefined'&&MuseLazy.ensureLocal){
     MuseLazy.ensureLocal().then(function(){thenFn();}).catch(function(){thenFn();});
     return;
   }
   thenFn();
 }
-function charlieAssistInit(){var dot=document.getElementById('charlieModeDot');var lbl=document.getElementById('charlieModeLabel');
-  var info=(typeof CharlieLocal!=='undefined'&&CharlieLocal.status)?CharlieLocal.status():null;
+function museaiAssistInit(){var dot=document.getElementById('museaiModeDot');var lbl=document.getElementById('museaiModeLabel');
+  var info=(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.status)?MuseAiLocal.status():null;
   var st=info?info.status:'idle';
-  var localOn=charlieLocalEnabled()&&st==='ready';
-  var loading=charlieLocalEnabled()&&st==='loading';
+  var localOn=museaiLocalEnabled()&&st==='ready';
+  var loading=museaiLocalEnabled()&&st==='loading';
   if(dot)dot.className='w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0';
   if(lbl){lbl.textContent='';lbl.style.display='none';lbl.hidden=true;}
-  try{charlieLocalSyncUI();}catch(e){}
+  try{museaiLocalSyncUI();}catch(e){}
 }
-function charlieLocalSyncUI(){
+function museaiLocalSyncUI(){
   var st=document.getElementById('cs_status');
   var bar=document.getElementById('cs_local_bar');
-  var info=(typeof CharlieLocal!=='undefined'&&CharlieLocal.status)?CharlieLocal.status():null;
+  var info=(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.status)?MuseAiLocal.status():null;
   if(st){
     if(info&&info.status==='ready')st.textContent='● Free on-device model ready · '+info.shortModel;
     else if(info&&info.status==='loading')st.textContent='● '+(info.progressText||('Downloading free model… '+Math.round((info.progress||0)*100)+'%'));
-    else if(info&&info.status==='unsupported')st.textContent='● Charlie';
+    else if(info&&info.status==='unsupported')st.textContent='● Muse';
     else if(info&&info.status==='error')st.textContent='● Local load failed: '+String(info.lastError||'unknown').slice(0,120);
-    else st.textContent='● Charlie';
+    else st.textContent='● Muse';
   }
   if(bar&&info){
     var pct=Math.round((info.progress||0)*100);
@@ -1212,89 +1212,89 @@ function charlieLocalSyncUI(){
     sel.innerHTML=info.models.map(function(m){
       return '<option value="'+m.id+'">'+m.label+' · '+m.size+'</option>';
     }).join('');
-    sel.value=info.modelId||(typeof CharlieLocal.preferredModel==='function'?CharlieLocal.preferredModel():'');
+    sel.value=info.modelId||(typeof MuseAiLocal.preferredModel==='function'?MuseAiLocal.preferredModel():'');
     sel._filled=true;
   }else if(sel&&info&&info.modelId){try{sel.value=info.modelId;}catch(e){}}
 }
-function openCharlieSettings(){var m=document.getElementById('charlieSettingsModal');if(!m)return;
+function openMuseAiSettings(){var m=document.getElementById('museaiSettingsModal');if(!m)return;
   var tpm=document.getElementById('cs_tpmarker');if(tpm)tpm.value=(tpMarker()==='YOUR_MARKER'?'':tpMarker());
   var tps=document.getElementById('cs_tpsnippet');if(tps)tps.value=tpSnippet();
   var force=document.getElementById('cs_local_force');
   if(force){try{force.checked=localStorage.getItem('muselive_local_force')==='1';}catch(e){force.checked=false;}}
   var gm=document.getElementById('cs_model');
-  if(gm){try{var mv=localStorage.getItem('muselive_charlie_model');if(mv)gm.value=mv;}catch(eM){}}
-  charlieLocalSyncUI();
+  if(gm){try{var mv=localStorage.getItem('muselive_museai_model');if(mv)gm.value=mv;}catch(eM){}}
+  museaiLocalSyncUI();
   m.classList.remove('hidden');m.style.display='flex';
 }
-function closeCharlieSettings(){var m=document.getElementById('charlieSettingsModal');if(m){m.style.display='none';m.classList.add('hidden');}}
-function saveCharlieSettings(){try{
+function closeMuseAiSettings(){var m=document.getElementById('museaiSettingsModal');if(m){m.style.display='none';m.classList.add('hidden');}}
+function saveMuseAiSettings(){try{
   var tpm=document.getElementById('cs_tpmarker');if(tpm)setTpMarker(tpm.value);
   var tps=document.getElementById('cs_tpsnippet');if(tps)setTpSnippet(tps.value);
   var gm=document.getElementById('cs_model');
-  if(gm&&gm.value){try{localStorage.setItem('muselive_charlie_model',gm.value);}catch(eM){}}
+  if(gm&&gm.value){try{localStorage.setItem('muselive_museai_model',gm.value);}catch(eM){}}
   var force=document.getElementById('cs_local_force');
   if(force){
     try{localStorage.setItem('muselive_local_force',force.checked?'1':'0');}catch(e){}
     if(force.checked){
       toast('Free on-device model enabled — first visit may download once');
-      museEnsureLocal(function(){try{if(typeof CharlieLocal!=='undefined')CharlieLocal.ensureEngine(false).catch(function(){});}catch(e2){}});
+      museEnsureLocal(function(){try{if(typeof MuseAiLocal!=='undefined')MuseAiLocal.ensureEngine(false).catch(function(){});}catch(e2){}});
     }
   }
 }catch(e){}
-  charlieAssistInit();closeCharlieSettings();
+  museaiAssistInit();closeMuseAiSettings();
   try{cfgBannerInit();}catch(e1){}
-  toast('Charlie settings saved');}
-function clearCharlieKey(){/* optional */}
-function testCharlie(){
+  toast('Muse settings saved');}
+function clearMuseAiKey(){/* optional */}
+function testMuseAi(){
   var st=document.getElementById('cs_status');
-  if(charlieLocalEnabled()&&typeof CharlieLocal!=='undefined'){
-    if(st)st.textContent='● Testing on-device Charlie…';
-    CharlieLocal.ensureEngine(false).then(function(){return CharlieLocal.chat('Who are you?',[]);})
+  if(museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'){
+    if(st)st.textContent='● Testing on-device Muse…';
+    MuseAiLocal.ensureEngine(false).then(function(){return MuseAiLocal.chat('Who are you?',[]);})
       .then(function(ans){
-        if(st)st.textContent='● On-device Charlie OK';
-        toast('On-device Charlie OK');
-        try{if(typeof charliePush==='function'){if(!charlieOpen&&typeof toggleCharlie==='function')toggleCharlie();charliePush(ans,'bot');}}catch(e){}
+        if(st)st.textContent='● On-device Muse OK';
+        toast('On-device Muse OK');
+        try{if(typeof museaiPush==='function'){if(!museaiOpen&&typeof toggleMuseAi==='function')toggleMuseAi();museaiPush(ans,'bot');}}catch(e){}
       })
-      .catch(function(){toast('Local model failed — Charlie still answers from Muse Live');if(st)st.textContent='● On-device model failed';});
+      .catch(function(){toast('Local model failed — Muse still answers from Muse Live');if(st)st.textContent='● On-device model failed';});
     return;
   }
-  if(st)st.textContent='● Testing Charlie…';
-  var probe=(typeof charlieRealWorldTry==='function')
-    ?charlieRealWorldTry('When is the next Miami Dolphins preseason game?')
+  if(st)st.textContent='● Testing Muse…';
+  var probe=(typeof museaiRealWorldTry==='function')
+    ?museaiRealWorldTry('When is the next Miami Dolphins preseason game?')
     :Promise.resolve(null);
   probe.then(function(ans){
     if(ans){
-      if(st)st.textContent='● Charlie';
-      toast('Charlie ready');
-      try{if(typeof charliePush==='function'){if(!charlieOpen&&typeof toggleCharlie==='function')toggleCharlie();charliePush(ans,'bot');}}catch(e){}
+      if(st)st.textContent='● Muse';
+      toast('Muse ready');
+      try{if(typeof museaiPush==='function'){if(!museaiOpen&&typeof toggleMuseAi==='function')toggleMuseAi();museaiPush(ans,'bot');}}catch(e){}
     }else{
-      if(st)st.textContent='● Charlie';
-      toast('Charlie ready');
+      if(st)st.textContent='● Muse';
+      toast('Muse ready');
       try{
-        var r=(typeof charlieAnswer==='function')?charlieAnswer('What is Muse Live?'):'Charlie ready.';
-        if(typeof charliePush==='function'){if(!charlieOpen&&typeof toggleCharlie==='function')toggleCharlie();charliePush(r,'bot');}
+        var r=(typeof museaiAnswer==='function')?museaiAnswer('What is Muse Live?'):'Muse ready.';
+        if(typeof museaiPush==='function'){if(!museaiOpen&&typeof toggleMuseAi==='function')toggleMuseAi();museaiPush(r,'bot');}
       }catch(e2){}
     }
   }).catch(function(){
-    if(st)st.textContent='● Charlie';
-    toast('Charlie rules mode');
+    if(st)st.textContent='● Muse';
+    toast('Muse rules mode');
   });
 }
-function charlieLoadModelNow(){
+function museaiLoadModelNow(){
   try{localStorage.setItem('muselive_local_force','1');}catch(e){}
   toast('Loading free on-device model — first visit may download once');
   museEnsureLocal(function(){
-    if(typeof CharlieLocal==='undefined'){toast('On-device module not loaded');return;}
-    CharlieLocal.ensureEngine(true).then(function(){toast('On-device Charlie ready');charlieAssistInit();})
-      .catch(function(){toast('Local load failed — Charlie still answers from Muse Live');charlieAssistInit();});
+    if(typeof MuseAiLocal==='undefined'){toast('On-device module not loaded');return;}
+    MuseAiLocal.ensureEngine(true).then(function(){toast('On-device Muse ready');museaiAssistInit();})
+      .catch(function(){toast('Local load failed — Muse still answers from Muse Live');museaiAssistInit();});
   });
 }
 
 /* ================================================================================
-   CHARLIE AGENT CONTEXT — full production documents for the ops agent
+   MUSEAI AGENT CONTEXT — full production documents for the ops agent
    ================================================================================ */
-function charlieClip(s,n){s=String(s==null?'':s);return s.length>(n||200)?s.slice(0,n)+'…':s;}
-function charlieFocusKey(){
+function museaiClip(s,n){s=String(s==null?'':s);return s.length>(n||200)?s.slice(0,n)+'…':s;}
+function museaiFocusKey(){
   try{
     var act=document.querySelector('.view-pane.active');
     if(act){var id=(act.id||'').replace(/^view-/,'');if(productions[id])return id;}
@@ -1302,7 +1302,7 @@ function charlieFocusKey(){
   try{if(typeof omniCurrentProd==='function'){var ok=omniCurrentProd();if(ok&&productions[ok])return ok;}}catch(e2){}
   return order[0]||null;
 }
-function charlieTbFieldsFull(p){
+function museaiTbFieldsFull(p){
   var out={};if(!p||!p.tbFields)return out;
   Object.keys(p.tbFields).forEach(function(dep){
     var f=p.tbFields[dep];if(!f||typeof f!=='object')return;
@@ -1320,15 +1320,15 @@ function charlieTbFieldsFull(p){
   });
   return out;
 }
-function charliePacklist(p,limit){
+function museaiPacklist(p,limit){
   try{
     if(typeof packItems!=='function')return [];
     return packItems(p).slice(0,limit||250).map(function(it){
-      return {dept:it.dept,name:it.name,qty:it.qty,detail:charlieClip(it.detail||'',120),status:it.packStatus,owner:it.owner};
+      return {dept:it.dept,name:it.name,qty:it.qty,detail:museaiClip(it.detail||'',120),status:it.packStatus,owner:it.owner};
     });
   }catch(e){return [];}
 }
-function charlieFiberPlant(f,label){
+function museaiFiberPlant(f,label){
   if(!f)return null;
   var trunks=(f.trunks||[]).map(function(t){
     return {label:t.label||t.cable,cable:t.cable,from:t.from,to:t.to,len:t.len,path:t.path,mode:t.mode,notes:t.notes};
@@ -1342,21 +1342,21 @@ function charlieFiberPlant(f,label){
   if(!trunks.length&&!strands.length)return null;
   return {site:label,trunk_count:trunks.length,strand_count:strands.length,trunks:trunks,strands:strands};
 }
-function charlieFiberFull(p){
+function museaiFiberFull(p){
   var plants=[];
   try{
     if(p.fiberLoc&&typeof p.fiberLoc==='object'){
       Object.keys(p.fiberLoc).forEach(function(lid){
-        var pl=charlieFiberPlant(p.fiberLoc[lid],lid);if(pl)plants.push(pl);
+        var pl=museaiFiberPlant(p.fiberLoc[lid],lid);if(pl)plants.push(pl);
       });
     }
     if(!plants.length&&typeof fiberGet==='function'){
-      var pl2=charlieFiberPlant(fiberGet(p),'primary');if(pl2)plants.push(pl2);
+      var pl2=museaiFiberPlant(fiberGet(p),'primary');if(pl2)plants.push(pl2);
     }
   }catch(e){}
   return plants;
 }
-function charlieCrewFull(key){
+function museaiCrewFull(key){
   try{
     return getProjectCrew(key).map(function(s){
       return {pos:s.pos,name:(s.name||'').trim()||'(OPEN)',group:s.group,email:s.email||'',phone:s.phone||'',
@@ -1364,14 +1364,14 @@ function charlieCrewFull(key){
     });
   }catch(e){return [];}
 }
-function charlieSurveyFull(key){
+function museaiSurveyFull(key){
   try{
     var s=(typeof getSurvey==='function')?getSurvey(key):null;if(!s)return null;
     var pan=s.pano||{};
     return {
       address:s.address||'',
       findings:(s.findings||[]).slice(0,50).map(function(f){
-        return {text:charlieClip(f.text||f.note||'',220),status:f.status||'',severity:f.severity||f.priority||''};
+        return {text:museaiClip(f.text||f.note||'',220),status:f.status||'',severity:f.severity||f.priority||''};
       }),
       power:s.power?{
         distros:(s.power.distros||[]).map(function(d){return {name:d.name,type:d.type,amps:d.amps,volts:d.volts,src:d.src,location:d.location};}),
@@ -1382,15 +1382,15 @@ function charlieSurveyFull(key){
         markers:(pan.hotspots||[]).map(function(h){
           return {type:h.type||h.kind||'',label:h.label||'',yaw:h.yaw,pitch:h.pitch,note:h.note||h.detail||h.notes||''};
         }),
-        marks:(pan.marks||[]).slice(0,40).map(function(m){return {kind:m.kind,label:m.label,detail:charlieClip(m.detail||'',80)};})
+        marks:(pan.marks||[]).slice(0,40).map(function(m){return {kind:m.kind,label:m.label,detail:museaiClip(m.detail||'',80)};})
       },
       cad_plan_count:(s.cad||[]).length,
-      security:s.security?{notes:charlieClip(s.security.notes||'',200)}:null
+      security:s.security?{notes:museaiClip(s.security.notes||'',200)}:null
     };
   }catch(e){return null;}
 }
-/* Venue arrival / geofence check-in rollup for Charlie */
-function charlieCheckinsFull(key){
+/* Venue arrival / geofence check-in rollup for Muse */
+function museaiCheckinsFull(key){
   try{
     var p=productions[key];if(!p)return null;
     var m=p.siteCheckins&&typeof p.siteCheckins==='object'?p.siteCheckins:{};
@@ -1420,8 +1420,8 @@ function charlieCheckinsFull(key){
     };
   }catch(e){return null;}
 }
-/* Full production document Charlie can read like a techbook PDF */
-function charlieProductionDocument(key,depth){
+/* Full production document Muse can read like a techbook PDF */
+function museaiProductionDocument(key,depth){
   var p=productions[key];if(!p)return null;
   depth=depth||'full'; /* full | standard | slim */
   try{if(typeof ensureTB==='function')ensureTB(p,key);}catch(e){}
@@ -1446,7 +1446,7 @@ function charlieProductionDocument(key,depth){
     departments:(p.dept||[]).map(function(d){return {name:d[0],status:d[1],note:d[2]||''};}),
     approvals:p.approvals||{},
     /* THE DOCUMENT — full department techbook field values (consoles, cams, TX, power, RVON, …) */
-    techbook_fields:charlieTbFieldsFull(p),
+    techbook_fields:museaiTbFieldsFull(p),
     truck_specs:p.tb||null,
     locations:(p.locations||[]).map(function(L){
       return {id:L.id,name:L.name,venue:L.venue,city:L.city,role:L.role,address:L.address||'',note:L.note||'',tz:L.tz};
@@ -1455,40 +1455,40 @@ function charlieProductionDocument(key,depth){
   };
   if(depth==='slim'){
     doc.packlist_count=(function(){try{return packItems(p).length;}catch(e){return 0;}})();
-    doc.fiber_strand_count=(function(){try{var n=0;charlieFiberFull(p).forEach(function(pl){n+=pl.strand_count||0;});return n;}catch(e){return 0;}})();
+    doc.fiber_strand_count=(function(){try{var n=0;museaiFiberFull(p).forEach(function(pl){n+=pl.strand_count||0;});return n;}catch(e){return 0;}})();
     doc.crew_open=(function(){try{return getProjectCrew(key).filter(function(s){return !(s.name||'').trim();}).length;}catch(e){return 0;}})();
     doc.venue_checkin=(function(){try{var s=typeof checkinSummary==='function'?checkinSummary(key):null;return s?{on_count:s.on,total_named:s.total,fence_radius_m:(typeof CHECKIN_RADIUS_M!=='undefined'?CHECKIN_RADIUS_M:250)}:null;}catch(e){return null;}})();
     return doc;
   }
   /* standard + full */
-  doc.packlist=charliePacklist(p,depth==='full'?300:80);
-  doc.fiber_plant=charlieFiberFull(p);
-  doc.crew=charlieCrewFull(key);
+  doc.packlist=museaiPacklist(p,depth==='full'?300:80);
+  doc.fiber_plant=museaiFiberFull(p);
+  doc.crew=museaiCrewFull(key);
   doc.ifb_route=p.ifbRoute||null;
   doc.vendors=p.vendors||[];
-  doc.site_survey=charlieSurveyFull(key);
-  doc.venue_checkin=charlieCheckinsFull(key);
-  try{if(typeof planCharlieSummary==='function')doc.project_controls=planCharlieSummary(key);}catch(e3){}
+  doc.site_survey=museaiSurveyFull(key);
+  doc.venue_checkin=museaiCheckinsFull(key);
+  try{if(typeof planMuseAiSummary==='function')doc.project_controls=planMuseAiSummary(key);}catch(e3){}
   if(depth==='full'){
     doc.activity=(p.activity||[]).slice(0,30);
     doc.tasks=(p.tasks||[]).slice(0,40);
     doc.signoff=p.signoff||null;
   }
-  try{if(typeof MuseBOps!=='undefined'&&MuseBOps.charlieBrief)doc.broadcast_ops=MuseBOps.charlieBrief(key);}catch(eBo){}
+  try{if(typeof MuseBOps!=='undefined'&&MuseBOps.museaiBrief)doc.broadcast_ops=MuseBOps.museaiBrief(key);}catch(eBo){}
   return doc;
 }
-function buildCharlieContext(){
-  var focus=charlieFocusKey();
+function buildMuseAiContext(){
+  var focus=museaiFocusKey();
   var _role=(typeof permRoleDef==='function')?permRoleDef():null;
   /* Every production gets its techbook document. Focus gets FULL depth (packlist, fiber map, crew, survey). */
   var documents=[];
   order.forEach(function(k){
     var depth=(k===focus)?'full':(order.length<=8?'standard':'slim');
-    var d=charlieProductionDocument(k,depth);
+    var d=museaiProductionDocument(k,depth);
     if(d){if(k===focus)d._focus=true;documents.push(d);}
   });
   var portfolio={
-    agent:'Charlie · Muse Live native ops agent',
+    agent:'Muse · Muse Live native ops agent',
     today:new Date().toISOString(),
     viewing_as:(_role?(_role.label+' ('+_role.persona+')'+(_role.admin?' · admin':' · restricted')):'unknown'),
     active_view:focus,
@@ -1534,7 +1534,7 @@ function buildCharlieContext(){
   var msgs=((typeof permComms==='function')?permComms():(typeof comms!=='undefined'?comms:[])).slice(0,30).map(function(m){
     var ch=m.channel==='toc'?'TOC':(m.channel==='teams'?'Teams':'Email');
     return ch+(m.priority&&m.priority!=='normal'?' ['+m.priority+']':'')+' '+(m.dir==='out'?'to '+m.to:'from '+m.from)+
-      ': '+(m.subject?m.subject+' — ':'')+charlieClip(typeof museRichExcerpt==='function'?museRichExcerpt(m.body,100):m.body,100);
+      ': '+(m.subject?m.subject+' — ':'')+museaiClip(typeof museRichExcerpt==='function'?museRichExcerpt(m.body,100):m.body,100);
   });
   var critMsgs=((typeof permComms==='function')?permComms():[]).filter(function(m){return m.priority==='critical'&&!m.read&&m.dir==='in';})
     .map(function(m){return (m.subject||m.from)+' ('+commsLinkLabel(m.linkType,m.linkId)+')';});
@@ -1571,14 +1571,14 @@ function buildCharlieContext(){
     critical_alerts:critMsgs.length?critMsgs:['none'],
     unread_messages:(typeof commsUnread==='function'?commsUnread():0)
   };
-  /* Entire product surface — Charlie knows Muse Live module-by-module */
-  portfolio.muse_live_product=charlieAppBlueprint(focus);
+  /* Entire product surface — Muse knows Muse Live module-by-module */
+  portfolio.muse_live_product=museaiAppBlueprint(focus);
   try{
     if(typeof MuseKB!=='undefined'){
-      var wq=(typeof charlieHistory!=='undefined'&&charlieHistory.length)?String(charlieHistory[charlieHistory.length-1].content||''):'';
+      var wq=(typeof museaiHistory!=='undefined'&&museaiHistory.length)?String(museaiHistory[museaiHistory.length-1].content||''):'';
       portfolio.wiki={
         current:(typeof MuseKB.currentSlug==='function'?MuseKB.currentSlug():null),
-        hits:(typeof MuseKB.chunksForCharlie==='function'?MuseKB.chunksForCharlie(wq,8):[]).map(function(d){
+        hits:(typeof MuseKB.chunksForMuseAi==='function'?MuseKB.chunksForMuseAi(wq,8):[]).map(function(d){
           return {title:d.title,slug:d.slug,kind:d.col||d.kind,team:d.team,body:String(d.body||'').slice(0,700)};
         })
       };
@@ -1629,8 +1629,8 @@ function museOpsSkills(focusKey){
     }
   };
 }
-/* Static + live map of every major Muse Live surface so Charlie is a full-product agent */
-function charlieAppBlueprint(focusKey){
+/* Static + live map of every major Muse Live surface so Muse is a full-product agent */
+function museaiAppBlueprint(focusKey){
   var deptSchema={};
   try{
     Object.keys(DEFAULT_DEPT_FIELDS||{}).forEach(function(dep){
@@ -1656,7 +1656,7 @@ function charlieAppBlueprint(focusKey){
     project_finance:'Cost Report / Labor / AP Ledger workspace; PO WO invoice docs; WBS & cost centers',
     project_packlist:'Shippable gear lines with pack status / owner / lock',
     project_tracking:'Fleet / asset GPS telemetry map (CARTO tiles, dark/light)',
-    charlie_drawer:'Right-rail Ask Charlie drawer — ops Q&A over live JSON context (branded Charlie only)',
+    museai_drawer:'Right-rail Ask Muse drawer — ops Q&A over live JSON context (branded Muse only)',
     omni_drawer:'Right-rail Omni messaging drawer',
     theme:'Light / dark theme; maps and telemetry retheme with it'
   };
@@ -1664,7 +1664,7 @@ function charlieAppBlueprint(focusKey){
     cad_viewer:'js/cad-viewer-engine.js v1.0 — READ-ONLY 2D/3D viewer. Formats: DXF, DWG (LibreDWG WASM), OBJ, STL, images/PDF sheets. NOT supported in-browser: DWF/DWFX, STEP, Parasolid (.x_t), Vectorworks (.vwx). Tools: pan/zoom 2D, orbit 3D, colored collaborative note dots (author+message); Save notes → production plan.notes. No geometry edit. Requires HTTP (not file://) for WASM.',
     pano360:'js/pano-engine.js v4.0 — Broadcast 360 Shot Designer. Default MAP MODE: equirect as 2:1 map, pan L/R + limited U/D; markers & draw paths UV-locked so they never slide. Optional LOOK sphere mode. Packages/body/lens/mount from Department Status Cameras/Video (museBlockingGear); place tools: camera, jib, steadicam, cable, fiber, SMPTE, power, equipment, mic, RF, IFB, truck, talent, hazard, exit; freehand cable draw; Flip V/H; shot list; survey.pano persistence. Max texture ≤4096.',
     libredwg:'js/libredwg/ — @mlightcad/libredwg-web ESM+WASM; museDwgToDxf() for DWG open path',
-    charlie_ai:'Charlie is the native ops agent. Live path: /api/charlie with Muse Live JSON + Wiki chunks + web search each turn. Fallback: Muse Live rules + live sports/weather, then optional on-device model. UI brand is Charlie only.',
+    museai_ai:'Muse is the native ops agent. Live path: /api/museai with Muse Live JSON + Wiki chunks + web search each turn. Fallback: Muse Live rules + live sports/weather, then optional on-device model. UI brand is Muse only.',
     weather:'Open-Meteo + Windy GFS point forecast; AQI; per-venue weather band; network clock city panels',
     maps:'MapLibre + OpenFreeMap / CARTO Voyager (light) + Dark Matter (dark). museStaticMap compositor for techbook PDF covers (always light Voyager JPEG — not WebGL canvas grabs).',
     ntp:'museClock multi-source network time for world clocks',
@@ -1673,7 +1673,7 @@ function charlieAppBlueprint(focusKey){
   var storage=[
     'muselive_edits — per-prod overlay: dept, tbFields, tbEquip, fiber/fiberLoc, survey/surveyLoc, crew, crewMatrix, travelReqs, plan, siteCheckins, ifbRoute, packStatus, …',
     'muselive_custom — user-created productions',
-    'muselive_charlie_key / muselive_charlie_model — Charlie cloud key/model (never surface vendor names in UI)',
+    'muselive_museai_key / muselive_museai_model — Muse cloud key/model (never surface vendor names in UI)',
     'muselive_ops_v1 — work orders + TX bookings',
     'muselive_gear — dept field option catalog extensions',
     'muselive_audit_v1, museTheme, roles/accounts, travel, comms',
@@ -1682,15 +1682,15 @@ function charlieAppBlueprint(focusKey){
   var liveUi={
     active_view_id:(function(){try{var a=document.querySelector('.view-pane.active');return a?(a.id||'').replace(/^view-/,''):null;}catch(e){return null;}})(),
     focus_production:focusKey,
-    open_drawers:{charlie:!!(typeof charlieOpen!=='undefined'&&charlieOpen),omni:!!(typeof omniDrawerOpen!=='undefined'&&omniDrawerOpen)},
+    open_drawers:{museai:!!(typeof museaiOpen!=='undefined'&&museaiOpen),omni:!!(typeof omniDrawerOpen!=='undefined'&&omniDrawerOpen)},
     theme:(function(){try{return document.documentElement.classList.contains('dark')?'dark':'light';}catch(e){return 'unknown';}})(),
     app_title:(typeof document!=='undefined'&&document.title)||'Muse Live',
     productions_order:order.slice(),
     dept_field_catalog_keys:Object.keys(deptSchema),
-    charlie_cloud:(function(){try{return !!(typeof assistantKey==='function'&&assistantKey());}catch(e){return false;}})(),
+    museai_cloud:(function(){try{return !!(typeof assistantKey==='function'&&assistantKey());}catch(e){return false;}})(),
     checkin_radius_m:(typeof CHECKIN_RADIUS_M!=='undefined'?CHECKIN_RADIUS_M:250)
   };
-  /* Deep equipment catalog sample so Charlie knows what gear options exist in the product */
+  /* Deep equipment catalog sample so Muse knows what gear options exist in the product */
   var catalogSamples={};
   try{
     ['Audio','Cameras / Video','Transmission / Signal','Power / Electrical','Comms & IFB'].forEach(function(dep){
@@ -1706,13 +1706,13 @@ function charlieAppBlueprint(focusKey){
   try{
     order.forEach(function(k){
       var p=productions[k];if(!p)return;
-      prodKeysBrief[k]={name:p.name,client:p.customer,venue:p.venue,status:p.status,pct:(typeof computePct==='function')?computePct(p):p.pct,showcase:!!(p.completeShowcase||k==='sail250')};
+      prodKeysBrief[k]={name:p.name,client:p.customer,venue:p.venue,status:p.status,pct:(typeof computePct==='function')?computePct(p):p.pct,showcase:!!(p.completeShowcase||k==='raybangen3')};
     });
   }catch(e3){}
   return {
     product:'Muse Live — Broadcast Operations CRM. Powered by Techbook OS — a collaborative digital techbook OS.',
     form_factor:'Single-page browser app (Muse_Live_0.38.html or hosted index.html) + js/ engines + config/ + assets/. Not a video switcher or media plane — the plan-of-record ops hub.',
-    philosophy:'One CRM for multi-venue live production: techbook, packlist, fiber, crew, survey, CAD notes, 360 blocking, TX, finance, travel, ENG, inventory, Omni — with Charlie as the native ops agent.',
+    philosophy:'One CRM for multi-venue live production: techbook, packlist, fiber, crew, survey, CAD notes, 360 blocking, TX, finance, travel, ENG, inventory, Omni — with Muse as the native ops agent.',
     launch:{
       local:'cd Muse Live && ./start-muse.sh → http://127.0.0.1:8317/Muse_Live_0.38.html (HTTP required for LibreDWG WASM, maps, geolocation reliability; file:// breaks DWG/WASM)',
       hosted_demo:'Static HTTP host',
@@ -1720,7 +1720,7 @@ function charlieAppBlueprint(focusKey){
       tree:'Top-level only app HTML + start-muse.sh; engines js/; keys config/; media assets/; docs/; archived old/'
     },
     demo_productions:prodKeysBrief,
-    showcase_note:'Sail 250 (sail250) is the permanent 100% complete production showcase — always fully approved.',
+    showcase_note:'Ray-Ban Meta Gen 3 Launch (raybangen3) is the permanent 100% complete production showcase — always fully approved.',
     views:views,
     engines:engines,
     persistence:storage,
@@ -1746,25 +1746,25 @@ function charlieAppBlueprint(focusKey){
       finance:'Budgets, POs, WOs, invoices/AP, Cost Report / Labor / AP Ledger, document viewer + branded one-page PDF export, WBS/cost centers, Excel import.',
       transmission:'txBookings (src→resource→dst, Mbps, window, status) + txConflicts() portfolio conflict notes.',
       tracking:'GPS asset tracking sim (trkDevices) on canvas maps with battery/motion; CARTO basemap.',
-      travel:'SAP-style travel requests lifecycle Draft→…→Closed; WBS/cost center allocation; M&IE per diems; Duffel-ish booking UI; broadcast manifest = confirmed bookings; Travelpayouts Charlie auto-fill for flights.',
+      travel:'SAP-style travel requests lifecycle Draft→…→Closed; WBS/cost center allocation; M&IE per diems; Duffel-ish booking UI; broadcast manifest = confirmed bookings; Travelpayouts Muse auto-fill for flights.',
       eng:"ENG request builder: multi-cam hits, lighting, LiveU LU800, REM/TIFF, status, push gear into production packlist.",
       xytech:'Facility rooms (PCR/ACR/CRK…), labor, weekly board; dashboard chips mirror roomState.',
       omni:'Teams/email/TOC drawer + Graph stubs; messages link to records; critical priority alerts.',
       roles:'Header "Viewing as" role switcher; permCan gates finance/xytech/vendors; scopes for equipment/travel/comms; admins provision accounts from personnel cards.',
-      controls:'Project controls Primavera-style: CPM Gantt, float/slack, SPI/CPI EVM, EAC/VAC, resource histogram/leveling, stage gates, what-if scenarios (plan object / planCharlieSummary).',
+      controls:'Project controls Primavera-style: CPM Gantt, float/slack, SPI/CPI EVM, EAC/VAC, resource histogram/leveling, stage gates, what-if scenarios (plan object / planMuseAiSummary).',
       inventory:'Global Equipment Library barcodes, serials, check-in/out, maintenance, value rollup.',
       ifb:"Unified IFB Signal Routing on Overview — REM (mix-minus) + TIFF (cam-op/producer) lines mapped to LiveU LU800/Fiber/Satellite paths.",
       excel:'Download Template / Import / Export with validation preview on Equipment, Vendors, Personnel, Talent, Locations, ENG, Finance.',
       npc:'National Press Club external calendar + conflict detection vs Muse Live facility bookings.',
       weather_conditions:'Network clock tiles open city conditions (temp, precip, wind, AQI); Open-Meteo/Windy; per-venue forecast bands.',
       theme:'museTheme light/dark; maps + telemetry + waveforms retheme.',
-      charlie:'Native ops agent with the Muse Live knowledge pack and a live snapshot each turn; rules fallback; brand name Charlie only.',
+      museai:'Native ops agent with the Muse Live knowledge pack and a live snapshot each turn; rules fallback; brand name Muse only.',
       hosting:'Static host. Keep secret config off the public tree.'
     },
     department_names_canonical:[
       'Audio','Cameras / Video','Transmission / Signal','Power / Electrical','Engineering','Replay / EVS','CAD','Graphics (GFX)','Talent / Production','Legal / Rights'
     ],
-    how_charlie_should_answer:[
+    how_museai_should_answer:[
       'Answer ANY and ALL questions about Muse Live — every module, workflow, screen, import, role, production, troubleshooting. Never refuse a Muse Live question.',
       'Also answer real-world / general knowledge questions fully (science, math, geography, broadcast theory, travel concepts, etc.). You are not limited to Muse-only topics.',
       'When asked how something works in Muse Live → modules_detail + engines + views + maps_layout + launch.',
@@ -1776,20 +1776,20 @@ function charlieAppBlueprint(focusKey){
       '360: equirectangular 2:1 JPEG/PNG/WebP; UV-locked map mode; auto-downscale ≤4096.',
       'For live Muse Live data: never invent gear, people, or strand numbers — quote live JSON or say missing/OPEN; still teach the product workflow.',
       'For pure world knowledge: answer from general knowledge; do not force a Muse Live angle unless asked.',
-      'You are Charlie.',
+      'You are Muse.',
       'Never claim you can only help with Muse Live. Clear complete answers; plain text; end with a useful action when helpful.'
     ]
   };
 }
 function assistAsk(){
   var live='';
-  try{live=buildCharlieContext();}catch(e){live=JSON.stringify({error:'context build failed',detail:String(e&&e.message||e)});}
+  try{live=buildMuseAiContext();}catch(e){live=JSON.stringify({error:'context build failed',detail:String(e&&e.message||e)});}
   /* Full product + documents — large context for agentic use */
   var CAP=120000; /* Wave A: keep CF + browser snappy */
   if(live&&live.length>CAP)live=live.slice(0,CAP)+'…[truncated — ask about a specific module or production]';
   var sys=[
-    'You are Charlie — the assistant inside Muse Live (Muse Live Broadcast Operations CRM).',
-    'Always call yourself Charlie. Stay in character as Charlie.',
+    'You are Muse — the assistant inside Muse Live (Meta Broadcast Operations).',
+    'Always call yourself Muse. Stay in character as Muse.',
     '',
     'DUAL MANDATE',
     '1) Answer ANY and ALL questions about Muse Live — every module, screen, workflow, setting, import, role, production, troubleshooting. Never refuse.',
@@ -1798,7 +1798,7 @@ function assistAsk(){
     'WHAT MUSE LIVE IS',
     'Single-page browser ops hub (not a switcher, NLE, or media plane). Plan-of-record for multi-venue live production: Department Status, techbook fields, packlist, fiber plant, crew + Call Matrix, venue geofence check-in, site survey, read-only CAD viewer with note dots, Broadcast 360 Shot Designer, TX bookings, finance (PO/WO/AP), project controls (CPM/EVM), travel + manifest, ENG requests, barcode inventory, Omni comms, Xytech rooms, roles, Broadcast Ops Go/No-Go.',
     'Launch: local ./start-muse.sh (HTTP — required for DWG WASM).',
-    'Showcase production: Sail 250 is always 100% complete. Demo personnel is synthetic.',
+    'Showcase production: Ray-Ban Meta Gen 3 Launch is always 100% complete. Demo personnel is synthetic.',
     'WHAT\'S NEW: Site Survey → Air-readiness Event Check List (not GFX). Workflow: Drawings + vendor meeting and venue schedule + site survey → Tasks → LBA. Graphics Playback 16:9, tap to play/pause, frame step, Fill and Matte Tally on fill+matte uploads, per-show Open/Bumper/Wipe sims use clip soundtrack. Left rail hidden scrollbar, Search/+ fade (no rounded card).',
     '',
     'PRODUCT SURFACE (know perfectly — also in muse_live_product JSON)',
@@ -1817,13 +1817,13 @@ function assistAsk(){
     'LIVE OPS DOCUMENT (JSON):',
     live
   ].join('\n');
-  var contents=charlieHistory.map(function(m){return {role:(m.role==='assistant'?'assistant':'user'),parts:[{text:String(m.content)}]};});
-  return charlieClient.generate({system:sys,contents:contents,maxTokens:12288,temperature:0.3});
+  var contents=museaiHistory.map(function(m){return {role:(m.role==='assistant'?'assistant':'user'),parts:[{text:String(m.content)}]};});
+  return museaiClient.generate({system:sys,contents:contents,maxTokens:12288,temperature:0.3});
 }
-/* widen Charlie quick chips — document-aware agent prompts */
-function buildCharlieChips(){var box=document.getElementById('charlieChips');if(!box)return;
-  var chips=["Morning briefing","What's at risk across Muse Live?","Prep Sail 250","Who is open on crew?","Any TX conflicts?"];
-  box.innerHTML=chips.map(function(c){return '<button onclick="charlieChip(this)" class="text-[9px] bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full px-2.5 py-1 border border-gray-200">'+c+'</button>';}).join('');}
+/* widen Muse quick chips — document-aware agent prompts */
+function buildMuseAiChips(){var box=document.getElementById('museaiChips');if(!box)return;
+  var chips=["Morning briefing","What's at risk across Muse Live?","Prep Ray-Ban Meta Gen 3 Launch","Who is open on crew?","Any TX conflicts?"];
+  box.innerHTML=chips.map(function(c){return '<button onclick="museaiChip(this)" class="text-[9px] bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-full px-2.5 py-1 border border-gray-200">'+c+'</button>';}).join('');}
 
 /* ================================================================================
    4. FINANCIAL DOCUMENT VIEWER & PDF EXPORT
@@ -1856,7 +1856,7 @@ function finDocData(type,id){var r=finFind(type,id);if(!r)return null;var p=prod
     var conf=txConflicts();
     d.meta=[['Production',p.name||r.prod],['Contribution Path',r.src+'  >  '+r.res+'  >  '+r.dst],
       ['Resource Class',(meta.type||'—')+' · capacity '+meta.cap+' Mbps'],['Allocated Bandwidth',r.bw+' Mbps ('+load+'% of resource)'],
-      ['Booking Window',fmtWin(r.start,r.end)],['Booked By','Transmission Desk · Muse Plaza TOC'],['Cost Center','TX-CONTRIB-FY26']];
+      ['Booking Window',fmtWin(r.start,r.end)],['Booked By','Transmission Desk · Meta NYC TOC'],['Cost Center','TX-CONTRIB-FY26']];
     d.lines=[{desc:'Contribution capacity — '+r.res+' ('+r.bw+' Mbps)',amount:r.cost||0}];d.total=r.cost||0;
     if(conf.flags[r.id])d.warn='CONFLICT — this booking oversubscribes '+r.res+' in an overlapping window. Resolve before line-up.';
     d.notes='Line-up call 30 minutes prior to window open. Backup path to be confirmed with TOC before air.';}
@@ -1864,7 +1864,7 @@ function finDocData(type,id){var r=finFind(type,id);if(!r)return null;var p=prod
     var late=invOverdue(r);var aging=r.due?Math.round((new Date(finToday())-new Date(r.due))/864e5):0;
     d.status=late?'Overdue':r.status;
     d.meta=[['Vendor',r.vendor],['Production',p.name||r.prod],['Reference (PO / WO)',r.ref||'no reference — uncommitted spend'],
-      ['Remit To','Accounts Payable · Muse Live, Inc., 1 Muse Plaza, New York NY 10001'],
+      ['Remit To','Accounts Payable · Meta Platforms, Inc., 1 Hacker Way, Menlo Park, CA 94025'],
       ['Received',fmtD(r.recd)],['Due',fmtD(r.due)+(late?'  ·  '+aging+' day'+(aging===1?'':'s')+' past due':'')],
       ['Paid',r.paidOn?fmtD(r.paidOn):'—'],['AP Workflow',r.status]];
     d.lines=[{desc:'Invoice '+r.id+' — '+(r.ref?'against '+r.ref:'open billing'),amount:r.amount}];d.total=r.amount;
@@ -1872,8 +1872,8 @@ function finDocData(type,id){var r=finFind(type,id);if(!r)return null;var p=prod
     d.notes='Approved invoices are settled on the next weekly AP run. Disputes must be raised within 10 business days of receipt.';}
   return d;}
 
-var FIN_SPECTRUM=['#F7B717','#EF7B10','#E51B24','#632E8A','#00A0DE','#00A15D'];
-function finStatusTone(s){return {'Paid':'#059669','Fulfilled':'#059669','Complete':'#059669','Closed':'#6b7280','Overdue':'#dc2626','Live':'#dc2626','Draft':'#6b7280','Hold':'#6b7280'}[s]||'#1d4ed8';}
+var FIN_SPECTRUM=['#0064E0','#0070EC','#0082FB','#0082FB','#0070EC','#0064E0'];
+function finStatusTone(s){return {'Paid':'#059627','Fulfilled':'#059627','Complete':'#059627','Closed':'#727479','Overdue':'#dc2644','Live':'#dc2644','Draft':'#727479','Hold':'#727479'}[s]||'#1266e3';}
 
 /* ---------------- on-screen paper document ---------------- */
 function openFinDoc(type,id){var d=finDocData(type,id);if(!d)return;finDocCur={type:type,id:id};
@@ -1882,7 +1882,7 @@ function openFinDoc(type,id){var d=finDocData(type,id);if(!d)return;finDocCur={t
   var lineRows=d.lines.map(function(l){return '<div class="flex items-start justify-between gap-3 py-2 border-b border-gray-100"><span class="text-[10px] text-gray-800">'+esc(l.desc)+'</span><span class="text-[10px] mono font-bold text-gray-900 flex-shrink-0">'+$fmt(l.amount)+'</span></div>';}).join('');
   var docsRow=d.docs.length?'<div class="mt-3"><p class="text-[8px] font-bold uppercase tracking-wider text-gray-400 mb-1">Attached Documents</p><div class="flex flex-wrap gap-1">'+d.docs.map(function(x){return '<button onclick="openFinDocPDF(\''+d.id+'\',\''+(''+x).replace(/[\u0027\u0022\\]/g,"")+'\')" class="text-[8px] mono bg-gray-100 border border-gray-200 text-gray-600 rounded px-1.5 py-0.5 hover:border-blue-300 hover:text-blue-700" title="Open document">📎 '+esc(x)+'</button>';}).join('')+'</div></div>':'';
   var warn=d.warn?'<div class="flex items-start gap-2 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mt-3"><span class="text-red-500 text-xs leading-none mt-0.5">⚠</span><span class="text-[9px] font-bold text-red-800">'+esc(d.warn)+'</span></div>':'';
-  var stamp=d.paidStamp?'<div style="position:absolute;top:84px;right:34px;transform:rotate(-12deg);border:3px solid #059669;color:#059669;font-weight:800;font-size:22px;letter-spacing:.25em;padding:4px 14px;border-radius:8px;opacity:.85">PAID</div>':'';
+  var stamp=d.paidStamp?'<div style="position:absolute;top:84px;right:34px;transform:rotate(-12deg);border:3px solid #059627;color:#059627;font-weight:800;font-size:22px;letter-spacing:.25em;padding:4px 14px;border-radius:8px;opacity:.85">PAID</div>':'';
   document.getElementById('finDocTitle').textContent=d.title+' · '+d.id;
   document.getElementById('finDocBody').innerHTML=
     '<div class="relative p-6" style="font-family:\'Google Sans\',\'Inter\',sans-serif">'+stamp+
@@ -1899,7 +1899,7 @@ function openFinDoc(type,id){var d=finDocData(type,id);if(!d)return;finDocCur={t
     warn+docsRow+
     '<p class="text-[8px] text-gray-400 leading-relaxed mt-4">'+esc(d.notes)+'</p>'+
     '<div class="flex items-end justify-between mt-5 pt-3 border-t border-gray-200"><div><p class="text-[10px] text-gray-800" style="font-style:italic">Lila Hart</p><p class="text-[7px] font-bold uppercase tracking-wider text-gray-400 mt-0.5">Authorized · VP, Technical Production</p></div>'+
-    '<p class="text-[7px] mono text-gray-400 text-right">Muse Live Broadcast Telemetry · Confidential<br>Demo document — Muse Live</p></div></div>';
+    '<p class="text-[7px] mono text-gray-400 text-right">Meta Broadcast Telemetry · Confidential<br>Demo document — Muse Live</p></div></div>';
   var m=document.getElementById('finDocModal');m.classList.remove('hidden');m.style.display='flex';}
 function closeFinDoc(){var m=document.getElementById('finDocModal');if(m){m.style.display='none';m.classList.add('hidden');}finDocCur=null;}
 function finDocCompose(){if(!finDocCur)return;var t=finDocCur.type,id=finDocCur.id;closeFinDoc();openCompose(t,id,'email');}
@@ -1980,7 +1980,7 @@ function finDocPDF(){if(!finDocCur)return;var d=finDocData(finDocCur.type,finDoc
     doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(150,152,158);
     doc.text('AUTHORIZED  \u00B7  VP, TECHNICAL PRODUCTION',M,fy+30);
     doc.setFont('helvetica','normal');doc.setFontSize(6.5);
-    doc.text('Muse Live Broadcast Telemetry \u00B7 Confidential \u00B7 Demo document - Muse Live',W-M,fy+30,{align:'right'});
+    doc.text('Meta Broadcast Telemetry \u00B7 Confidential \u00B7 Demo document - Muse Live',W-M,fy+30,{align:'right'});
     FIN_SPECTRUM.forEach(function(c,i){doc.setFillColor(c);doc.rect(i*(W/6),doc.internal.pageSize.getHeight()-6,W/6,6,'F');});
     doc.save(d.id+'_'+d.title.replace(/\s+/g,'_')+'.pdf');
     toast(d.id+' exported as PDF');
@@ -1991,7 +1991,7 @@ function finDocPrint(d){ // graceful fallback when the jsPDF CDN is unavailable:
   if(!w){toast('Allow pop-ups to export this document');return;}
   w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(d.id)+'</title>'+
     '<script src="https://cdn.tailwindcss.com"><\/script>'+
-    '<style>body{font-family:Helvetica,Arial,sans-serif;background:#fff;padding:32px}.mono{font-family:ui-monospace,Menlo,monospace}<\/style></head><body>'+
+    '<style>body{font-family:Helvetica,Arial,sans-serif;background:#ffffff;padding:32px}.mono{font-family:ui-monospace,Menlo,monospace}<\/style></head><body>'+
     (body?body.innerHTML:'')+'<script>setTimeout(function(){window.print();},600);<\/script></body></html>');
   w.document.close();toast('Print dialog opened — choose "Save as PDF"');}
 
@@ -2257,7 +2257,7 @@ finDocPDF=function(){
     var J=window.jspdf.jsPDF,doc=new J({unit:'pt',format:'letter'});
     var PW=doc.internal.pageSize.getWidth(),PH=doc.internal.pageSize.getHeight();
     var M=48,y=0;
-    var SPECTRUM=['#F7B717','#EF7B10','#E51B24','#632E8A','#00A0DE','#00A15D'];
+    var SPECTRUM=['#0064E0','#0070EC','#0082FB','#0082FB','#0070EC','#0064E0'];
     // top spectrum bar
     SPECTRUM.forEach(function(c,i){doc.setFillColor(c);doc.rect(i*(PW/6),0,PW/6,5,'F');});
     y=42;
@@ -2363,7 +2363,7 @@ finDocPDF=function(){
     doc.setFont('helvetica','bold');doc.setFontSize(6.5);doc.setTextColor(140,142,148);
     doc.text('AUTHORIZED  \u00B7  VP, TECHNICAL PRODUCTION  \u00B7  MUSE LIVE / Muse Live',M,fy+28);
     doc.setFont('helvetica','normal');
-    doc.text('Muse Live Broadcast Telemetry \u00B7 Confidential \u00B7 Muse Live',PW-M,fy+28,{align:'right'});
+    doc.text('Meta Broadcast Telemetry \u00B7 Confidential \u00B7 Muse Live',PW-M,fy+28,{align:'right'});
     SPECTRUM.forEach(function(c,i){doc.setFillColor(c);doc.rect(i*(PW/6),PH-5,PW/6,5,'F');});
     doc.save(d.id+'_'+d.title.replace(/\s+/g,'_')+'.pdf');
     toast(d.id+' exported — '+d.title);
@@ -2458,7 +2458,7 @@ function engMigrate(e){
   return e;}
 
 var engRequests=[
- {id:'ENG-1001',prod:'worldcup',name:'Zocalo Roof — Pregame Live',window:'Jun 11 · 19:05 ET',location:'Inmuebles Cortes — Roof Top, CDMX',status:'Confirmed',
+ {id:'ENG-1001',prod:'museaitour',name:'Zocalo Roof — Pregame Live',window:'Jun 11 · 19:05 ET',location:'Inmuebles Cortes — Roof Top, CDMX',status:'Confirmed',
   op:true,opname:'',camera:"Sony HDC-5500",lens:"Fujinon UA80x9",lenstype:'Box / long',
   prompter:true,prompterspec:'15" on-cam',vanity:true,vanityspec:"TVLogic LUM-310R",
   cameras:[
@@ -2475,7 +2475,7 @@ var engRequests=[
   lightingSetup:'3-point interview',
   gear:engGearClone(ENG_DEFAULT_GEAR),loc:{venue:'Inmuebles Cortes — Roof Top, CDMX',lat:19.4339,lng:-99.1330},
   notes:'Talent hit from rooftop set; coordinate uplink window with TOC.'},
- {id:'ENG-1002',prod:'worldcup',name:'Hyatt Polanco — Green Screen Hit',window:'Jun 11 · 14:00 ET',location:'Hyatt Polanco — Drawing Room C',status:'Crewed',
+ {id:'ENG-1002',prod:'museaitour',name:'Hyatt Polanco — Green Screen Hit',window:'Jun 11 · 14:00 ET',location:'Hyatt Polanco — Drawing Room C',status:'Crewed',
   op:true,opname:'Alejandro Santiago',camera:"Grass Valley LDX 86N",lens:"Fujinon UA107x8.4",lenstype:'PTZ integrated',
   prompter:false,prompterspec:'',vanity:true,vanityspec:"Sony PVM-X2400",
   liveus:[{model:"LiveU LU800",serial:'LU600-2210',path:'Bonded + fiber'}],
@@ -2521,7 +2521,7 @@ function renderEng(){
   var byProd={};engRequests.forEach(function(e){(byProd[e.prod]=byProd[e.prod]||[]).push(e);});
   board.innerHTML=Object.keys(byProd).map(function(pk){var p=productions[pk]||{name:pk};
     var cards=byProd[pk].map(function(e){return engCard(e);}).join('');
-    return '<div><div class="flex items-center gap-2 mb-2"><span class="w-2 h-2 rounded-full" style="background:'+(dotBg[p.tagColor]||'#9ca3af')+'"></span><h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-600">'+esc(p.name||pk)+'</h3><span class="text-[9px] mono text-gray-400">'+byProd[pk].length+' hit'+(byProd[pk].length>1?'s':'')+'</span></div><div class="grid grid-cols-1 xl:grid-cols-2 gap-3">'+cards+'</div></div>';
+    return '<div><div class="flex items-center gap-2 mb-2"><span class="w-2 h-2 rounded-full" style="background:'+(dotBg[p.tagColor]||'#9ba2b0')+'"></span><h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-600">'+esc(p.name||pk)+'</h3><span class="text-[9px] mono text-gray-400">'+byProd[pk].length+' hit'+(byProd[pk].length>1?'s':'')+'</span></div><div class="grid grid-cols-1 xl:grid-cols-2 gap-3">'+cards+'</div></div>';
   }).join('');
 }
 
@@ -2996,18 +2996,18 @@ function engPhotoCaption(i,v){if(engDraft.photos[i])engDraft.photos[i].caption=v
 function engViewPhoto(i){var im=engDraft.photos[i];if(!im)return;
   var ov=document.getElementById('galLightbox');
   if(!ov){ov=document.createElement('div');ov.id='galLightbox';
-    ov.style.cssText='display:none;position:fixed;inset:0;z-index:90;background:rgba(10,12,18,.93);align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:10px';
+    ov.style.cssText='display:none;position:fixed;inset:0;z-index:90;background:rgba(14,14,14,.93);align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:10px';
     ov.onclick=function(ev){if(ev.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
   ov.innerHTML='<img src="'+im.src+'" style="max-width:92vw;max-height:80vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);object-fit:contain">'+
-    '<div style="color:#e6edf3;font:600 12px Inter,sans-serif;text-align:center">'+esc(im.caption||'No caption')+(im.ts?'<div style="color:#8b95a8;font:500 10px monospace;margin-top:3px">'+esc(im.ts)+'</div>':'')+'</div>'+
-    '<button onclick="document.getElementById(\'galLightbox\').style.display=\'none\'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#cbd5e1;font-size:22px;cursor:pointer">✕</button>';
+    '<div style="color:#e6ebf3;font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;text-align:center">'+esc(im.caption||'No caption')+(im.ts?'<div style="color:#8d95a6;font:500 10px monospace;margin-top:3px">'+esc(im.ts)+'</div>':'')+'</div>'+
+    '<button onclick="document.getElementById(\'galLightbox\').style.display=\'none\'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#d1d4db;font-size:22px;cursor:pointer">✕</button>';
   ov.style.display='flex';}
 function renderEngPhotos(){var grid=document.getElementById('eng_photoGrid');if(!grid)return;
   var cc=document.getElementById('eng_photoCount');if(cc)cc.textContent=engDraft.photos.length?('· '+engDraft.photos.length+' photo'+(engDraft.photos.length>1?'s':'')):'';
   if(!engDraft.photos.length){grid.innerHTML='<p class="text-[10px] text-gray-400 italic col-span-full py-2">No photos yet — add shots from the site walk (optional).</p>';return;}
   grid.innerHTML=engDraft.photos.map(function(im,i){
     return '<div class="rounded-lg overflow-hidden border border-gray-200 bg-white relative group">'+
-      '<div onclick="engViewPhoto('+i+')" class="cursor-pointer" style="aspect-ratio:4/3;background:#0d1117"><img src="'+im.src+'" style="width:100%;height:100%;object-fit:cover"></div>'+
+      '<div onclick="engViewPhoto('+i+')" class="cursor-pointer" style="aspect-ratio:4/3;background:#111213"><img src="'+im.src+'" style="width:100%;height:100%;object-fit:cover"></div>'+
       '<button onclick="engRemovePhoto('+i+')" class="absolute top-1 right-1 w-5 h-5 rounded bg-black/50 text-white text-[10px] opacity-0 group-hover:opacity-100 transition-opacity">✕</button>'+
       '<input value="'+esc(im.caption||'').replace(/"/g,'&quot;')+'" onchange="engPhotoCaption('+i+',this.value)" placeholder="Caption…" class="w-full text-[9px] text-gray-600 border-0 border-t border-gray-100 px-1.5 py-1" style="outline:none">'+
     '</div>';
@@ -3105,11 +3105,11 @@ function engWeatherAlert(condition){
   /* real in-app effect: alert thread lands in Omni for every assigned person */
   try{var nmax=9006;comms.forEach(function(m){var n=parseInt((m.id||'').replace('MSG-',''),10);if(n>nmax)nmax=n;});
     var ts=nowStamp();var tk='T-wx-'+eid+'-'+Date.now().toString(36);
-    comms.unshift({id:'MSG-'+(nmax+1),channel:'toc',dir:'in',priority:'critical',from:'Muse Live Weather Watch',to:'Field Operations',
+    comms.unshift({id:'MSG-'+(nmax+1),channel:'toc',dir:'in',priority:'critical',from:'Muse Weather Watch',to:'Field Operations',
       subject:'⚠ [SIMULATED] Weather alert — '+venue,body:body,ts:ts,linkType:'eng',linkId:eid,prod:prod,read:false,thread:tk});
-    comms.unshift({id:'MSG-'+(nmax+2),channel:'email',dir:'out',priority:'high',from:'Muse Live Weather Watch',to:all.join(', '),
+    comms.unshift({id:'MSG-'+(nmax+2),channel:'email',dir:'out',priority:'high',from:'Muse Weather Watch',to:all.join(', '),
       subject:'[SIMULATED] Weather alert — '+venue+' ('+eid+')',body:body,ts:ts,linkType:'eng',linkId:eid,prod:prod,read:true,thread:tk});
-    comms.unshift({id:'MSG-'+(nmax+3),channel:'teams',dir:'out',priority:'high',from:'Muse Live Weather Watch',to:'ENG Field Alerts',
+    comms.unshift({id:'MSG-'+(nmax+3),channel:'teams',dir:'out',priority:'high',from:'Muse Weather Watch',to:'ENG Field Alerts',
       subject:'',body:body,ts:ts,linkType:'eng',linkId:eid,prod:prod,read:true,thread:tk});
     saveComms();commsNavBadge();try{renderBurgerBadge();}catch(e2){}}catch(e){}
   toast('⚠ Weather alert sent to '+all.length+' assigned crew (email + SMS + Teams · simulated)');}
@@ -3324,7 +3324,7 @@ function engPDFRender(list,titleStr){
       doc.roundedRect=function(x,y,w,h){this.rect(x,y,w,h,'FD');return this;};
     }
     var PW=doc.internal.pageSize.getWidth(),PH=doc.internal.pageSize.getHeight(),M=48;
-    var SPECTRUM=['#F7B717','#EF7B10','#E51B24','#632E8A','#00A0DE','#00A15D'];
+    var SPECTRUM=['#0064E0','#0070EC','#0082FB','#0082FB','#0070EC','#0064E0'];
     list.forEach(function(e,ei){
       if(ei>0)doc.addPage();
       var p=productions[e.prod]||{name:e.prod};var y=0;
@@ -3561,7 +3561,7 @@ function engPrintFallback(list,titleStr){
       return esc(u.model+(u.serial?' SN '+u.serial:'')+(u.path?' · '+u.path:''))+(u.multicam?' <b>[MULTI-CAM'+(camNames?': '+esc(camNames):'')+']</b>':(camNames?' · '+esc(camNames):''));}).join(' | ')||'-';
     var lgtHtml=(e.lighting&&e.lighting.length)?('<p><b>Lighting'+(e.lightingSetup?' ('+esc(e.lightingSetup)+')':'')+':</b> '+esc(e.lighting.map(function(g){return g.model+(g.count>1?' ×'+g.count:'')+(g.ctemp?' ['+g.ctemp+']':'');}).join(', '))+(engLightLoadW(e.lighting)?' · ~'+(engLightLoadW(e.lighting)>=1000?(engLightLoadW(e.lighting)/1000).toFixed(2)+' kW':engLightLoadW(e.lighting)+' W'):'')+'</p>'):'';
     var photoHtml=(e.surveyPhotos&&e.surveyPhotos.length)?('<h3 style="page-break-before:always">Site Survey — Location Photos ('+e.surveyPhotos.length+')</h3><div style="display:flex;flex-wrap:wrap;gap:10px">'+
-      e.surveyPhotos.filter(function(ph){return ph&&ph.src;}).map(function(ph){return '<div style="width:280px"><img src="'+ph.src+'" style="width:280px;height:auto;border:1px solid #ccc;border-radius:6px"><p style="font-size:11px;color:#555;margin:2px 0">'+esc(ph.caption||'')+'</p></div>';}).join('')+'</div>'):'';
+      e.surveyPhotos.filter(function(ph){return ph&&ph.src;}).map(function(ph){return '<div style="width:280px"><img src="'+ph.src+'" style="width:280px;height:auto;border:1px solid #c6cad2;border-radius:6px"><p style="font-size:11px;color:#525458;margin:2px 0">'+esc(ph.caption||'')+'</p></div>';}).join('')+'</div>'):'';
     return '<div style="page-break-after:always;padding:24px;font-family:Helvetica,Arial,sans-serif"><h2>'+esc(e.id)+' — '+esc(e.name)+'</h2>'+
       '<p><b>Production:</b> '+esc(p.name)+' · <b>Window:</b> '+esc(e.window||'-')+' · <b>Status:</b> '+esc(e.status)+'</p>'+
       '<p><b>Location:</b> '+esc(e.location||'-')+((e.loc&&e.loc.lat!=null&&e.loc.lng!=null)?' · GPS '+(+e.loc.lat).toFixed(4)+', '+(+e.loc.lng).toFixed(4):' · GPS not provided (optional)')+'</p><hr>'+
@@ -3599,28 +3599,28 @@ function engPrintFallback(list,titleStr){
 
 /* airline registry — inline SVG marks (self-contained, no external image deps) + CS lines */
 var AIRLINES={
- 'AA':{name:'American Airlines',phone:'1-800-433-7300',color:'#0078D2',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><path d="M8 27 L18 13 L20 13 L13 27 Z" fill="#0078D2"/><path d="M19 27 L29 13 L31 13 L24 27 Z" fill="#D7282F"/><path d="M14 27 L24 13 L25.5 13 L18.5 27 Z" fill="#9ca3af" opacity="0.5"/></svg>'},
- 'DL':{name:'Delta Air Lines',phone:'1-800-221-1212',color:'#003366',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><path d="M20 10 L31 29 L9 29 Z" fill="#003366"/><path d="M20 10 L25.5 19.5 L14.5 19.5 Z" fill="#E31837"/></svg>'},
- 'UA':{name:'United Airlines',phone:'1-800-864-8331',color:'#002244',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><ellipse cx="20" cy="20" rx="13" ry="9" fill="none" stroke="#005DAA" stroke-width="2"/><path d="M9 20 Q20 11 31 20" fill="none" stroke="#E31837" stroke-width="2"/><circle cx="20" cy="20" r="2" fill="#002244"/></svg>'},
- 'WN':{name:'Southwest Airlines',phone:'1-800-435-9792',color:'#304CB2',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#304CB2"/><circle cx="14" cy="20" r="4" fill="#F9B612"/><circle cx="21" cy="20" r="4" fill="#E31837"/><circle cx="28" cy="20" r="4" fill="#F9B612"/></svg>'},
- 'B6':{name:'JetBlue Airways',phone:'1-800-538-2583',color:'#003876',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><text x="20" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#003876" font-family="Arial">jB</text></svg>'},
- 'AS':{name:'Alaska Airlines',phone:'1-800-252-7522',color:'#01426A',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><circle cx="20" cy="16" r="6" fill="#01426A"/><path d="M14 22 Q20 30 26 22 Q20 26 14 22Z" fill="#44B8D8"/></svg>'},
- 'AM':{name:'Aeroméxico',phone:'1-800-237-6639',color:'#0B2343',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#0B2343"/><path d="M12 24 Q20 8 28 24 L24 24 Q20 16 16 24 Z" fill="#E5A823"/></svg>'},
- 'F9':{name:'Frontier Airlines',phone:'1-801-401-9000',color:'#00854A',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><circle cx="20" cy="20" r="9" fill="#00854A"/><path d="M16 23 Q20 14 24 23" fill="#fff"/></svg>'},
- 'NK':{name:'Spirit Airlines',phone:'1-855-728-3555',color:'#FFEC00',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#FFEC00"/><text x="20" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="#231F20" font-family="Arial">S</text></svg>'},
- 'LH':{name:'Lufthansa',phone:'1-800-645-3880',color:'#05164D',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><circle cx="20" cy="20" r="10" fill="none" stroke="#05164D" stroke-width="1.5"/><path d="M14 24 Q20 12 26 24" fill="none" stroke="#FFB81C" stroke-width="2"/></svg>'},
- 'XX':{name:'Charter / Other',phone:'—',color:'#64748b',
-   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#fff" stroke="#e5e7eb"/><path d="M8 22 L30 16 L32 18 L14 26 L11 25 L16 21 L11 20 Z" fill="#64748b"/></svg>'}};
+ 'AA':{name:'American Airlines',phone:'1-800-433-7300',color:'#0054D2',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><path d="M8 27 L18 13 L20 13 L13 27 Z" fill="#0054D2"/><path d="M19 27 L29 13 L31 13 L24 27 Z" fill="#D72845"/><path d="M14 27 L24 13 L25.5 13 L18.5 27 Z" fill="#9ba2b0" opacity="0.5"/></svg>'},
+ 'DL':{name:'Delta Air Lines',phone:'1-800-221-1212',color:'#002966',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><path d="M20 10 L31 29 L9 29 Z" fill="#002966"/><path d="M20 10 L25.5 19.5 L14.5 19.5 Z" fill="#E3183A"/></svg>'},
+ 'UA':{name:'United Airlines',phone:'1-800-864-8331',color:'#001B44',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><ellipse cx="20" cy="20" rx="13" ry="9" fill="none" stroke="#0044AA" stroke-width="2"/><path d="M9 20 Q20 11 31 20" fill="none" stroke="#E3183A" stroke-width="2"/><circle cx="20" cy="20" r="2" fill="#001B44"/></svg>'},
+ 'WN':{name:'Southwest Airlines',phone:'1-800-435-9792',color:'#115ED1',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#115ED1"/><circle cx="14" cy="20" r="4" fill="#F9B812"/><circle cx="21" cy="20" r="4" fill="#E3183A"/><circle cx="28" cy="20" r="4" fill="#F9B812"/></svg>'},
+ 'B6':{name:'JetBlue Airways',phone:'1-800-538-2583',color:'#002F76',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><text x="20" y="26" text-anchor="middle" font-size="13" font-weight="800" fill="#002F76" font-family="Arial">jB</text></svg>'},
+ 'AS':{name:'Alaska Airlines',phone:'1-800-252-7522',color:'#012B6A',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><circle cx="20" cy="16" r="6" fill="#012B6A"/><path d="M14 22 Q20 30 26 22 Q20 26 14 22Z" fill="#2E7BEE"/></svg>'},
+ 'AM':{name:'Aeroméxico',phone:'1-800-237-6639',color:'#0B2143',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#0B2143"/><path d="M12 24 Q20 8 28 24 L24 24 Q20 16 16 24 Z" fill="#E5AE23"/></svg>'},
+ 'F9':{name:'Frontier Airlines',phone:'1-801-401-9000',color:'#00851F',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><circle cx="20" cy="20" r="9" fill="#00851F"/><path d="M16 23 Q20 14 24 23" fill="#ffffff"/></svg>'},
+ 'NK':{name:'Spirit Airlines',phone:'1-855-728-3555',color:'#FFB700',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#FFB700"/><text x="20" y="26" text-anchor="middle" font-size="12" font-weight="800" fill="#202122" font-family="Arial">S</text></svg>'},
+ 'LH':{name:'Lufthansa',phone:'1-800-645-3880',color:'#05224D',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><circle cx="20" cy="20" r="10" fill="none" stroke="#05224D" stroke-width="1.5"/><path d="M14 24 Q20 12 26 24" fill="none" stroke="#FFBF1C" stroke-width="2"/></svg>'},
+ 'XX':{name:'Charter / Other',phone:'—',color:'#74767b',
+   logo:'<svg viewBox="0 0 40 40" width="100%" height="100%"><rect width="40" height="40" rx="8" fill="#ffffff" stroke="#e5e7eb"/><path d="M8 22 L30 16 L32 18 L14 26 L11 25 L16 21 L11 20 Z" fill="#74767b"/></svg>'}};
 function airline(code){return AIRLINES[code]||AIRLINES['XX'];}
 
 /* airport registry — IATA → label + GPS (lat/lng) */
@@ -3712,17 +3712,17 @@ function flightMapSVG(f,w,h){
   if(maxLng-minLng<16){var cn=(minLng+maxLng)/2;minLng=cn-8;maxLng=cn+8;}
   function X(p){return ((p.lng-minLng)/(maxLng-minLng)*(w-40)+20).toFixed(1);}
   function Y(p){return ((maxLat-p.lat)/(maxLat-minLat)*(h-40)+20).toFixed(1);}
-  var grid='';for(var gi=1;gi<5;gi++){grid+='<line x1="'+(w/5*gi)+'" y1="0" x2="'+(w/5*gi)+'" y2="'+h+'" stroke="#eef0f2" stroke-width="0.5"/><line x1="0" y1="'+(h/5*gi)+'" x2="'+w+'" y2="'+(h/5*gi)+'" stroke="#eef0f2" stroke-width="0.5"/>';}
+  var grid='';for(var gi=1;gi<5;gi++){grid+='<line x1="'+(w/5*gi)+'" y1="0" x2="'+(w/5*gi)+'" y2="'+h+'" stroke="#eeeff2" stroke-width="0.5"/><line x1="0" y1="'+(h/5*gi)+'" x2="'+w+'" y2="'+(h/5*gi)+'" stroke="#eeeff2" stroke-width="0.5"/>';}
   var ax=+X(a),ay=+Y(a),bx=+X(b),by=+Y(b);
   // arc control point (bow upward)
   var mx=(ax+bx)/2,my=(ay+by)/2-Math.abs(bx-ax)*0.18-12;
-  var arc='<path d="M'+ax+' '+ay+' Q '+mx+' '+my+' '+bx+' '+by+'" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 3"/>';
+  var arc='<path d="M'+ax+' '+ay+' Q '+mx+' '+my+' '+bx+' '+by+'" fill="none" stroke="#3b86f6" stroke-width="1.5" stroke-dasharray="4 3"/>';
   // little plane glyph at midpoint
-  var plane='<g transform="translate('+mx.toFixed(1)+','+(my+6).toFixed(1)+')"><path d="M-5 0 L5 0 M3 -2 L5 0 L3 2" stroke="#1d4ed8" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle r="1.4" fill="#1d4ed8"/></g>';
-  function dot(p,col,code){return '<circle cx="'+X(p)+'" cy="'+Y(p)+'" r="4.5" fill="'+col+'" stroke="#fff" stroke-width="1.5"/>'+
-    '<text x="'+X(p)+'" y="'+(+Y(p)-8)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#374151" font-family="DM Mono,monospace">'+code+'</text>';}
+  var plane='<g transform="translate('+mx.toFixed(1)+','+(my+6).toFixed(1)+')"><path d="M-5 0 L5 0 M3 -2 L5 0 L3 2" stroke="#1266e3" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle r="1.4" fill="#1266e3"/></g>';
+  function dot(p,col,code){return '<circle cx="'+X(p)+'" cy="'+Y(p)+'" r="4.5" fill="'+col+'" stroke="#ffffff" stroke-width="1.5"/>'+
+    '<text x="'+X(p)+'" y="'+(+Y(p)-8)+'" text-anchor="middle" font-size="8" font-weight="700" fill="#424346" font-family="ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">'+code+'</text>';}
   return '<svg viewBox="0 0 '+w+' '+h+'" width="100%" height="100%" style="display:block">'+grid+arc+plane+
-    dot(a,'#00A15D',f.dep.code)+dot(b,'#E31837',f.arr.code)+'</svg>';
+    dot(a,'#31A24C',f.dep.code)+dot(b,'#E3183A',f.arr.code)+'</svg>';
 }
 
 /* ============================================================================
@@ -3956,7 +3956,7 @@ function trLineRowHTML(key,r,l){
   var needsRcpt=rule.receiptsRequired.indexOf(l.type)>-1&&(parseFloat(l.amount)||0)>=(rule.receiptMinAmount||0);
   var rcpt;
   if(l.receipt)rcpt='<button onclick="trViewReceipt(\''+key+'\',\''+r.id+'\',\''+l.id+'\')" title="'+esc(l.receipt.name).replace(/"/g,'&quot;')+'" class="text-[8px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1 py-px">🧾 receipt</button>'+
-    (l.receipt.dataUri?'<button onclick="trOcrReceipt(\''+key+'\',\''+r.id+'\',\''+l.id+'\')" title="'+(geminiClient.enabled()?'Extract vendor / date / total with Charlie OCR':esc(geminiClient.disabledReason()).replace(/"/g,'&quot;'))+'" class="text-[8px] font-bold '+(geminiClient.enabled()?'text-violet-700 bg-violet-50 border-violet-200':'text-gray-400 bg-gray-50 border-gray-200')+' border rounded px-1 py-px">✨ OCR</button>':'');
+    (l.receipt.dataUri?'<button onclick="trOcrReceipt(\''+key+'\',\''+r.id+'\',\''+l.id+'\')" title="'+(geminiClient.enabled()?'Extract vendor / date / total with Muse OCR':esc(geminiClient.disabledReason()).replace(/"/g,'&quot;'))+'" class="text-[8px] font-bold '+(geminiClient.enabled()?'text-violet-700 bg-violet-50 border-violet-200':'text-gray-400 bg-gray-50 border-gray-200')+' border rounded px-1 py-px">✨ OCR</button>':'');
   else rcpt='<label class="text-[8px] font-bold '+(needsRcpt?'text-amber-700 bg-amber-50 border-amber-200':'text-gray-500 bg-gray-100 border-gray-200')+' border rounded px-1 py-px cursor-pointer">'+(needsRcpt?'🧾 required':'+ receipt')+'<input type="file" accept="image/*,application/pdf" class="hidden" onchange="trReceiptPick(\''+key+'\',\''+r.id+'\',\''+l.id+'\',this)"></label>';
   var aerr=allocValidate(l.alloc,l.amount);
   return '<div class="flex flex-wrap items-center gap-1.5 py-1.5 border-b border-gray-50">'+
@@ -4174,7 +4174,7 @@ function renderTravelPortalOps(host){
   deps.sort(function(a,b2){return a.ts-b2.ts;});deps=deps.slice(0,7);
   function kpiTile(n,label,sub){return '<div class="rounded-xl p-3 text-center" style="background:rgba(255,255,255,.13);backdrop-filter:blur(3px)"><div class="text-2xl font-bold text-white leading-none">'+n+'</div><div class="text-[8px] font-bold uppercase tracking-wider text-blue-100 mt-1">'+label+'</div>'+(sub?'<div class="text-[8px] text-blue-200/80 mt-0.5">'+sub+'</div>':'')+'</div>';}
   // ---- hero: title + global KPIs ----
-  var hero='<div class="rounded-2xl p-5 text-white" style="background:#632E8A">'+
+  var hero='<div class="rounded-2xl p-5 text-white" style="background:#0866FF">'+
     '<div class="flex flex-wrap items-center justify-between gap-3 mb-4">'+
       '<div><h1 class="text-2xl font-semibold tracking-tight">Travel Portal</h1>'+
       '<p class="text-[11px] text-blue-100 mt-0.5">Every project’s travel in one place — cycle productions, book crew, watch the manifest fill.</p></div>'+
@@ -4195,7 +4195,7 @@ function renderTravelPortalOps(host){
     return '<div role="button" tabindex="0" onclick="portalSetProj(\''+d.k+'\')" onkeydown="if(event.key===\'Enter\'){portalSetProj(\''+d.k+'\');}" class="flex flex-wrap items-center gap-2 px-2.5 py-2 rounded-xl border border-gray-200/70 hover:border-blue-300 hover:bg-blue-50/30 cursor-pointer transition-all">'+
       '<span class="w-6 h-6 flex-shrink-0">'+al.logo+'</span>'+
       '<div class="flex-shrink-0" style="min-width:118px"><p class="text-[11px] font-bold text-gray-900 truncate">'+esc(d.name)+'</p><p class="text-[8px] text-gray-500 truncate">'+esc(d.pos)+'</p></div>'+
-      '<span class="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0" style="border-color:'+(dotBg[p2.tagColor]||'#9ca3af')+'55;color:'+(dotBg[p2.tagColor]||'#6b7280')+';background:'+(dotBg[p2.tagColor]||'#9ca3af')+'14">'+esc(p2.tab||p2.name)+'</span>'+
+      '<span class="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0" style="border-color:'+(dotBg[p2.tagColor]||'#9ba2b0')+'55;color:'+(dotBg[p2.tagColor]||'#727479')+';background:'+(dotBg[p2.tagColor]||'#9ba2b0')+'14">'+esc(p2.tab||p2.name)+'</span>'+
       '<span class="mono text-[10px] font-bold text-gray-800 flex-shrink-0">'+esc(d.f.flightNumber)+'</span>'+
       '<span class="mono text-[9px] text-gray-500 flex-shrink-0">'+esc(d.f.dep.code)+' '+fmtLocalTime(d.f.dep.localTime)+' → '+esc(d.f.arr.code)+' · '+fmtLocalDate(d.f.dep.localTime)+'</span>'+
       '<span class="ml-auto flex items-center gap-1.5 flex-shrink-0"><span class="text-[8px] font-bold border rounded px-1.5 py-0.5 '+d.ph.cls+'">'+d.ph.label.toUpperCase()+(d.ph.id==='air'?' · '+d.ph.pct+'%':'')+'</span>'+flightTrackLinks(d.f)+'</span></div>';}).join('');
@@ -4206,7 +4206,7 @@ function renderTravelPortalOps(host){
   // ---- project switcher: cycle & pick ----
   var chips=order.map(function(k){var p2=productions[k];var st=projStat[k]||{booked:0,pending:0,crew:0};var on=(k===portalProjKey);
     return '<button onclick="portalSetProj(\''+k+'\')" class="flex-shrink-0 flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 transition-all '+(on?'border-blue-400 bg-blue-50/60 ring-1 ring-blue-300':'border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/40')+'">'+
-      '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[p2.tagColor]||'#9ca3af')+'"></span>'+
+      '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[p2.tagColor]||'#9ba2b0')+'"></span>'+
       '<span class="text-[10px] font-bold '+(on?'text-blue-800':'text-gray-700')+' whitespace-nowrap">'+esc(p2.tab||p2.name)+'</span>'+
       '<span class="mono text-[8px] font-bold '+(st.pending?'text-amber-600':'text-emerald-600')+'">'+st.booked+'/'+st.crew+'</span>'+
       '<span class="mono text-[8px] text-gray-400">'+esc(prodAirport(k))+'</span></button>';}).join('');
@@ -4229,7 +4229,7 @@ function renderPortalView(){
   var picker='';
   if(isAdmin){
     var names=personnelRoster().map(function(m){return m.name;}).sort();
-    picker='<div class="flex flex-wrap items-center gap-2"><button onclick="portalSetMode(\'ops\')" class="text-[9px] font-bold text-white rounded-lg px-2 py-1.5" style="background:#632E8A">← Ops portal</button><span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Admin preview</span>'+
+    picker='<div class="flex flex-wrap items-center gap-2"><button onclick="portalSetMode(\'ops\')" class="text-[9px] font-bold text-white rounded-lg px-2 py-1.5" style="background:#0866FF">← Ops portal</button><span class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Admin preview</span>'+
       '<select id="portalPicker" onchange="renderPortalView()" class="text-[11px] border border-gray-300 rounded-lg px-2 py-1.5 bg-white" style="outline:none">'+
       names.map(function(n){return '<option value="'+esc(n).replace(/"/g,'&quot;')+'"'+(P===n?' selected':'')+'>'+esc(n)+'</option>';}).join('')+'</select>'+
       (P?'<button onclick="portalIssueKey(\''+String(P).replace(/'/g,"\\'")+'\')" class="text-[9px] font-bold text-purple-700 border border-purple-200 bg-purple-50 rounded-lg px-2 py-1.5 hover:bg-purple-100">🔑 Issue portal key</button>':'')+
@@ -4258,7 +4258,7 @@ function renderPortalView(){
   var cd=target?'<p class="text-[9px] font-bold uppercase tracking-wider text-blue-100">Departure countdown — '+esc(target.label)+'</p>'+
       '<p id="portalCountdown" data-ts="'+target.ts+'" class="text-3xl font-bold mono mt-1">'+portalCountdownStr(target.ts)+'</p>'
     :'<p class="text-[9px] font-bold uppercase tracking-wider text-blue-100">No upcoming departure</p><p class="text-sm mt-1 text-blue-50">Ask your production manager to book travel or create a request.</p>';
-  html+='<div class="rounded-2xl p-5 text-white" style="background:#632E8A">'+cd+'</div>';
+  html+='<div class="rounded-2xl p-5 text-white" style="background:#0866FF">'+cd+'</div>';
   /* — flight segments — */
   if(f){var al=airline(f.airlineCode);
     var _ph=(typeof flightPhase==='function')?flightPhase(f):null;
@@ -4343,7 +4343,7 @@ function travelPaneHTML(key){var p=productions[key];loadTravelOnce();
       (withFlights.length&&!travOwn?'<button onclick="printManifest(\''+key+'\')" class="text-[9px] font-bold text-white bg-gray-900 rounded-lg px-2 py-1 hover:bg-gray-800">🖨 Manifest</button>':'')+
       (withFlights.length?'<button onclick="printTravel(\''+key+'\')" class="text-[9px] font-bold text-gray-700 border border-gray-200 rounded-lg px-2 py-1 hover:bg-gray-50">🎫 Passes</button>':'')+
     '</div></div>'+
-    (total&&!travOwn?'<div class="flex items-center gap-2 mb-3"><div class="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden"><div class="h-full rounded-full" style="width:'+Math.round(withFlights.length/total*100)+'%;background:linear-gradient(90deg,#059669,#00A15D)"></div></div><span class="text-[9px] mono font-bold text-gray-500 flex-shrink-0">'+withFlights.length+'/'+total+' booked</span></div>':'');
+    (total&&!travOwn?'<div class="flex items-center gap-2 mb-3"><div class="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden"><div class="h-full rounded-full" style="width:'+Math.round(withFlights.length/total*100)+'%;background:linear-gradient(90deg,#059627,#31A24C)"></div></div><span class="text-[9px] mono font-bold text-gray-500 flex-shrink-0">'+withFlights.length+'/'+total+' booked</span></div>':'');
   var card1open='<div class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">';
   if(!withFlights.length){
     return '<div class="space-y-3">'+trSectionHTML(key)+card1open+head+
@@ -4355,7 +4355,7 @@ function travelPaneHTML(key){var p=productions[key];loadTravelOnce();
   var depCities={},arrCities={},airlines={};
   withFlights.forEach(function(m){var f=crewFlight(m.name);depCities[f.dep.code]=(depCities[f.dep.code]||0)+1;arrCities[f.arr.code]=(arrCities[f.arr.code]||0)+1;airlines[f.airlineCode]=(airlines[f.airlineCode]||0)+1;});
   function statBtn(mode,val,n,l){var on=(travelFilter.mode===mode&&travelFilter.val===val)||(mode==='all'&&travelFilter.mode==='all');
-    return '<button onclick="setTravelFilter(\''+mode+'\',\''+(val||'').replace(/'/g,"")+'\')" class="rounded-xl border p-3 text-center transition-all '+(on?'ring-2 ring-offset-1 ring-blue-500':'')+'" style="background:'+(on?'#eff6ff':'#fff')+';border-color:'+(on?'#bfdbfe':'#e5e7eb')+'"><div class="text-xl font-bold text-gray-800">'+n+'</div><div class="text-[8px] uppercase tracking-wider text-gray-400 mt-0.5">'+l+'</div></button>';}
+    return '<button onclick="setTravelFilter(\''+mode+'\',\''+(val||'').replace(/'/g,"")+'\')" class="rounded-xl border p-3 text-center transition-all '+(on?'ring-2 ring-offset-1 ring-blue-500':'')+'" style="background:'+(on?'#eff5ff':'#ffffff')+';border-color:'+(on?'#bfd8fe':'#e5e7eb')+'"><div class="text-xl font-bold text-gray-800">'+n+'</div><div class="text-[8px] uppercase tracking-wider text-gray-400 mt-0.5">'+l+'</div></button>';}
   var stats='<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-3">'+
     statBtn('all','',withFlights.length,'Travelers')+
     statBtn('origins','',Object.keys(depCities).length,'Origin Airports')+
@@ -4430,7 +4430,7 @@ function openBookFlight(key,name,slotId){
           '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Full Name</label><input id="bf_name" value="'+esc(slot?slot.name:name).replace(/"/g,'&quot;')+'" class="w-full text-[12px] border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
           '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Position</label><input id="bf_pos" value="'+esc(slot?(slot.pos||''):'').replace(/"/g,'&quot;')+'" class="w-full text-[12px] border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
           '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Passport / ID #</label><input id="bf_passport" value="'+esc(slot?(slot.passport||''):'').replace(/"/g,'&quot;')+'" placeholder="e.g. X1234567" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
-          '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Email</label><input id="bf_email" value="'+esc(slot?(slot.email||''):'').replace(/"/g,'&quot;')+'" placeholder="name@muselive.com" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
+          '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Email</label><input id="bf_email" value="'+esc(slot?(slot.email||''):'').replace(/"/g,'&quot;')+'" placeholder="name@meta.com" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
           '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Phone</label><input id="bf_phone" value="'+esc(slot?(slot.phone||''):'').replace(/"/g,'&quot;')+'" class="w-full text-[12px] mono border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
           '<div><label class="text-[8px] font-bold uppercase text-gray-400 block mb-0.5">Home Base (IATA)</label><input id="bf_home" value="'+esc(slot?(slot.homeBase||''):'').replace(/"/g,'&quot;')+'" placeholder="MIA" maxlength="3" class="w-full text-[12px] mono uppercase border border-gray-300 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
         '</div>'+
@@ -4514,13 +4514,13 @@ function unbookFlight(name){if(!crewFlight(name))return;if(!confirm('Remove '+na
 /* ---- USER PROFILE (matches header persona / Viewing as) ---- */
 var USER_PROFILES={
   'Lila Hart':{name:'Lila Hart',initials:'AC',title:'VP, Technical Production · Admin',org:'Muse Live',
-    email:'avery.chen@muselive.com',phone:'(212) 555-0100',location:'1 Muse Plaza, New York · Muse Live Miami, Miami',
+    email:'avery.chen@meta.com',phone:'(212) 555-0100',location:'Meta NYC · Hudson Yards, New York · Meta Miami, Miami',
     role:'Administrator',clearance:'Top Security Clearance',timezone:'America/New_York (ET)',
-    bio:'Leads technical production across Muse Live tentpole events — World Cup 2026, Super Bowl LXI, Winter Olympics Milano, Macy\'s Parade, Sail 250 and election coverage.'},
+    bio:'Leads technical production across Muse Live tentpole events — Muse AI World Tour 2026, Orion AR Glasses Reveal, Meta Charm Launch Milano, Instagram Creator Week, Ray-Ban Meta Gen 3 Launch and WhatsApp Business Summit coverage.'},
   'Avery Nolan':{name:'Avery Nolan',initials:'LC',title:'Hard Cam Op · Field Crew',org:'Muse Live · Mediapro',
-    email:'logan.cruz@muselive.com',phone:'(212) 561-0113',location:'World Cup compound · Field',
+    email:'logan.cruz@meta.com',phone:'(212) 561-0113',location:'Muse AI World Tour compound · Field',
     role:'Field Crew',clearance:'Field',timezone:'America/Mexico_City (CT)',
-    bio:'Hard cam operator on Muse Live tentpoles. Field crew — World Cup 2026, Super Bowl LXI, and day-of ENG hits. Own-gear locker and travel only.'}
+    bio:'Hard cam operator on Muse Live tentpoles. Field crew — Muse AI World Tour 2026, Orion AR Glasses Reveal, and day-of ENG hits. Own-gear locker and travel only.'}
 };
 var USER_PROFILE=USER_PROFILES['Lila Hart'];
 function museUserProfile(){
@@ -4579,7 +4579,7 @@ function openUserProfile(){var ov=document.getElementById('userProfileOverlay');
     '</div>'+
     '<div class="px-5 py-3 border-t border-gray-100 flex-shrink-0 flex items-center gap-2">'+
       '<button onclick="closeUserProfile();openCompose(\'production\',order[0],\'email\')" class="flex-1 bg-gray-900 text-white text-[12px] font-bold rounded-lg py-2 hover:bg-gray-800">New Message</button>'+
-      '<button onclick="closeUserProfile();openCharlieSettings()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">AI Settings</button>'+
+      '<button onclick="closeUserProfile();openMuseAiSettings()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">AI Settings</button>'+
       '<a href="/logout" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Sign out</a>'+
     '</div>';
   ov.style.display='flex';}
@@ -4597,7 +4597,7 @@ function flightRow(name,role,f,key){
   if(!key)key=currentTravelKey(); // legacy call sites only — pass key explicitly where known
   var track=ph?('<div class="hidden lg:flex flex-col items-end flex-shrink-0" style="width:150px;gap:3px">'+
       '<span class="text-[8px] font-bold border rounded px-1.5 py-0.5 '+ph.cls+'">'+ph.label.toUpperCase()+(ph.id==='air'?' · '+ph.pct+'%':'')+'</span>'+
-      '<div class="w-full h-1 rounded-full bg-gray-100 overflow-hidden"><div class="h-full rounded-full" style="width:'+ph.pct+'%;background:'+(ph.id==='air'?'#0284c7':(ph.pct===100?'#059669':'#9ca3af'))+'"></div></div>'+
+      '<div class="w-full h-1 rounded-full bg-gray-100 overflow-hidden"><div class="h-full rounded-full" style="width:'+ph.pct+'%;background:'+(ph.id==='air'?'#0251c7':(ph.pct===100?'#059627':'#9ba2b0'))+'"></div></div>'+
       '<span class="flex items-center gap-1.5">'+flightTrackLinks(f)+'</span>'+
     '</div>'):'';
   var hotelChip=travOwn?'':(h?
@@ -4609,7 +4609,7 @@ function flightRow(name,role,f,key){
     '<div class="min-w-0 flex-shrink-0" style="width:140px"><p class="text-[11px] font-bold text-gray-800 truncate">'+esc(name)+'</p><p class="text-[8px] text-gray-500 truncate">'+esc(role||'')+'</p></div>'+
     '<div class="flex items-center gap-1.5 flex-1 min-w-0 mono">'+
       '<div class="text-right flex-shrink-0"><p class="text-[11px] font-bold text-gray-900 leading-none">'+fmtLocalTime(f.dep.localTime)+'</p><p class="text-[8px] text-gray-500 mt-0.5">'+f.dep.code+'</p></div>'+
-      '<svg width="26" height="8" viewBox="0 0 26 8" class="flex-shrink-0"><line x1="1" y1="4" x2="20" y2="4" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2 2"/><path d="M19 1.5 L23 4 L19 6.5" fill="none" stroke="#94a3b8" stroke-width="1.1"/></svg>'+
+      '<svg width="26" height="8" viewBox="0 0 26 8" class="flex-shrink-0"><line x1="1" y1="4" x2="20" y2="4" stroke="#d1d4db" stroke-width="1" stroke-dasharray="2 2"/><path d="M19 1.5 L23 4 L19 6.5" fill="none" stroke="#9ba2b1" stroke-width="1.1"/></svg>'+
       '<div class="flex-shrink-0"><p class="text-[11px] font-bold text-gray-900 leading-none">'+fmtLocalTime(f.arr.localTime)+'</p><p class="text-[8px] text-gray-500 mt-0.5">'+f.arr.code+'</p></div>'+
     '</div>'+
     '<div class="hidden xl:block flex-shrink-0 text-right" style="width:88px"><p class="text-[8px] text-gray-400 mono">'+fmtLocalDate(f.dep.localTime)+'</p><p class="text-[8px] text-gray-400">'+esc(a.city)+'→'+esc(b.city)+'</p></div>'+
@@ -4628,7 +4628,7 @@ function flightGroupRows(members){
     if(!byFlight[fk]){byFlight[fk]={f:f,people:[]};orderK.push(fk);}
     byFlight[fk].people.push(m);});
   return orderK.map(function(fk){var g=byFlight[fk],f=g.f,ph=flightPhase(f),al=airline(f.airlineCode);
-    var bar='<div class="flex-1 h-1 rounded-full bg-gray-100 overflow-hidden" style="min-width:60px;max-width:150px"><div class="h-full rounded-full" style="width:'+ph.pct+'%;background:'+(ph.id==='air'?'#0284c7':(ph.pct===100?'#059669':'#9ca3af'))+'"></div></div>';
+    var bar='<div class="flex-1 h-1 rounded-full bg-gray-100 overflow-hidden" style="min-width:60px;max-width:150px"><div class="h-full rounded-full" style="width:'+ph.pct+'%;background:'+(ph.id==='air'?'#0251c7':(ph.pct===100?'#059627':'#9ba2b0'))+'"></div></div>';
     return '<div class="rounded-xl border border-gray-200/70 overflow-hidden">'+
       '<div class="flex flex-wrap items-center gap-2 px-2.5 py-2 bg-gray-50/60 border-b border-gray-100">'+
         '<span class="w-6 h-6 flex-shrink-0">'+al.logo+'</span>'+
@@ -4669,7 +4669,7 @@ function ticketHTML(name,role,f){
   return '<div class="bg-white rounded-2xl shadow-2xl overflow-hidden" style="width:460px;max-width:95vw;max-height:92vh;overflow-y:auto">'+
     // colored airline header
     '<div class="px-5 py-3 flex items-center justify-between" style="background:'+al.color+'">'+
-      '<div class="flex items-center gap-2.5"><div style="width:34px;height:34px;background:#fff;border-radius:8px;padding:2px">'+al.logo+'</div>'+
+      '<div class="flex items-center gap-2.5"><div style="width:34px;height:34px;background:#ffffff;border-radius:8px;padding:2px">'+al.logo+'</div>'+
         '<div><p class="text-[13px] font-bold text-white leading-none">'+esc(al.name)+'</p><p class="text-[9px] text-white/70 mono mt-0.5">BOARDING PASS</p></div></div>'+
       '<button onclick="closeTicket()" class="text-white/80 hover:text-white text-lg leading-none w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white/10">✕</button>'+
     '</div>'+
@@ -4680,9 +4680,9 @@ function ticketHTML(name,role,f){
     '</div>'+
     // route
     '<div class="px-5 py-4"><div class="flex items-center gap-3">'+
-      seg('From',a,f.dep,'#00A15D')+
-      '<div class="flex flex-col items-center px-1 flex-shrink-0"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M2 12h20M22 12l-6-5M22 12l-6 5" transform="rotate(0 12 12)"/></svg><span class="text-[8px] mono text-gray-400 mt-1">'+flightDurStr(f)+'</span><span class="text-[7px] text-gray-300 mono">nonstop</span></div>'+
-      seg('To',b,f.arr,'#E31837')+
+      seg('From',a,f.dep,'#31A24C')+
+      '<div class="flex flex-col items-center px-1 flex-shrink-0"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#9ba2b1" stroke-width="1.5"><path d="M2 12h20M22 12l-6-5M22 12l-6 5" transform="rotate(0 12 12)"/></svg><span class="text-[8px] mono text-gray-400 mt-1">'+flightDurStr(f)+'</span><span class="text-[7px] text-gray-300 mono">nonstop</span></div>'+
+      seg('To',b,f.arr,'#E3183A')+
     '</div></div>'+
     // gate/terminal detail grid
     '<div class="px-5 pb-4"><div class="grid grid-cols-4 gap-3 bg-gray-50 rounded-xl p-3 border border-gray-100">'+
@@ -4737,27 +4737,27 @@ function printTicketCard(name,role,f){
 function printTravelDoc(p,cardsHTML,titleStr){
   var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(titleStr)+' — '+esc(p.name)+'</title><style>'+
     '@page{size:A4;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
-    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222}'+
+    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#212223}'+
     '.bar{display:flex;height:5px}.bar i{flex:1}'+
-    '.hd{background:#111112;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
-    '.hd h1{font-size:18px;margin:0;letter-spacing:1px}.hd .s{font-size:11px;color:#bbb;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#bbb;line-height:1.5}'+
+    '.hd{background:#111112;color:#ffffff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
+    '.hd h1{font-size:18px;margin:0;letter-spacing:1px}.hd .s{font-size:11px;color:#b3b8c3;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#b3b8c3;line-height:1.5}'+
     '.wrap{padding:14px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px}'+
-    '.ticket{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;page-break-inside:avoid;background:#fff}'+
-    '.thd{padding:8px 12px;color:#fff;display:flex;justify-content:space-between;align-items:center}.thd .aln{font-size:11px;font-weight:700}.thd .fno{font-size:13px;font-weight:800;font-family:monospace}'+
-    '.pax{padding:8px 12px;background:#f8f9fb;border-bottom:1px solid #eee}.pax .k{font-size:7px;text-transform:uppercase;letter-spacing:1px;color:#999}.pax .pn{font-size:14px;font-weight:700}.pax .pr{font-size:9px;color:#666}'+
+    '.ticket{border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;page-break-inside:avoid;background:#ffffff}'+
+    '.thd{padding:8px 12px;color:#ffffff;display:flex;justify-content:space-between;align-items:center}.thd .aln{font-size:11px;font-weight:700}.thd .fno{font-size:13px;font-weight:800;font-family:monospace}'+
+    '.pax{padding:8px 12px;background:#fafafa;border-bottom:1px solid #ecedf0}.pax .k{font-size:7px;text-transform:uppercase;letter-spacing:1px;color:#8D95A5}.pax .pn{font-size:14px;font-weight:700}.pax .pr{font-size:9px;color:#636569}'+
     '.rte{display:flex;align-items:center;gap:8px;padding:12px}'+
-    '.end{flex:1}.end.r{text-align:right}.end .ec{font-size:22px;font-weight:800;font-family:monospace;line-height:1}.end .ecy{font-size:10px;font-weight:600;color:#555;margin-top:2px}.end .et{font-size:15px;font-weight:700;margin-top:5px}.end .ed{font-size:7px;color:#999;font-family:monospace;margin-top:1px}'+
-    '.arr{font-size:16px;color:#94a3b8}'+
-    '.dtl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 12px 10px}.dtl .dk{display:block;font-size:6.5px;text-transform:uppercase;letter-spacing:.5px;color:#999}.dtl .dv{display:block;font-size:10px;font-weight:700;font-family:monospace}'+
-    '.stub{border-top:1.5px dashed #ddd;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;background:#fafafa}.stub .sk{font-size:7px;text-transform:uppercase;letter-spacing:.5px;color:#999;font-weight:700}.stub .sv{font-size:12px;font-weight:700;font-family:monospace;color:#1d4ed8}'+
-    '.foot{padding:8px 18px;display:flex;justify-content:space-between;font-size:8px;color:#999;border-top:0.5px solid #ddd}'+
-    '@media screen{body{background:#777;padding:18px}.page{background:#fff;max-width:820px;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.3)}}'+
-    '@media print{body{background:#fff}.page{box-shadow:none;max-width:none}}'+
+    '.end{flex:1}.end.r{text-align:right}.end .ec{font-size:22px;font-weight:800;font-family:monospace;line-height:1}.end .ecy{font-size:10px;font-weight:600;color:#525458;margin-top:2px}.end .et{font-size:15px;font-weight:700;margin-top:5px}.end .ed{font-size:7px;color:#8D95A5;font-family:monospace;margin-top:1px}'+
+    '.arr{font-size:16px;color:#9ba2b1}'+
+    '.dtl{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:0 12px 10px}.dtl .dk{display:block;font-size:6.5px;text-transform:uppercase;letter-spacing:.5px;color:#8D95A5}.dtl .dv{display:block;font-size:10px;font-weight:700;font-family:monospace}'+
+    '.stub{border-top:1.5px dashed #d9dce1;padding:8px 12px;display:flex;justify-content:space-between;align-items:center;background:#fafafa}.stub .sk{font-size:7px;text-transform:uppercase;letter-spacing:.5px;color:#8D95A5;font-weight:700}.stub .sv{font-size:12px;font-weight:700;font-family:monospace;color:#1266e3}'+
+    '.foot{padding:8px 18px;display:flex;justify-content:space-between;font-size:8px;color:#8D95A5;border-top:0.5px solid #d9dce1}'+
+    '@media screen{body{background:#73767B;padding:18px}.page{background:#ffffff;max-width:820px;margin:0 auto;box-shadow:0 8px 30px rgba(0,0,0,.3)}}'+
+    '@media print{body{background:#ffffff}.page{box-shadow:none;max-width:none}}'+
     '</style></head><body><div class="page">'+
-    '<div class="bar"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>'+
+    '<div class="bar"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>'+
     '<div class="hd"><div><h1>'+esc(titleStr).toUpperCase()+'</h1><div class="s">'+esc(p.name)+' · '+esc(p.customer||'')+'</div></div><div class="r">MUSE LIVE · Broadcast Operations<br>Generated '+esc(nowStamp())+'</div></div>'+
     '<div class="wrap">'+cardsHTML+'</div>'+
-    '<div class="foot"><span>Muse Live Broadcast Telemetry · Confidential</span><span>'+esc(p.name)+' · Crew Travel</span></div>'+
+    '<div class="foot"><span>Meta Broadcast Telemetry · Confidential</span><span>'+esc(p.name)+' · Crew Travel</span></div>'+
     '</div></body></html>';
   var w=window.open('','_blank');if(!w){toast('Allow pop-ups to print the itinerary');return;}
   w.document.open();w.document.write(html);w.document.close();
@@ -4771,8 +4771,8 @@ function travelTabBadge(key){loadTravelOnce();
   var n=crew.filter(function(m){return !crewFlight(m.name);}).length; // PENDING travelers
   return n?(typeof museBadgeHTML==='function'?museBadgeHTML(n):''):'';}
 /* ============================================================================
-   TRAVELPAYOUTS FLIGHT SEARCH — embedded widget + Charlie auto-fill
-   The widget runs in its own iframe, so Charlie pre-fills by passing crew data
+   TRAVELPAYOUTS FLIGHT SEARCH — embedded widget + Muse auto-fill
+   The widget runs in its own iframe, so Muse pre-fills by passing crew data
    into the widget's CONFIG VARIABLES (origin/destination/passengers) and
    re-mounting it, then surfaces the passenger record (name/passport/email) for
    the dispatcher to complete the booking. Marker is set in AI/settings.
@@ -4781,13 +4781,13 @@ var TP_MARKER='YOUR_MARKER';   // set your Travelpayouts marker in ⚙ (stored l
 function tpMarker(){try{return localStorage.getItem('muselive_tp_marker')||TP_MARKER;}catch(e){return TP_MARKER;}}
 function setTpMarker(v){try{localStorage.setItem('muselive_tp_marker',(v||'').trim());}catch(e){}}
 // nearest commercial airport for each production's venue (IATA)
-var PROD_AIRPORT={worldcup:'EWR',sail250:'JFK',superbowl:'SJC',muse100:'JFK',midterms:'DCA',parade:'JFK',winterolympics:'MXP'};
+var PROD_AIRPORT={museaitour:'EWR',raybangen3:'JFK',orion:'SJC',museailaunch:'JFK',whatsapp:'DCA',igcreators:'JFK',charm:'MXP'};
 function prodAirport(key){return PROD_AIRPORT[key]||'JFK';}
 // crew home-base inference: explicit field → city-airport guess → default hub
 function crewHomeBase(slot){
   if(slot&&slot.homeBase)return String(slot.homeBase).toUpperCase().slice(0,3);
   if(slot&&slot.name){var od=personnelInfo(slot.name);if(od.homeBase)return String(od.homeBase).toUpperCase().slice(0,3);}
-  return 'MIA'; // Muse Live Miami default hub
+  return 'MIA'; // Meta Miami default hub
 }
 function crewPassport(slot){if(slot&&slot.passport)return slot.passport;if(slot&&slot.name){var od=personnelInfo(slot.name);if(od.passport)return od.passport;}return '—';}
 
@@ -4813,7 +4813,7 @@ function tccPick(key,slotId){
   // stage the native flight search with this person's route + run it
   skySearchCtx={key:key,origin:origin,dest:dest,depart:dep,ret:ret,pax:1,name:slot.name,slotId:slotId,results:skyGenFlights(origin,dest,dep)};
   renderTccPane(key); // refresh selection highlight + pax record + results
-  toast('Charlie staged '+slot.name+': '+origin+' \u2192 '+dest+' \u2014 fares loaded');
+  toast('Muse staged '+slot.name+': '+origin+' \u2192 '+dest+' \u2014 fares loaded');
 }
 /* re-render only the control center inner panes (keeps things mounted) */
 function renderTccPane(key){
@@ -4844,7 +4844,7 @@ function tccInnerHTML(key){
   var slot=staged&&tccCtx.slotId?crewSlotById(key,tccCtx.slotId):null;
   var pax=staged?
     '<div class="bg-blue-50/60 border border-blue-100 rounded-xl p-3 mb-3">'+
-      '<div class="flex items-center gap-2 mb-2"><span class="w-5 h-5 rounded bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold">\u2726</span><p class="text-[10px] font-bold uppercase tracking-wider text-blue-700">Charlie auto-filled from personnel directory</p></div>'+
+      '<div class="flex items-center gap-2 mb-2"><span class="w-5 h-5 rounded bg-blue-600 text-white flex items-center justify-center text-[9px] font-bold">\u2726</span><p class="text-[10px] font-bold uppercase tracking-wider text-blue-700">Muse auto-filled from personnel directory</p></div>'+
       '<div class="grid grid-cols-2 gap-x-4 gap-y-1.5 text-[11px]">'+
         '<div><span class="text-gray-400">Passenger</span><br><span class="font-bold text-gray-900">'+esc(tccCtx.name)+'</span></div>'+
         '<div><span class="text-gray-400">Position</span><br><span class="text-gray-700">'+esc(slot?slot.pos:'\u2014')+'</span></div>'+
@@ -4853,7 +4853,7 @@ function tccInnerHTML(key){
         '<div><span class="text-gray-400">Home base (origin)</span><br><span class="mono font-bold text-blue-700">'+esc(tccCtx.origin)+'</span></div>'+
         '<div><span class="text-gray-400">Destination venue</span><br><span class="mono font-bold text-blue-700">'+esc(tccCtx.dest)+'</span></div>'+
       '</div></div>':
-    '<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-3 text-center"><p class="text-[11px] text-gray-500">Select a pending crew member on the left and Charlie pushes their <b>name, passport, home-base origin, destination &amp; broadcast dates</b> into the flight search below.</p></div>';
+    '<div class="bg-gray-50 border border-gray-100 rounded-xl p-3 mb-3 text-center"><p class="text-[11px] text-gray-500">Select a pending crew member on the left and Muse pushes their <b>name, passport, home-base origin, destination &amp; broadcast dates</b> into the flight search below.</p></div>';
   var right='<div class="flex flex-col">'+
     '<div id="tpRoute" class="mb-3">'+tpRouteChips()+'</div>'+
     pax+
@@ -4866,7 +4866,7 @@ function tccInnerHTML(key){
 function tccAddPersonnelPicker(key){
   return '<div class="relative">'+
     '<div class="flex items-center gap-1.5 border border-gray-200 rounded-lg px-2 py-1.5 bg-gray-50/60 focus-within:border-blue-300">'+
-      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" class="flex-shrink-0"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>'+
+      '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ba2b0" stroke-width="2" class="flex-shrink-0"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>'+
       '<input id="tccPerSearch" oninput="tccPerSearchInput(\''+key+'\',this.value)" placeholder="Add personnel to travel\u2026" class="flex-1 bg-transparent text-[11px]" style="outline:none">'+
     '</div>'+
     '<div id="tccPerResults" class="absolute left-0 right-0 top-full mt-1 z-20 bg-white border border-gray-200 rounded-lg shadow-lg max-h-52 overflow-y-auto" style="display:none"></div>'+
@@ -5006,7 +5006,7 @@ function printManifest(key){
   var p=productions[key];var man=manifestList(key);if(!man.length){toast('Manifest is empty');return;}
   var rows=man.map(function(e){var f=e.flight;
     return '<tr><td>'+esc(e.person)+'</td><td>'+esc(e.pos||'')+'</td><td>'+esc(f?f.flightNumber+' '+f.dep.code+'→'+f.arr.code:'—')+'</td><td>'+esc(f?fmtLocalDate(f.dep.localTime)+' '+fmtLocalTime(f.dep.localTime):'')+'</td><td>'+esc(e.hotel?e.hotel.hotel+(e.hotel.conf?' #'+e.hotel.conf:''):'—')+'</td><td>'+esc(e.completedOn||'')+'</td></tr>';}).join('');
-  var doc='<html><head><title>Broadcast Manifest — '+esc(p.name)+'</title><style>body{font-family:Arial,sans-serif;margin:32px;color:#111}h1{font-size:18px;margin:0 0 2px}p{color:#666;font-size:11px;margin:0 0 14px}table{width:100%;border-collapse:collapse;font-size:11px}th{text-align:left;background:#111;color:#fff;padding:6px 8px;font-size:9px;text-transform:uppercase;letter-spacing:.05em}td{padding:6px 8px;border-bottom:1px solid #e5e7eb}.bar{height:5px;background:linear-gradient(90deg,#E51B24,#EF7B10,#F7B717,#00A15D,#00A0DE,#632E8A);margin-bottom:16px}</style></head><body>'+
+  var doc='<html><head><title>Broadcast Manifest — '+esc(p.name)+'</title><style>body{font-family:Arial,sans-serif;margin:32px;color:#101112}h1{font-size:18px;margin:0 0 2px}p{color:#636569;font-size:11px;margin:0 0 14px}table{width:100%;border-collapse:collapse;font-size:11px}th{text-align:left;background:#101112;color:#ffffff;padding:6px 8px;font-size:9px;text-transform:uppercase;letter-spacing:.05em}td{padding:6px 8px;border-bottom:1px solid #e5e7eb}.bar{height:5px;background:linear-gradient(90deg,#0064E0 0%,#0082FB 100%);margin-bottom:16px}</style></head><body>'+
     '<div class="bar"></div><h1>Broadcast Manifest — '+esc(p.name)+'</h1><p>'+man.length+' booked &amp; ready · generated '+nowStamp()+' · Muse Live</p>'+
     '<table><thead><tr><th>Traveler</th><th>Position</th><th>Flight</th><th>Departure</th><th>Hotel</th><th>Completed</th></tr></thead><tbody>'+rows+'</tbody></table></body></html>';
   var w=window.open('','_blank');if(!w){toast('Pop-up blocked');return;}
@@ -5016,9 +5016,9 @@ function travelpayoutsCardHTML(key){
   return '<div class="bg-white rounded-2xl border border-gray-200/60 overflow-hidden" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<div class="px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-blue-50/60 to-transparent">'+
       '<div class="flex flex-wrap items-center justify-between gap-3">'+
-        '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>'+
+        '<div class="flex items-center gap-2.5"><span class="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center flex-shrink-0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg></span>'+
           '<div><h3 class="text-sm font-bold text-gray-900 leading-tight">Travel Control Center</h3><p class="text-[10px] text-gray-500">Pending \u2194 native flight booking \u00b7 destination '+esc(dest)+' ('+esc(p.name)+')</p></div></div>'+
-        '<span class="text-[9px] font-bold uppercase tracking-wider text-white rounded-full px-2.5 py-1" style="background:#0770e3">Skyscanner Partners</span>'+
+        '<span class="text-[9px] font-bold uppercase tracking-wider text-white rounded-full px-2.5 py-1" style="background:#075fe3">Skyscanner Partners</span>'+
       '</div>'+
     '</div>'+
     '<div id="tccBody" class="px-5 py-4">'+tccInnerHTML(key)+'</div>'+
@@ -5032,7 +5032,7 @@ function travelpayoutsCardHTML(key){
    infrastructure a static site can't have. This engine keeps everything on-site
    and records into the crew travel system, which is what dispatch needs.)
    ============================================================================ */
-var SKY_BLUE='#0770e3',SKY_NAVY='#05203c';
+var SKY_BLUE='#075fe3',SKY_NAVY='#051b3c';
 var skySearchCtx={key:null,origin:'',dest:'',depart:'',ret:'',pax:1,name:null,slotId:null,results:null};
 /* deterministic pseudo-random from a string seed (stable results per route/date) */
 function skyHash(s){var h=2166136261;for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return (h>>>0);}
@@ -5078,14 +5078,14 @@ function mountSkyscanner(){
   function apOpts(sel){return '<option value="">From/To</option>'+apList.map(function(a){return '<option value="'+a+'"'+(sel===a?' selected':'')+'>'+a+' — '+esc(AIRPORTS[a].city)+'</option>';}).join('');}
   // search form
   var form='<div class="rounded-xl p-3 mb-3" style="background:'+SKY_NAVY+'">'+
-    '<div class="flex items-center gap-2 mb-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span class="text-[12px] font-bold text-white">Flight Search</span><span class="text-[8px] font-bold uppercase tracking-wider text-white/60 ml-auto">Skyscanner Partners</span></div>'+
+    '<div class="flex items-center gap-2 mb-2.5"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg><span class="text-[12px] font-bold text-white">Flight Search</span><span class="text-[8px] font-bold uppercase tracking-wider text-white/60 ml-auto">Skyscanner Partners</span></div>'+
     '<div class="grid grid-cols-2 gap-2 mb-2">'+
       '<div><label class="text-[8px] font-bold uppercase text-white/60 block mb-0.5">From</label><select id="sky_from" class="w-full text-[11px] rounded-lg px-2 py-1.5 bg-white border-0" style="outline:none">'+apOpts(c.origin)+'</select></div>'+
       '<div><label class="text-[8px] font-bold uppercase text-white/60 block mb-0.5">To</label><select id="sky_to" class="w-full text-[11px] rounded-lg px-2 py-1.5 bg-white border-0" style="outline:none">'+apOpts(c.dest)+'</select></div>'+
       '<div><label class="text-[8px] font-bold uppercase text-white/60 block mb-0.5">Depart</label><input id="sky_depart" type="date" value="'+esc(c.depart||'')+'" class="w-full text-[11px] rounded-lg px-2 py-1.5 bg-white border-0" style="outline:none"></div>'+
       '<div><label class="text-[8px] font-bold uppercase text-white/60 block mb-0.5">Return</label><input id="sky_return" type="date" value="'+esc(c.ret||'')+'" class="w-full text-[11px] rounded-lg px-2 py-1.5 bg-white border-0" style="outline:none"></div>'+
     '</div>'+
-    '<button onclick="skyDoSearch()" class="w-full text-white text-[12px] font-bold rounded-lg py-2 flex items-center justify-center gap-2" style="background:'+SKY_BLUE+'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Search flights</button>'+
+    '<button onclick="skyDoSearch()" class="w-full text-white text-[12px] font-bold rounded-lg py-2 flex items-center justify-center gap-2" style="background:'+SKY_BLUE+'"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>Search flights</button>'+
   '</div>';
   // results
   var results='';
@@ -5211,7 +5211,7 @@ function globalSearchOpen(){
   var ai=document.getElementById('gsAiPanel');if(ai){ai.classList.add('hidden');ai.innerHTML='';}
   var inp=document.getElementById('gsInput');if(inp){inp.value='';setTimeout(function(){inp.focus();},60);}
   /* Warm the on-device helper so Search is ready */
-  try{if(typeof CharlieLocal!=='undefined'&&CharlieLocal.ensureEngine)CharlieLocal.ensureEngine(false).catch(function(){});}catch(e){}
+  try{if(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.ensureEngine)MuseAiLocal.ensureEngine(false).catch(function(){});}catch(e){}
   globalSearchRender('');
 }
 function globalSearchClose(){
@@ -5233,7 +5233,7 @@ function globalSearchRender(q){
     box.innerHTML='<div class="px-4 py-6 text-center"><p class="text-[11px] text-gray-500 mb-1 font-semibold">Search everything · typo-tolerant · AI on-device</p>'+
       '<p class="text-[10px] text-gray-400 mb-3">Misspellings are corrected automatically. Jump to records or ask a natural question.</p>'+
       '<div class="flex flex-wrap gap-1.5 justify-center">'+Object.keys(byType).map(function(t){return '<span class="text-[9px] mono bg-gray-100 border border-gray-200 text-gray-600 rounded-lg px-2 py-1">'+t+' · '+byType[t]+'</span>';}).join('')+'</div>'+
-      '<p class="text-[9px] text-gray-400 mt-4">Try: <button type="button" class="text-blue-700 font-bold hover:underline" onclick="globalSearchPreset(\'World Cup go no go\')">World Cup go no go</button> · '+
+      '<p class="text-[9px] text-gray-400 mt-4">Try: <button type="button" class="text-blue-700 font-bold hover:underline" onclick="globalSearchPreset(\'Muse AI World Tour go no go\')">Muse AI World Tour go no go</button> · '+
       '<button type="button" class="text-blue-700 font-bold hover:underline" onclick="globalSearchPreset(\'superbow audio\')">superbow audio</button> · '+
       '<button type="button" class="text-blue-700 font-bold hover:underline" onclick="globalSearchPreset(\'personel directory\')">personel</button></p></div>';
     return;
@@ -5362,16 +5362,16 @@ function globalSearchAiPanel(mode, q, text, hits, gotoBtns){
   if(mode==='thinking'){
     ai.innerHTML='<div class="px-4 py-3 bg-gradient-to-r from-emerald-50/80 to-blue-50/50">'+
       '<div class="flex items-center gap-2 mb-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>'+
-      '<p class="text-[9px] font-bold uppercase tracking-wider text-emerald-800">Charlie Search</p>'+
+      '<p class="text-[9px] font-bold uppercase tracking-wider text-emerald-800">Muse Search</p>'+
       '</div>'+
       '<p class="text-[11px] text-gray-500">Thinking about “'+esc(q)+'”…</p></div>';
     return;
   }
   if(mode==='error'){
     ai.innerHTML='<div class="px-4 py-3 bg-amber-50/80 border-b border-amber-100">'+
-      '<p class="text-[9px] font-bold uppercase tracking-wider text-amber-800 mb-1">Charlie Search</p>'+
+      '<p class="text-[9px] font-bold uppercase tracking-wider text-amber-800 mb-1">Muse Search</p>'+
       '<p class="text-[11px] text-amber-900/90">'+esc(text||'Unavailable')+'</p>'+
-      '<button type="button" onclick="testCharlie&&testCharlie()" class="mt-2 text-[10px] font-bold text-emerald-800 hover:underline">Test Charlie</button></div>';
+      '<button type="button" onclick="testMuseAi&&testMuseAi()" class="mt-2 text-[10px] font-bold text-emerald-800 hover:underline">Test Muse</button></div>';
     return;
   }
   var btns=(gotoBtns&&gotoBtns.length)?'<div class="flex flex-wrap gap-1.5 mt-2">'+gotoBtns.map(function(b){
@@ -5380,10 +5380,10 @@ function globalSearchAiPanel(mode, q, text, hits, gotoBtns){
   var hitN=(hits&&hits.length)?hits.length:0;
   ai.innerHTML='<div class="px-4 py-3 bg-gradient-to-r from-emerald-50/90 to-slate-50">'+
     '<div class="flex items-center gap-2 mb-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>'+
-    '<p class="text-[9px] font-bold uppercase tracking-wider text-emerald-800">Charlie Search</p>'+
+    '<p class="text-[9px] font-bold uppercase tracking-wider text-emerald-800">Muse Search</p>'+
     '<span class="text-[9px] text-gray-400 mono ml-auto">'+(hitN?hitN+' indexed hit'+(hitN===1?'':'s'):'no index hits')+'</span></div>'+
     '<p class="text-[12px] text-gray-800 leading-relaxed" style="white-space:pre-wrap;overflow-wrap:anywhere">'+esc(text||'')+'</p>'+btns+
-    '<p class="text-[9px] text-gray-400 mt-2">Charlie</p></div>';
+    '<p class="text-[9px] text-gray-400 mt-2">Muse</p></div>';
 }
 function globalSearchRunAI(q, hits){
   q=String(q||'').trim();if(!q)return;
@@ -5400,15 +5400,15 @@ function globalSearchRunAI(q, hits){
 
   function composeLocalAnswer(){
     var parts=[];
-    if(typeof charlieLooksRealWorld==='function'&&charlieLooksRealWorld(q)&&typeof charlieRealWorldTry==='function'){
-      return charlieRealWorldTry(q).then(function(rw){
+    if(typeof museaiLooksRealWorld==='function'&&museaiLooksRealWorld(q)&&typeof museaiRealWorldTry==='function'){
+      return museaiRealWorldTry(q).then(function(rw){
         if(rw)parts.push(String(rw).trim());
         if(hits&&hits.length){
           parts.push((parts.length?'\n\n':'')+'Muse Live matches:\n'+hits.slice(0,8).map(function(r,i){
             return (i+1)+'. '+r.label+(r.sub?' — '+r.sub:'');
           }).join('\n'));
-        }else if(!parts.length&&typeof charlieAnswer==='function'){
-          try{var ra=charlieAnswer(q);if(ra)parts.push(ra);}catch(eR){}
+        }else if(!parts.length&&typeof museaiAnswer==='function'){
+          try{var ra=museaiAnswer(q);if(ra)parts.push(ra);}catch(eR){}
         }
         return parts.join('')||null;
       });
@@ -5418,20 +5418,20 @@ function globalSearchRunAI(q, hits){
         return (i+1)+'. ['+r.type+'] '+r.label+(r.sub?' — '+r.sub:'');
       }).join('\n'));
     }
-    if(typeof charlieAnswer==='function'){
-      try{var a=charlieAnswer(q);if(a)return Promise.resolve(a);}catch(eA){}
+    if(typeof museaiAnswer==='function'){
+      try{var a=museaiAnswer(q);if(a)return Promise.resolve(a);}catch(eA){}
     }
     return Promise.resolve(null);
   }
 
   var aiPromise;
-  if(typeof CharlieCharlie!=='undefined'&&CharlieCharlie.ask){
-    aiPromise=CharlieCharlie.ask(q).catch(function(){return composeLocalAnswer();});
-  }else if(typeof charlieLooksRealWorld==='function'&&charlieLooksRealWorld(q)){
+  if(typeof MuseAiMuseAi!=='undefined'&&MuseAiMuseAi.ask){
+    aiPromise=MuseAiMuseAi.ask(q).catch(function(){return composeLocalAnswer();});
+  }else if(typeof museaiLooksRealWorld==='function'&&museaiLooksRealWorld(q)){
     aiPromise=composeLocalAnswer();
-  }else if(typeof charlieLocalEnabled==='function'&&charlieLocalEnabled()&&typeof CharlieLocal!=='undefined'&&CharlieLocal.search){
-    aiPromise=CharlieLocal.ensureEngine(false).then(function(){
-      return CharlieLocal.search(q,{hitsText:hitsText,indexStats:idxStats});
+  }else if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'&&MuseAiLocal.search){
+    aiPromise=MuseAiLocal.ensureEngine(false).then(function(){
+      return MuseAiLocal.search(q,{hitsText:hitsText,indexStats:idxStats});
     }).catch(function(){return composeLocalAnswer();});
   }else{
     aiPromise=composeLocalAnswer();
@@ -5440,7 +5440,7 @@ function globalSearchRunAI(q, hits){
   aiPromise.then(function(ans){
     if(token!==_gsAiToken)return;
     if(ans==null||!String(ans).trim()){
-      globalSearchAiPanel('error', q, 'No Charlie answer for that query yet. Indexed results above still work — or try a Muse Live status / NFL schedule question.', hits);
+      globalSearchAiPanel('error', q, 'No Muse answer for that query yet. Indexed results above still work — or try a Muse Live status / NFL schedule question.', hits);
       return;
     }
     var text=String(ans).trim();
@@ -5492,7 +5492,7 @@ function globalSearchRunAI(q, hits){
     if(token!==_gsAiToken)return;
     var em=(err&&err.message)?String(err.message):'Model not ready';
     em=em.replace(/\bWebGPU\b/gi,'GPU');
-    globalSearchAiPanel('error', q, 'Search unavailable ('+em.slice(0,100)+'). Indexed results above still work. Open Charlie settings to load the free model.', hits);
+    globalSearchAiPanel('error', q, 'Search unavailable ('+em.slice(0,100)+'). Indexed results above still work. Open Muse settings to load the free model.', hits);
   });
 }
 function globalSearchGo(i){if(!_searchIdx||!_searchIdx[i])return;var r=_searchIdx[i];globalSearchClose();
@@ -5545,18 +5545,18 @@ function npcById(id){for(var i=0;i<npcEvents.length;i++)if(npcEvents[i].id===id)
    the Master Schedule gantt renders it, xySchedPushFacilities posts it to Xytech as
    RmBooking records, and the dashboard Active PCR/ACR board derives from it live.
    Row: [resource, [[startCol, spanDays, activity, bg, fg, timeWindow?, prodKey?], …]] */
-var FACILITY_ROWS=[["PCR 1",[[0,7,'World Cup — Match Coverage','#fde68a','#78350f','12:00–18:00 ET','worldcup'],[1,2,'World Cup Tech Rehearsal','#fde68a','#78350f','07:00–11:00 ET','worldcup'],[4,2,'Sail 250 Setup','#a7f3d0','#065f46','08:00–12:00 ET','sail250']]],
-  ["PCR 4",[[0,3,'Sail 250 Remote Test','#a7f3d0','#065f46','06:00–09:00 ET','sail250'],[0,7,'Sail 250 — Harbor Remote','#a7f3d0','#065f46','06:00–10:00 ET','sail250'],[5,2,'Parade Cam Map','#fed7aa','#7c2d12','13:00–16:00 ET','parade']]],
-  ["PCR 6",[[2,2,'Muse Live 100th GFX Build','#e9d5ff','#581c87','10:00–17:00 ET','muse100']]],
-  ["Studio M1",[[3,3,'Muse Live 100th Rehearsal','#e9d5ff','#581c87','09:00–18:00 ET','muse100']]],
-  ["ACR 2",[[0,2,"Calrec Artemis",'#bfdbfe','#1e3a8a','09:00–13:00 ET','worldcup'],[0,7,'World Cup — Match Mix','#fde68a','#78350f','12:00–18:00 ET','worldcup'],[4,1,'Mix Check','#a7f3d0','#065f46','10:00 ET','sail250']]],
-  ["ACR 4",[[0,7,'Sail 250 — Remote Mix','#a7f3d0','#065f46','06:00–10:00 ET','sail250']]],
-  ["ACR 7",[[0,7,'Parade — Comms Bench Test','#fed7aa','#7c2d12','13:00–15:00 ET','parade']]],
-  ["MIX 4",[[3,2,'Muse Live 100th — Music Mix','#e9d5ff','#581c87','14:00–18:00 ET','muse100']]],
-  ["REMI Bay",[[1,4,'Midterm Survey Calls','#fecaca','#7f1d1d','09:00–17:00 ET','midterms']]],
-  ["CRK 1",[[0,7,'World Cup — Match Feed A-Path','#fecaca','#7f1d1d','ON AIR · 12:00–18:00 ET','worldcup']]],
-  ["CRK 2",[[0,7,'Sail 250 — Harbor Feed','#a7f3d0','#065f46','06:00–10:00 ET','sail250']]],
-  ["CRK 4",[[2,3,'Muse Live 100th — GFX Uplink Test','#e9d5ff','#581c87','14:00–16:00 ET','muse100']]]];
+var FACILITY_ROWS=[["PCR 1",[[0,7,'Muse AI World Tour — Match Coverage','#fddc8a','#783b0f','12:00–18:00 ET','museaitour'],[1,2,'Muse AI World Tour Tech Rehearsal','#fddc8a','#783b0f','07:00–11:00 ET','museaitour'],[4,2,'Ray-Ban Meta Gen 3 Launch Setup','#a7f3b9','#065f1b','08:00–12:00 ET','raybangen3']]],
+  ["PCR 4",[[0,3,'Ray-Ban Meta Gen 3 Launch Remote Test','#a7f3b9','#065f1b','06:00–09:00 ET','raybangen3'],[0,7,'Ray-Ban Meta Gen 3 Launch — Harbor Remote','#a7f3b9','#065f1b','06:00–10:00 ET','raybangen3'],[5,2,'Creator Week Cam Map','#fecdaa','#7c3e12','13:00–16:00 ET','igcreators']]],
+  ["PCR 6",[[2,2,'Muse AI Launchth GFX Build','#d5e6ff','#0c4497','10:00–17:00 ET','museailaunch']]],
+  ["Studio M1",[[3,3,'Muse AI Launchth Rehearsal','#d5e6ff','#0c4497','09:00–18:00 ET','museailaunch']]],
+  ["ACR 2",[[0,2,"Calrec Artemis",'#bfd8fe','#0d469b','09:00–13:00 ET','museaitour'],[0,7,'Muse AI World Tour — Match Mix','#fddc8a','#783b0f','12:00–18:00 ET','museaitour'],[4,1,'Mix Check','#a7f3b9','#065f1b','10:00 ET','raybangen3']]],
+  ["ACR 4",[[0,7,'Ray-Ban Meta Gen 3 Launch — Remote Mix','#a7f3b9','#065f1b','06:00–10:00 ET','raybangen3']]],
+  ["ACR 7",[[0,7,'Creator Week — Comms Bench Test','#fecdaa','#7c3e12','13:00–15:00 ET','igcreators']]],
+  ["MIX 4",[[3,2,'Muse AI Launchth — Music Mix','#d5e6ff','#0c4497','14:00–18:00 ET','museailaunch']]],
+  ["REMI Bay",[[1,4,'WhatsApp Summit Survey Calls','#fecad3','#7f1d2d','09:00–17:00 ET','whatsapp']]],
+  ["CRK 1",[[0,7,'Muse AI World Tour — Match Feed A-Path','#fecad3','#7f1d2d','ON AIR · 12:00–18:00 ET','museaitour']]],
+  ["CRK 2",[[0,7,'Ray-Ban Meta Gen 3 Launch — Harbor Feed','#a7f3b9','#065f1b','06:00–10:00 ET','raybangen3']]],
+  ["CRK 4",[[2,3,'Muse AI Launchth — GFX Uplink Test','#d5e6ff','#0c4497','14:00–16:00 ET','museailaunch']]]];
 
 /* a span [a,a+aw) overlaps [b,b+bw) ? */
 function spanOverlap(a,aw,b,bw){return a < b+bw && b < a+aw;}
@@ -5628,7 +5628,7 @@ function openRoomDetail(room){var ov=document.getElementById('roomOverlay');var 
   function bkRow(b){var live=t>=b[0]&&t<b[0]+b[1];
     var days=NPC_DAYS[b[0]]+(b[1]>1?' – '+(NPC_DAYS[Math.min(b[0]+b[1]-1,6)]||''):'');
     var name=b[6]&&productions[b[6]]?(productions[b[6]].tab||productions[b[6]].name):'';
-    return '<div class="perm-row"'+(live?' style="border-color:#6ee7b7"':'')+'><div class="min-w-0">'+
+    return '<div class="perm-row"'+(live?' style="border-color:#6ee78a"':'')+'><div class="min-w-0">'+
       '<p class="text-[11px] font-bold text-gray-900 truncate">'+esc(b[2])+'</p>'+
       '<p class="text-[9px] text-gray-500">'+esc(days)+(b[5]?' · '+esc(b[5]):'')+(name?' · '+esc(name):'')+(live?' · <b class="text-emerald-700">today</b>':'')+'</p></div>'+
       (b[6]&&productions[b[6]]?'<button onclick="closeRoomDetail();openProject(\''+b[6]+'\')" class="text-[9px] font-bold text-blue-700 hover:underline flex-shrink-0">Open →</button>':'')+'</div>';}
@@ -5673,27 +5673,27 @@ function npcGanttHTML(){loadNPCOnce();
     var fac=(FACILITY_ROWS.filter(function(r){return r[0]===res;})[0]||[res,[]])[1];
     var npc=byRes[res]||[];
     g+='<div class="grid grid-cols-8 gap-1 mb-1 items-center"><div class="text-[10px] font-bold mono text-gray-600">'+res+'</div>'+
-      '<div class="col-span-7 relative rounded border border-gray-100" style="height:40px;background:repeating-linear-gradient(90deg,#f9fafb,#f9fafb calc(100%/7 - 1px),#eef0f2 calc(100%/7 - 1px),#eef0f2 calc(100%/7))">';
+      '<div class="col-span-7 relative rounded border border-gray-100" style="height:40px;background:repeating-linear-gradient(90deg,#fafafa,#fafafa calc(100%/7 - 1px),#eeeff2 calc(100%/7 - 1px),#eeeff2 calc(100%/7))">';
     // facility bookings — DARK, solid
     fac.forEach(function(b){var left=(b[0]/7*100),w=(b[1]/7*100);
-      g+='<div onclick="toast(\''+(''+b[2]).replace(/'/g,'')+' · '+res+'\')" class="absolute rounded text-[9px] font-bold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:#1f2937;z-index:2" title="'+esc(b[2])+'">'+esc(b[2])+'</div>';});
+      g+='<div onclick="toast(\''+(''+b[2]).replace(/'/g,'')+' · '+res+'\')" class="absolute rounded text-[9px] font-bold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:#2a2b2c;z-index:2" title="'+esc(b[2])+'">'+esc(b[2])+'</div>';});
     // NPC events — SEMI-TRANSPARENT, overlapping below
     npc.forEach(function(ev){var left=(ev.col/7*100),w=(ev.span/7*100);var conf=npcConflictsFor(ev).length>0;
       var declined=(ev.participate===false);
       // conflict → solid LIVE-red tile (unmistakable); declined → muted gray; otherwise planned-blue
       var bg,bd,tx;
-      if(declined){bg='rgba(148,163,184,0.25)';bd='rgba(100,116,139,0.5)';tx='#475569';}
+      if(declined){bg='rgba(155,162,177,0.25)';bd='rgba(116,118,123,0.5)';tx='#55575B';}
       else if(conf){bg='var(--live-red)';bd='var(--live-red)';tx='#ffffff';}
-      else{bg='rgba(37,99,235,0.28)';bd='rgba(37,99,235,0.6)';tx='#1e3a8a';}
+      else{bg='rgba(35,116,237,0.28)';bd='rgba(35,116,237,0.6)';tx='#0d469b';}
       var tag=declined?'⊘ ':(ev.crewed?'✓ ':(conf?'⚠ ':''));
-      g+='<div onclick="openNPCEvent(\''+ev.id+'\')" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate" style="bottom:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:'+bg+';color:'+tx+';border:1px '+(conf&&!declined?'solid':'dashed')+' '+bd+';z-index:'+(conf&&!declined?'2':'1')+(conf&&!declined?';box-shadow:0 1px 4px rgba(185,28,28,.45)':'')+(declined?';text-decoration:line-through':'')+'" title="'+esc(ev.title)+(declined?' — Muse Live will not participate':(conf?' — CONFLICT':''))+'">'+tag+esc(ev.title)+'</div>';});
+      g+='<div onclick="openNPCEvent(\''+ev.id+'\')" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate" style="bottom:2px;height:17px;left:'+left+'%;width:calc('+w+'% - 2px);background:'+bg+';color:'+tx+';border:1px '+(conf&&!declined?'solid':'dashed')+' '+bd+';z-index:'+(conf&&!declined?'2':'1')+(conf&&!declined?';box-shadow:0 1px 4px rgba(185,28,54,.45)':'')+(declined?';text-decoration:line-through':'')+'" title="'+esc(ev.title)+(declined?' — Muse Live will not participate':(conf?' — CONFLICT':''))+'">'+tag+esc(ev.title)+'</div>';});
     g+='</div></div>';
   });
   g+='</div>';
   // legend
   var legend='<div class="flex items-center gap-4 mt-3 flex-wrap">'+
-    '<div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:#1f2937"></span><span class="text-[9px] text-gray-600">Muse Live Operations (booked)</span></div>'+
-    '<div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(37,99,235,0.28);border:1px dashed rgba(37,99,235,0.6)"></span><span class="text-[9px] text-gray-600">National Press Club (planned)</span></div>'+
+    '<div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:#2a2b2c"></span><span class="text-[9px] text-gray-600">Meta Operations (booked)</span></div>'+
+    '<div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:rgba(35,116,237,0.28);border:1px dashed rgba(35,116,237,0.6)"></span><span class="text-[9px] text-gray-600">National Press Club (planned)</span></div>'+
     '<div class="flex items-center gap-1.5"><span class="inline-block w-4 h-3 rounded" style="background:var(--live-red);border:1px solid var(--live-red)"></span><span class="text-[9px] text-gray-600">⚠ Direct conflict</span></div></div>';
   return g+legend;
 }
@@ -5717,7 +5717,7 @@ function openNPCEvent(id){var ev=npcById(id);if(!ev)return;
     '<div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-3"><p class="text-[11px] text-emerald-700">No facility conflict detected for this event.</p></div>';
   var already=ev.crewed?'<div class="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3"><p class="text-[11px] text-blue-700">Already crewed as a production. Opening it instead.</p></div>':'';
   bx.innerHTML='<div class="flex items-start justify-between gap-2 mb-3">'+
-      '<div class="flex items-center gap-3 min-w-0"><div class="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center flex-shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8"><path d="M4 22V4a2 2 0 0 1 2-2h8l6 6v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>'+
+      '<div class="flex items-center gap-3 min-w-0"><div class="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center flex-shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8"><path d="M4 22V4a2 2 0 0 1 2-2h8l6 6v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>'+
         '<div class="min-w-0"><div class="flex items-center gap-1.5"><span class="text-[9px] mono font-bold text-gray-500">'+ev.id+'</span><span class="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 border border-gray-200">National Press Club</span></div>'+
         '<h3 class="text-base font-bold text-gray-900 leading-tight mt-0.5">'+esc(ev.title)+'</h3>'+
         '<p class="text-[10px] text-gray-500">'+esc(ev.org)+'</p></div></div>'+
@@ -5783,36 +5783,36 @@ function npcDeleteEvent(id){var ev=npcById(id);if(!ev)return;
 function npcInit(){loadNPCOnce();renderNPCAlert();}
 
 /* ================================================================================
-   10. BROADCAST SCHEDULE — network air grid across the five Muse Live Hispanic feeds:
-       Muse Live East / West, Muse Live Español East / West, Muse Live+.
-       Day / Week / Month / Year views. Real 2026 programming, incl. the
-       FIFA World Cup 26 window (Jun 11 – Jul 19, Final at MetLife Stadium).
+   10. BROADCAST SCHEDULE — live programming grid across the five Meta Live channels:
+       Facebook Live East / West, Instagram Live, WhatsApp Channels, Meta Horizon.
+       Day / Week / Month / Year views, incl. the Muse AI World Tour window
+       (Jun 11 – Jul 19, Grand Finale at MetLife Stadium).
    ================================================================================ */
 var BCAST_CHANNELS=[
- {id:'MUSE_e',name:'Muse Live',feed:'East',tz:'ET',accent:'#dc2626'},
- {id:'MUSE_w',name:'Muse Live',feed:'West',tz:'PT · 3-hr delay',accent:'#ef4444'},
- {id:'uni_e', name:'Muse Live Español', feed:'East',tz:'ET',accent:'#7c3aed'},
- {id:'uni_w', name:'Muse Live Español', feed:'West',tz:'PT · 3-hr delay',accent:'#8b5cf6'},
- {id:'mlplus', name:'Muse Live+',feed:'Stream',tz:'ET · nationwide',accent:'#0891b2'}
+ {id:'fb_e',name:'Facebook Live',feed:'East',tz:'ET',accent:'#086BFF'},
+ {id:'fb_w',name:'Facebook Live',feed:'West',tz:'PT · 3-hr delay',accent:'#4B93FF'},
+ {id:'ig_live',name:'Instagram Live',feed:'Global',tz:'ET',accent:'#E1304E'},
+ {id:'wa_ch',name:'WhatsApp Channels',feed:'Global',tz:'ET',accent:'#25D34E'},
+ {id:'horizon',name:'Meta Horizon',feed:'Stream',tz:'ET · worldwide',accent:'#0B57C9'}
 ];
 var bcastView='day';
 var bcastDate=new Date();
-/* FIFA World Cup 26 — phase for a given date (null outside the tournament) */
+/* Muse AI World Tour — phase for a given date (null outside the tour window) */
 function wcPhase(d){
   if(d.getFullYear()!==2026)return null;
   var m=d.getMonth(),day=d.getDate();
   if(m===5){ // June
-    if(day>=11&&day<=27)return 'Fase de Grupos';
-    if(day>=28)return 'Dieciseisavos de Final';
+    if(day>=11&&day<=27)return 'Opening Keynotes';
+    if(day>=28)return 'Regional Keynotes';
     return null;}
   if(m===6){ // July
-    if(day<=3)return 'Dieciseisavos de Final';
-    if(day>=4&&day<=7)return 'Octavos de Final';
+    if(day<=3)return 'Regional Keynotes';
+    if(day>=4&&day<=7)return 'Developer Days';
     if(day===8||day===12||day===13||day===16||day===17)return 'REST';
-    if(day>=9&&day<=11)return 'Cuartos de Final';
-    if(day===14||day===15)return 'Semifinales';
-    if(day===18)return 'Partido por el Tercer Lugar';
-    if(day===19)return 'La Gran Final · MetLife Stadium';
+    if(day>=9&&day<=11)return 'Creator Showcases';
+    if(day===14||day===15)return 'Semifinal Keynotes';
+    if(day===18)return 'Community Day';
+    if(day===19)return 'Grand Finale · MetLife Stadium';
     return null;}
   return null;}
 function wcMatchday(d){var p=wcPhase(d);return p&&p!=='REST'?p:null;}
@@ -5821,93 +5821,95 @@ function bcastDayGrid(chId,d){
   var dow=d.getDay(),wknd=(dow===0||dow===6);
   var phase=wcMatchday(d),wcWin=!!wcPhase(d);
   function P(s,e,t,cat,live){return {s:s,e:e,t:t,cat:cat||'gen',live:!!live};}
-  var isT=(chId==='MUSE_e'||chId==='MUSE_w'),isU=(chId==='uni_e'||chId==='uni_w');
+  var isT=(chId==='fb_e'||chId==='fb_w'),isU=(chId==='ig_live'||chId==='wa_ch');
+  var isIG=(chId==='ig_live');
   if(isT){
     if(phase)return [
-      P(7,10,'Buen Día: Edición Mundialista','news',true),
-      P(10,11,'Zona Mixta','sport',true),
-      P(11,12,'Copa Mundial FIFA 26: La Previa','sport',true),
-      P(12,14.5,'Copa Mundial FIFA 26 · '+phase+' — Partido 1','match',true),
-      P(14.5,15,'Al Aire: Análisis del Partido','sport'),
-      P(15,16,'Copa Mundial FIFA 26: La Previa','sport',true),
-      P(16,18.5,'Copa Mundial FIFA 26 · '+phase+' — Partido 2','match',true),
-      P(18.5,19,'Noticias Muse Live','news',true),
-      P(19,20,'La Previa Estelar','sport',true),
-      P(20,22.5,'Copa Mundial FIFA 26 · '+phase+' — Partido Estelar','match',true),
-      P(22.5,23,'Lo Mejor del Mundial','sport'),
-      P(23,24,'Noticias Muse Live: Edición Nocturna','news',true)];
-    if(wcWin)return [ // tournament rest day
-      P(7,10,'Buen Día','news',true),
-      P(10,12,'Zona Mixta: Resumen del Mundial','sport'),
-      P(12,15,'Veredicto Final','court'),
-      P(15,16,'La Mesa Abierta','ent',true),
-      P(16,17,'En Vivo y Directo','news',true),
-      P(17,18.5,'Noticiero Muse Live Local (afiliadas)','news'),
-      P(18.5,19,'Noticias Muse Live','news',true),
-      P(19,20,'Copa Mundial FIFA 26: Camino a la Gloria','sport'),
-      P(20,22,'Cine Estelar','movie'),
-      P(22,23,'La Casa de las Estrellas: Lo Mejor','ent'),
-      P(23,24,'Noticias Muse Live: Edición Nocturna','news',true)];
+      P(7,9,'Muse AI Morning Brief','news',true),
+      P(9,10,'Creator Spotlight','ent',true),
+      P(10,11,'Muse AI World Tour: Pre-Show','sport',true),
+      P(11,13,'Muse AI World Tour · '+phase+' — Keynote','match',true),
+      P(13,13.5,'Developer Breakdown','sport'),
+      P(13.5,15,'Hands-On: Ray-Ban Meta Gen 3','ent'),
+      P(15,17.5,'Muse AI World Tour · '+phase+' — Developer Sessions','match',true),
+      P(17.5,18.5,'WhatsApp Business Live','news',true),
+      P(18.5,19,'Meta Newsroom','news',true),
+      P(19,20,'Muse AI World Tour: Prime Pre-Show','sport',true),
+      P(20,22.5,'Muse AI World Tour · '+phase+' — Prime Keynote','match',true),
+      P(22.5,23,'Best of the Tour','sport'),
+      P(23,24,'Meta Newsroom: Night Edition','news',true)];
+    if(wcWin)return [ // tour rest day
+      P(7,10,'Muse AI Morning Brief','news',true),
+      P(10,12,'Tour Recap: Highlights','sport'),
+      P(12,15,'Community Q&A','court'),
+      P(15,16,'Instagram Creator Hour','ent',true),
+      P(16,17,'Threads Trending','news',true),
+      P(17,18.5,'Local Creators (partner pages)','news'),
+      P(18.5,19,'Meta Newsroom','news',true),
+      P(19,20,'Muse AI World Tour: Road to the Finale','sport'),
+      P(20,22,'Replay: Meta Connect Keynote','movie'),
+      P(22,23,'Reels of the Week','ent'),
+      P(23,24,'Meta Newsroom: Night Edition','news',true)];
     if(wknd)return [
-      P(7,9,'Enfoque / Paid Programming','gen'),
-      P(9,12,(dow===0&&(d.getMonth()>=7||d.getMonth()<=4))?'Fútbol Premier League en Muse Live':'Cine Matinal',(dow===0&&(d.getMonth()>=7||d.getMonth()<=4))?'match':'movie',dow===0&&(d.getMonth()>=7||d.getMonth()<=4)),
-      P(12,15,'Cine de la Tarde','movie'),
-      P(15,17,'Veredicto Final: Maratón','court'),
-      P(17,18.5,'Noticiero Local Fin de Semana','news'),
-      P(18.5,19,'Noticias Muse Live Fin de Semana','news',true),
-      P(19,22,'Cine Estelar','movie'),
-      P(22,23,dow===6?'Boxeo Muse Live':'En Vivo y Directo: Edición Especial',dow===6?'match':'news',dow===6),
-      P(23,24,'Noticias / Programación Nocturna','news')];
+      P(7,9,'Community Programming','gen'),
+      P(9,12,(dow===0&&(d.getMonth()>=7||d.getMonth()<=4))?'Horizon Worlds Live Concert':'Replay Morning',(dow===0&&(d.getMonth()>=7||d.getMonth()<=4))?'match':'movie',dow===0&&(d.getMonth()>=7||d.getMonth()<=4)),
+      P(12,15,'Replay: Developer Sessions','movie'),
+      P(15,17,'Community Q&A: Marathon','court'),
+      P(17,18.5,'Local Creators Weekend','news'),
+      P(18.5,19,'Meta Newsroom Weekend','news',true),
+      P(19,22,'Replay: Prime Keynotes','movie'),
+      P(22,23,dow===6?'Meta Quest Gaming Live':'Threads Trending: Special Edition',dow===6?'match':'news',dow===6),
+      P(23,24,'Overnight Programming','news')];
     return [ // regular weekday
-      P(7,10,'Buen Día','news',true),
-      P(10,11,'Veredicto Final','court'),
-      P(11,12,'Hablemos con Lucía','ent'),
-      P(12,13,'Veredicto Final','court'),
-      P(13,15,'Veredicto Final: Edición Estelar','court'),
-      P(15,16,'La Mesa Abierta','ent',true),
-      P(16,17,'En Vivo y Directo','news',true),
-      P(17,18.5,'Noticiero Muse Live Local (afiliadas)','news'),
-      P(18.5,19,'Noticias Muse Live','news',true),
-      P(19,20,'Los Elegidos','ent'),
-      P(20,21,'Sombras del Cielo','novela'),
-      P(21,22,'Telenovela Estelar','novela'),
-      P(22,23,'La Casa de las Estrellas: Lo Mejor','ent'),
-      P(23,24,'Noticias Muse Live: Edición Nocturna','news',true)];
+      P(7,10,'Muse AI Morning Brief','news',true),
+      P(10,11,'Community Q&A','court'),
+      P(11,12,'Creator Spotlight','ent'),
+      P(12,13,'Community Q&A','court'),
+      P(13,15,'Community Q&A: Prime Edition','court'),
+      P(15,16,'Instagram Creator Hour','ent',true),
+      P(16,17,'Threads Trending','news',true),
+      P(17,18.5,'Local Creators (partner pages)','news'),
+      P(18.5,19,'Meta Newsroom','news',true),
+      P(19,20,'Made with Muse AI','ent'),
+      P(20,21,'Creator Series: Behind the Reels','novela'),
+      P(21,22,'Creator Series: Prime','novela'),
+      P(22,23,'Reels of the Week','ent'),
+      P(23,24,'Meta Newsroom: Night Edition','news',true)];
   }
   if(isU){
     if(phase)return [
-      P(7,11,'Veredicto Final: Maratón','court'),
-      P(11,12,'Zona Mixta (simulcast)','sport',true),
-      P(12,14.5,'Copa Mundial FIFA 26 — Partido Alterno','match',true),
-      P(14.5,16,'Sombras del Cielo: Maratón','novela'),
-      P(16,18.5,'Copa Mundial FIFA 26 — Repetición del Partido 1','match'),
-      P(18.5,20,'Lucha Libre AAA','sport'),
-      P(20,22.5,'Copa Mundial FIFA 26 — Partido de la Noche (simulcast)','match',true),
-      P(22.5,24,'Boxeo: Lo Mejor','sport')];
+      P(7,11,isIG?'Creator Series: Marathon':'Channel Updates: Marathon',isIG?'novela':'court'),
+      P(11,12,'Tour Backstage (simulcast)','sport',true),
+      P(12,14.5,'Muse AI World Tour — Alternate Keynote','match',true),
+      P(14.5,16,isIG?'Creator Series: Marathon':'Business Messaging Clinics','novela'),
+      P(16,18.5,'Muse AI World Tour — Keynote Replay','match'),
+      P(18.5,20,isIG?'Reels Live':'Community Voices','sport'),
+      P(20,22.5,'Muse AI World Tour — Prime Keynote (simulcast)','match',true),
+      P(22.5,24,'Best of the Tour','sport')];
     return [
-      P(7,12,'Veredicto Final: Maratón','court'),
-      P(12,15,'Cine Muse Live','movie'),
-      P(15,18,'Sombras del Cielo: Maratón','novela'),
-      P(18,20,'Reina de la Costa: Maratón','novela'),
-      P(20,22,dow===6?'Lucha Libre AAA':'Cine Estelar Muse Live Español',dow===6?'sport':'movie'),
-      P(22,24,dow===5?'Boxeo Muse Live':'Programación Nocturna',dow===5?'match':'gen',dow===5)];
+      P(7,12,isIG?'Creator Series: Marathon':'Channel Updates: Marathon',isIG?'novela':'court'),
+      P(12,15,isIG?'Instagram Replay':'WhatsApp Replay','movie'),
+      P(15,18,'Creator Series: Marathon','novela'),
+      P(18,20,isIG?'Reels Live':'WhatsApp Business Live','novela'),
+      P(20,22,dow===6?'Meta Quest Gaming Live':'Replay: Prime Keynotes',dow===6?'sport':'movie'),
+      P(22,24,dow===5?'Late Night Live':'Overnight Programming',dow===5?'match':'gen',dow===5)];
   }
-  // Muse Live+ (stream)
+  // Meta Horizon (stream)
   if(phase)return [
-    P(6,12,'Noticias Muse Live Ahora (stream 24/7)','news',true),
-    P(12,14.5,'Copa Mundial FIFA 26 — Partido 1 (stream)','match',true),
-    P(14.5,16,'Noticias Muse Live Ahora','news',true),
-    P(16,18.5,'Copa Mundial FIFA 26 — Partido 2 (stream)','match',true),
-    P(18.5,20,'El Repaso del Mundial','sport'),
-    P(20,22.5,'Copa Mundial FIFA 26 — Partido Estelar (stream)','match',true),
-    P(22.5,24,'Noticias Muse Live Ahora','news',true)];
+    P(6,12,'Meta Newsroom Now (24/7 stream)','news',true),
+    P(12,14.5,'Muse AI World Tour — Keynote (immersive)','match',true),
+    P(14.5,16,'Meta Newsroom Now','news',true),
+    P(16,18.5,'Muse AI World Tour — Developer Sessions (immersive)','match',true),
+    P(18.5,20,'Tour Recap','sport'),
+    P(20,22.5,'Muse AI World Tour — Prime Keynote (immersive)','match',true),
+    P(22.5,24,'Meta Newsroom Now','news',true)];
   return [
-    P(6,12,'Noticias Muse Live Ahora (stream 24/7)','news',true),
-    P(12,15,'Telenovelas Destacadas: On Demand','novela'),
-    P(15,18,'Noticias Muse Live Ahora','news',true),
-    P(18,20,'Deportes Muse Live: Resumen','sport'),
-    P(20,23,'Noticias Muse Live Ahora: Horario Estelar','news',true),
-    P(23,24,'Lo Mejor del Día','gen')];
+    P(6,12,'Meta Newsroom Now (24/7 stream)','news',true),
+    P(12,15,'Creator Series: On Demand','novela'),
+    P(15,18,'Meta Newsroom Now','news',true),
+    P(18,20,'Reality Labs: Recap','sport'),
+    P(20,23,'Meta Newsroom Now: Prime','news',true),
+    P(23,24,'Best of the Day','gen')];
 }
 /* overlap scan within each channel for the selected day — feeds the conflict bubble */
 function bcastConflicts(){var out=[];
@@ -5915,7 +5917,7 @@ function bcastConflicts(){var out=[];
     for(var i=0;i<g.length;i++)for(var j=i+1;j<g.length;j++){
       if(g[i].s<g[j].e&&g[j].s<g[i].e)out.push({ch:ch,a:g[i],b:g[j]});}});
   return out;}
-var BCAST_CAT_COLOR={match:'#dc2626',sport:'#ea580c',news:'#2563eb',novela:'#7c3aed',ent:'#d97706',court:'#0d9488',movie:'#475569',gen:'#6b7280'};
+var BCAST_CAT_COLOR={match:'#E41E3F',sport:'#F53D5C',news:'#086BFF',novela:'#0B57C9',ent:'#C08A00',court:'#31A24B',movie:'#65676B',gen:'#80899B'};
 function bcastFmtH(h){var hh=Math.floor(h),mm=Math.round((h-hh)*60);var ap=hh>=12?'PM':'AM';var h12=hh%12;if(h12===0)h12=12;return h12+(mm?':'+('0'+mm).slice(-2):'')+' '+ap;}
 function bcastDateLbl(d){return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});}
 function bcastShift(n){var d=new Date(bcastDate);
@@ -5950,9 +5952,9 @@ function bcastDayHTML(){
     var hd='<div style="min-width:168px;flex:1" class="text-center pb-2"><p class="text-[11px] font-bold text-gray-900 leading-none">'+ch.name+(ch.feed!=='Stream'?' <span style="color:'+ch.accent+'">'+ch.feed+'</span>':'')+'</p><p class="text-[8px] mono text-gray-500 mt-1">'+ch.tz+'</p></div>';
     return {hd:hd,col:col};});
   var phase=wcMatchday(bcastDate);
-  var banner=phase?'<div class="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 mb-3"><span class="text-[10px] font-bold text-white rounded px-1.5 py-0.5" style="background:var(--live-red)">⚽ COPA MUNDIAL FIFA 26</span><span class="text-[10px] font-bold text-red-700">'+esc(phase)+' — matchday coverage across all five feeds</span></div>':
-    (wcPhase(bcastDate)?'<div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 mb-3 text-[10px] font-bold text-amber-700">⚽ Copa Mundial FIFA 26 — tournament rest day (studio &amp; recap programming)</div>':'');
-  var legend='<div class="flex items-center gap-3 flex-wrap mt-3">'+Object.keys(BCAST_CAT_COLOR).map(function(k){var lbl={match:'Live Match',sport:'Sports Studio',news:'News',novela:'Telenovela',ent:'Entertainment',court:'Court / Veredicto Final',movie:'Cine',gen:'Other'}[k];
+  var banner=phase?'<div class="flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 mb-3"><span class="text-[10px] font-bold text-white rounded px-1.5 py-0.5" style="background:var(--live-red)">● MUSE AI WORLD TOUR</span><span class="text-[10px] font-bold text-red-700">'+esc(phase)+' — live coverage across all five channels</span></div>':
+    (wcPhase(bcastDate)?'<div class="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 mb-3 text-[10px] font-bold text-amber-700">Muse AI World Tour — rest day (studio &amp; recap programming)</div>':'');
+  var legend='<div class="flex items-center gap-3 flex-wrap mt-3">'+Object.keys(BCAST_CAT_COLOR).map(function(k){var lbl={match:'Live Keynote',sport:'Launch Studio',news:'Newsroom',novela:'Creator Series',ent:'Entertainment',court:'Community Q&amp;A',movie:'Replay',gen:'Other'}[k];
     return '<span class="flex items-center gap-1.5 text-[9px] text-gray-600"><span class="inline-block w-3 h-3 rounded" style="background:'+BCAST_CAT_COLOR[k]+'"></span>'+lbl+'</span>';}).join('')+'</div>';
   return banner+'<div style="min-width:940px"><div class="flex gap-2"><div style="width:52px" class="flex-shrink-0"></div>'+cols.map(function(x){return x.hd;}).join('')+'</div>'+
     '<div class="flex gap-2">'+gut+cols.map(function(x){return x.col;}).join('')+'</div></div>'+legend;
@@ -5981,29 +5983,29 @@ function bcastMonthHTML(){
   var today=new Date();
   for(var day=1;day<=dim;day++){var d=new Date(y,m,day);var phase=wcMatchday(d);var rest=(!phase&&wcPhase(d));
     var isT=(d.toDateString()===today.toDateString());
-    var chip=phase?'<span class="block text-[7px] font-bold text-white rounded px-1 py-0.5 truncate" style="background:var(--live-red)" title="Copa Mundial FIFA 26 · '+esc(phase)+'">⚽ '+esc(phase)+'</span>':
-      (rest?'<span class="block text-[7px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1 py-0.5 truncate">⚽ Rest Day</span>':
-      (function(){var g=bcastDayGrid('MUSE_e',d);var pr=g.filter(function(pg){return pg.s>=19&&pg.s<21;})[0];
+    var chip=phase?'<span class="block text-[7px] font-bold text-white rounded px-1 py-0.5 truncate" style="background:var(--live-red)" title="Muse AI World Tour · '+esc(phase)+'">'+esc(phase)+'</span>':
+      (rest?'<span class="block text-[7px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1 py-0.5 truncate">Rest Day</span>':
+      (function(){var g=bcastDayGrid('fb_e',d);var pr=g.filter(function(pg){return pg.s>=19&&pg.s<21;})[0];
         return pr?'<span class="block text-[7px] font-semibold text-gray-600 bg-gray-100 border border-gray-200 rounded px-1 py-0.5 truncate" title="'+esc(pr.t)+'">'+esc(pr.t)+'</span>':'';})());
     cells+='<button onclick="bcastGoDay('+y+','+m+','+day+')" class="text-left rounded-lg border p-1.5 hover:border-blue-300 hover:bg-blue-50/30 transition-colors '+(isT?'border-red-300 bg-red-50/40':'border-gray-100 bg-gray-50/40')+'" style="min-height:58px">'+
       '<p class="text-[10px] font-bold '+(isT?'text-red-700':'text-gray-800')+' mb-0.5">'+day+'</p>'+chip+'</button>';}
-  return '<p class="text-[10px] text-gray-500 mb-3">Muse Live prime-time &amp; Copa Mundial FIFA 26 tentpoles · click any day for the full five-feed grid</p>'+
+  return '<p class="text-[10px] text-gray-500 mb-3">Meta Live prime-time &amp; Muse AI World Tour tentpoles · click any day for the full five-channel grid</p>'+
     '<div class="grid grid-cols-7 gap-1" style="min-width:760px">'+head+cells+'</div>';
 }
 /* ---- YEAR view: tentpole calendar for the broadcast year ---- */
 var BCAST_YEAR_TENTPOLES={
- 0:[['La Casa de las Estrellas — Gran Estreno','ent'],['Desafío Atlético USA: nueva temporada','sport']],
- 1:[['Super Bowl LX en Muse Live (8 feb · Levi\u2019s Stadium)','match'],['La Casa de las Estrellas 24/7 en Muse Live+','ent']],
- 2:[['Clasificatorios y amistosos rumbo al Mundial','sport']],
- 3:[['Latin American Music Awards','ent']],
- 4:[['La Casa de las Estrellas — Gran Final','ent'],['Desafío Atlético — Gran Final','sport']],
- 5:[['⚽ Copa Mundial FIFA 26 — Inauguración (11 jun · Estadio Azteca)','match'],['Fase de Grupos · 104 partidos en Muse Live, Muse Live Español y Muse Live+','match']],
- 6:[['⚽ Copa Mundial FIFA 26 — Rondas Eliminatorias','match'],['⚽ LA GRAN FINAL — 19 jul · MetLife Stadium, NY/NJ','match']],
- 7:[['Premier League 2026-27 — arranque de temporada','match']],
- 8:[['Estrenos de temporada — nuevas telenovelas y realities','novela']],
- 9:[['Premios Billboard de la Música Latina','ent']],
- 10:[['Miss Muse Live Español en Muse Live','ent'],['Boxeo Muse Live: temporada de otoño','match']],
- 11:[['Especiales de fin de año · ¡Feliz 2027!','ent']]};
+ 0:[['Muse AI — Year Ahead Livestream','news'],['Instagram Creator Awards — nominations open','ent']],
+ 1:[['Orion AR Glasses — Developer Preview','match'],['Threads: Live Topics launch','news']],
+ 2:[['WhatsApp Business Summit — kickoff','news']],
+ 3:[['F8 Developer Conference','match']],
+ 4:[['Instagram Creator Week','ent'],['Meta Quest Gaming Showcase','match']],
+ 5:[['Muse AI World Tour — Opening Keynote (Jun 11 · Estadio Azteca)','match'],['104 tour sessions live on Facebook, Instagram & Horizon','match']],
+ 6:[['Muse AI World Tour — Regional Finals','match'],['THE GRAND FINALE — Jul 19 · MetLife Stadium, NY/NJ','match']],
+ 7:[['Ray-Ban Meta Gen 3 — launch livestream','ent']],
+ 8:[['Meta Connect 2026 — Keynote','match'],['Creator Series: new season premieres','novela']],
+ 9:[['Muse AI — fall feature drop','news']],
+ 10:[['Meta Charm wearable — pre-orders open','match'],['WhatsApp Channels: Creator Spotlight','ent']],
+ 11:[['Year in Review on Instagram · Happy 2027!','ent']]};
 function bcastYearHTML(){
   var y=bcastDate.getFullYear();var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   var now=new Date();
@@ -6027,7 +6029,7 @@ function bcastPaneHTML(){
   var body=bcastView==='day'?bcastDayHTML():(bcastView==='week'?bcastWeekHTML():(bcastView==='month'?bcastMonthHTML():bcastYearHTML()));
   return '<div class="flex flex-wrap items-center justify-between gap-2 mb-4">'+
     '<div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Broadcast Schedule — Network Air</h3>'+
-      '<p class="text-[10px] text-gray-500 mt-0.5">Muse Live East &amp; West · Muse Live Español East &amp; West · Muse Live+</p></div>'+
+      '<p class="text-[10px] text-gray-500 mt-0.5">Meta East &amp; West · Meta en Español East &amp; West · Meta Horizon</p></div>'+
     '<div class="flex items-center gap-2 flex-wrap">'+
       '<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1">'+vb('day','Day')+vb('week','Week')+vb('month','Month')+vb('year','Year')+'</div>'+
       '<div class="inline-flex items-center gap-1">'+
@@ -6047,10 +6049,10 @@ function bcastPaneHTML(){
 var xySchedLog=[];
 function xySchedLogPush(method,ep,resp){xySchedLog.unshift({t:new Date().toLocaleTimeString(),method:method,ep:ep,resp:resp});if(xySchedLog.length>6)xySchedLog.length=6;}
 function xySchedConsoleHTML(){
-  if(!xySchedLog.length)return '<p class="text-[10px] italic" style="color:#7f9bc4">No API traffic yet — run a request above. Every call and its JSON response will print here.</p>';
+  if(!xySchedLog.length)return '<p class="text-[10px] italic" style="color:#5292f1">No API traffic yet — run a request above. Every call and its JSON response will print here.</p>';
   return xySchedLog.map(function(l){
-    return '<div class="mb-3"><p class="text-[9px] mono font-bold" style="color:#7ee0a3">'+l.t+' \u2192 '+l.method+' '+XYTECH_HOST+'/api/v2/'+esc(l.ep)+'</p>'+
-      '<pre class="text-[9px] mono leading-relaxed whitespace-pre-wrap mt-1" style="color:#c4d4ef;max-height:220px;overflow:auto">'+esc(JSON.stringify(l.resp,null,2))+'</pre></div>';}).join('');
+    return '<div class="mb-3"><p class="text-[9px] mono font-bold" style="color:#7ee095">'+l.t+' \u2192 '+l.method+' '+XYTECH_HOST+'/api/v2/'+esc(l.ep)+'</p>'+
+      '<pre class="text-[9px] mono leading-relaxed whitespace-pre-wrap mt-1" style="color:#c4d5ef;max-height:220px;overflow:auto">'+esc(JSON.stringify(l.resp,null,2))+'</pre></div>';}).join('');
 }
 function xySchedRefresh(){if(schedTab==='xytech')renderSchedule();}
 function xySchedGet(ep){
@@ -6068,15 +6070,15 @@ function xySchedPushFacilities(){
       role:'Facility / Control Room',activity:b[2],start_day:NPC_DAYS[b[0]]||'',span_days:b[1],
       booking_status:'Scheduled'});});});
   toast('POST /RmBooking \u2014 '+bookings.length+' facility bookings\u2026');
-  XytechAPI.post('JmJob',{job_no:jobNo,job_title:'Muse Live — Master Facility Schedule · Week of Jun 2-8 2026',client_id:'MUSE_MUSE_NET',status:'In Progress',start_date:'2026-06-02T06:00:00Z',end_date:'2026-06-08T23:59:00Z',project_manager:'Lila Hart',billing_rate_code:'RATE_MUSE_FAC_2026',division:'Broadcast Operations'})
+  XytechAPI.post('JmJob',{job_no:jobNo,job_title:'Muse Live — Master Facility Schedule · Week of Jun 2-8 2026',client_id:'META_LIVE_NET',status:'In Progress',start_date:'2026-06-02T06:00:00Z',end_date:'2026-06-08T23:59:00Z',project_manager:'Lila Hart',billing_rate_code:'RATE_MUSE_FAC_2026',division:'Broadcast Operations'})
     .then(function(r1){xySchedLogPush('POST','JmJob',r1);return XytechAPI.post('RmBooking',{job_no:jobNo,bookings:bookings});})
     .then(function(r2){xySchedLogPush('POST','RmBooking',r2);xySchedRefresh();toast(r2.message||'Facility schedule pushed to Xytech');});
 }
 function xySchedPushBroadcastDay(){
   if(typeof XytechAPI==='undefined'){toast('Xytech API module not loaded');return;}
   var d=bcastDate;var phase=(typeof wcMatchday==='function')?wcMatchday(d):null;
-  var job={job_title:'Broadcast Day — '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · Muse Live Español / Muse Live+'+(phase?' · Copa Mundial FIFA 26 ('+phase+')':''),
-    client_id:'MUSE_MUSE_NET',status:phase?'In Progress':'Scheduled',
+  var job={job_title:'Broadcast Day — '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · Meta Live Channels'+(phase?' · Muse AI World Tour ('+phase+')':''),
+    client_id:'META_LIVE_NET',status:phase?'In Progress':'Scheduled',
     start_date:d.toISOString().slice(0,10)+'T06:00:00Z',end_date:d.toISOString().slice(0,10)+'T23:59:00Z',
     project_manager:'Lila Hart',billing_rate_code:'RATE_MUSE_AIR_2026',division:'Network Air Operations'};
   toast('POST /JmJob \u2014 broadcast day\u2026');
@@ -6085,11 +6087,11 @@ function xySchedPushBroadcastDay(){
 function xySchedPaneHTML(){
   var jobs=(typeof XYTECH_DB!=='undefined')?XYTECH_DB.jm_job:[];
   var bkg=(typeof XYTECH_DB!=='undefined')?(XYTECH_DB.rm_booking||[]):[];
-  var banner='<div class="rounded-2xl p-4 border mb-4" style="background:linear-gradient(120deg,#0b1f33,#15263b);border-color:#1f3a5f">'+
+  var banner='<div class="rounded-2xl p-4 border mb-4" style="background:linear-gradient(120deg,#0b1b33,#15243b);border-color:#1f395f">'+
     '<div class="flex flex-wrap items-center justify-between gap-2">'+
       '<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-white text-[10px] font-bold mono">XY</div>'+
         '<div><p class="text-[11px] font-bold text-white leading-none">Xytech MediaPulse — Network Scheduling Bridge <span class="text-[8px] font-bold ml-1 px-1.5 py-0.5 rounded bg-amber-400 text-amber-950">SIMULATED · no live Xytech</span></p>'+
-        '<p class="text-[8px] mono mt-1" style="color:#9db8dd">'+XYTECH_HOST+'/api/v2 · JmJob \u00b7 RmBooking \u00b7 LibMaster</p></div></div>'+
+        '<p class="text-[8px] mono mt-1" style="color:#85b2f5">'+XYTECH_HOST+'/api/v2 · JmJob \u00b7 RmBooking \u00b7 LibMaster</p></div></div>'+
       '<span class="flex items-center gap-1 text-[9px] mono text-emerald-300"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>'+jobs.length+' jobs · '+bkg.length+' bookings on server</span></div></div>';
   function ab(lbl,fn,dark){return '<button onclick="'+fn+'" class="text-[9px] font-bold rounded-lg px-3 py-2 '+(dark?'text-white bg-gray-900 hover:bg-gray-800':'text-gray-700 border border-gray-200 hover:bg-gray-50')+'">'+lbl+'</button>';}
   var actions='<div class="bg-white rounded-2xl p-4 border border-gray-200/60 mb-4" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
@@ -6112,9 +6114,9 @@ function xySchedPaneHTML(){
     '<div class="overflow-x-auto"><table class="w-full" style="min-width:640px"><thead><tr class="border-b border-gray-200">'+
     ['job_no','job_title','client_id','status','schedule'].map(function(h){return '<th class="text-left text-[8px] font-bold uppercase tracking-wider text-gray-400 py-1 pr-3">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+
     (jobRows||'<tr><td colspan="5" class="text-[10px] text-gray-400 italic py-3">No jobs on server</td></tr>')+'</tbody></table></div></div>';
-  var consoleCard='<div class="rounded-2xl p-4 border" style="background:#0b1220;border-color:#1f2c47">'+
-    '<div class="flex items-center justify-between mb-2"><h3 class="text-[10px] font-bold uppercase tracking-wider" style="color:#8aa5cc">API Console — Request / Response</h3>'+
-    '<span class="text-[8px] mono" style="color:#5d7396">last '+xySchedLog.length+' call'+(xySchedLog.length===1?'':'s')+'</span></div>'+xySchedConsoleHTML()+'</div>';
+  var consoleCard='<div class="rounded-2xl p-4 border" style="background:#151516;border-color:#1f2f47">'+
+    '<div class="flex items-center justify-between mb-2"><h3 class="text-[10px] font-bold uppercase tracking-wider" style="color:#649df2">API Console — Request / Response</h3>'+
+    '<span class="text-[8px] mono" style="color:#76787d">last '+xySchedLog.length+' call'+(xySchedLog.length===1?'':'s')+'</span></div>'+xySchedConsoleHTML()+'</div>';
   return banner+actions+jobsCard+consoleCard;
 }
 
@@ -6132,31 +6134,31 @@ function xySchedPaneHTML(){
 var STADIUM_IMGS=[
   'https://images.unsplash.com/photo-1577223625816-7546f13df25d?auto=format&fit=crop&w=1200&q=70', // floodlit stadium interior, packed stands
   'https://images.unsplash.com/photo-1540479859555-17af45c78602?auto=format&fit=crop&w=1200&q=70', // stadium bowl under lights
-  'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=1200&q=70', // soccer stadium night
+  'https://images.unsplash.com/photo-1518091043644-c1d4457512c6?auto=format&fit=crop&w=1200&q=70', // stadium night
   'https://images.unsplash.com/photo-1522778526097-ce0a22ceb253?auto=format&fit=crop&w=1200&q=70'  // grandstand / arena seating
 ];
 function stadiumImgFor(seed){seed=(seed||'').toLowerCase();var h=0;for(var i=0;i<seed.length;i++)h=(h*31+seed.charCodeAt(i))>>>0;return STADIUM_IMGS[h%STADIUM_IMGS.length];}
 var STADIUM_IMG_FALLBACK='data:image/svg+xml;base64,'+btoa('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" preserveAspectRatio="xMidYMid slice">'+
-  '<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7fb2e6"/><stop offset="1" stop-color="#cfe4f5"/></linearGradient>'+
-  '<radialGradient id="lit" cx="0.5" cy="0" r="1"><stop offset="0" stop-color="#fffbe6" stop-opacity="0.7"/><stop offset="1" stop-color="#fffbe6" stop-opacity="0"/></radialGradient></defs>'+
+  '<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#71a5f4"/><stop offset="1" stop-color="#cfdef5"/></linearGradient>'+
+  '<radialGradient id="lit" cx="0.5" cy="0" r="1"><stop offset="0" stop-color="#fff8e6" stop-opacity="0.7"/><stop offset="1" stop-color="#fff8e6" stop-opacity="0"/></radialGradient></defs>'+
   '<rect width="800" height="360" fill="url(#sky)"/>'+
-  '<ellipse cx="400" cy="300" rx="430" ry="120" fill="#2f6b34"/>'+
-  '<ellipse cx="400" cy="296" rx="300" ry="78" fill="#3c7d41"/>'+
-  '<ellipse cx="400" cy="294" rx="210" ry="52" fill="#4a8f4f"/>'+
-  '<ellipse cx="400" cy="293" rx="120" ry="30" fill="#3c7d41"/>'+
+  '<ellipse cx="400" cy="300" rx="430" ry="120" fill="#2f6b3d"/>'+
+  '<ellipse cx="400" cy="296" rx="300" ry="78" fill="#3c7d4b"/>'+
+  '<ellipse cx="400" cy="294" rx="210" ry="52" fill="#4a8f5a"/>'+
+  '<ellipse cx="400" cy="293" rx="120" ry="30" fill="#3c7d4b"/>'+
   '<rect x="392" y="266" width="16" height="54" rx="3" fill="#ffffff" opacity="0.85"/>'+
-  '<path d="M70 250 Q400 150 730 250 L760 300 Q400 200 40 300 Z" fill="#d7dde3"/>'+
-  '<path d="M40 300 Q400 200 760 300 L780 360 L20 360 Z" fill="#b9c2cb"/>'+
-  '<g fill="#9aa6b1">'+
+  '<path d="M70 250 Q400 150 730 250 L760 300 Q400 200 40 300 Z" fill="#d9dce1"/>'+
+  '<path d="M40 300 Q400 200 760 300 L780 360 L20 360 Z" fill="#bbc0c9"/>'+
+  '<g fill="#9ba2b0">'+
   '<rect x="60" y="250" width="680" height="8"/><rect x="48" y="266" width="704" height="8"/><rect x="36" y="282" width="728" height="9"/></g>'+
-  '<g stroke="#7c8893" stroke-width="2">'+
+  '<g stroke="#798396" stroke-width="2">'+
   '<line x1="120" y1="250" x2="110" y2="300"/><line x1="240" y1="248" x2="236" y2="300"/><line x1="400" y1="246" x2="400" y2="300"/><line x1="560" y1="248" x2="564" y2="300"/><line x1="680" y1="250" x2="690" y2="300"/></g>'+
-  '<g stroke="#e8edf2" stroke-width="3"><line x1="150" y1="60" x2="150" y2="250"/><line x1="650" y1="60" x2="650" y2="250"/></g>'+
-  '<rect x="120" y="44" width="62" height="20" rx="3" fill="#3a4753"/><rect x="618" y="44" width="62" height="20" rx="3" fill="#3a4753"/>'+
+  '<g stroke="#ebecef" stroke-width="3"><line x1="150" y1="60" x2="150" y2="250"/><line x1="650" y1="60" x2="650" y2="250"/></g>'+
+  '<rect x="120" y="44" width="62" height="20" rx="3" fill="#444649"/><rect x="618" y="44" width="62" height="20" rx="3" fill="#444649"/>'+
   '<ellipse cx="151" cy="54" rx="60" ry="22" fill="url(#lit)"/><ellipse cx="649" cy="54" rx="60" ry="22" fill="url(#lit)"/>'+
-  '<g fill="#fbe28a"><circle cx="132" cy="52" r="2"/><circle cx="142" cy="50" r="2"/><circle cx="152" cy="52" r="2"/><circle cx="162" cy="50" r="2"/><circle cx="172" cy="52" r="2"/>'+
+  '<g fill="#fbdb8a"><circle cx="132" cy="52" r="2"/><circle cx="142" cy="50" r="2"/><circle cx="152" cy="52" r="2"/><circle cx="162" cy="50" r="2"/><circle cx="172" cy="52" r="2"/>'+
   '<circle cx="630" cy="52" r="2"/><circle cx="640" cy="50" r="2"/><circle cx="650" cy="52" r="2"/><circle cx="660" cy="50" r="2"/><circle cx="670" cy="52" r="2"/></g>'+
-  '<text x="400" y="345" text-anchor="middle" font-family="Arial" font-size="13" fill="#4b5563" opacity="0.55">SITE SURVEY &#183; REFERENCE IMAGE</text>'+
+  '<text x="400" y="345" text-anchor="middle" font-family="Arial" font-size="13" fill="#54565a" opacity="0.55">SITE SURVEY &#183; REFERENCE IMAGE</text>'+
   '</svg>');
 
 /* ensure a survey object exists on a production */
@@ -6200,13 +6202,13 @@ function getSurvey(key){var p=productions[key];
    Used by the live maps, site survey, overview and travel.
    ============================================================================ */
 var VENUES={
-  worldcup:{name:'Hard Rock Stadium',address:'347 Don Shula Dr, Miami Gardens, FL 33056',lat:25.9580,lng:-80.2389,zoom:15},
-  sail250:{name:'New York Harbor — Battery / Hudson River',address:'Battery Park, New York, NY 10004',lat:40.7002,lng:-74.0170,zoom:13},
-  superbowl:{name:"Levi's Stadium",address:'4900 Marie P DeBartolo Way, Santa Clara, CA 95054',lat:37.4030,lng:-121.9698,zoom:15},
-  muse100:{name:'1 Muse Plaza — Studio M1',address:'1 Muse Plaza, New York, NY 10001',lat:40.7593,lng:-73.9794,zoom:16},
-  midterms:{name:'Muse Live News — Washington Bureau',address:'4001 Nebraska Ave NW, Washington, DC 20016',lat:38.9446,lng:-77.0807,zoom:14},
-  parade:{name:"Macy's Herald Square",address:'151 W 34th St, New York, NY 10001',lat:40.7509,lng:-73.9890,zoom:15},
-  winterolympics:{name:'Milano IBC — Fiera Milano Rho',address:'Strada Statale del Sempione 28, 20017 Rho, Milan, Italy',lat:45.5179,lng:9.0851,zoom:14}
+  museaitour:{name:'Hard Rock Stadium',address:'347 Don Shula Dr, Miami Gardens, FL 33056',lat:25.9580,lng:-80.2389,zoom:15},
+  raybangen3:{name:'New York Harbor — Battery / Hudson River',address:'Battery Park, New York, NY 10004',lat:40.7002,lng:-74.0170,zoom:13},
+  orion:{name:"Levi's Stadium",address:'4900 Marie P DeBartolo Way, Santa Clara, CA 95054',lat:37.4030,lng:-121.9698,zoom:15},
+  museailaunch:{name:'Meta NYC · Hudson Yards — Studio M1',address:'1 Hacker Way, Menlo Park, CA 94025',lat:40.7593,lng:-73.9794,zoom:16},
+  whatsapp:{name:'WhatsApp — Washington DC Hub',address:'4001 Nebraska Ave NW, Washington, DC 20016',lat:38.9446,lng:-77.0807,zoom:14},
+  igcreators:{name:"Instagram Herald Square",address:'151 W 34th St, New York, NY 10001',lat:40.7509,lng:-73.9890,zoom:15},
+  charm:{name:'Milan IBC — Fiera Milano Rho',address:'Strada Statale del Sempione 28, 20017 Rho, Milan, Italy',lat:45.5179,lng:9.0851,zoom:14}
 };
 // known landmark coordinates for free-text address/venue matching
 var VENUE_LOOKUP=[
@@ -6214,11 +6216,11 @@ var VENUE_LOOKUP=[
   [/levi|santa clara|super bowl/,{lat:37.4030,lng:-121.9698,name:"Levi's Stadium",address:'4900 Marie P DeBartolo Way, Santa Clara, CA 95054'}],
   [/zocalo|cortes|cdmx|mexico/,{lat:19.4326,lng:-99.1332,name:'Zócalo, Mexico City',address:'Plaza de la Constitución, Centro, 06000 CDMX'}],
   [/hyatt|polanco/,{lat:19.4290,lng:-99.1900,name:'Hyatt Regency Mexico City',address:'Campos Eliseos 204, Polanco, CDMX'}],
-  [/muse plaza|studio m1|muse100/,{lat:40.7593,lng:-73.9794,name:'1 Muse Plaza',address:'1 Muse Plaza, New York, NY 10001'}],
-  [/herald|macy|parade/,{lat:40.7509,lng:-73.9890,name:"Macy's Herald Square",address:'151 W 34th St, New York, NY 10001'}],
+  [/hudson yards|studio m1|museailaunch/,{lat:40.7593,lng:-73.9794,name:'Meta NYC · Hudson Yards',address:'1 Hacker Way, Menlo Park, CA 94025'}],
+  [/herald|macy|takeover/,{lat:40.7509,lng:-73.9890,name:"Instagram Herald Square",address:'151 W 34th St, New York, NY 10001'}],
   [/harbor|sail|hudson|battery/,{lat:40.7002,lng:-74.0170,name:'New York Harbor',address:'Battery Park, New York, NY 10004'}],
-  [/milano|milan|cortina|fiera|rho/,{lat:45.5179,lng:9.0851,name:'Milano IBC — Fiera Milano Rho',address:'SS del Sempione 28, 20017 Rho, Milan, Italy'}],
-  [/washington|nebraska|bureau|midterm|capitol|dc\b/,{lat:38.9446,lng:-77.0807,name:'Muse Live News Washington Bureau',address:'4001 Nebraska Ave NW, Washington, DC 20016'}],
+  [/milano|milan|cortina|fiera|rho/,{lat:45.5179,lng:9.0851,name:'Milan IBC — Fiera Milano Rho',address:'SS del Sempione 28, 20017 Rho, Milan, Italy'}],
+  [/washington|nebraska|bureau|midterm|capitol|dc\b/,{lat:38.9446,lng:-77.0807,name:'WhatsApp Washington DC Hub',address:'4001 Nebraska Ave NW, Washington, DC 20016'}],
   [/allegiant|las vegas/,{lat:36.0909,lng:-115.1830,name:'Allegiant Stadium',address:'3333 Al Davis Way, Las Vegas, NV 89118'}]
 ];
 function venueFor(key){var L=(typeof activeLocation==='function')?activeLocation(key):null;
@@ -6253,16 +6255,16 @@ function surveySetView(key,v){surveyView[key]=v;renderProjectView(key);
    Info entries with their original author + timestamp.
    ============================================================================ */
 var SURV_SEV={
-  danger:{l:'Danger',c:'#dc2626',bg:'bg-red-50 text-red-700'},
-  action:{l:'Action Required',c:'#ea580c',bg:'bg-orange-50 text-orange-700'},
-  warning:{l:'Warning',c:'#d97706',bg:'bg-amber-50 text-amber-700'},
-  caution:{l:'Caution',c:'#ca8a04',bg:'bg-yellow-50 text-yellow-700'},
-  note:{l:'Note',c:'#3b82f6',bg:'bg-blue-50 text-blue-700'},
-  info:{l:'Info',c:'#6b7280',bg:'bg-gray-100 text-gray-600'}};
+  danger:{l:'Danger',c:'#dc2644',bg:'bg-red-50 text-red-700'},
+  action:{l:'Action Required',c:'#ea680c',bg:'bg-orange-50 text-orange-700'},
+  warning:{l:'Warning',c:'#d95e06',bg:'bg-amber-50 text-amber-700'},
+  caution:{l:'Caution',c:'#ca9204',bg:'bg-yellow-50 text-yellow-700'},
+  note:{l:'Note',c:'#3b86f6',bg:'bg-blue-50 text-blue-700'},
+  info:{l:'Info',c:'#727479',bg:'bg-gray-100 text-gray-600'}};
 SURV_SEV.blocker=SURV_SEV.danger;SURV_SEV.hazard=SURV_SEV.warning; /* legacy aliases for any un-migrated reads */
 var SURV_SEV_ORDER={danger:0,action:1,warning:2,caution:3,note:4,info:5,blocker:0,hazard:2};
 var SURV_SEV_KEYS=['danger','action','warning','caution','note','info'];
-var SURV_STATUS={open:{l:'Open',cls:'bg-red-50 text-red-700',dot:'#dc2626'},monitoring:{l:'Monitoring',cls:'bg-amber-50 text-amber-700',dot:'#d97706'},closed:{l:'Closed',cls:'bg-emerald-50 text-emerald-700',dot:'#00A15D'}};
+var SURV_STATUS={open:{l:'Open',cls:'bg-red-50 text-red-700',dot:'#dc2644'},monitoring:{l:'Monitoring',cls:'bg-amber-50 text-amber-700',dot:'#d95e06'},closed:{l:'Closed',cls:'bg-emerald-50 text-emerald-700',dot:'#31A24C'}};
 var SURV_TAGS=['Overhead Hazard','Confined Space','Electrical Hazard','Rigging/Structural','Fall Hazard','RF/Signal Interference','Access Restriction','Weather Exposure','Fire Watch Required','PPE Required','Trip Hazard','Vehicle Traffic'];
 function survSevMig(sv){return sv==='blocker'?'danger':(sv==='hazard'?'warning':(SURV_SEV_ORDER[sv]!=null&&sv!=='blocker'&&sv!=='hazard'?sv:'note'));}
 /* urgent = still needs eyes: not closed, and severe enough to page someone about.
@@ -6321,10 +6323,10 @@ function surveyReadiness(key){var s=getSurvey(key);var pw=ensurePower(s);var sec
   return {items:items,pct:Math.round(done/items.length*100),done:done,total:items.length,openBlockers:openB,openHazards:openH,openAll:openAll};}
 
 function surveyRing(pct,col){var C=2*Math.PI*15;var off=C*(1-pct/100);
-  return '<svg width="52" height="52" viewBox="0 0 40 40" style="flex-shrink:0"><circle cx="20" cy="20" r="15" fill="none" stroke="#eef0f2" stroke-width="4"/><circle cx="20" cy="20" r="15" fill="none" stroke="'+col+'" stroke-width="4" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" stroke-linecap="round" transform="rotate(-90 20 20)"/><text x="20" y="24.5" text-anchor="middle" font-size="12" font-weight="800" fill="#111">'+pct+'</text></svg>';}
+  return '<svg width="52" height="52" viewBox="0 0 40 40" style="flex-shrink:0"><circle cx="20" cy="20" r="15" fill="none" stroke="#eeeff2" stroke-width="4"/><circle cx="20" cy="20" r="15" fill="none" stroke="'+col+'" stroke-width="4" stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" stroke-linecap="round" transform="rotate(-90 20 20)"/><text x="20" y="24.5" text-anchor="middle" font-size="12" font-weight="800" fill="#101112">'+pct+'</text></svg>';}
 
 function surveyScorecardHTML(key){var p=productions[key];var r=surveyReadiness(key);
-  var pcol=r.pct>=80?'#00A15D':(r.pct>=45?'#d97706':'#dc2626');
+  var pcol=r.pct>=80?'#31A24C':(r.pct>=45?'#d95e06':'#dc2644');
   var chips=r.items.map(function(it){return '<span class="inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-1 rounded-lg '+(it.done?'bg-emerald-50 text-emerald-700':'bg-gray-100 text-gray-400')+'">'+(it.done?'✓':'○')+' '+esc(it.label)+'</span>';}).join('');
   var alertB=r.openBlockers?'<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700">● '+r.openBlockers+' danger / action</span>':'';
   var alertH=r.openHazards?'<span class="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700">▲ '+r.openHazards+' warning'+(r.openHazards>1?'s':'')+' / cautions</span>':'';
@@ -6360,7 +6362,7 @@ function surveyLogHTML(key){var p=productions[key];var f=ensureFindings(key);
       '<img src="'+ph.src+'" onclick="survShowImg(this.src,\''+survCapArg(x.text)+'\')" style="height:38px;width:56px;object-fit:cover;border-radius:6px;border:1px solid #e5e7eb;cursor:pointer" alt="entry photo">'+
       '<button onclick="surveyEntryPhotoDel(\''+key+'\',\''+x.id+'\','+i+')" class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-black/60 text-white text-[7px] leading-none">✕</button></span>';}).join('');
     return '<div class="flex items-start gap-2 py-2.5 border-t border-gray-100 '+(closed?'opacity-60':'')+'">'+
-      '<button onclick="surveyCycleStatus(\''+key+'\',\''+x.id+'\')" title="Cycle status: Open → Monitoring → Closed" class="flex-shrink-0 w-4 h-4 rounded-full mt-0.5" style="background:'+(closed?st.dot:'#fff')+';border:2px solid '+st.dot+'"></button>'+
+      '<button onclick="surveyCycleStatus(\''+key+'\',\''+x.id+'\')" title="Cycle status: Open → Monitoring → Closed" class="flex-shrink-0 w-4 h-4 rounded-full mt-0.5" style="background:'+(closed?st.dot:'#ffffff')+';border:2px solid '+st.dot+'"></button>'+
       '<span class="w-1.5 rounded-full flex-shrink-0 self-stretch" style="background:'+sv.c+'"></span>'+
       '<div class="min-w-0 flex-1">'+
         museRichBox({id:'find_'+key+'_'+x.id,value:x.text||'',toolbar:'note',height:'62px',placeholder:'Describe the entry…',onchange:'function(v){surveySetFinding(\''+key+'\',\''+x.id+'\',\'text\',v)}'})+
@@ -6410,11 +6412,11 @@ function surveyFindingsHTML(key){return surveyLogHTML(key);} /* legacy name shim
 function survCapArg(s){return esc(String(s||'').slice(0,80).replace(/[\\\r\n]+/g,' ')).replace(/"/g,'&quot;').replace(/'/g,"\\'");}
 function survShowImg(src,caption){var ov=document.getElementById('galLightbox');
   if(!ov){ov=document.createElement('div');ov.id='galLightbox';
-    ov.style.cssText='display:none;position:fixed;inset:0;z-index:80;background:rgba(10,12,18,.93);align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:10px';
+    ov.style.cssText='display:none;position:fixed;inset:0;z-index:80;background:rgba(14,14,14,.93);align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:10px';
     ov.onclick=function(ev){if(ev.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
   ov.innerHTML='<img src="'+src+'" style="max-width:92vw;max-height:76vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);object-fit:contain" alt="photo">'+
-    (caption?'<div style="color:#e6edf3;font:600 12px Inter,ui-sans-serif,sans-serif;max-width:80vw;text-align:center">'+esc(caption)+'</div>':'')+
-    '<button onclick="document.getElementById(\'galLightbox\').style.display=\'none\'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#cbd5e1;font-size:22px;cursor:pointer;line-height:1">✕</button>';
+    (caption?'<div style="color:#e6ebf3;font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:80vw;text-align:center">'+esc(caption)+'</div>':'')+
+    '<button onclick="document.getElementById(\'galLightbox\').style.display=\'none\'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#d1d4db;font-size:22px;cursor:pointer;line-height:1">✕</button>';
   ov.style.display='flex';}
 
 /* ---- view toggle ---- */
@@ -6429,13 +6431,13 @@ function surveyByVenueBar(key){
   var act=activeLocation(key);
   var chips=locsOf(key).map(function(L){
     var st=locSurveyState(key,L.id);var on=act&&act.id===L.id;
-    var dot=st.cls.indexOf('emerald')>-1?'#00A15D':(st.cls.indexOf('amber')>-1?'#f59e0b':'#d1d5db');
+    var dot=st.cls.indexOf('emerald')>-1?'#31A24C':(st.cls.indexOf('amber')>-1?'#f56c0b':'#d1d4db');
     return '<button onclick="setActiveLoc(\''+key+'\',\''+L.id+'\')" title="'+esc(st.label)+'" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-[10px] font-bold '+(on?'bg-gray-900 text-white border-gray-900':'bg-white text-gray-600 border-gray-200 hover:bg-gray-50')+'">'+
       '<span>'+(L.flag||'\uD83D\uDCCD')+'</span><span>'+esc(L.name)+'</span>'+
       '<span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:'+dot+'"></span></button>';}).join('');
   return '<div class="bg-white rounded-2xl px-4 py-3 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<div class="flex items-center gap-2 flex-wrap"><span class="text-[9px] font-bold uppercase tracking-wider text-gray-500">Site surveys — by venue</span>'+chips+'</div>'+
-    '<p class="text-[9px] text-gray-400 mt-1.5">Multi-venue production (World Cup style) — every venue carries its own complete survey: map, gallery, CAD plans, power, 360°, security and findings log. Switching venues rebinds the whole workspace (departments, equipment, vendors, transmission) to that site.</p></div>';}
+    '<p class="text-[9px] text-gray-400 mt-1.5">Multi-venue production (Muse AI World Tour style) — every venue carries its own complete survey: map, gallery, CAD plans, power, 360°, security and findings log. Switching venues rebinds the whole workspace (departments, equipment, vendors, transmission) to that site.</p></div>';}
 function surveyPaneHTML(key){var v=surveyView[key]||'map';
   if(v==='overview'||v==='findings')v='log'; /* legacy view ids → unified tab */
   var body=v==='gallery'?surveyGalleryHTML(key):(v==='map'?surveyMapHTML(key):(v==='cad'?cadSectionHTML(key,getSurvey(key)):(v==='power'?powerPaneHTML(key):(v==='pano'?panoPaneHTML(key):(v==='security'?securityPaneHTML(key):(v==='air'?(typeof eventChecklistHTML==='function'?eventChecklistHTML(key):''):surveyLogHTML(key)))))));
@@ -6448,15 +6450,15 @@ function surveyPaneHTML(key){var v=surveyView[key]||'map';
    Multi-location projects choose All locations or one site; single-location projects
    export directly with no prompt. */
 function _survBodyHTML(key){var p=productions[key];var s=getSurvey(key);var r=surveyReadiness(key);var pw=ensurePower(s);var sec=ensureSecurity(s);var f=ensureFindings(key);
-  var pcol=r.pct>=80?'#00A15D':(r.pct>=45?'#d97706':'#dc2626');
+  var pcol=r.pct>=80?'#31A24C':(r.pct>=45?'#d95e06':'#dc2644');
   var chk=r.items.map(function(it){return '<span class="ck '+(it.done?'d':'')+'">'+(it.done?'✓':'○')+' '+esc(it.label)+'</span>';}).join('');
   var fRows=f.slice().sort(function(a,b){var o=SURV_SEV_ORDER;var ac=a.status==='closed',bc=b.status==='closed';if(ac!==bc)return ac?1:-1;return (o[a.severity]!=null?o[a.severity]:9)-(o[b.severity]!=null?o[b.severity]:9);}).map(function(x){var sv=SURV_SEV[x.severity]||SURV_SEV.note;var st=SURV_STATUS[x.status]||SURV_STATUS.open;
-    return '<tr class="'+(x.status==='closed'?'res':'')+'"><td><span class="sev" style="background:'+sv.c+'">'+sv.l+'</span></td><td>'+esc((x.tags&&x.tags.length)?x.tags.join(', '):'—')+'</td><td>'+esc(museRichPlain(x.text))+(x.by?' <span style="color:#999">— '+esc(x.by)+(x.ts?', '+esc(x.ts):'')+'</span>':'')+'</td><td>'+esc(x.owner||'—')+'</td><td>'+st.l+'</td></tr>';}).join('')||'<tr><td colspan="5" class="mut">No log entries.</td></tr>';
-  var dRows=pw.distros.map(function(d){return '<tr><td>'+esc(d.name||d.id||'')+'</td><td>'+esc((d.src||'')+(d.tieIn?' · '+d.tieIn:''))+'</td><td>'+esc(d.svc||'')+'</td><td>'+esc(d.amps||d.rating||'')+'A</td><td>'+esc((d.redun||'—')+(d.redunDetail?' — '+d.redunDetail:''))+'</td><td>'+esc(d.location||d.loc||'')+(d.ground?'<div style="color:#888;font-size:8px">GND: '+esc(d.ground)+'</div>':'')+'</td></tr>';}).join('')||'<tr><td colspan="6" class="mut">No distros defined.</td></tr>';
+    return '<tr class="'+(x.status==='closed'?'res':'')+'"><td><span class="sev" style="background:'+sv.c+'">'+sv.l+'</span></td><td>'+esc((x.tags&&x.tags.length)?x.tags.join(', '):'—')+'</td><td>'+esc(museRichPlain(x.text))+(x.by?' <span style="color:#8D95A5">— '+esc(x.by)+(x.ts?', '+esc(x.ts):'')+'</span>':'')+'</td><td>'+esc(x.owner||'—')+'</td><td>'+st.l+'</td></tr>';}).join('')||'<tr><td colspan="5" class="mut">No log entries.</td></tr>';
+  var dRows=pw.distros.map(function(d){return '<tr><td>'+esc(d.name||d.id||'')+'</td><td>'+esc((d.src||'')+(d.tieIn?' · '+d.tieIn:''))+'</td><td>'+esc(d.svc||'')+'</td><td>'+esc(d.amps||d.rating||'')+'A</td><td>'+esc((d.redun||'—')+(d.redunDetail?' — '+d.redunDetail:''))+'</td><td>'+esc(d.location||d.loc||'')+(d.ground?'<div style="color:#7A8396;font-size:8px">GND: '+esc(d.ground)+'</div>':'')+'</td></tr>';}).join('')||'<tr><td colspan="6" class="mut">No distros defined.</td></tr>';
   var rRows=pw.runs.map(function(rn){return '<tr><td>'+esc(rn.label||rn.name||rn.id||'')+'</td><td>'+esc(rn.from||'')+'</td><td>'+esc(rn.to||'')+'</td><td>'+esc(rn.len||rn.length||'')+'</td><td>'+esc(rn.type||rn.cable||'')+'</td></tr>';}).join('')||'<tr><td colspan="5" class="mut">No cable runs mapped.</td></tr>';
   var cRows=(sec.contacts||[]).map(function(c){return '<tr><td>'+esc(c.name||'')+'</td><td>'+esc(c.role||c.title||'')+'</td><td>'+esc(c.phone||'')+'</td></tr>';}).join('')||'<tr><td colspan="3" class="mut">No security contacts.</td></tr>';
   /* v29: the free-text log lives inside the unified findings table above */
-  var bar='<div class="bar"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>';
+  var bar='<div class="bar"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>';
   var L=(typeof activeLocation==='function')?activeLocation(key):null;
   return bar+
     '<div class="hd"><div><h1>SITE SURVEY REPORT</h1><div class="s">'+esc(p.name)+(L?' — '+esc(L.name+' · '+(L.city||'')):(p.venue?' — '+esc(p.venue):''))+'</div></div>'+
@@ -6474,22 +6476,22 @@ function _survBodyHTML(key){var p=productions[key];var s=getSurvey(key);var r=su
     ((sec.prohibited&&sec.prohibited.length)?'<div class="kv" style="margin-top:6px"><b>Prohibited Items</b>'+esc(sec.prohibited.map(function(pi){return '🚫 '+pi.label;}).join('   '))+'</div>':'')+
     (museRichEmpty(sec.notes)?'':'<div class="kv" style="margin-top:6px"><b>Notes</b><span style="white-space:pre-line">'+esc(museRichPlain(sec.notes))+'</span></div>')+
     '<h2>360° Walkthrough Annotations</h2><table><thead><tr><th style="width:92px">Type</th><th>Label</th><th style="width:112px">Bearing (rel.)</th><th>Detail</th></tr></thead><tbody>'+panoManifestRows(s)+'</tbody></table>'+
-    '<div class="foot"><span>Muse Live Broadcast Telemetry · Confidential · Site Survey</span><span>'+esc(p.name)+' · generated from Muse Live</span></div>';}
+    '<div class="foot"><span>Meta Broadcast Telemetry · Confidential · Site Survey</span><span>'+esc(p.name)+' · generated from Muse Live</span></div>';}
 function _survStyles(){return '@page{size:A4;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
-    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222;font-size:10px}'+
+    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#212223;font-size:10px}'+
     '.bar{display:flex;height:5px}.bar i{flex:1}'+
     '.locpage{page-break-before:always}'+
-    '.hd{background:#111112;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
-    '.hd h1{font-size:19px;margin:0;letter-spacing:.5px}.hd .s{font-size:11px;color:#bbb;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#bbb;line-height:1.6}'+
-    '.row{display:flex;gap:14px;padding:12px 18px;border-bottom:1px solid #eee;align-items:center}'+
-    '.pct{font-size:30px;font-weight:800;font-family:monospace}.pl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#999}'+
-    '.cks{display:flex;flex-wrap:wrap;gap:5px}.ck{font-size:8.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:#f1f1f4;color:#aaa}.ck.d{background:#e7f7ee;color:#0a7d43}'+
-    'h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#111;margin:16px 18px 6px;border-left:3px solid #E51B24;padding-left:8px}'+
-    'table{width:calc(100% - 36px);border-collapse:collapse;margin:4px 18px 0;font-size:9px}th{background:#111112;color:#fff;text-align:left;padding:5px 7px;font-size:8px}td{border:0.5px solid #e2e2e6;padding:5px 7px;vertical-align:top}tr:nth-child(even) td{background:#f7f7f9}td.mut{color:#999;font-style:italic}tr.res td{color:#9a9aa0;text-decoration:line-through}'+
-    '.sev{color:#fff;font-weight:700;padding:1px 6px;border-radius:4px;font-size:8px;white-space:nowrap}'+
-    '.kv{margin:4px 18px 0;font-size:10px}.kv b{display:inline-block;width:120px;color:#666;font-weight:600}'+
-    '.log{margin:6px 18px 0;padding:6px 9px;background:#f7f7f9;border-radius:6px}.log .ts{font-size:8px;color:#aaa;font-family:monospace}.log div{margin-top:2px}'+
-    '.foot{margin:16px 18px 0;display:flex;justify-content:space-between;font-size:8px;color:#9a9aa0;border-top:1px solid #eee;padding-top:6px}';}
+    '.hd{background:#111112;color:#ffffff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
+    '.hd h1{font-size:19px;margin:0;letter-spacing:.5px}.hd .s{font-size:11px;color:#b3b8c3;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#b3b8c3;line-height:1.6}'+
+    '.row{display:flex;gap:14px;padding:12px 18px;border-bottom:1px solid #ecedf0;align-items:center}'+
+    '.pct{font-size:30px;font-weight:800;font-family:monospace}.pl{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#8D95A5}'+
+    '.cks{display:flex;flex-wrap:wrap;gap:5px}.ck{font-size:8.5px;font-weight:600;padding:2px 7px;border-radius:6px;background:#f1f2f4;color:#a0a7b4}.ck.d{background:#e7f7eb;color:#0a7d25}'+
+    'h2{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#101112;margin:16px 18px 6px;border-left:3px solid #E41E3F;padding-left:8px}'+
+    'table{width:calc(100% - 36px);border-collapse:collapse;margin:4px 18px 0;font-size:9px}th{background:#111112;color:#ffffff;text-align:left;padding:5px 7px;font-size:8px}td{border:0.5px solid #e1e3e7;padding:5px 7px;vertical-align:top}tr:nth-child(even) td{background:#f8f8f8}td.mut{color:#8D95A5;font-style:italic}tr.res td{color:#9199a9;text-decoration:line-through}'+
+    '.sev{color:#ffffff;font-weight:700;padding:1px 6px;border-radius:4px;font-size:8px;white-space:nowrap}'+
+    '.kv{margin:4px 18px 0;font-size:10px}.kv b{display:inline-block;width:120px;color:#636569;font-weight:600}'+
+    '.log{margin:6px 18px 0;padding:6px 9px;background:#f8f8f8;border-radius:6px}.log .ts{font-size:8px;color:#a0a7b4;font-family:monospace}.log div{margin-top:2px}'+
+    '.foot{margin:16px 18px 0;display:flex;justify-content:space-between;font-size:8px;color:#9199a9;border-top:1px solid #ecedf0;padding-top:6px}';}
 function printSurveyReport(key,locSel){var p=productions[key];if(!p)return;
   var locs=(typeof hasLocs==='function'&&hasLocs(key)&&typeof locsOf==='function')?locsOf(key):[];
   var bodies=[],title='Site Survey — '+p.name;
@@ -6530,7 +6532,7 @@ function closeSurveyPdfOptions(){var ov=document.getElementById('survPdfOverlay'
 
 /* Muse Live v37 — RICH TEXT CORE (proven in Node before it lands in muse.html)
    ES5 only. No DOM required for the read path, because every plain-text consumer
-   (jsPDF books, CSV exports, Charlie context, the global search index) runs
+   (jsPDF books, CSV exports, Muse context, the global search index) runs
    wherever these helpers run.
 
    THE CONTRACT
@@ -6718,7 +6720,7 @@ function museRichClean(html){
    STORAGE — a rich field is still A STRING on the SAME object property it always
    used. v36 and earlier wrote plain text there; v37 writes sanitised semantic
    HTML. Both read back correctly forever, because every consumer goes through
-   museRichPlain() (plain text for PDFs / CSV / search / Charlie) or
+   museRichPlain() (plain text for PDFs / CSV / search / Muse) or
    museRichHTML() (display). That keeps already-saved localStorage overlays valid
    and avoids touching the persistence schema at all.
 
@@ -6893,7 +6895,7 @@ function mountLiteRich(el){
   if(tbKind!=='slim'){
     bits.push(btn('strikeThrough','S'),btn('insertUnorderedList','•'),btn('insertOrderedList','1.'),btn('formatBlock','H2','H2'));
   }
-  bits.push(btn('foreColor','A','#1d4ed8'),btn('hiliteColor','HL','#fde68a'),btn('removeFormat','⌫'));
+  bits.push(btn('foreColor','A','#1266e3'),btn('hiliteColor','HL','#fddc8a'),btn('removeFormat','⌫'));
   bar.innerHTML=bits.join('');
   el.appendChild(bar);
   el.appendChild(host);
@@ -6918,7 +6920,7 @@ function mountLiteRich(el){
     var arg=b.getAttribute('data-val');
     try{
       if(cmd==='foreColor'||cmd==='hiliteColor'){
-        document.execCommand(cmd,false,arg||'#1d4ed8');
+        document.execCommand(cmd,false,arg||'#1266e3');
       }else if(cmd==='formatBlock'){
         document.execCommand('formatBlock',false,arg||'H2');
       }else{
@@ -6985,7 +6987,7 @@ function museRichRead(q){
   html=html.replace(/&nbsp;/gi,' ').replace(/\u00a0/g,' ');
   return museRichClean(html);}
 
-/* onchange is an attribute string like "surveySetFinding('worldcup','f1','text')"
+/* onchange is an attribute string like "surveySetFinding('museaitour','f1','text')"
    — the value is appended as the final argument. Kept as a string so the markup
    builders stay simple template concatenation like the rest of the file. */
 function museRichFire(expr,val){
@@ -7044,9 +7046,9 @@ function museRichView(val,cls){
 /* ---- CAD & Site Plans (lives inside Site Survey) ---- */
 // schematic placeholders so seeded plans render as proper CAD-style drawings
 function cadSchematic(kind){
-  if(kind==='power')return '<svg viewBox="0 0 160 100" class="w-full h-full"><rect width="160" height="100" fill="#0E1B2A"/><g stroke="#1E3A5F" stroke-width="0.5"><line x1="0" y1="33" x2="160" y2="33"/><line x1="0" y1="66" x2="160" y2="66"/><line x1="53" y1="0" x2="53" y2="100"/><line x1="106" y1="0" x2="106" y2="100"/></g><ellipse cx="80" cy="50" rx="54" ry="32" fill="none" stroke="#475569" stroke-width="1"/><rect x="10" y="40" width="16" height="20" fill="#1d1505" stroke="#F97316" stroke-width="1"/><text x="18" y="53" font-size="6" fill="#F97316" text-anchor="middle" font-family="monospace">G</text><g stroke="#EF4444" stroke-width="1" stroke-dasharray="3 2" fill="none"><path d="M26 50 H50"/><path d="M50 50 Q70 30 100 35"/><path d="M50 50 Q70 70 110 64"/></g><g fill="#EF4444"><circle cx="100" cy="35" r="2"/><circle cx="110" cy="64" r="2"/></g><text x="135" y="20" font-size="6" fill="#F87171" font-family="monospace">400A</text></svg>';
+  if(kind==='power')return '<svg viewBox="0 0 160 100" class="w-full h-full"><rect width="160" height="100" fill="#1B1C1D"/><g stroke="#1E385F" stroke-width="0.5"><line x1="0" y1="33" x2="160" y2="33"/><line x1="0" y1="66" x2="160" y2="66"/><line x1="53" y1="0" x2="53" y2="100"/><line x1="106" y1="0" x2="106" y2="100"/></g><ellipse cx="80" cy="50" rx="54" ry="32" fill="none" stroke="#55575B" stroke-width="1"/><rect x="10" y="40" width="16" height="20" fill="#101112" stroke="#F97516" stroke-width="1"/><text x="18" y="53" font-size="6" fill="#F97516" text-anchor="middle" font-family="monospace">G</text><g stroke="#EF4461" stroke-width="1" stroke-dasharray="3 2" fill="none"><path d="M26 50 H50"/><path d="M50 50 Q70 30 100 35"/><path d="M50 50 Q70 70 110 64"/></g><g fill="#EF4461"><circle cx="100" cy="35" r="2"/><circle cx="110" cy="64" r="2"/></g><text x="135" y="20" font-size="6" fill="#F87187" font-family="monospace">400A</text></svg>';
   // default: camera plan
-  return '<svg viewBox="0 0 160 100" class="w-full h-full"><rect width="160" height="100" fill="#0E1B2A"/><g stroke="#1E3A5F" stroke-width="0.5"><line x1="0" y1="25" x2="160" y2="25"/><line x1="0" y1="50" x2="160" y2="50"/><line x1="0" y1="75" x2="160" y2="75"/><line x1="40" y1="0" x2="40" y2="100"/><line x1="80" y1="0" x2="80" y2="100"/><line x1="120" y1="0" x2="120" y2="100"/></g><ellipse cx="80" cy="50" rx="52" ry="30" fill="none" stroke="#3B82F6" stroke-width="1.5"/><rect x="40" y="36" width="80" height="28" fill="#0d2818" stroke="#22C55E" stroke-width="1"/><line x1="80" y1="36" x2="80" y2="64" stroke="#22C55E" stroke-width="0.6"/><circle cx="80" cy="50" r="5" fill="none" stroke="#22C55E" stroke-width="0.6"/><g fill="#F7B717"><rect x="78" y="16" width="4" height="4"/><rect x="26" y="48" width="4" height="4"/><rect x="130" y="48" width="4" height="4"/><rect x="50" y="78" width="4" height="4"/><rect x="106" y="78" width="4" height="4"/></g><g fill="#E51B24"><circle cx="80" cy="18" r="1.4"/><circle cx="28" cy="50" r="1.4"/><circle cx="132" cy="50" r="1.4"/></g></svg>';
+  return '<svg viewBox="0 0 160 100" class="w-full h-full"><rect width="160" height="100" fill="#1B1C1D"/><g stroke="#1E385F" stroke-width="0.5"><line x1="0" y1="25" x2="160" y2="25"/><line x1="0" y1="50" x2="160" y2="50"/><line x1="0" y1="75" x2="160" y2="75"/><line x1="40" y1="0" x2="40" y2="100"/><line x1="80" y1="0" x2="80" y2="100"/><line x1="120" y1="0" x2="120" y2="100"/></g><ellipse cx="80" cy="50" rx="52" ry="30" fill="none" stroke="#3B86F6" stroke-width="1.5"/><rect x="40" y="36" width="80" height="28" fill="#1a1a1b" stroke="#22C548" stroke-width="1"/><line x1="80" y1="36" x2="80" y2="64" stroke="#22C548" stroke-width="0.6"/><circle cx="80" cy="50" r="5" fill="none" stroke="#22C548" stroke-width="0.6"/><g fill="#F7B928"><rect x="78" y="16" width="4" height="4"/><rect x="26" y="48" width="4" height="4"/><rect x="130" y="48" width="4" height="4"/><rect x="50" y="78" width="4" height="4"/><rect x="106" y="78" width="4" height="4"/></g><g fill="#E41E3F"><circle cx="80" cy="18" r="1.4"/><circle cx="28" cy="50" r="1.4"/><circle cx="132" cy="50" r="1.4"/></g></svg>';
 }
 function getCadPlans(key){var s=getSurvey(key);if(!s.cad){
     // seed the venue engineering/CAD set — real converted DWG drawings (markup-ready).
@@ -7068,10 +7070,10 @@ function getCadPlans(key){var s=getSurvey(key);if(!s.cad){
 function cadVectorPlaceholder(c){
   var kind=c&&c.dwgB64?'DWG':(c&&c.dxfText?'DXF':(c&&c.objText?'OBJ':(c&&c.stlB64?'STL':'CAD')));
   var nCount=(c&&c.notes&&c.notes.length)?c.notes.length:((c&&c.cad3d&&c.cad3d.notes&&c.cad3d.notes.length)?c.cad3d.notes.length:0);
-  return '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#0E1B2A;color:#7f9cc0">'+
+  return '<div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#1B1C1D;color:#4e8ff1">'+
     '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 4h16v16H4z"/><path d="M4 9h16M9 4v16"/></svg>'+
     '<span class="mono" style="font-size:8px;letter-spacing:.08em">'+kind+' — READ-ONLY VIEWER</span>'+
-    (nCount?'<span class="mono" style="font-size:8px;color:#f59e0b">● '+nCount+' note'+(nCount===1?'':'s')+'</span>':'')+
+    (nCount?'<span class="mono" style="font-size:8px;color:#f56c0b">● '+nCount+' note'+(nCount===1?'':'s')+'</span>':'')+
   '</div>';}
 function cadPlanImg(c){return (c&&c.render&&typeof CAD_RENDERS!=='undefined'&&CAD_RENDERS[c.render])?CAD_RENDERS[c.render]:(c&&c.img)||'';}
 function cadSectionHTML(key,s){var plans=getCadPlans(key);
@@ -7079,12 +7081,12 @@ function cadSectionHTML(key,s){var plans=getCadPlans(key);
     var isVec=!!(c.dxfText||c.vec||c.dwgB64||c.objText||c.stlB64||c.cad3d);
     var openable=!!(src||isVec);
     var nCount=(c.notes&&c.notes.length)?c.notes.length:((c.cad3d&&c.cad3d.notes&&c.cad3d.notes.length)?c.cad3d.notes.length:0);
-    var inner=src?'<img src="'+src+'" style="width:100%;height:100%;object-fit:contain;background:#fff" alt="'+esc(c.name)+'">'
+    var inner=src?'<img src="'+src+'" style="width:100%;height:100%;object-fit:contain;background:#ffffff" alt="'+esc(c.name)+'">'
       :(isVec?cadVectorPlaceholder(c):cadSchematic(c.kind));
     var tagCol=c.tag==='DRAFT'?'bg-red-500':(c.tag==='DWG'?'bg-emerald-600':(c.tag&&c.tag[0]==='v'?'bg-amber-500':'bg-blue-500'));
     var openCall=openable?'openCadViewer(\''+key+'\',\''+c.id+'\',\''+esc(c.name).replace(/'/g,"\\'")+'\',cadPlanImg(getCadPlans(\''+key+'\')['+i+']))':'';
     return '<div class="group relative">'+
-      '<div onclick="'+openCall+'" class="relative rounded-lg overflow-hidden border border-gray-200 bg-[#0E1B2A] '+(openable?'cursor-pointer':'')+'" style="aspect-ratio:16/10">'+inner+
+      '<div onclick="'+openCall+'" class="relative rounded-lg overflow-hidden border border-gray-200 bg-[#1B1C1D] '+(openable?'cursor-pointer':'')+'" style="aspect-ratio:16/10">'+inner+
         (c.tag?'<div class="absolute top-1 right-1 '+tagCol+' text-white text-[7px] font-bold px-1.5 py-0.5 rounded mono">'+esc(c.tag)+'</div>':'')+
         (isVec?'<div class="absolute bottom-1 right-1 bg-amber-600 text-white text-[7px] font-bold px-1.5 py-0.5 rounded mono">◆ VIEW + NOTES</div>':'')+
         (nCount?'<div class="absolute bottom-1 left-1 bg-gray-900/85 text-amber-300 text-[7px] font-bold px-1.5 py-0.5 rounded mono">● '+nCount+'</div>':'')+
@@ -7110,10 +7112,10 @@ function cadSectionHTML(key,s){var plans=getCadPlans(key);
    DWG stays a closed binary format — surveyors export DXF; PDF sheets render
    through pdf.js (lazy CDN, same pattern as SheetJS / Pannellum).
    ============================================================================ */
-var DXF_ACI={1:'#e11d48',2:'#b45309',3:'#16a34a',4:'#0891b2',5:'#2563eb',6:'#c026d3',7:'#111827',8:'#6b7280',9:'#9ca3af'};
+var DXF_ACI={1:'#e11d3e',2:'#b45009',3:'#16a337',4:'#084cb2',5:'#2374ed',6:'#1367e6',7:'#1B1C1D',8:'#727479',9:'#9ba2b0'};
 function dxfAciColor(n){if(DXF_ACI[n])return DXF_ACI[n];
   if(n>=250){var g=Math.round(40+(n-250)*32);var h=g.toString(16);if(h.length<2)h='0'+h;return '#'+h+h+h;}
-  return '#334155';}
+  return '#424346';}
 function dxfNewEnt(type){var t={type:type};
   if(type==='LWPOLYLINE'||type==='POLYLINE')t.pts=[];
   if(type==='SPLINE'){t.ctrl=[];t.fit=[];}
@@ -7255,12 +7257,12 @@ function dxfRender(model,maxDim){
   function X(x){return (x-minX)*scale;}
   function Y(y){return ch-(y-minY)*scale;} /* DXF is y-up */
   for(i=0;i<polys.length;i++){var Q=polys[i];
-    if(Q.pts&&Q.pts.length>1){ctx.strokeStyle=Q.color||'#111827';ctx.beginPath();
+    if(Q.pts&&Q.pts.length>1){ctx.strokeStyle=Q.color||'#1B1C1D';ctx.beginPath();
       ctx.moveTo(X(Q.pts[0][0]),Y(Q.pts[0][1]));
       for(j=1;j<Q.pts.length;j++)ctx.lineTo(X(Q.pts[j][0]),Y(Q.pts[j][1]));
       ctx.stroke();}
     else if(Q.text){var fh=Math.max(5,Math.min(64,(Q.hUnits||1)*scale));
-      ctx.fillStyle=Q.color||'#111827';ctx.font='500 '+fh+'px Arial';ctx.textBaseline='alphabetic';
+      ctx.fillStyle=Q.color||'#1B1C1D';ctx.font='500 '+fh+'px Arial';ctx.textBaseline='alphabetic';
       ctx.fillText(Q.text,X(Q.px[0]),Y(Q.px[1]));}}
   return {url:cv.toDataURL('image/png'),pxPerUnit:scale,count:polys.length};}
 
@@ -7526,18 +7528,18 @@ function pcadAvailable(){
 function pcadEnsure(){
   if(pcad.el)return;
   var el=document.createElement('div');el.id='pcadOverlay';
-  el.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;display:none;flex-direction:column;background:#0d1117';
+  el.style.cssText='position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;display:none;flex-direction:column;background:#111213';
   el.innerHTML=
-    '<div style="display:flex;align-items:center;gap:12px;padding:9px 14px;background:#161b22;border-bottom:1px solid #30363d;flex-wrap:wrap">'+
-      '<span id="pcadTitle" style="font:800 13px Inter,sans-serif;color:#e6edf3"></span>'+
-      '<span id="pcadMeta" style="font:600 10px \'DM Mono\',monospace;color:#8b949e"></span>'+
+    '<div style="display:flex;align-items:center;gap:12px;padding:9px 14px;background:#1b1c1d;border-bottom:1px solid #353638;flex-wrap:wrap">'+
+      '<span id="pcadTitle" style="font:800 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3"></span>'+
+      '<span id="pcadMeta" style="font:600 10px \'DM Mono\',monospace;color:#8890a1"></span>'+
       '<span style="flex:1"></span>'+
-      '<span title="Drawings open in the cad-viewer app built from cad-viewer-main and served from ./cad/" style="font:700 9px Inter,sans-serif;letter-spacing:.08em;color:#3fb950;border:1px solid rgba(46,160,67,.4);border-radius:20px;padding:3px 10px;background:rgba(46,160,67,.1)">&#9670; CAD-VIEWER &middot; LOCAL ENGINE</span>'+
-      '<button onclick="pcadClose()" title="Close (Esc)" style="width:32px;height:32px;border:1px solid #30363d;border-radius:8px;background:#21262d;color:#c9d1d9;font-size:15px;cursor:pointer;line-height:1">&#10005;</button>'+
+      '<span title="Drawings open in the cad-viewer app built from cad-viewer-main and served from ./cad/" style="font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.08em;color:#3fb95b;border:1px solid rgba(46,160,73,.4);border-radius:20px;padding:3px 10px;background:rgba(46,160,73,.1)">&#9670; CAD-VIEWER &middot; LOCAL ENGINE</span>'+
+      '<button onclick="pcadClose()" title="Close (Esc)" style="width:32px;height:32px;border:1px solid #353638;border-radius:8px;background:#262728;color:#cbcfd7;font-size:15px;cursor:pointer;line-height:1">&#10005;</button>'+
     '</div>'+
     '<div style="flex:1;position:relative">'+
-      '<iframe id="pcadFrame" title="CAD viewer" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;background:#0d1117" allow="fullscreen"></iframe>'+
-      '<div id="pcadLoad" style="display:none;position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:5;font:700 11px Inter,sans-serif;color:#e6edf3;background:rgba(37,99,235,.94);border-radius:20px;padding:7px 16px;box-shadow:0 6px 22px rgba(0,0,0,.5)"></div>'+
+      '<iframe id="pcadFrame" title="CAD viewer" style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;background:#111213" allow="fullscreen"></iframe>'+
+      '<div id="pcadLoad" style="display:none;position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:5;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3;background:rgba(35,116,237,.94);border-radius:20px;padding:7px 16px;box-shadow:0 6px 22px rgba(0,0,0,.5)"></div>'+
     '</div>';
   document.body.appendChild(el);
   pcad.el=el;
@@ -8018,18 +8020,18 @@ function survGalRemove(key,which,i){var s=getSurvey(key);var arr=survGalArr(s,wh
 function survGalView(key,which,i){var s=getSurvey(key);var arr=survGalArr(s,which);var im=arr[i];if(!im)return;
   var ov=document.getElementById('galLightbox');
   if(!ov){ov=document.createElement('div');ov.id='galLightbox';
-    ov.style.cssText='display:none;position:fixed;inset:0;z-index:80;background:rgba(10,12,18,.93);align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:10px';
+    ov.style.cssText='display:none;position:fixed;inset:0;z-index:80;background:rgba(14,14,14,.93);align-items:center;justify-content:center;padding:24px;flex-direction:column;gap:10px';
     ov.onclick=function(ev){if(ev.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
   ov.innerHTML='<img src="'+im.src+'" onerror="this.onerror=null;this.src=STADIUM_IMG_FALLBACK" style="max-width:92vw;max-height:76vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);object-fit:contain" alt="site photo">'+
-    '<div style="color:#e6edf3;font:600 12px Inter,ui-sans-serif,sans-serif;max-width:80vw;text-align:center">'+esc(im.caption||'No caption yet')+
-      ((im.ts||im.by)?'<div style="color:#8b95a8;font:500 10px DM Mono,monospace;margin-top:3px">'+esc(im.ts||'')+(im.by?' · '+esc(im.by):'')+'</div>':'')+'</div>'+
-    '<button onclick="document.getElementById(\'galLightbox\').style.display=\'none\'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#cbd5e1;font-size:22px;cursor:pointer;line-height:1">✕</button>';
+    '<div style="color:#e6ebf3;font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:80vw;text-align:center">'+esc(im.caption||'No caption yet')+
+      ((im.ts||im.by)?'<div style="color:#8d95a6;font:500 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-top:3px">'+esc(im.ts||'')+(im.by?' · '+esc(im.by):'')+'</div>':'')+'</div>'+
+    '<button onclick="document.getElementById(\'galLightbox\').style.display=\'none\'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#d1d4db;font-size:22px;cursor:pointer;line-height:1">✕</button>';
   ov.style.display='flex';}
 
 /* ---- Site Gallery pane (v29) ---- */
 function survGalCard(key,which,im,i){
   return '<div class="rounded-xl overflow-hidden border border-gray-200 bg-white group relative">'+
-    '<div onclick="survGalView(\''+key+'\',\''+which+'\','+i+')" class="relative cursor-pointer" style="aspect-ratio:16/10;background:#0d1117">'+
+    '<div onclick="survGalView(\''+key+'\',\''+which+'\','+i+')" class="relative cursor-pointer" style="aspect-ratio:16/10;background:#111213">'+
       '<img src="'+im.src+'" onerror="this.onerror=null;this.src=STADIUM_IMG_FALLBACK" loading="lazy" style="width:100%;height:100%;object-fit:cover" alt="site photo">'+
       '<div class="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors"></div>'+
       '<button onclick="event.stopPropagation();survGalRemove(\''+key+'\',\''+which+'\','+i+')" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-lg bg-black/50 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button></div>'+
@@ -8229,7 +8231,7 @@ function survMapRowsHTML(key){
     var shown=(focus===L.id);
     return '<div class="flex items-start gap-2 py-2 border-t border-gray-100 '+(hidden?'opacity-50':'')+(shown?' bg-amber-50/50 rounded-lg':'')+'">'+
       '<button onclick="survMapToggle(\''+key+'\',\''+L.id+'\')" title="'+(hidden?'Show pin on map':'Hide pin from map')+'" class="flex-shrink-0 mt-0.5 text-[13px] leading-none '+(hidden?'text-gray-300':'text-gray-600')+'">'+(hidden?'◌':'◉')+'</button>'+
-      '<span class="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style="background:'+(on?'#dc2626':'#2563eb')+'"></span>'+
+      '<span class="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1" style="background:'+(on?'#dc2644':'#2374ed')+'"></span>'+
       '<div class="min-w-0 flex-1">'+
         '<div class="flex items-center gap-2 flex-wrap"><p class="text-[11px] font-bold text-gray-900">'+(L.flag||'📍')+' '+esc(L.name)+'</p>'+
           '<span class="text-[9px] text-gray-500">'+esc(L.city||'')+'</span>'+
@@ -8260,7 +8262,7 @@ function survMapAddFormHTML(key){
 function survMapSiteEditorHTML(key,s,act){
   return '<div class="mt-3 space-y-2">'+
     '<p class="text-[9px] font-bold uppercase tracking-wider text-gray-500">'+(act?('Active site — '+esc(act.name)):'Site position')+'</p>'+
-    '<div><label class="text-[8px] font-bold uppercase tracking-wider text-gray-400 block mb-0.5">Search venue / address <span class="text-gray-300 normal-case font-normal">— drops the pin, GPS &amp; shadows</span></label>'+museGeoBox('survgeo:'+key,'Search a venue or address — SoFi Stadium, Muse Plaza…',true)+'</div>'+
+    '<div><label class="text-[8px] font-bold uppercase tracking-wider text-gray-400 block mb-0.5">Search venue / address <span class="text-gray-300 normal-case font-normal">— drops the pin, GPS &amp; shadows</span></label>'+museGeoBox('survgeo:'+key,'Search a venue or address — SoFi Stadium, Meta NYC…',true)+'</div>'+
     '<div><label class="text-[8px] font-bold uppercase tracking-wider text-gray-400 block mb-0.5">Address / Venue</label>'+
       '<input value="'+esc(s.address||'').replace(/"/g,'&quot;')+'" onchange="surveySetAddress(\''+key+'\',this.value)" placeholder="Street, city, venue" class="w-full text-[11px] border border-gray-200 rounded-lg px-2.5 py-1.5" style="outline:none"></div>'+
     '<div class="grid grid-cols-2 gap-2">'+
@@ -8284,96 +8286,96 @@ function survMapSiteEditorHTML(key,s,act){
 var comms=[
  // ============ THREAD: PO-88161 ND1 Mobile Unit (vendor coordination) ============
  {id:'MSG-9001',channel:'email',dir:'in',priority:'normal',from:'NEP Group <ar@nepgroup.com>',to:'Rowan Blake',
-  subject:'PO-88161 \u2014 ND1 Mobile Unit Confirmation',body:'Confirming receipt of PO-88161 for the ND1 mobile unit. Crew and rigging package locked for the World Cup compound build. Insurance COI attached.',
-  ts:'2026-06-15 09:14',linkType:'po',linkId:'PO-88161',prod:'worldcup',read:true,thread:'T-88161'},
+  subject:'PO-88161 \u2014 ND1 Mobile Unit Confirmation',body:'Confirming receipt of PO-88161 for the ND1 mobile unit. Crew and rigging package locked for the Muse AI World Tour compound build. Insurance COI attached.',
+  ts:'2026-06-15 09:14',linkType:'po',linkId:'PO-88161',prod:'museaitour',read:true,thread:'T-88161'},
  {id:'MSG-9002',channel:'email',dir:'out',priority:'normal',from:'Rowan Blake',to:'ar@nepgroup.com',
   subject:'RE: PO-88161 \u2014 ND1 Mobile Unit Confirmation',body:'Thanks \u2014 confirmed. Please coordinate load-in window with Riley Stanton (Tech Manager) for the IBC compound. Targeting Jul 8 07:00.',
-  ts:'2026-06-15 10:02',linkType:'po',linkId:'PO-88161',prod:'worldcup',read:true,thread:'T-88161'},
+  ts:'2026-06-15 10:02',linkType:'po',linkId:'PO-88161',prod:'museaitour',read:true,thread:'T-88161'},
  {id:'MSG-9026',channel:'email',dir:'in',priority:'high',from:'NEP Group <dispatch@nepgroup.com>',to:'Rowan Blake',
   subject:'RE: PO-88161 \u2014 ND1 Mobile Unit Confirmation',body:'Driver dispatched from Pittsburgh. ETA Hard Rock compound Jul 8 06:40. ND1 will need 480V/200A at the mobile unit bay \u2014 confirming Aggreko has it staged before we arrive.',
-  ts:'2026-06-16 07:55',linkType:'po',linkId:'PO-88161',prod:'worldcup',read:false,thread:'T-88161'},
+  ts:'2026-06-16 07:55',linkType:'po',linkId:'PO-88161',prod:'museaitour',read:false,thread:'T-88161'},
 
  // ============ THREAD: INV-30377 ConEd overdue (finance escalation) ============
  {id:'MSG-9003',channel:'teams',dir:'in',priority:'high',from:'Lila Hart',to:'Tech Production',
-  subject:'',body:'Heads up \u2014 ConEd invoice INV-30377 for Sail 250 is now overdue. Can we expedite the AP exception so we do not hold the harbor power tie-in?',
-  ts:'2026-06-15 14:33',linkType:'inv',linkId:'INV-30377',prod:'sail250',read:false,thread:'T-30377'},
+  subject:'',body:'Heads up \u2014 ConEd invoice INV-30377 for Ray-Ban Meta Gen 3 Launch is now overdue. Can we expedite the AP exception so we do not hold the harbor power tie-in?',
+  ts:'2026-06-15 14:33',linkType:'inv',linkId:'INV-30377',prod:'raybangen3',read:false,thread:'T-30377'},
  {id:'MSG-9027',channel:'teams',dir:'out',priority:'high',from:'Rowan Blake',to:'Tech Production',
   subject:'',body:'On it. Pushing the AP exception to Finance now with the dockside power dependency flagged. Need this cleared before the 6/26 rig.',
-  ts:'2026-06-15 14:41',linkType:'inv',linkId:'INV-30377',prod:'sail250',read:false,thread:'T-30377'},
- {id:'MSG-9028',channel:'email',dir:'in',priority:'high',from:'Accounts Payable <ap@muselive.com>',to:'Rowan Blake',
+  ts:'2026-06-15 14:41',linkType:'inv',linkId:'INV-30377',prod:'raybangen3',read:false,thread:'T-30377'},
+ {id:'MSG-9028',channel:'email',dir:'in',priority:'high',from:'Accounts Payable <ap@meta.com>',to:'Rowan Blake',
   subject:'INV-30377 \u2014 Exception Approved',body:'AP exception approved. ConEd Marine Services will be paid out same-day via wire. Reference 30377 cleared \u2014 no hold on the harbor tie-in.',
-  ts:'2026-06-16 09:10',linkType:'inv',linkId:'INV-30377',prod:'sail250',read:false,thread:'T-30377'},
+  ts:'2026-06-16 09:10',linkType:'inv',linkId:'INV-30377',prod:'raybangen3',read:false,thread:'T-30377'},
 
  // ============ THREAD: Galaxy-19 transponder conflict (TOC / transmission, CRITICAL) ============
  {id:'MSG-9004',channel:'teams',dir:'in',priority:'critical',from:'Sam Okada \u00b7 TOC',to:'Transmission',
-  subject:'',body:'Galaxy-19 Tp12 is oversubscribed Jul 12 \u2014 World Cup and Midterms both booked, 108 of 72 Mbps in the overlap. Need a call on which one moves to the backup transponder.',
-  ts:'2026-06-15 16:20',linkType:'production',linkId:'worldcup',prod:'worldcup',read:false,thread:'T-tx12'},
+  subject:'',body:'Galaxy-19 Tp12 is oversubscribed Jul 12 \u2014 Muse AI World Tour and WhatsApp Summit both booked, 108 of 72 Mbps in the overlap. Need a call on which one moves to the backup transponder.',
+  ts:'2026-06-15 16:20',linkType:'production',linkId:'museaitour',prod:'museaitour',read:false,thread:'T-tx12'},
  {id:'MSG-9029',channel:'teams',dir:'out',priority:'critical',from:'Rowan Blake',to:'Transmission',
-  subject:'',body:'World Cup stays on Galaxy-19 \u2014 it is the A-path for the match feed. Move Midterms primary to Eutelsat 113 Tp7 and keep Galaxy as their backup. Alex, can you re-book?',
-  ts:'2026-06-15 16:34',linkType:'production',linkId:'worldcup',prod:'worldcup',read:false,thread:'T-tx12'},
+  subject:'',body:'Muse AI World Tour stays on Galaxy-19 \u2014 it is the A-path for the match feed. Move WhatsApp Summit primary to Eutelsat 113 Tp7 and keep Galaxy as their backup. Alex, can you re-book?',
+  ts:'2026-06-15 16:34',linkType:'production',linkId:'museaitour',prod:'museaitour',read:false,thread:'T-tx12'},
  {id:'MSG-9030',channel:'teams',dir:'in',priority:'high',from:'Sam Okada \u00b7 TOC',to:'Transmission',
-  subject:'',body:'Re-booked. Midterms now Eutelsat 113 Tp7 primary, Galaxy-19 backup only. Conflict cleared in the booking system. Will confirm space segment with the teleport.',
-  ts:'2026-06-15 17:02',linkType:'production',linkId:'worldcup',prod:'worldcup',read:false,thread:'T-tx12'},
+  subject:'',body:'Re-booked. WhatsApp Summit now Eutelsat 113 Tp7 primary, Galaxy-19 backup only. Conflict cleared in the booking system. Will confirm space segment with the teleport.',
+  ts:'2026-06-15 17:02',linkType:'production',linkId:'museaitour',prod:'museaitour',read:false,thread:'T-tx12'},
 
  // ============ THREAD: ENG-1002 Hyatt green screen (crew dispatch) ============
- {id:'MSG-9005',channel:'email',dir:'in',priority:'normal',from:'Mediapro <ops@muselive.com>',to:'Rowan Blake',
+ {id:'MSG-9005',channel:'email',dir:'in',priority:'normal',from:'Mediapro <ops@meta.com>',to:'Rowan Blake',
   subject:'ENG-1002 \u2014 Hyatt Green Screen PTZ',body:"Confirming the FR7 PTZ package and EIC position for the Hyatt green-screen hit. We will have the robo control mapped from the EIC desk. LiveU LU800 on file.",
-  ts:'2026-06-14 11:48',linkType:'eng',linkId:'ENG-1002',prod:'worldcup',read:true,thread:'T-eng1002'},
- {id:'MSG-9031',channel:'email',dir:'out',priority:'normal',from:'Rowan Blake',to:'ops@muselive.com',
+  ts:'2026-06-14 11:48',linkType:'eng',linkId:'ENG-1002',prod:'museaitour',read:true,thread:'T-eng1002'},
+ {id:'MSG-9031',channel:'email',dir:'out',priority:'normal',from:'Rowan Blake',to:'ops@meta.com',
   subject:'RE: ENG-1002 \u2014 Hyatt Green Screen PTZ',body:'Perfect. Confirm your EIC has comms on CRK-4 and an IFB feed to talent. We will need a REM and TIF return at the desk. Call time 05:30 for a 09:00 hit.',
-  ts:'2026-06-14 13:15',linkType:'eng',linkId:'ENG-1002',prod:'worldcup',read:true,thread:'T-eng1002'},
+  ts:'2026-06-14 13:15',linkType:'eng',linkId:'ENG-1002',prod:'museaitour',read:true,thread:'T-eng1002'},
 
  // ============ THREAD: NPC Presidential address (pool coordination) ============
- {id:'MSG-9006',channel:'email',dir:'in',priority:'high',from:'National Press Club <events@press.org>',to:'Muse Live News Desk',
+ {id:'MSG-9006',channel:'email',dir:'in',priority:'high',from:'National Press Club <events@press.org>',to:'Meta Newsroom',
   subject:'Presidential Address \u2014 Pool Coordination',body:'Pool coordination details for the Economic Summit address. Camera positions, mult box, and credential deadlines enclosed. Please confirm Muse Live participation.',
   ts:'2026-06-13 08:30',linkType:'npc',linkId:'NPC-501',prod:'',read:false,thread:'T-npc501'},
  {id:'MSG-9032',channel:'email',dir:'out',priority:'high',from:'Rowan Blake',to:'events@press.org',
   subject:'RE: Presidential Address \u2014 Pool Coordination',body:'Muse Live confirms participation. We will take pool position 2 and provide the mult box. Sending our credential list and the ENG crew manifest by EOD.',
   ts:'2026-06-13 10:45',linkType:'npc',linkId:'NPC-501',prod:'',read:false,thread:'T-npc501'},
 
- // ============ THREAD: TOC system alert \u2014 World Cup air-readiness (high-stakes, system channel) ============
- {id:'MSG-9007',channel:'toc',dir:'in',priority:'critical',from:'TOC Automation \u00b7 Stamford',to:'All Stakeholders',
-  subject:'\u26a0 AIR-READINESS \u2014 World Cup IBC',body:'Automated check: World Cup IBC compound at 78% air-readiness. Outstanding: power contingency sign-off, RF coordination for Tp12, and 2 vendor COIs. T-minus 26 days to first match.',
-  ts:'2026-06-16 06:00',linkType:'production',linkId:'worldcup',prod:'worldcup',read:false,thread:'T-air-wc'},
+ // ============ THREAD: TOC system alert \u2014 Muse AI World Tour air-readiness (high-stakes, system channel) ============
+ {id:'MSG-9007',channel:'toc',dir:'in',priority:'critical',from:'TOC Automation \u00b7 Menlo Park',to:'All Stakeholders',
+  subject:'\u26a0 AIR-READINESS \u2014 Muse AI World Tour IBC',body:'Automated check: Muse AI World Tour IBC compound at 78% air-readiness. Outstanding: power contingency sign-off, RF coordination for Tp12, and 2 vendor COIs. T-minus 26 days to first match.',
+  ts:'2026-06-16 06:00',linkType:'production',linkId:'museaitour',prod:'museaitour',read:false,thread:'T-air-wc'},
  {id:'MSG-9033',channel:'teams',dir:'in',priority:'high',from:'Nolan Grant \u00b7 Engineering',to:'Tech Production',
   subject:'',body:'MOS layout for the IBC is verified and uploaded. Power contingency doc is the last engineering blocker \u2014 Aggreko walkthrough is scheduled for Jul 6. Should clear us to 90%+.',
-  ts:'2026-06-16 08:22',linkType:'production',linkId:'worldcup',prod:'worldcup',read:false,thread:'T-air-wc'},
+  ts:'2026-06-16 08:22',linkType:'production',linkId:'museaitour',prod:'museaitour',read:false,thread:'T-air-wc'},
 
- // ============ THREAD: Comms/IFB check \u2014 Super Bowl (crew ops) ============
+ // ============ THREAD: Comms/IFB check \u2014 Orion Reveal (crew ops) ============
  {id:'MSG-9008',channel:'teams',dir:'in',priority:'high',from:'Dana Whitfield \u00b7 A1',to:'Audio',
-  subject:'',body:"SB LXI comms plan: 48x RTS ADAM trunked, all programs mapped. Need confirmation on the IFB sourcing — we are 24 short for the talent positions. Budget review pending.",
-  ts:'2026-06-15 11:20',linkType:'production',linkId:'superbowl',prod:'superbowl',read:false,thread:'T-sb-comms'},
+  subject:'',body:"Orion comms plan: 48x RTS ADAM trunked, all programs mapped. Need confirmation on the IFB sourcing — we are 24 short for the talent positions. Budget review pending.",
+  ts:'2026-06-15 11:20',linkType:'production',linkId:'orion',prod:'orion',read:false,thread:'T-sb-comms'},
  {id:'MSG-9034',channel:'teams',dir:'out',priority:'high',from:'Rowan Blake',to:'Audio',
   subject:'',body:'Approving the additional 24 IFB units \u2014 push the PO to ClearWave RF. Get the freq coordination filed with the venue before load-in. This is a hard blocker for talent.',
-  ts:'2026-06-15 11:48',linkType:'production',linkId:'superbowl',prod:'superbowl',read:false,thread:'T-sb-comms'},
+  ts:'2026-06-15 11:48',linkType:'production',linkId:'orion',prod:'orion',read:false,thread:'T-sb-comms'},
 
- // ============ THREAD: Aggreko power \u2014 World Cup (vendor) ============
+ // ============ THREAD: Aggreko power \u2014 Muse AI World Tour (vendor) ============
  {id:'MSG-9009',channel:'email',dir:'in',priority:'high',from:'Aggreko <events@aggreko.com>',to:'Rowan Blake',
   subject:'PO-88134 \u2014 IBC Compound Power Distro',body:'Confirming the IBC compound power distribution package. 2x 500kVA generators with auto-transfer, plus distro to the mobile unit bays. Walkthrough proposed Jul 6, 09:00.',
-  ts:'2026-06-14 15:30',linkType:'po',linkId:'PO-88134',prod:'worldcup',read:true,thread:'T-88134'},
+  ts:'2026-06-14 15:30',linkType:'po',linkId:'PO-88134',prod:'museaitour',read:true,thread:'T-88134'},
  {id:'MSG-9035',channel:'email',dir:'out',priority:'normal',from:'Rowan Blake',to:'events@aggreko.com',
   subject:'RE: PO-88134 \u2014 IBC Compound Power Distro',body:'Jul 6 09:00 works. Riley Stanton and Nolan Grant will walk it with you. Need the auto-transfer tested live before we green-light the compound. Bring the load calcs.',
-  ts:'2026-06-14 16:10',linkType:'po',linkId:'PO-88134',prod:'worldcup',read:true,thread:'T-88134'},
+  ts:'2026-06-14 16:10',linkType:'po',linkId:'PO-88134',prod:'museaitour',read:true,thread:'T-88134'},
 
  // ============ THREAD: Crew travel disruption (crew dispatch) ============
  {id:'MSG-9010',channel:'teams',dir:'in',priority:'high',from:'Travel Desk',to:'Tech Production',
   subject:'',body:'Flight alert: Riley Stanton AA1483 to MIA is delayed 3h. He is the load-in tech manager for Jul 8. Rebooking on the 06:00 to hold the compound call time \u2014 confirm?',
-  ts:'2026-06-16 12:05',linkType:'production',linkId:'worldcup',prod:'worldcup',read:false,thread:'T-travel-om'},
+  ts:'2026-06-16 12:05',linkType:'production',linkId:'museaitour',prod:'museaitour',read:false,thread:'T-travel-om'},
 
- // ============ THREAD: Parade float cams (vendor) ============
+ // ============ THREAD: Creator Week float cams (vendor) ============
  {id:'MSG-9011',channel:'email',dir:'in',priority:'normal',from:'All Mobile Video <ops@amv.tv>',to:'Rowan Blake',
-  subject:'PO-88160 \u2014 Float Cam Fabrication x6',body:'Six float-cam rigs in fabrication for the Parade. Weatherized housings, hardwired comms back to the floats. On track for the Nov 20 tech check. Will send rigging specs.',
-  ts:'2026-06-12 14:00',linkType:'po',linkId:'PO-88160',prod:'parade',read:true,thread:'T-88160'},
+  subject:'PO-88160 \u2014 Float Cam Fabrication x6',body:'Six float-cam rigs in fabrication for the Creator Week. Weatherized housings, hardwired comms back to the floats. On track for the Nov 20 tech check. Will send rigging specs.',
+  ts:'2026-06-12 14:00',linkType:'po',linkId:'PO-88160',prod:'igcreators',read:true,thread:'T-88160'},
 
- // ============ THREAD: Winter Olympics IBC (transmission) ============
+ // ============ THREAD: Meta Charm Launch IBC (transmission) ============
  {id:'MSG-9012',channel:'email',dir:'in',priority:'normal',from:"Replay operations <support@evs.com>",to:'Rowan Blake',
-  subject:'Milano IBC \u2014 XT-VIA Cluster Delivery',body:'XT-VIA replay cluster delivered and racked at the Milano IBC. Nevion fabric interconnect tested. Ready for the AT&T Vyvx 10G handoff to Stamford. Master agreement on file.',
-  ts:'2026-06-10 09:30',linkType:'production',linkId:'winterolympics',prod:'winterolympics',read:true,thread:'T-milano'},
+  subject:'Milan IBC \u2014 XT-VIA Cluster Delivery',body:'XT-VIA replay cluster delivered and racked at the Milan IBC. Nevion fabric interconnect tested. Ready for the AT&T Vyvx 10G handoff to Menlo Park. Master agreement on file.',
+  ts:'2026-06-10 09:30',linkType:'production',linkId:'charm',prod:'charm',read:true,thread:'T-milano'},
 
  // ============ THREAD: Nightly TOC ledger (system) ============
- {id:'MSG-9013',channel:'toc',dir:'in',priority:'normal',from:'TOC Automation \u00b7 Stamford',to:'All Stakeholders',
+ {id:'MSG-9013',channel:'toc',dir:'in',priority:'normal',from:'TOC Automation \u00b7 Menlo Park',to:'All Stakeholders',
   subject:'Nightly Ledger \u2014 Operations Verified',body:'End-of-day operations ledger verified. 7 productions active, 23 transmission paths booked, 1 conflict resolved (Galaxy-19), 0 open critical alerts. SHA-256 ledger sealed.',
-  ts:'2026-06-15 23:59',linkType:'production',linkId:'worldcup',prod:'worldcup',read:true,thread:'T-ledger'}]
+  ts:'2026-06-15 23:59',linkType:'production',linkId:'museaitour',prod:'museaitour',read:true,thread:'T-ledger'}]
 
 function saveComms(){try{localStorage.setItem('muselive_comms_v1',JSON.stringify(comms));}catch(e){}}
 function loadComms(){try{var r=localStorage.getItem('muselive_comms_v1');if(r){var l=JSON.parse(r);if(Array.isArray(l))comms=l;}}catch(e){}}
@@ -8409,14 +8411,14 @@ function commsNavBadge(){var n=commsUnread();var el=document.getElementById('com
 
 /* ---- channel chip ---- */
 function commsChannelChip(ch){
-  if(ch==='toc')return '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca"><span style="width:7px;height:7px;border-radius:1px;background:#b91c1c;display:inline-block"></span>TOC</span>';
+  if(ch==='toc')return '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#fef2f4;color:#b91c36;border:1px solid #fecad3"><span style="width:7px;height:7px;border-radius:1px;background:#b91c36;display:inline-block"></span>TOC</span>';
   return ch==='teams'?
-  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#ebeafd;color:#5b5fc7"><span style="width:7px;height:7px;border-radius:2px;background:#5b5fc7;display:inline-block"></span>Teams</span>':
-  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#e5f1fb;color:#0f6cbd"><span style="width:7px;height:7px;border-radius:2px;background:#0f6cbd;display:inline-block"></span>Outlook</span>';}
+  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#eaf2fd;color:#347eee"><span style="width:7px;height:7px;border-radius:2px;background:#347eee;display:inline-block"></span>Teams</span>':
+  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#e5eefb;color:#0f55bd"><span style="width:7px;height:7px;border-radius:2px;background:#0f55bd;display:inline-block"></span>Outlook</span>';}
 /* priority pill — drives the high-stakes operational feel */
 function commsPriorityPill(pr){
-  if(pr==='critical')return '<span class="inline-flex items-center gap-1 text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background:var(--live-red);color:#fff">● Critical</span>';
-  if(pr==='high')return '<span class="inline-flex items-center gap-1 text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa">▲ High</span>';
+  if(pr==='critical')return '<span class="inline-flex items-center gap-1 text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background:var(--live-red);color:#ffffff">● Critical</span>';
+  if(pr==='high')return '<span class="inline-flex items-center gap-1 text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background:#fff4ed;color:#c2580c;border:1px solid #fecdaa">▲ High</span>';
   return '';}
 function commsChannelName(ch){return ch==='toc'?'TOC Alert':(ch==='teams'?'Teams':'Outlook');}
 
@@ -8455,7 +8457,7 @@ function renderComms(){
   if(alertHost){
     var crits=vis.filter(function(m){return m.priority==='critical'&&!m.read&&m.dir==='in';}).sort(function(a,b){return a.ts<b.ts?1:-1;});
     if(crits.length){
-      alertHost.innerHTML='<div class="rounded-2xl border p-3 mb-1" style="background:#fef2f2;border-color:var(--live-red-border)"><div class="flex items-center gap-2 mb-2"><span class="attn-badge" style="width:8px;height:8px;border-radius:2px;background:var(--live-red);display:inline-block"></span><h3 class="text-[11px] font-bold uppercase tracking-wider" style="color:var(--live-red)">'+crits.length+' Critical '+(crits.length>1?'Alerts':'Alert')+' — Action Required</h3></div>'+
+      alertHost.innerHTML='<div class="rounded-2xl border p-3 mb-1" style="background:#fef2f4;border-color:var(--live-red-border)"><div class="flex items-center gap-2 mb-2"><span class="attn-badge" style="width:8px;height:8px;border-radius:2px;background:var(--live-red);display:inline-block"></span><h3 class="text-[11px] font-bold uppercase tracking-wider" style="color:var(--live-red)">'+crits.length+' Critical '+(crits.length>1?'Alerts':'Alert')+' — Action Required</h3></div>'+
         crits.map(function(m){return '<button onclick="openCommsThread(\''+(m.thread||m.id)+'\')" class="w-full text-left flex items-center gap-2 bg-white border rounded-lg px-3 py-2 mb-1.5 hover:shadow-sm" style="border-color:var(--live-red-border)">'+commsChannelChip(m.channel)+'<div class="min-w-0 flex-1"><p class="text-[11px] font-bold text-gray-900 truncate">'+esc(m.subject||m.from)+'</p><p class="text-[9px] text-gray-500 truncate">'+esc(m.from)+' · '+esc(commsLinkLabel(m.linkType,m.linkId))+'</p></div><span class="text-[9px] font-bold flex-shrink-0" style="color:var(--live-red)">Review →</span></button>';}).join('')+'</div>';
     }else alertHost.innerHTML='';
   }
@@ -8572,9 +8574,9 @@ function buildComposeIdOptions(){
 function composeGuessTo(t,id){
   if(t==='po'){var po=commsFindFin('po',id);return po&&po.vendorEmail?po.vendorEmail:'vendor@example.com';}
   if(t==='inv'){var iv=commsFindFin('inv',id);return iv&&iv.vendorEmail?iv.vendorEmail:'ap@example.com';}
-  if(t==='eng'){return 'crew@muselive.com';}
-  if(t==='npc'){return 'events@muselive.com';}
-  return 'team@muselive.com';}
+  if(t==='eng'){return 'crew@meta.com';}
+  if(t==='npc'){return 'events@meta.com';}
+  return 'team@meta.com';}
 function composeGuessSubject(t,id){var lbl=commsLinkLabel(t,id);return lbl+' — ';}
 function composeThreadSubject(tk){var m=comms.filter(function(x){return (x.thread||x.id)===tk;})[0];return m?(m.subject||'').replace(/^re:\s*/i,''):'';}
 function composeSend(){
@@ -8635,19 +8637,19 @@ var CAD_RENDERS = {"section2":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB2w
    so they stay legible at every zoom level.
    ========================================================================== */
 var cadV={open:false,key:null,planId:null,title:'',img:null,
-  ann:[],sel:null,tool:'select',color:'#e11d48',width:3,
+  ann:[],sel:null,tool:'select',color:'#e11d3e',width:3,
   view:{scale:1,ox:0,oy:0},drag:null,hist:[],hi:-1,dpr:1,
   canvas:null,ctx:null,raf:0,editor:null,
   layer:'general',hiddenLayers:{},scaleFt:null,layersOpen:false};
 
-var CADV_COLORS=['#e11d48','#f59e0b','#00A15D','#2563eb','#7c3aed','#111827','#ffffff'];
+var CADV_COLORS=['#e11d3e','#f56c0b','#31A24C','#2374ed','#3881ef','#1B1C1D','#ffffff'];
 /* v29 (Module 4): color-coded markup layers — every annotation belongs to one */
 var CADV_LAYERS=[
-  ['general','General','#e11d48'],
-  ['camera','Cameras','#2563eb'],
-  ['audio','Audio / Comms','#00A15D'],
-  ['rigging','Rigging','#7c3aed'],
-  ['hazard','Hazards','#f59e0b']
+  ['general','General','#e11d3e'],
+  ['camera','Cameras','#2374ed'],
+  ['audio','Audio / Comms','#31A24C'],
+  ['rigging','Rigging','#3881ef'],
+  ['hazard','Hazards','#f56c0b']
 ];
 function cadLayerDef(id){for(var i=0;i<CADV_LAYERS.length;i++)if(CADV_LAYERS[i][0]===id)return CADV_LAYERS[i];return CADV_LAYERS[0];}
 var CADV_TOOLS=[
@@ -8806,9 +8808,9 @@ function cadEnsureOverlay(){if(document.getElementById('cadvOverlay'))return;
         '<button class="cadv-btn" onclick="cadClearAll()" title="Clear all markups">Clear</button>'+
       '</div>'+
       '<div class="cadv-group">'+
-        '<select id="cadvLayer" onchange="cadSetLayer(this.value)" title="Active markup layer — new markups land here" style="height:32px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;font-size:10px;font-weight:700;padding:0 6px;outline:none;cursor:pointer">'+CADV_LAYERS.map(function(L){return '<option value="'+L[0]+'">'+L[1]+'</option>';}).join('')+'</select>'+
+        '<select id="cadvLayer" onchange="cadSetLayer(this.value)" title="Active markup layer — new markups land here" style="height:32px;background:#262728;color:#cbcfd7;border:1px solid #353638;border-radius:8px;font-size:10px;font-weight:700;padding:0 6px;outline:none;cursor:pointer">'+CADV_LAYERS.map(function(L){return '<option value="'+L[0]+'">'+L[1]+'</option>';}).join('')+'</select>'+
         '<button class="cadv-btn" onclick="cadToggleLayers()" title="Show / hide layers">'+cadIcon('M12 3l9 5-9 5-9-5zM3 13l9 5 9-5')+'</button>'+
-        '<select id="cadvVersions" onchange="if(this.value!==\'\')cadRestoreVersion(this.value)" title="Saved markup versions" style="height:32px;max-width:130px;background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;font-size:10px;font-weight:700;padding:0 6px;outline:none;cursor:pointer"><option value="">Versions (0)</option></select>'+
+        '<select id="cadvVersions" onchange="if(this.value!==\'\')cadRestoreVersion(this.value)" title="Saved markup versions" style="height:32px;max-width:130px;background:#262728;color:#cbcfd7;border:1px solid #353638;border-radius:8px;font-size:10px;font-weight:700;padding:0 6px;outline:none;cursor:pointer"><option value="">Versions (0)</option></select>'+
         '<button class="cadv-btn" onclick="cadSaveVersion()" title="Save current markups as a named version">＋ Ver</button>'+
       '</div>'+
       '<div class="cadv-group">'+
@@ -8820,9 +8822,9 @@ function cadEnsureOverlay(){if(document.getElementById('cadvOverlay'))return;
       '</div>'+
     '</div>'+
     '<div class="cadv-stage" id="cadvStage"><canvas id="cadvCanvas"></canvas>'+
-      '<div id="cadvLayersPanel" style="display:none;position:absolute;top:10px;right:12px;z-index:6;width:190px;background:rgba(22,27,34,.97);border:1px solid #30363d;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55)"></div>'+
-      '<div id="cadvStatus" style="display:none;position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:7;font:700 11px Inter,sans-serif;color:#e6edf3;background:rgba(37,99,235,.94);border-radius:20px;padding:7px 15px;box-shadow:0 6px 22px rgba(0,0,0,.5)"></div>'+
-      '<div id="cadvScaleChip" style="position:absolute;left:12px;top:10px;z-index:6;font:700 10px DM Mono,monospace;color:#8b949e;background:rgba(22,27,34,.9);border:1px solid #30363d;border-radius:8px;padding:4px 9px"></div>'+
+      '<div id="cadvLayersPanel" style="display:none;position:absolute;top:10px;right:12px;z-index:6;width:190px;background:rgba(27,28,29,.97);border:1px solid #353638;border-radius:12px;padding:8px;box-shadow:0 10px 30px rgba(0,0,0,.55)"></div>'+
+      '<div id="cadvStatus" style="display:none;position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:7;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3;background:rgba(35,116,237,.94);border-radius:20px;padding:7px 15px;box-shadow:0 6px 22px rgba(0,0,0,.5)"></div>'+
+      '<div id="cadvScaleChip" style="position:absolute;left:12px;top:10px;z-index:6;font:700 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8890a1;background:rgba(27,28,29,.9);border:1px solid #353638;border-radius:8px;padding:4px 9px"></div>'+
       '<div class="cadv-hint" id="cadvHint"></div></div>';
   document.body.appendChild(ov);
   cadV.canvas=document.getElementById('cadvCanvas');cadV.ctx=cadV.canvas.getContext('2d');
@@ -8871,13 +8873,13 @@ function cadSyncLayers(){var p=document.getElementById('cadvLayersPanel');if(!p)
   p.style.display=cadV.layersOpen?'block':'none';
   if(!cadV.layersOpen)return;
   var counts={};cadV.ann.forEach(function(a){var l=a.layer||'general';counts[l]=(counts[l]||0)+1;});
-  p.innerHTML='<div style="font:800 9px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#8b949e;padding:2px 4px 6px">Markup Layers</div>'+
+  p.innerHTML='<div style="font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:#8890a1;padding:2px 4px 6px">Markup Layers</div>'+
     CADV_LAYERS.map(function(L){var off=!!cadV.hiddenLayers[L[0]];
-      return '<button onclick="cadLayerToggleVis(\''+L[0]+'\')" style="width:100%;display:flex;align-items:center;gap:7px;padding:5px 6px;border:none;background:transparent;border-radius:7px;cursor:pointer;color:#c9d1d9;opacity:'+(off?'.4':'1')+'" onmouseover="this.style.background=\'#21262d\'" onmouseout="this.style.background=\'transparent\'">'+
+      return '<button onclick="cadLayerToggleVis(\''+L[0]+'\')" style="width:100%;display:flex;align-items:center;gap:7px;padding:5px 6px;border:none;background:transparent;border-radius:7px;cursor:pointer;color:#cbcfd7;opacity:'+(off?'.4':'1')+'" onmouseover="this.style.background=\'#262728\'" onmouseout="this.style.background=\'transparent\'">'+
         '<span style="width:9px;height:9px;border-radius:50%;background:'+L[2]+';flex-shrink:0"></span>'+
-        '<span style="font:600 11px Inter,sans-serif;flex:1;text-align:left">'+L[1]+'</span>'+
-        '<span style="font:500 10px DM Mono,monospace;color:#6e7681">'+(counts[L[0]]||0)+'</span>'+
-        '<span style="color:#8b949e">'+(off?'◌':'◉')+'</span></button>';}).join('');}
+        '<span style="font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;flex:1;text-align:left">'+L[1]+'</span>'+
+        '<span style="font:500 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#74767b">'+(counts[L[0]]||0)+'</span>'+
+        '<span style="color:#8890a1">'+(off?'◌':'◉')+'</span></button>';}).join('');}
 
 /* ---- annotation utilities ---- */
 function cadId(){return 'a'+(Date.now().toString(36))+Math.floor(Math.random()*1e4).toString(36);}
@@ -8891,7 +8893,7 @@ function cadRender(){if(!cadV.open)return;cancelAnimationFrame(cadV.raf);
   cadV.raf=requestAnimationFrame(cadDraw);}
 function cadDraw(){var ctx=cadV.ctx,c=cadV.canvas;if(!ctx||!c)return;var dpr=cadV.dpr,vs=cadV.view.scale;
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,c.width,c.height);
-  ctx.fillStyle='#0d1117';ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle='#111213';ctx.fillRect(0,0,c.width,c.height);
   ctx.setTransform(vs*dpr,0,0,vs*dpr,cadV.view.ox*dpr,cadV.view.oy*dpr);
   if(cadV.img){ctx.imageSmoothingEnabled=true;
     // white paper behind the drawing
@@ -8913,7 +8915,7 @@ function cadDrawAnn(ctx,a,vs){
     if(a.type==='arrow'){var ang=Math.atan2(a.y2-a.y1,a.x2-a.x1);var hl=(10+a.width*2)/vs;
       ctx.beginPath();ctx.moveTo(a.x2,a.y2);ctx.lineTo(a.x2-hl*Math.cos(ang-0.4),a.y2-hl*Math.sin(ang-0.4));
       ctx.moveTo(a.x2,a.y2);ctx.lineTo(a.x2-hl*Math.cos(ang+0.4),a.y2-hl*Math.sin(ang+0.4));ctx.stroke();}return;}
-  if(a.type==='measure'||a.type==='calib'){var mc=a.color||'#22d3ee';
+  if(a.type==='measure'||a.type==='calib'){var mc=a.color||'#2274ee';
     ctx.save();ctx.strokeStyle=mc;ctx.lineWidth=Math.max(1.5,(a.width||2))/vs;ctx.setLineDash(a.type==='calib'?[8/vs,5/vs]:[]);
     ctx.beginPath();ctx.moveTo(a.x1,a.y1);ctx.lineTo(a.x2,a.y2);ctx.stroke();ctx.setLineDash([]);
     var mang=Math.atan2(a.y2-a.y1,a.x2-a.x1),tick=7/vs;
@@ -8926,7 +8928,7 @@ function cadDrawAnn(ctx,a,vs){
     var fs=12.5/vs;ctx.font='700 '+fs+'px DM Mono,ui-monospace,monospace';
     var tw=ctx.measureText(lbl).width,pad=5/vs;
     var mx=(a.x1+a.x2)/2,my=(a.y1+a.y2)/2;
-    ctx.fillStyle='rgba(13,17,23,.88)';
+    ctx.fillStyle='rgba(17,18,19,.88)';
     ctx.fillRect(mx-tw/2-pad,my-fs-pad*2.2,tw+pad*2,fs+pad*2);
     ctx.strokeStyle=mc;ctx.lineWidth=1/vs;ctx.strokeRect(mx-tw/2-pad,my-fs-pad*2.2,tw+pad*2,fs+pad*2);
     ctx.fillStyle=mc;ctx.textBaseline='top';ctx.fillText(lbl,mx-tw/2,my-fs-pad*1.2);
@@ -8941,15 +8943,15 @@ function cadDrawAnn(ctx,a,vs){
 }
 function cadDrawNote(ctx,a,vs){var pad=8/vs;ctx.save();
   ctx.shadowColor='rgba(0,0,0,.25)';ctx.shadowBlur=10/vs;ctx.shadowOffsetY=3/vs;
-  ctx.fillStyle=a.color||'#fde047';ctx.fillRect(a.x,a.y,a.w,a.h);ctx.shadowColor='transparent';
+  ctx.fillStyle=a.color||'#fdc947';ctx.fillRect(a.x,a.y,a.w,a.h);ctx.shadowColor='transparent';
   ctx.fillStyle='rgba(0,0,0,.10)';ctx.fillRect(a.x,a.y,a.w,a.h*0.16<14/vs?14/vs:a.h*0.16);
-  ctx.fillStyle='#1f2937';var fs=13/vs;ctx.font='500 '+fs+'px ui-sans-serif,system-ui,Arial';ctx.textBaseline='top';
+  ctx.fillStyle='#2a2b2c';var fs=13/vs;ctx.font='500 '+fs+'px ui-sans-serif,system-ui,Arial';ctx.textBaseline='top';
   var words=(a.text||'').split(/\s+/),line='',yy=a.y+pad+(14/vs),maxw=a.w-pad*2;
   for(var i=0;i<words.length;i++){var test=line?line+' '+words[i]:words[i];
     if(ctx.measureText(test).width>maxw&&line){ctx.fillText(line,a.x+pad,yy);line=words[i];yy+=fs*1.3;}else line=test;}
   if(line)ctx.fillText(line,a.x+pad,yy);ctx.restore();}
 function cadDrawSelection(ctx,a,vs){var b=cadBBox(a);if(!b)return;var m=6/vs;
-  ctx.save();ctx.strokeStyle='#2563eb';ctx.lineWidth=1.5/vs;ctx.setLineDash([6/vs,4/vs]);
+  ctx.save();ctx.strokeStyle='#2374ed';ctx.lineWidth=1.5/vs;ctx.setLineDash([6/vs,4/vs]);
   ctx.strokeRect(b.x-m,b.y-m,b.w+m*2,b.h+m*2);ctx.restore();}
 
 /* ---- geometry / hit-testing ---- */
@@ -9001,7 +9003,7 @@ function cadDown(e){if(!cadV.open)return;cadV.canvas.setPointerCapture&&cadV.can
     cadRender();return;}
   // drawing tools
   if(t==='pen'||t==='hi'){cadV.drag={mode:'draw',preview:{id:cadId(),type:t,layer:cadV.layer,color:cadV.color,width:cadV.width,pts:[[w[0],w[1]]]}};}
-  else if(t==='line'||t==='arrow'||t==='measure'||t==='calib'){cadV.drag={mode:'draw',preview:{id:cadId(),type:(t==='calib'?'calib':t),layer:cadV.layer,color:(t==='measure'?'#22d3ee':(t==='calib'?'#a3e635':cadV.color)),width:cadV.width,x1:w[0],y1:w[1],x2:w[0],y2:w[1]}};}
+  else if(t==='line'||t==='arrow'||t==='measure'||t==='calib'){cadV.drag={mode:'draw',preview:{id:cadId(),type:(t==='calib'?'calib':t),layer:cadV.layer,color:(t==='measure'?'#2274ee':(t==='calib'?'#35e65e':cadV.color)),width:cadV.width,x1:w[0],y1:w[1],x2:w[0],y2:w[1]}};}
   else if(t==='rect'||t==='ellipse'){cadV.drag={mode:'draw',preview:{id:cadId(),type:t,layer:cadV.layer,color:cadV.color,width:cadV.width,x:w[0],y:w[1],w:0,h:0}};}
   cadRender();
 }
@@ -9055,7 +9057,7 @@ function cadPlaceText(wx,wy){var s=cadW2S(wx,wy);
   cadShowEditor(s[0],s[1],'',200,function(v){if(v&&v.trim()){cadV.ann.push({id:cadId(),type:'text',layer:cadV.layer,color:cadV.color,x:wx,y:wy,text:v.trim(),size:18});cadV.sel=null;cadCommit();}});}
 function cadPlaceNote(wx,wy){var w=170,h=120;var s=cadW2S(wx,wy);
   cadShowEditor(s[0],s[1],'',w*cadV.view.scale<150?150:w*cadV.view.scale,function(v){
-    cadV.ann.push({id:cadId(),type:'note',layer:cadV.layer,x:wx,y:wy,w:w/cadV.view.scale*cadV.view.scale,h:h/cadV.view.scale*cadV.view.scale,color:'#fde047',text:(v||'').trim()||'Note'});
+    cadV.ann.push({id:cadId(),type:'note',layer:cadV.layer,x:wx,y:wy,w:w/cadV.view.scale*cadV.view.scale,h:h/cadV.view.scale*cadV.view.scale,color:'#fdc947',text:(v||'').trim()||'Note'});
     // store note size in world units so it scales with the drawing
     var n=cadV.ann[cadV.ann.length-1];n.w=170/cadV.view.scale;n.h=120/cadV.view.scale;cadV.sel=n.id;cadCommit();});}
 function cadEditText(a){var b=cadBBox(a);var s=cadW2S(a.x,a.y);
@@ -9201,7 +9203,7 @@ function powerAddRun(key){var pw=ensurePower(getSurvey(key));var d0=pw.distros[0
   pw.runs.push({id:pwrId('r'),label:'Run '+(pw.runs.length+1),distroId:d0?d0.id:'',dest:'',
     cable:'4/0 Cam-Lok (single)',awg:'4/0',lengthFt:100,amps:100,
     volts:d0?d0.volts:'208',phase:d0?d0.phase:3,connector:'Cam-Lok E1016',
-    color:'#e11d48',planId:'',path:[],notes:''});
+    color:'#e11d3e',planId:'',path:[],notes:''});
   stampEdit(key);renderProjectView(key);}
 function powerEditRun(key,id,field,val){var pw=ensurePower(getSurvey(key));var r=null;
   for(var i=0;i<pw.runs.length;i++)if(pw.runs[i].id===id){r=pw.runs[i];break;}if(!r)return;
@@ -9248,7 +9250,7 @@ function powerPaneHTML(key){var s=getSurvey(key);var pw=ensurePower(s);
       '</div>'+
       '<input value="'+esc(d.location||'').replace(/"/g,'&quot;')+'" onchange="powerEditDistro(\''+key+'\',\''+d.id+'\',\'location\',this.value)" placeholder="Physical location (e.g. NE tunnel, gen yard)" class="w-full text-[10px] border border-gray-200 rounded px-2 py-1 mb-2" style="outline:none">'+
       '<div class="flex items-center justify-between text-[9px] mono text-gray-500 mb-1"><span>Connected: <b class="text-gray-800">'+L.amps+'A</b> / '+L.cap+'A · '+L.count+' run'+(L.count===1?'':'s')+'</span><span>'+pct+'%</span></div>'+
-      '<div class="h-2 rounded-full bg-gray-100 overflow-hidden relative"><div class="'+barCol+' h-full rounded-full" style="width:'+pct+'%"></div><div class="absolute top-0 bottom-0" style="left:80%;width:1px;background:#9ca3af"></div></div>'+
+      '<div class="h-2 rounded-full bg-gray-100 overflow-hidden relative"><div class="'+barCol+' h-full rounded-full" style="width:'+pct+'%"></div><div class="absolute top-0 bottom-0" style="left:80%;width:1px;background:#9ba2b0"></div></div>'+
       '<div class="mt-1.5">'+warn+'</div>'+
       /* v29 broadcast electrical spec */
       '<div class="grid grid-cols-2 gap-1.5 mt-2 pt-2 border-t border-gray-200/70" style="min-width:0">'+
@@ -9294,7 +9296,7 @@ function powerPaneHTML(key){var s=getSurvey(key);var pw=ensurePower(s);
   var distroOpts=function(cur){return '<option value="">— pick —</option>'+pw.distros.map(function(d){return '<option value="'+d.id+'"'+(cur===d.id?' selected':'')+'>'+esc(d.name)+'</option>';}).join('');};
   var rows=pw.runs.map(function(r){var vd=runVDrop(r);
     var vdCol=!vd?'text-gray-400':(vd.pct>5?'text-red-600 font-bold':(vd.pct>3?'text-amber-600 font-semibold':'text-emerald-600'));
-    var ampWarn=(vd&&r.amps>vd.amp)?' title="Conductor undersized: '+r.amps+'A load on '+r.awg+' AWG rated '+vd.amp+'A" style="box-shadow:inset 0 0 0 2px #ef4444"':'';
+    var ampWarn=(vd&&r.amps>vd.amp)?' title="Conductor undersized: '+r.amps+'A load on '+r.awg+' AWG rated '+vd.amp+'A" style="box-shadow:inset 0 0 0 2px #ef4461"':'';
     function inp(field,val,w,type){return '<input '+(type?'type="'+type+'" ':'')+'value="'+esc(String(val)).replace(/"/g,'&quot;')+'" onchange="powerEditRun(\''+key+'\',\''+r.id+'\',\''+field+'\',this.value)" class="text-[10px] mono border border-gray-200 rounded px-1.5 py-1" style="outline:none;width:'+w+'">';}
     function sel(field,opts,cur,raw){return '<select onchange="powerEditRun(\''+key+'\',\''+r.id+'\',\''+field+'\',this.value)" class="text-[10px] border border-gray-200 rounded px-1 py-1 bg-white" style="outline:none">'+(raw||'')+opts.map(function(o){return '<option'+(String(cur)===String(o)?' selected':'')+'>'+o+'</option>';}).join('')+'</select>';}
     var onCad=(r.planId&&r.path&&r.path.length>1)?'<span class="inline-flex items-center gap-0.5 text-[8px] font-bold text-blue-700" title="Mapped on '+esc(r.planId)+'">◉ mapped</span>':'<span class="text-[8px] text-gray-300">—</span>';
@@ -9366,8 +9368,8 @@ var SEC_CK_KINDS=['Main security gate','Crew entrance','Vehicle checkpoint','Cre
 function secProhibIcon(icon,size){size=size||44;
   return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 48 48" aria-hidden="true">'+
     '<text x="24" y="31" text-anchor="middle" font-size="19">'+esc(String(icon||'🚫').slice(0,4))+'</text>'+
-    '<circle cx="24" cy="24" r="20" fill="none" stroke="#dc2626" stroke-width="4.5"/>'+
-    '<line x1="9.9" y1="9.9" x2="38.1" y2="38.1" stroke="#dc2626" stroke-width="4.5" stroke-linecap="round"/></svg>';}
+    '<circle cx="24" cy="24" r="20" fill="none" stroke="#dc2644" stroke-width="4.5"/>'+
+    '<line x1="9.9" y1="9.9" x2="38.1" y2="38.1" stroke="#dc2644" stroke-width="4.5" stroke-linecap="round"/></svg>';}
 function ensureSecurity(s){if(!s.security)s.security={level:'Standard',contacts:[],notes:''};
   if(!Array.isArray(s.security.contacts))s.security.contacts=[];
   if(!Array.isArray(s.security.prohibited))s.security.prohibited=[];
@@ -9405,7 +9407,7 @@ function secMapPins(key){var s=getSurvey(key);var sec=ensureSecurity(s);var pins
   var v=venueFor(key);var la=(s.lat!=null?s.lat:(v?v.lat:null)),lo=(s.lng!=null?s.lng:(v?v.lng:null));
   if(la!=null&&lo!=null)pins.push({id:'venue',name:(productions[key].venue||productions[key].name),city:'',lat:la,lng:lo,active:true,key:''});
   sec.checkpoints.forEach(function(c){if(typeof c.lat!=='number'||typeof c.lng!=='number')return;
-    pins.push({id:c.id,name:'🛂 '+c.name,city:c.kind+(c.hours?' · '+c.hours:''),lat:c.lat,lng:c.lng,active:false,color:'#7c3aed',key:''});});
+    pins.push({id:c.id,name:'🛂 '+c.name,city:c.kind+(c.hours?' · '+c.hours:''),lat:c.lat,lng:c.lng,active:false,color:'#3881ef',key:''});});
   return pins;}
 function secId(){return 'sc'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);}
 function securitySet(key,field,val){var sec=ensureSecurity(getSurvey(key));sec[field]=val;stampEdit(key);
@@ -9454,7 +9456,7 @@ function securityPaneHTML(key){var s=getSurvey(key);var sec=ensureSecurity(s);
     '<button onclick="securityDelContact(\''+key+'\',\''+c.id+'\')" class="text-gray-300 hover:text-red-500 text-xs">✕</button></div>';}).join('');
   return '<div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<div class="flex flex-wrap items-center justify-between gap-2 mb-3">'+
-      '<div class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>'+
+      '<div class="flex items-center gap-2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#727479" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg>'+
         '<h4 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Security Detail</h4></div>'+
       '<div class="flex items-center gap-2"><span class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Posture</span>'+
         '<select onchange="securitySet(\''+key+'\',\'level\',this.value)" class="text-[10px] font-bold rounded border px-2 py-1 '+levelCol+'" style="outline:none;cursor:pointer">'+SEC_LEVELS.map(function(l){return '<option'+(sec.level===l?' selected':'')+'>'+l+'</option>';}).join('')+'</select></div>'+
@@ -9474,7 +9476,7 @@ function securityPaneHTML(key){var s=getSurvey(key);var sec=ensureSecurity(s);
   (function(){var pins=secMapPins(key);
     var rows=sec.checkpoints.map(function(c){
       return '<div class="flex items-center gap-1.5 py-1.5 border-t border-gray-100 flex-wrap">'+
-        '<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#7c3aed"></span>'+
+        '<span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:#3881ef"></span>'+
         '<input value="'+esc(c.name||'').replace(/"/g,'&quot;')+'" onchange="secCkEdit(\''+key+'\',\''+c.id+'\',\'name\',this.value)" placeholder="Name" class="text-[10px] font-semibold border border-gray-200 rounded px-2 py-1" style="outline:none;width:130px">'+
         '<select onchange="secCkEdit(\''+key+'\',\''+c.id+'\',\'kind\',this.value)" class="text-[10px] border border-gray-200 rounded px-1.5 py-1 bg-white" style="outline:none">'+SEC_CK_KINDS.map(function(kk){return '<option'+(c.kind===kk?' selected':'')+'>'+kk+'</option>';}).join('')+'</select>'+
         '<input value="'+(c.lat!=null?c.lat:'')+'" onchange="secCkEdit(\''+key+'\',\''+c.id+'\',\'lat\',this.value)" placeholder="lat" class="text-[10px] mono border border-gray-200 rounded px-1.5 py-1" style="outline:none;width:76px">'+
@@ -9646,7 +9648,7 @@ function psvPinMarker(h){
 
 /* ---- markup -> PSV marker (runs, zones, callouts, freehand) ---- */
 function psvMarkMarker(m){
-  var col=m.color||'#f59e0b';
+  var col=m.color||'#f56c0b';
   var tip=(m.label?'<b>'+escHtml(m.label)+'</b>':'')+(m.detail?(m.label?'<br>':'')+escHtml(m.detail):'');
   if(m.kind==='zone'){
     /* a circular zone becomes a real spherical polygon — PSV keeps it glued to the
@@ -9677,7 +9679,7 @@ function psvMarkMarker(m){
   return null;}
 
 function psvAlpha(hex,a){
-  var h=String(hex||'#f59e0b').replace('#','');
+  var h=String(hex||'#f56c0b').replace('#','');
   if(h.length===3)h=h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
   var n=parseInt(h,16);
   return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
@@ -9730,7 +9732,7 @@ function panoMountPSV(PSV,P){
   var plugins=[
     PSV.MarkersPlugin.withConfig({defaultHoverScale:{amount:1.15,duration:120}, markers:[]}),
     PSV.CompassPlugin.withConfig({size:'104px',position:'top left',navigation:true,
-      coneColor:'rgba(37,99,235,.35)',hotspots:[]}),
+      coneColor:'rgba(35,116,237,.35)',hotspots:[]}),
     [PSV.AutorotatePlugin,{autostartDelay:null,autorotateSpeed:'0.6rpm',autorotatePitch:'3deg'}],
     PSV.SettingsPlugin
   ];
@@ -9740,7 +9742,7 @@ function panoMountPSV(PSV,P){
   if(planImg)plugins.push(PSV.MapPlugin.withConfig({
     imageUrl:planImg,center:{x:1000,y:750},size:'240px',position:'bottom left',
     shape:'square',minZoom:40,maxZoom:220,
-    spotStyle:{size:15,color:'#2563eb',hoverSize:21,borderSize:2,borderColor:'#fff'}}));
+    spotStyle:{size:15,color:'#2374ed',hoverSize:21,borderSize:2,borderColor:'#ffffff'}}));
   if(nodes.length>1){
     plugins.push(PSV.GalleryPlugin.withConfig({thumbnailSize:{width:130,height:74},
       hideOnClick:false,navigationArrows:true}));
@@ -9891,7 +9893,7 @@ function panoDraftPreview(){
   if(d.pts.length===1){
     try{pano.markers.addMarker({id:'draft',
       position:{yaw:psvDeg(d.pts[0][1]),pitch:psvDeg(d.pts[0][0])},
-      circle:7,svgStyle:{fill:d.color,stroke:'#fff','stroke-width':'2px'},
+      circle:7,svgStyle:{fill:d.color,stroke:'#ffffff','stroke-width':'2px'},
       tooltip:'Start point'});}catch(e){}
     return;}
   try{pano.markers.addMarker({id:'draft',
@@ -9989,18 +9991,18 @@ function panoNotesToggle(){
 
 /* pin marker types (native Pannellum hotspots) */
 var PANO_TYPES={
-  power:{label:'Power drop',color:'#f59e0b'},
-  cable:{label:'Cable run',color:'#e11d48'},
-  hazard:{label:'Hazard',color:'#dc2626'},
-  camera:{label:'Camera position',color:'#2563eb'},
-  note:{label:'Note',color:'#00A15D'}};
+  power:{label:'Power drop',color:'#f56c0b'},
+  cable:{label:'Cable run',color:'#e11d3e'},
+  hazard:{label:'Hazard',color:'#dc2644'},
+  camera:{label:'Camera position',color:'#2374ed'},
+  note:{label:'Note',color:'#31A24C'}};
 /* markup tools + shared swatch palette */
 var PANO_TOOLS={
-  run:{label:'Run',color:'#06b6d4'},
-  zone:{label:'Zone',color:'#8b5cf6'},
-  callout:{label:'Callout',color:'#f59e0b'},
-  free:{label:'Draw',color:'#fbbf24'}};
-var PANO_SWATCHES=['#f59e0b','#e11d48','#8b5cf6','#06b6d4','#00A15D','#2563eb','#dc2626','#f5f5f5'];
+  run:{label:'Run',color:'#0658d4'},
+  zone:{label:'Zone',color:'#5c9af6'},
+  callout:{label:'Callout',color:'#f56c0b'},
+  free:{label:'Draw',color:'#fbbe24'}};
+var PANO_SWATCHES=['#f56c0b','#e11d3e','#5c9af6','#0658d4','#31A24C','#2374ed','#dc2644','#f4f5f6'];
 var PIN_SET={power:1,cable:1,hazard:1,camera:1,note:1};
 
 var pano={open:false,key:null,viewer:null,psv:null,markers:null,tour:null,node:null,
@@ -10187,10 +10189,10 @@ function panoPaneHTML(key){var s=getSurvey(key);var p=ensurePano(s);
   /* also count broadcast planner types not in the legacy pin set */
   var extra=['fiber','rf','ifb','truck','talent','exit','equipment','mic','shape','text','power','cable','camera','hazard'];
   extra.forEach(function(t){if(byType[t]&&!PANO_TYPES[t]){
-    chips+='<span class="inline-flex items-center gap-1 text-[9px] font-semibold text-gray-600"><span class="w-2 h-2 rounded-full" style="background:#58a6ff"></span>'+t+' <b class="mono">'+byType[t]+'</b></span>';}});
+    chips+='<span class="inline-flex items-center gap-1 text-[9px] font-semibold text-gray-600"><span class="w-2 h-2 rounded-full" style="background:#589bff"></span>'+t+' <b class="mono">'+byType[t]+'</b></span>';}});
   var hasOwn=!!p.img;var nMark=p.hotspots.length+(p.marks?p.marks.length:0);
   var thumb=panoSrc(p);
-  var preview='<div onclick="openPanoViewer(\''+key+'\')" class="relative rounded-xl overflow-hidden border border-gray-200 cursor-pointer group" style="aspect-ratio:2/1;background:linear-gradient(135deg,#0d1117 0%,#161b22 50%,#1f2937 100%)">'+
+  var preview='<div onclick="openPanoViewer(\''+key+'\')" class="relative rounded-xl overflow-hidden border border-gray-200 cursor-pointer group" style="aspect-ratio:2/1;background:linear-gradient(135deg,#111213 0%,#1b1c1d 50%,#2a2b2c 100%)">'+
       (thumb?'<img src="'+thumb+'" style="width:100%;height:100%;object-fit:cover;opacity:.9" alt="360 panorama">':
         '<div class="absolute inset-0 flex flex-col items-center justify-center gap-2 text-gray-400">'+
           '<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.5"/><path d="M12 3v18"/></svg>'+
@@ -10302,36 +10304,36 @@ function cadDrawPower(ctx,vs){var pw=cadPower();
   for(var i=0;i<pw.runs.length;i++){var r=pw.runs[i];if(r.planId!==cadV.planId||!r.path||r.path.length<2)continue;
     var seld=cadV.selPower&&cadV.selPower.kind==='run'&&cadV.selPower.id===r.id;
     ctx.save();
-    if(seld){ctx.strokeStyle='rgba(37,99,235,.35)';ctx.lineWidth=10/vs;ctx.lineJoin='round';ctx.lineCap='round';
+    if(seld){ctx.strokeStyle='rgba(35,116,237,.35)';ctx.lineWidth=10/vs;ctx.lineJoin='round';ctx.lineCap='round';
       ctx.beginPath();ctx.moveTo(r.path[0][0],r.path[0][1]);for(var k=1;k<r.path.length;k++)ctx.lineTo(r.path[k][0],r.path[k][1]);ctx.stroke();}
-    ctx.strokeStyle=r.color||'#e11d48';ctx.lineWidth=4/vs;ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.strokeStyle=r.color||'#e11d3e';ctx.lineWidth=4/vs;ctx.lineJoin='round';ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(r.path[0][0],r.path[0][1]);
     for(var m=1;m<r.path.length;m++)ctx.lineTo(r.path[m][0],r.path[m][1]);ctx.stroke();
     // vertices
-    ctx.fillStyle='#fff';ctx.strokeStyle=r.color||'#e11d48';ctx.lineWidth=2/vs;
+    ctx.fillStyle='#ffffff';ctx.strokeStyle=r.color||'#e11d3e';ctx.lineWidth=2/vs;
     for(var v=0;v<r.path.length;v++){ctx.beginPath();ctx.arc(r.path[v][0],r.path[v][1],4/vs,0,6.2832);ctx.fill();ctx.stroke();}
     // label at midpoint
     var mid=r.path[Math.floor(r.path.length/2)];
-    cadPowerLabel(ctx,vs,mid[0],mid[1],(r.label||'Run')+' · '+(r.amps||0)+'A',r.color||'#e11d48');
+    cadPowerLabel(ctx,vs,mid[0],mid[1],(r.label||'Run')+' · '+(r.amps||0)+'A',r.color||'#e11d3e');
     ctx.restore();}
   // distros on this plan
   for(var j=0;j<pw.distros.length;j++){var d=pw.distros[j];if(d.planId!==cadV.planId||d.x==null)continue;
     var sel2=cadV.selPower&&cadV.selPower.kind==='distro'&&cadV.selPower.id===d.id;
     var s=13/vs;ctx.save();
-    if(sel2){ctx.strokeStyle='#2563eb';ctx.lineWidth=2/vs;ctx.setLineDash([5/vs,3/vs]);ctx.strokeRect(d.x-s-3/vs,d.y-s-3/vs,(s+3/vs)*2,(s+3/vs)*2);ctx.setLineDash([]);}
-    ctx.fillStyle='#f59e0b';ctx.strokeStyle='#7c2d12';ctx.lineWidth=1.5/vs;
+    if(sel2){ctx.strokeStyle='#2374ed';ctx.lineWidth=2/vs;ctx.setLineDash([5/vs,3/vs]);ctx.strokeRect(d.x-s-3/vs,d.y-s-3/vs,(s+3/vs)*2,(s+3/vs)*2);ctx.setLineDash([]);}
+    ctx.fillStyle='#f56c0b';ctx.strokeStyle='#7c3e12';ctx.lineWidth=1.5/vs;
     cadRoundRect(ctx,d.x-s,d.y-s,s*2,s*2,4/vs);ctx.fill();ctx.stroke();
     // lightning glyph
-    ctx.fillStyle='#7c2d12';ctx.beginPath();var u=s*0.9;
+    ctx.fillStyle='#7c3e12';ctx.beginPath();var u=s*0.9;
     ctx.moveTo(d.x+u*0.15,d.y-u*0.7);ctx.lineTo(d.x-u*0.45,d.y+u*0.1);ctx.lineTo(d.x-u*0.02,d.y+u*0.1);
     ctx.lineTo(d.x-u*0.15,d.y+u*0.7);ctx.lineTo(d.x+u*0.45,d.y-u*0.1);ctx.lineTo(d.x+u*0.02,d.y-u*0.1);ctx.closePath();ctx.fill();
-    cadPowerLabel(ctx,vs,d.x,d.y+s+10/vs,(d.name||'Distro')+' · '+(d.amps||0)+'A '+(d.volts||'')+'V'+(d.phase===3?' 3φ':' 1φ'),'#b45309');
+    cadPowerLabel(ctx,vs,d.x,d.y+s+10/vs,(d.name||'Distro')+' · '+(d.amps||0)+'A '+(d.volts||'')+'V'+(d.phase===3?' 3φ':' 1φ'),'#b45009');
     ctx.restore();}
   // in-progress cable run draft
   if(cadV.crunDraft&&cadV.crunDraft.pts.length){var dr=cadV.crunDraft;ctx.save();
-    ctx.strokeStyle=dr.color||'#e11d48';ctx.lineWidth=3/vs;ctx.setLineDash([8/vs,5/vs]);ctx.lineJoin='round';ctx.lineCap='round';
+    ctx.strokeStyle=dr.color||'#e11d3e';ctx.lineWidth=3/vs;ctx.setLineDash([8/vs,5/vs]);ctx.lineJoin='round';ctx.lineCap='round';
     ctx.beginPath();ctx.moveTo(dr.pts[0][0],dr.pts[0][1]);for(var q=1;q<dr.pts.length;q++)ctx.lineTo(dr.pts[q][0],dr.pts[q][1]);ctx.stroke();
-    ctx.setLineDash([]);ctx.fillStyle=dr.color||'#e11d48';
+    ctx.setLineDash([]);ctx.fillStyle=dr.color||'#e11d3e';
     for(var z=0;z<dr.pts.length;z++){ctx.beginPath();ctx.arc(dr.pts[z][0],dr.pts[z][1],4/vs,0,6.2832);ctx.fill();}
     ctx.restore();}
 }
@@ -10352,15 +10354,15 @@ function cadRoundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo
    & expense line item links to ≥1 WBS element or cost center via alloc[].
    ========================================================================== */
 var MD_SEED_WBS=[
-  {id:'PRJ-2026-WORLDCUP-01',desc:'FIFA World Cup 26 — IBC Operations',active:true,prod:'worldcup'},
-  {id:'PRJ-2026-WORLDCUP-02',desc:'FIFA World Cup 26 — Venue Production',active:true,prod:'worldcup'},
-  {id:'PRJ-2026-SAIL250-01',desc:'Sail250 NYC — Harbor Broadcast',active:true,prod:'sail250'},
-  {id:'PRJ-2026-SUPERBOWL-01',desc:'Super Bowl LX — Host Broadcast',active:true,prod:'superbowl'},
-  {id:'PRJ-2026-SUPERBOWL-02',desc:'Super Bowl LX — Digital & Streaming',active:true,prod:'superbowl'},
-  {id:'PRJ-2026-MUSE100-01',desc:'Muse Live Centennial Special',active:true,prod:'muse100'},
-  {id:'PRJ-2026-MIDTERMS-01',desc:'Midterm Election Coverage',active:true,prod:'midterms'},
-  {id:'PRJ-2026-PARADE-01',desc:'Thanksgiving Parade Broadcast',active:true,prod:'parade'},
-  {id:'PRJ-2026-OLYWIN-01',desc:'Winter Olympics — Milano Cortina',active:true,prod:'winterolympics'}
+  {id:'PRJ-2026-MUSEAITOUR-01',desc:'Muse AI World Tour — IBC Operations',active:true,prod:'museaitour'},
+  {id:'PRJ-2026-MUSEAITOUR-02',desc:'Muse AI World Tour — Venue Production',active:true,prod:'museaitour'},
+  {id:'PRJ-2026-RAYBANGEN3-01',desc:'Sail250 NYC — Harbor Broadcast',active:true,prod:'raybangen3'},
+  {id:'PRJ-2026-ORION-01',desc:'Orion Developer Preview — Host Broadcast',active:true,prod:'orion'},
+  {id:'PRJ-2026-ORION-02',desc:'Orion Developer Preview — Digital & Streaming',active:true,prod:'orion'},
+  {id:'PRJ-2026-MUSEAILAUNCH-01',desc:'Muse AI Launch Keynote',active:true,prod:'museailaunch'},
+  {id:'PRJ-2026-WHATSAPP-01',desc:'WhatsApp Business Summit Coverage',active:true,prod:'whatsapp'},
+  {id:'PRJ-2026-IGCREATORS-01',desc:'Creator Week Street Takeover Broadcast',active:true,prod:'igcreators'},
+  {id:'PRJ-2026-CHARM-01',desc:'Meta Charm Launch — Milan Design Week',active:true,prod:'charm'}
 ];
 var MD_SEED_CC=[
   {id:'CC-BROADCAST-A1',desc:'Broadcast Audio Engineering',active:true},
@@ -10390,7 +10392,7 @@ function wbsForProd(key){var w=mdLoad().wbs,i;
   return w.length?w[0].id:'';}
 function mdAdd(kind,id,desc,prod){var s=mdLoad();id=String(id||'').trim().toUpperCase();
   if(!id)return 'ID is required';
-  if(kind==='wbs'&&!/^PRJ-/.test(id))return 'WBS ids follow PRJ-… (e.g. PRJ-2026-SUPERBOWL-01)';
+  if(kind==='wbs'&&!/^PRJ-/.test(id))return 'WBS ids follow PRJ-… (e.g. PRJ-2026-ORION-01)';
   if(kind==='cc'&&!/^CC-/.test(id))return 'Cost-center ids follow CC-… (e.g. CC-BROADCAST-A1)';
   if(mdById(id))return 'An element with id '+id+' already exists';
   var rec={id:id,desc:String(desc||'').trim(),active:true};if(kind==='wbs')rec.prod=prod||'';
@@ -10642,7 +10644,7 @@ function _finAddDays(iso,n){try{var d=new Date(iso+'T00:00');d.setDate(d.getDate
 function finARModel(){
   if(_finAR)return _finAR;var today=finToday();var out=[];var seq=41000;
   order.forEach(function(k){var contract=finContract(k);if(!contract)return;var p=productions[k];
-    var air=_finAirISO(k);var cust=p.customer||'Muse Live Sports';
+    var air=_finAirISO(k);var cust=p.customer||'Meta Live Events';
     [['Mobilization / deposit',0.40,-55],['Progress billing',0.35,-5],['Final / reconciliation',0.25,20]].forEach(function(m,mi){
       var amt=Math.round(contract*m[1]);var due=_finAddDays(air,m[2]);var status,paidOn='';
       if(due<_finAddDays(today,-20)){status='Paid';paidOn=_finAddDays(due,mi+2);}
@@ -10702,15 +10704,15 @@ function finCockpitHTML(scope){var isAll=(scope==='all');var t=finAgg(scope);var
     finKpiTile('Open AR',$fmt(t.ar),arA.n+' invoice(s)','text-purple-700')+'</div>';
   var glmax=gl.reduce(function(m,r){return Math.max(m,r.efc,r.budget);},1);
   var glBars=gl.filter(function(r){return r.budget||r.efc;}).map(function(r){var over=r.variance<0;
-    return finBarRow(r.code+' · '+r.cat,r.efc,glmax,over?'linear-gradient(90deg,#f87171,#ef4444)':'linear-gradient(90deg,#93c5fd,#3b82f6)',$fmt(r.efc));}).join('');
+    return finBarRow(r.code+' · '+r.cat,r.efc,glmax,over?'linear-gradient(90deg,#f87187,#ef4461)':'linear-gradient(90deg,#93bdfd,#3b86f6)',$fmt(r.efc));}).join('');
   var spendCard='<div class="'+finCard()+'" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">Spend by GL Account — Estimated Final Cost</h3>'+(glBars||'<p class="text-[10px] text-gray-400 py-3">No coded spend yet.</p>')+'</div>';
   var prodCard='';
   if(isAll){var pm=order.reduce(function(m,k){return Math.max(m,finReportTotals(k).efc,finBudgets[k]||0);},1);
     var rows=order.map(function(k){var r=finReportTotals(k);var over=r.variance<0;
       return '<div class="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50 rounded-lg px-1 -mx-1" onclick="openProjFinance(\''+k+'\')">'+
-        '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[productions[k].tagColor]||'#9ca3af')+'"></span>'+
+        '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[productions[k].tagColor]||'#9ba2b0')+'"></span>'+
         '<span class="text-[10px] font-semibold text-gray-800 truncate flex-shrink-0" style="width:10rem">'+esc(prodName(k))+'</span>'+
-        '<div class="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden relative"><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+Math.min(100,(finBudgets[k]||0)/pm*100)+'%;background:#e5e7eb"></div><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+Math.min(100,r.efc/pm*100)+'%;background:'+(over?'linear-gradient(90deg,#f87171,#ef4444)':'linear-gradient(90deg,#34d399,#00A15D)')+'"></div></div>'+
+        '<div class="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden relative"><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+Math.min(100,(finBudgets[k]||0)/pm*100)+'%;background:#e5e7eb"></div><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+Math.min(100,r.efc/pm*100)+'%;background:'+(over?'linear-gradient(90deg,#f87187,#ef4461)':'linear-gradient(90deg,#34d359,#31A24C)')+'"></div></div>'+
         '<span class="text-[10px] mono font-bold flex-shrink-0 text-right '+(over?'text-red-600':'text-gray-700')+'" style="width:9.5rem">'+$fmt(r.efc)+' / '+$fmt(finBudgets[k]||0)+'</span></div>';}).join('');
     prodCard='<div class="'+finCard()+'" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><div class="flex items-center justify-between mb-2"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Budget vs Est. Final Cost — by Production</h3><span class="text-[8px] mono text-gray-400">grey = budget · green/red = EFC</span></div>'+rows+'</div>';}
   var agingCard='<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">'+
@@ -10780,7 +10782,7 @@ function finBudgetHTML(scope){var isAll=(scope==='all');var gl=finGLRollup(scope
   var mx=gl.reduce(function(m,r){return Math.max(m,r.budget,r.efc);},1);
   var catRows=gl.filter(function(r){return r.budget||r.efc;}).map(function(r){var over=r.variance<0;var bp=r.budget?Math.min(100,r.budget/mx*100):0,ep=r.efc?Math.min(100,r.efc/mx*100):0;
     return '<div class="py-1.5 border-b border-gray-50"><div class="flex items-center justify-between gap-2"><span class="text-[10px] font-semibold text-gray-800">'+esc(r.code+' · '+r.cat)+'</span><span class="text-[10px] mono font-bold '+(over?'text-red-600':'text-emerald-700')+'">'+(r.variance>=0?'+':'')+$fmt(r.variance)+'</span></div>'+
-      '<div class="relative h-4 bg-gray-100 rounded-md overflow-hidden mt-1"><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+bp+'%;background:#e5e7eb"></div><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+ep+'%;background:'+(over?'linear-gradient(90deg,#fb923c,#ef4444)':'linear-gradient(90deg,#60a5fa,#2563eb)')+'"></div></div>'+
+      '<div class="relative h-4 bg-gray-100 rounded-md overflow-hidden mt-1"><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+bp+'%;background:#e5e7eb"></div><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+ep+'%;background:'+(over?'linear-gradient(90deg,#fb8c3c,#ef4461)':'linear-gradient(90deg,#609efa,#2374ed)')+'"></div></div>'+
       '<div class="flex items-center justify-between mt-0.5 text-[8px] mono text-gray-400"><span>Budget '+$fmt(r.budget)+'</span><span>EFC '+$fmt(r.efc)+'</span></div></div>';}).join('');
   var forecast='<div class="'+finCard()+'" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Budget vs Estimate at Completion</h3><p class="text-[9px] text-gray-500 mt-0.5">grey bar = approved budget · colored bar = current EFC (Actual + Committed + ETC)</p></div>'+
     '<div class="flex items-center gap-2"><span class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Total EFC</span><span class="text-lg font-bold mono '+(t.variance>=0?'text-emerald-700':'text-red-600')+'">'+$fmt(t.efc)+'</span></div></div>'+catRows+'</div>';
@@ -10872,7 +10874,7 @@ function financeWorkspaceHTML(scope){scope=scope||'all';var isAll=(scope==='all'
   var strip=tabs.map(function(t){return '<button onclick="setFinTab(\''+scope+'\',\''+t[0]+'\')" class="px-3.5 py-2 rounded-lg text-[11px] font-bold transition-colors '+(tab===t[0]?'bg-gray-900 text-white shadow-sm':'text-gray-600 hover:bg-gray-100')+'">'+t[1]+'</button>';}).join('');
   var body=tab==='gl'?finGLHTML(scope):(tab==='ap'?finAPHTML(scope):(tab==='ar'?finARHTML(scope):(tab==='budget'?finBudgetHTML(scope):(tab==='reports'?finReportsHTML(scope):(tab==='ops'&&!isAll?financePaneHTML(scope):finCockpitHTML(scope))))));
   var head=isAll?('<div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">'+
-      '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0" style="background:linear-gradient(135deg,#0f172a,#1e293b)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>'+
+      '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0" style="background:linear-gradient(135deg,#1c1c1d,#2b2c2e)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>'+
       '<div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Finance &amp; Accounting</h1><p class="text-xs text-gray-500 mt-0.5">Portfolio general ledger, AP/AR, budgeting &amp; reporting across '+order.length+' productions · FY2025–26 · USD</p></div></div>'+
       '<div class="flex items-center gap-2 flex-wrap"><span class="text-[8px] mono font-bold bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded hidden sm:inline">S/4HANA · Oracle ERP · Workday · NetSuite</span>'+
       '<button onclick="finExportCSV(\''+scope+'\')" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">⬇ GL CSV</button>'+
@@ -10895,24 +10897,24 @@ function finPrintPack(scope){var pl=finPL(scope),bs=finBS(scope),cf=finCF(scope)
   var name=scope==='all'?'Portfolio — All Productions':prodName(scope);
   function tbl(o){return '<h2>'+esc(o.title)+'</h2><p class="s">'+esc(o.sub||'')+'</p><table class="stmt">'+o.rows.replace(/class="[^"]*"/g,'').replace(/style="[^"]*"/g,'')+'</table>';}
   var glRows=gl.map(function(r){return '<tr><td>'+r.code+'</td><td>'+esc(r.cat)+'</td><td class="n">'+$fmt(r.budget)+'</td><td class="n">'+$fmt(r.committed)+'</td><td class="n">'+$fmt(r.actual)+'</td><td class="n">'+$fmt(r.efc)+'</td><td class="n">'+(r.variance>=0?'+':'')+$fmt(r.variance)+'</td></tr>';}).join('');
-  var bar='<div class="bar"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>';
+  var bar='<div class="bar"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>';
   var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Muse Live — Financial Statement Pack — '+esc(name)+'</title><style>'+
-    '@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222;font-size:11px}'+
-    '.bar{display:flex;height:5px}.bar i{flex:1}.hd{background:#0f172a;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
-    '.hd h1{font-size:18px;margin:0}.hd .r{text-align:right;font-size:9px;color:#cbd5e1;line-height:1.6}'+
-    'h2{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#0f172a;margin:16px 0 2px;border-left:3px solid #E51B24;padding-left:8px}'+
-    'p.s{font-size:8px;color:#888;margin:0 0 4px 11px}table{width:100%;border-collapse:collapse;margin:2px 0 6px}'+
-    'table.stmt td{padding:3px 6px;border-bottom:.5px solid #eee}table.stmt td:last-child{text-align:right;font-family:monospace}'+
-    'table.gl th{background:#0f172a;color:#fff;font-size:8px;text-transform:uppercase;padding:5px 6px;text-align:left}table.gl td{border-bottom:.5px solid #e5e7eb;padding:4px 6px;font-size:9px}td.n{text-align:right;font-family:monospace}'+
-    '.foot{margin-top:16px;border-top:1px solid #eee;padding-top:6px;font-size:8px;color:#999;display:flex;justify-content:space-between}'+
-    '.kpi{display:flex;gap:10px;margin:8px 0}.kpi div{flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px}.kpi b{display:block;font-size:14px;font-family:monospace}.kpi span{font-size:7px;text-transform:uppercase;letter-spacing:.5px;color:#999}'+
+    '@page{size:A4;margin:14mm}*{box-sizing:border-box}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#212223;font-size:11px}'+
+    '.bar{display:flex;height:5px}.bar i{flex:1}.hd{background:#1c1c1d;color:#ffffff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
+    '.hd h1{font-size:18px;margin:0}.hd .r{text-align:right;font-size:9px;color:#d1d4db;line-height:1.6}'+
+    'h2{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:#1c1c1d;margin:16px 0 2px;border-left:3px solid #E41E3F;padding-left:8px}'+
+    'p.s{font-size:8px;color:#7A8396;margin:0 0 4px 11px}table{width:100%;border-collapse:collapse;margin:2px 0 6px}'+
+    'table.stmt td{padding:3px 6px;border-bottom:.5px solid #ecedf0}table.stmt td:last-child{text-align:right;font-family:monospace}'+
+    'table.gl th{background:#1c1c1d;color:#ffffff;font-size:8px;text-transform:uppercase;padding:5px 6px;text-align:left}table.gl td{border-bottom:.5px solid #e5e7eb;padding:4px 6px;font-size:9px}td.n{text-align:right;font-family:monospace}'+
+    '.foot{margin-top:16px;border-top:1px solid #ecedf0;padding-top:6px;font-size:8px;color:#8D95A5;display:flex;justify-content:space-between}'+
+    '.kpi{display:flex;gap:10px;margin:8px 0}.kpi div{flex:1;border:1px solid #e5e7eb;border-radius:6px;padding:6px 8px}.kpi b{display:block;font-size:14px;font-family:monospace}.kpi span{font-size:7px;text-transform:uppercase;letter-spacing:.5px;color:#8D95A5}'+
     '</style></head><body>'+bar+
-    '<div class="hd"><div><h1>FINANCIAL STATEMENT PACK</h1><div style="font-size:11px;color:#cbd5e1;margin-top:3px">'+esc(name)+'</div></div><div class="r">Muse Live Broadcast Operations<br>FY2025–26 · USD<br>Prepared '+esc(nowStamp())+'</div></div>'+
+    '<div class="hd"><div><h1>FINANCIAL STATEMENT PACK</h1><div style="font-size:11px;color:#d1d4db;margin-top:3px">'+esc(name)+'</div></div><div class="r">Meta Broadcast Operations<br>FY2025–26 · USD<br>Prepared '+esc(nowStamp())+'</div></div>'+
     '<div class="kpi"><div><span>Revenue</span><b>'+$fmt(t.revenue)+'</b></div><div><span>Est. Final Cost</span><b>'+$fmt(t.efc)+'</b></div><div><span>Gross Margin</span><b>'+$fmt(t.margin)+'</b></div><div><span>Open AP</span><b>'+$fmt(t.openAP)+'</b></div><div><span>Open AR</span><b>'+$fmt(t.ar)+'</b></div></div>'+
     tbl(pl)+tbl(bs)+tbl(cf)+
     '<h2>Trial Balance</h2><table class="gl"><tr><th>Acct</th><th>Account</th><th>Debit</th><th>Credit</th></tr>'+tb.rows.replace(/class="[^"]*"/g,'').replace(/style="[^"]*"/g,'').replace(/<td /g,'<td class="n" ').replace(/<td class="n" class="n"/g,'<td class="n"')+'</table>'+
     '<h2>General Ledger — Chart of Accounts</h2><table class="gl"><tr><th>Acct</th><th>Account</th><th>Budget</th><th>Committed</th><th>Actual</th><th>EFC</th><th>Variance</th></tr>'+glRows+'</table>'+
-    '<div class="foot"><span>Muse Live Broadcast Telemetry · Confidential · Financial Statement Pack</span><span>Illustrative management accounts · generated from Muse Live</span></div>'+
+    '<div class="foot"><span>Meta Broadcast Telemetry · Confidential · Financial Statement Pack</span><span>Illustrative management accounts · generated from Muse Live</span></div>'+
     '</body></html>';
   var w=window.open('','_blank');if(!w){toast('Allow pop-ups to export the statement pack');return;}
   w.document.open();w.document.write(html);w.document.close();toast('Statement pack ready — choose Save as PDF');
@@ -10958,12 +10960,12 @@ function costReportPaneHTML(key){var p=productions[key];var cr=finEnsureCostRepo
       bigcard('Variance',(over?'('+$fmt(Math.abs(T.variance))+')':$fmt(T.variance)),over?'text-red-600':'text-emerald-700',over?'projected overage':'projected under')+
     '</div>'+
     '<div class="relative h-3 rounded-full bg-gray-100 overflow-hidden flex">'+
-      seg(T.actual,'linear-gradient(90deg,#34d399,#00A15D)','Actual')+
-      seg(T.committed,'linear-gradient(90deg,#93c5fd,#60a5fa)','Committed')+
+      seg(T.actual,'linear-gradient(90deg,#34d359,#31A24C)','Actual')+
+      seg(T.committed,'linear-gradient(90deg,#93bdfd,#609efa)','Committed')+
       seg(T.etc,'repeating-linear-gradient(45deg,#e5e7eb,#e5e7eb 4px,#f3f4f6 4px,#f3f4f6 8px)','Estimate to complete')+
-      (T.budget<denom?'<div class="absolute top-0 bottom-0" style="left:'+(T.budget/denom*100)+'%;width:2px;background:#111827" title="Budget"></div>':'')+
+      (T.budget<denom?'<div class="absolute top-0 bottom-0" style="left:'+(T.budget/denom*100)+'%;width:2px;background:#1B1C1D" title="Budget"></div>':'')+
     '</div>'+
-    '<div class="flex items-center gap-3 mt-1.5 text-[8px] mono text-gray-500"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#00A15D"></span>actual</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#60a5fa"></span>committed</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#e5e7eb"></span>to complete</span><span class="flex items-center gap-1"><span class="w-2 h-3" style="background:#111827"></span>budget</span></div></div>';
+    '<div class="flex items-center gap-3 mt-1.5 text-[8px] mono text-gray-500"><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#31A24C"></span>actual</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#609efa"></span>committed</span><span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm" style="background:#e5e7eb"></span>to complete</span><span class="flex items-center gap-1"><span class="w-2 h-3" style="background:#1B1C1D"></span>budget</span></div></div>';
 
   // topsheet rows — sortable + filterable (v28 WI7)
   var catCodes=finActiveCats(key);
@@ -11210,7 +11212,7 @@ function laborPaneHTML(key){var p=productions[key];var L=ensureLabor(key);var cr
         '<td class="p-1 text-right text-[8px] mono text-gray-400">'+(c.otHours>0?c.otHours.toFixed(0)+'h OT':'—')+'</td>'+
         '<td class="p-1 text-right text-[10px] mono font-bold text-gray-800">'+$fmt(c.total)+'</td></tr>';}).join('');
     var gsub=slots.reduce(function(s,sl){return s+laborSlotCost(key,sl).total;},0);
-    return '<div class="mb-3"><div class="flex items-center justify-between mb-1"><h4 class="text-[9px] font-bold uppercase tracking-wider" style="color:'+((typeof CREW_GROUP_COLOR!=='undefined'&&CREW_GROUP_COLOR[g])||'#6b7280')+'">'+esc(g)+'</h4><span class="text-[9px] mono text-gray-500">'+$fmt(gsub)+'</span></div>'+
+    return '<div class="mb-3"><div class="flex items-center justify-between mb-1"><h4 class="text-[9px] font-bold uppercase tracking-wider" style="color:'+((typeof CREW_GROUP_COLOR!=='undefined'&&CREW_GROUP_COLOR[g])||'#727479')+'">'+esc(g)+'</h4><span class="text-[9px] mono text-gray-500">'+$fmt(gsub)+'</span></div>'+
       '<div class="overflow-x-auto"><table class="w-full" style="min-width:680px"><thead><tr>'+th('Position / person')+th('Union')+th('$/hr','text-right')+th('Days','text-right')+th('Hrs/day','text-right')+th('Meal','text-right')+th('Turn','text-right')+th('Kit','text-center')+th('Per diem $','text-right')+th('OT','text-right')+th('Cost','text-right')+'</tr></thead><tbody>'+rows+'</tbody></table></div></div>';
   }).join('');
   /* rows that matched no crew slot */
@@ -11298,7 +11300,7 @@ function xyJobDates(p){var sch=p.schedule;var s=p.date||'',e=p.date||'';
   if(Array.isArray(sch)&&sch.length){s=sch[0][0]||s;e=sch[sch.length-1][0]||e;}return {start:s,end:e};}
 function xytechJobForProd(key){var p=productions[key];var X=ensureXytech(key);var d=xyJobDates(p);
   return {job_no:X.jobNo||undefined,job_title:p.name,client_id:'MUSE_'+key.toUpperCase(),
-    status:xyStatusToJob(p.status),start_date:d.start,end_date:d.end,project_manager:p.editedBy||'Muse Live Production',
+    status:xyStatusToJob(p.status),start_date:d.start,end_date:d.end,project_manager:p.editedBy||'Meta Production',
     billing_rate_code:'RATE_MUSE_'+key.toUpperCase().slice(0,4)+'_2026',division:(p.customer||'Live Production')+' / Broadcast Operations'};}
 
 /* ---- wage calc shared with the labor engine's tier logic ---- */
@@ -11370,7 +11372,7 @@ function xytechRecon(key){var X=ensureXytech(key);var est=0,act=0,estH=0,actH=0,
 /* ---- pane ---- */
 function xytechPaneHTML(key){var p=productions[key];var X=ensureXytech(key);var busy=X.status!=='idle';
   var job=xytechJobForProd(key);var synced=!!X.jobNo;var hasAct=X.actuals.length>0;
-  var banner='<div class="rounded-2xl p-4 border" style="background:linear-gradient(120deg,#0b1f33,#15263b);border-color:#1f3a5f">'+
+  var banner='<div class="rounded-2xl p-4 border" style="background:linear-gradient(120deg,#0b1b33,#15243b);border-color:#1f395f">'+
     '<div class="flex flex-wrap items-center justify-between gap-2">'+
       '<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-white text-[10px] font-bold mono">XY</div>'+
         '<div><p class="text-[11px] font-bold text-white leading-none">Xytech MediaPulse <span class="text-[8px] font-bold ml-1 px-1.5 py-0.5 rounded bg-amber-400 text-amber-950">SIMULATED · no live Xytech</span></p>'+
@@ -11483,17 +11485,17 @@ var SCHED_MS=[
  {key:'cable',name:'Cabling & Camera Complete',cat:'Build',off:-3,re:/cabl|camera build|cam build|cam map|fiber pull/i},
  {key:'techreh',name:'Technical Rehearsal',cat:'Rehearsal',off:-2,re:/tech.*rehears|technical rehears/i},
  {key:'dress',name:'Dress Rehearsal',cat:'Rehearsal',off:-1,re:/dress|full rehears|final rehears/i},
- {key:'air',name:'ON AIR',cat:'Broadcast',off:0,re:/live|broadcast|on air|ceremony|kick.?off|\bmatch\b|parade|election|opening|final/i},
+ {key:'air',name:'ON AIR',cat:'Broadcast',off:0,re:/live|broadcast|on air|ceremony|kick.?off|\bmatch\b|takeover|summit|opening|final/i},
  {key:'strike',name:'Strike Complete',cat:'Strike',off:2,re:/strike|load.?out|wrap|tear.?down|de.?rig/i}
 ];
-var SCHED_CAT_COLOR={Survey:'#0ea5e9',Engineering:'#6366f1',Logistics:'#f59e0b',Site:'#00A15D',Transmission:'#8b5cf6',Crew:'#14b8a6',Build:'#f97316',Rehearsal:'#eab308',Broadcast:'#ef4444',Strike:'#64748b'};
+var SCHED_CAT_COLOR={Survey:'#0e66e9',Engineering:'#629cf2',Logistics:'#f56c0b',Site:'#31A24C',Transmission:'#5c9af6',Crew:'#14a8b8',Build:'#f97516',Rehearsal:'#eaaa08',Broadcast:'#ef4461',Strike:'#74767b'};
 var SCHED_PHASES=[
- {name:'Prep',keys:['survey','plan','equip','tx','power','crew'],color:'#6366f1'},
- {name:'Mobilize',keys:['travel','loadin'],color:'#f59e0b'},
- {name:'Build',keys:['loadin','cable'],color:'#f97316'},
- {name:'Rehearse',keys:['techreh','dress'],color:'#eab308'},
- {name:'Show',keys:['air'],color:'#ef4444'},
- {name:'Strike',keys:['strike'],color:'#64748b'}];
+ {name:'Prep',keys:['survey','plan','equip','tx','power','crew'],color:'#629cf2'},
+ {name:'Mobilize',keys:['travel','loadin'],color:'#f56c0b'},
+ {name:'Build',keys:['loadin','cable'],color:'#f97516'},
+ {name:'Rehearse',keys:['techreh','dress'],color:'#eaaa08'},
+ {name:'Show',keys:['air'],color:'#ef4461'},
+ {name:'Strike',keys:['strike'],color:'#74767b'}];
 var ROS_SEED=[
  {off:-360,dur:30,title:'Crew Call — Technical & Engineering',type:'call',dept:'Engineering'},
  {off:-330,dur:30,title:'Power Up & Generator Check',type:'check',dept:'Site / Power'},
@@ -11509,7 +11511,7 @@ var ROS_SEED=[
  {off:210,dur:15,title:'Off Air / Show Ends',type:'air',dept:'All'},
  {off:225,dur:105,title:'Strike Begins',type:'strike',dept:'Technical'},
  {off:330,dur:30,title:'Compound Secure',type:'strike',dept:'Engineering'}];
-var ROS_TYPE_COLOR={call:'#6366f1',check:'#0ea5e9',talent:'#ec4899',rehearsal:'#eab308',meal:'#00A15D',air:'#ef4444',strike:'#64748b'};
+var ROS_TYPE_COLOR={call:'#629cf2',check:'#0e66e9',talent:'#ec4863',rehearsal:'#eaaa08',meal:'#31A24C',air:'#ef4461',strike:'#74767b'};
 var ROS_TYPE_LABEL={call:'Call',check:'Check',talent:'Talent',rehearsal:'Rehearsal',meal:'Meal',air:'On Air',strike:'Strike'};
 var schedView=(typeof schedView!=='undefined')?schedView:{};
 var schedRosDay=(typeof schedRosDay!=='undefined')?schedRosDay:{};
@@ -11517,7 +11519,7 @@ var schedRosDay=(typeof schedRosDay!=='undefined')?schedRosDay:{};
 /* ---- find the broadcast row + air clock ---- */
 function schedBcRow(p){var rows=p.schedule||[];
   for(var j=0;j<rows.length;j++){if((rows[j][4]||'').trim()&&rows[j][4]!=='—')return rows[j];}  // row with a real on-air time = the show
-  for(var i=0;i<rows.length;i++){var r=rows[i];if(/\blive\b|broadcast|on air|ceremony|\bmatch\b|parade|election|opening ceremon|grand final/i.test(r[2]||''))return r;}
+  for(var i=0;i<rows.length;i++){var r=rows[i];if(/\blive\b|broadcast|on air|ceremony|\bmatch\b|takeover|summit|opening ceremon|grand final/i.test(r[2]||''))return r;}
   return rows[rows.length-1]||null;}
 function schedAirDate(p){var r=schedBcRow(p);var d=r?schedParse(r[0]||r[4]):null;return d||schedParse(p.date);}
 
@@ -11599,18 +11601,18 @@ function schedTimelineHTML(key){var p=productions[key];var s=ensureSched(key);va
     var rows=SCHED_PHASES.map(function(ph,i){var ds=ph.keys.map(function(k){var mm=s.milestones.filter(function(z){return z.key===k;})[0];return mm?schedParse(mm.date):null;}).filter(Boolean);
       if(!ds.length)return '';var a=ds[0],b=ds[0];ds.forEach(function(z){if(z<a)a=z;if(z>b)b=z;});
       var x1=x(a),x2=x(b);if(x2-x1<6)x2=x1+6;var y=top+i*rowH;
-      return '<text x="6" y="'+(y+11)+'" font-size="9" font-weight="700" fill="#6b7280">'+ph.name+'</text>'+
+      return '<text x="6" y="'+(y+11)+'" font-size="9" font-weight="700" fill="#727479">'+ph.name+'</text>'+
         '<rect x="'+x1.toFixed(1)+'" y="'+y+'" width="'+(x2-x1).toFixed(1)+'" height="14" rx="7" fill="'+ph.color+'" opacity="0.85"></rect>';}).join('');
     var lane=top+SCHED_PHASES.length*rowH+8;
-    var marks=msD.map(function(z){var cx=x(z.d);var col=SCHED_CAT_COLOR[z.m.cat]||'#6b7280';var done=z.m.status==='done';var rk=z.m.status==='at-risk';
-      return '<circle cx="'+cx.toFixed(1)+'" cy="'+lane+'" r="4" fill="'+(rk?'#ef4444':(done?col:'#fff'))+'" stroke="'+col+'" stroke-width="2"><title>'+esc(z.m.name)+' · '+schedFmtFull(z.d)+' · '+z.m.status+'</title></circle>';}).join('');
+    var marks=msD.map(function(z){var cx=x(z.d);var col=SCHED_CAT_COLOR[z.m.cat]||'#727479';var done=z.m.status==='done';var rk=z.m.status==='at-risk';
+      return '<circle cx="'+cx.toFixed(1)+'" cy="'+lane+'" r="4" fill="'+(rk?'#ef4461':(done?col:'#ffffff'))+'" stroke="'+col+'" stroke-width="2"><title>'+esc(z.m.name)+' · '+schedFmtFull(z.d)+' · '+z.m.status+'</title></circle>';}).join('');
     // month gridlines
     var ticks='';var cur=new Date(min.getFullYear(),min.getMonth(),1);if(cur<min)cur=schedAddDays(cur,0);
     var guard=0;cur=new Date(min.getFullYear(),min.getMonth(),1);
-    while(cur<=max&&guard<48){if(cur>=min){var tx=x(cur);ticks+='<line x1="'+tx.toFixed(1)+'" y1="'+top+'" x2="'+tx.toFixed(1)+'" y2="'+(lane+8)+'" stroke="#f1f5f9" stroke-width="1"></line>'+
-      '<text x="'+tx.toFixed(1)+'" y="'+(lane+20)+'" font-size="8" fill="#94a3b8">'+cur.toLocaleDateString('en-US',{month:'short'})+(cur.getMonth()===0?" '"+(''+cur.getFullYear()).slice(2):'')+'</text>';}
+    while(cur<=max&&guard<48){if(cur>=min){var tx=x(cur);ticks+='<line x1="'+tx.toFixed(1)+'" y1="'+top+'" x2="'+tx.toFixed(1)+'" y2="'+(lane+8)+'" stroke="#f1f4f9" stroke-width="1"></line>'+
+      '<text x="'+tx.toFixed(1)+'" y="'+(lane+20)+'" font-size="8" fill="#9ba2b1">'+cur.toLocaleDateString('en-US',{month:'short'})+(cur.getMonth()===0?" '"+(''+cur.getFullYear()).slice(2):'')+'</text>';}
       cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);guard++;}
-    var todayLine='';if(now>=min&&now<=max){var tx2=x(now);todayLine='<line x1="'+tx2.toFixed(1)+'" y1="'+(top-6)+'" x2="'+tx2.toFixed(1)+'" y2="'+(lane+8)+'" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3 2"></line><text x="'+tx2.toFixed(1)+'" y="'+(top-9)+'" font-size="8" font-weight="700" fill="#ef4444" text-anchor="middle">TODAY</text>';}
+    var todayLine='';if(now>=min&&now<=max){var tx2=x(now);todayLine='<line x1="'+tx2.toFixed(1)+'" y1="'+(top-6)+'" x2="'+tx2.toFixed(1)+'" y2="'+(lane+8)+'" stroke="#ef4461" stroke-width="1.5" stroke-dasharray="3 2"></line><text x="'+tx2.toFixed(1)+'" y="'+(top-9)+'" font-size="8" font-weight="700" fill="#ef4461" text-anchor="middle">TODAY</text>';}
     var H=lane+26;
     gantt='<div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
       '<h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">Production Timeline</h3>'+
@@ -11621,13 +11623,13 @@ function schedTimelineHTML(key){var p=productions[key];var s=ensureSched(key);va
 
 /* ============================ VIEW: MILESTONES ============================ */
 function schedMilestonesHTML(key){var p=productions[key];var s=ensureSched(key);var now=schedNow();var msCrew=getProjectCrew(key).filter(function(c){return (c.name||'').trim();});var dlId='mscrew_'+key;var msDL='<datalist id="'+dlId+'">'+msCrew.map(function(c){return '<option value="'+esc(c.name).replace(/"/g,'&quot;')+'">'+esc(c.pos||'')+'</option>';}).join('')+'</datalist>';
-  var sc={done:{c:'#00A15D',l:'Done',bg:'bg-emerald-50 text-emerald-700'},'in-progress':{c:'#3b82f6',l:'In progress',bg:'bg-blue-50 text-blue-700'},'at-risk':{c:'#ef4444',l:'At risk',bg:'bg-red-50 text-red-700'},pending:{c:'#9ca3af',l:'Pending',bg:'bg-gray-100 text-gray-500'}};
+  var sc={done:{c:'#31A24C',l:'Done',bg:'bg-emerald-50 text-emerald-700'},'in-progress':{c:'#3b86f6',l:'In progress',bg:'bg-blue-50 text-blue-700'},'at-risk':{c:'#ef4461',l:'At risk',bg:'bg-red-50 text-red-700'},pending:{c:'#9ba2b0',l:'Pending',bg:'bg-gray-100 text-gray-500'}};
   var ordered=s.milestones.slice().sort(function(a,b){var da=schedParse(a.date),db=schedParse(b.date);if(!da)return 1;if(!db)return -1;return da-db;});
   var rows=ordered.map(function(m){var d=schedParse(m.date);var dd=d?schedDayDiff(d,now):null;var overdue=d&&dd<0&&m.status!=='done';
-    var st=sc[m.status]||sc.pending;var col=SCHED_CAT_COLOR[m.cat]||'#6b7280';
+    var st=sc[m.status]||sc.pending;var col=SCHED_CAT_COLOR[m.cat]||'#727479';
     var rel=dd==null?'':(dd===0?'today':(dd>0?'in '+dd+'d':Math.abs(dd)+'d ago'));
     return '<div class="flex items-center gap-2 py-2 border-t border-gray-100 '+(overdue?'bg-red-50/40':'')+'">'+
-      '<button onclick="schedCycleStatus(\''+key+'\',\''+m.id+'\')" title="click to change status" class="flex-shrink-0 w-4 h-4 rounded-full" style="background:'+(m.status==='done'?st.c:'#fff')+';border:2px solid '+st.c+'"></button>'+
+      '<button onclick="schedCycleStatus(\''+key+'\',\''+m.id+'\')" title="click to change status" class="flex-shrink-0 w-4 h-4 rounded-full" style="background:'+(m.status==='done'?st.c:'#ffffff')+';border:2px solid '+st.c+'"></button>'+
       '<span class="w-1.5 h-6 rounded-full flex-shrink-0" style="background:'+col+'"></span>'+
       '<div class="min-w-0 flex-1"><input value="'+esc(m.name).replace(/"/g,'&quot;')+'" onchange="schedSetMs(\''+key+'\',\''+m.id+'\',\'name\',this.value)" class="text-[11px] font-semibold text-gray-800 w-full border border-transparent hover:border-gray-200 rounded px-1 py-0.5" style="outline:none">'+
         '<div class="flex items-center gap-1.5 px-1"><span class="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background:'+col+'22;color:'+col+'">'+esc(m.cat)+'</span>'+
@@ -11654,7 +11656,7 @@ function schedRunOfShowHTML(key){var p=productions[key];var s=ensureSched(key);v
   var gap=schedMealGaps(key);
   var dayDate=schedParse(d.date);
   // vertical timeline
-  var rows=evs.map(function(e){var col=ROS_TYPE_COLOR[e.type]||'#6b7280';var isAir=e.type==='air'&&/on air/i.test(e.title);
+  var rows=evs.map(function(e){var col=ROS_TYPE_COLOR[e.type]||'#727479';var isAir=e.type==='air'&&/on air/i.test(e.title);
     var endT=e.time+e.dur;
     return '<div class="flex items-stretch gap-2 '+(isAir?'bg-red-50/60 -mx-2 px-2 rounded-lg':'')+'">'+
       '<div class="flex-shrink-0 w-20 text-right pt-1.5"><p class="text-[10px] mono font-bold '+(isAir?'text-red-600':'text-gray-700')+'">'+schedFmtClock(e.time)+'</p><p class="text-[8px] mono text-gray-300">'+e.dur+'m</p></div>'+
@@ -11701,20 +11703,20 @@ function printRunOfShow(key){var p=productions[key];var s=ensureSched(key);var d
   function roleName(re){var m=crew.filter(function(c){return re.test(c.pos||'');})[0];return m?m.name:'—';}
   var tm=roleName(/tech manager/i),eic=roleName(/eic|engineer in charge/i),pm=roleName(/production manager/i);
   var mealChip=gap.risk?'<span class="chip r">Meal risk · '+(gap.maxGap/60).toFixed(1)+'h gap</span>':'<span class="chip g">Meals OK · '+(gap.maxGap/60).toFixed(1)+'h max</span>';
-  var body=evs.map(function(e){var isAir=e.type==='air'&&/on air/i.test(e.title);var col=ROS_TYPE_COLOR[e.type]||'#6b7280';
+  var body=evs.map(function(e){var isAir=e.type==='air'&&/on air/i.test(e.title);var col=ROS_TYPE_COLOR[e.type]||'#727479';
     return '<tr class="'+(isAir?'air':(e.type==='meal'?'meal':''))+'"><td class="t">'+schedFmtClock(e.time)+'</td><td class="c">'+e.dur+'m</td>'+
       '<td><span class="dot" style="background:'+col+'"></span>'+esc(e.title)+'</td><td>'+esc(ROS_TYPE_LABEL[e.type]||e.type)+'</td><td>'+esc(e.dept)+'</td><td class="t">'+schedFmtClock(e.time+e.dur)+'</td></tr>';}).join('');
-  var bar='<div class="bar"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>';
+  var bar='<div class="bar"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>';
   var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Run of Show — '+esc(p.name)+'</title><style>'+
     '@page{size:A4;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}'+
-    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222}'+
+    'html,body{margin:0;padding:0}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#212223}'+
     '.bar{display:flex;height:5px}.bar i{flex:1}'+
-    '.hd{background:#111112;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
-    '.hd h1{font-size:19px;margin:0;letter-spacing:.5px}.hd .s{font-size:11px;color:#bbb;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#bbb;line-height:1.6}'+
-    '.stats{display:flex;border-bottom:1px solid #eee}.stat{flex:1;padding:10px 14px;border-right:1px solid #f0f0f0}.stat:last-child{border-right:none}.stat .l{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#999}.stat .n{font-size:15px;font-weight:700;margin-top:2px;font-family:monospace}.stat .n.a{color:#dc2626}'+
-    '.chip{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px}.chip.r{background:#fef3c7;color:#b45309}.chip.g{background:#d1fae5;color:#047857}'+
-    'table{width:100%;border-collapse:collapse;margin-top:0;font-size:10px}th{background:#111112;color:#fff;text-align:left;padding:6px 8px;font-size:9px}td{border-bottom:0.5px solid #e6e6e9;padding:6px 8px;vertical-align:top}td.t{font-family:monospace;white-space:nowrap}td.c{font-family:monospace;color:#888;text-align:center}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}tr.air td{background:#fee2e2;font-weight:700}tr.meal td{background:#ecfdf5}'+
-    '.foot{margin-top:14px;display:flex;justify-content:space-between;font-size:8px;color:#9a9aa0;border-top:1px solid #eee;padding-top:6px}'+
+    '.hd{background:#111112;color:#ffffff;padding:14px 18px;display:flex;justify-content:space-between;align-items:flex-end}'+
+    '.hd h1{font-size:19px;margin:0;letter-spacing:.5px}.hd .s{font-size:11px;color:#b3b8c3;margin-top:3px}.hd .r{text-align:right;font-size:9px;color:#b3b8c3;line-height:1.6}'+
+    '.stats{display:flex;border-bottom:1px solid #ecedf0}.stat{flex:1;padding:10px 14px;border-right:1px solid #eeeff2}.stat:last-child{border-right:none}.stat .l{font-size:8px;text-transform:uppercase;letter-spacing:1px;color:#8D95A5}.stat .n{font-size:15px;font-weight:700;margin-top:2px;font-family:monospace}.stat .n.a{color:#dc2644}'+
+    '.chip{display:inline-block;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px}.chip.r{background:#feeec7;color:#b45009}.chip.g{background:#d1fadb;color:#04781F}'+
+    'table{width:100%;border-collapse:collapse;margin-top:0;font-size:10px}th{background:#111112;color:#ffffff;text-align:left;padding:6px 8px;font-size:9px}td{border-bottom:0.5px solid #e5e7ea;padding:6px 8px;vertical-align:top}td.t{font-family:monospace;white-space:nowrap}td.c{font-family:monospace;color:#7A8396;text-align:center}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}tr.air td{background:#fee2e7;font-weight:700}tr.meal td{background:#ecfdf0}'+
+    '.foot{margin-top:14px;display:flex;justify-content:space-between;font-size:8px;color:#9199a9;border-top:1px solid #ecedf0;padding-top:6px}'+
     '</style></head><body>'+bar+
     '<div class="hd"><div><h1>RUN OF SHOW · CALL SHEET</h1><div class="s">'+esc(p.name)+' — '+esc(d.label)+(dayDate?' · '+schedFmtFull(dayDate):'')+'</div></div>'+
       '<div class="r">Tech Manager: '+esc(tm)+'<br>EIC: '+esc(eic)+'<br>Production Mgr: '+esc(pm)+'</div></div>'+
@@ -11726,7 +11728,7 @@ function printRunOfShow(key){var p=productions[key];var s=ensureSched(key);var d
       '<div class="stat"><div class="l">Meal Timing</div><div style="margin-top:4px">'+mealChip+'</div></div>'+
     '</div>'+
     '<table><thead><tr><th style="width:64px">Time</th><th style="width:40px">Dur</th><th>Event</th><th style="width:70px">Type</th><th style="width:120px">Dept</th><th style="width:64px">Ends</th></tr></thead><tbody>'+body+'</tbody></table>'+
-    '<div class="foot"><span>Muse Live Broadcast Telemetry · Confidential · Run of Show</span><span>'+esc(p.name)+' · '+evs.length+' events · generated from Muse Live</span></div>'+
+    '<div class="foot"><span>Meta Broadcast Telemetry · Confidential · Run of Show</span><span>'+esc(p.name)+' · '+evs.length+' events · generated from Muse Live</span></div>'+
     '</body></html>';
   var w=window.open('','_blank');if(!w){toast('Allow pop-ups to export the call sheet');return;}
   w.document.open();w.document.write(html);w.document.close();
@@ -11946,7 +11948,7 @@ var PLAN_SEED=[
  {key:'air',    name:'ON AIR — Broadcast',                dept:'Broadcast',   wbs:'6.1', dur:1,  pred:[{k:'dress',t:'FS',l:0}],                                        res:[{k:'crew',u:12},{k:'facility',u:1}], cf:0.02, deadline:true},
  {key:'strike', name:'Strike & Load-Out',                 dept:'Strike',      wbs:'7.1', dur:3,  pred:[{k:'air',t:'FS',l:0}],                                          res:[{k:'crew',u:8}],                 cf:0.05}
 ];
-var PLAN_DEPT_COLOR={Survey:'#0ea5e9',Engineering:'#6366f1',Logistics:'#f59e0b',Site:'#00A15D',Transmission:'#8b5cf6',Crew:'#14b8a6',Build:'#f97316',Rehearsal:'#eab308',Broadcast:'#ef4444',Strike:'#64748b',Other:'#94a3b8'};
+var PLAN_DEPT_COLOR={Survey:'#0e66e9',Engineering:'#629cf2',Logistics:'#f56c0b',Site:'#31A24C',Transmission:'#5c9af6',Crew:'#14a8b8',Build:'#f97516',Rehearsal:'#eaaa08',Broadcast:'#ef4461',Strike:'#74767b',Other:'#9ba2b1'};
 var PLAN_RES_MAP={crew:'CREW',equip:'EQUIP',facility:'FAC'};
 
 function planAirDate(key){ var p=productions[key];
@@ -12091,8 +12093,8 @@ function planScenarioDiff(key,scId){ var base=planCompute(key); var sc=planScena
   return {finishDelta:finishDelta, costDelta:scCost-baseCost, critChanged:baseCrit!==scCrit,
     baseFinish:base.projectFinish, scFinish:sc.result.projectFinish, base:base, sc:sc}; }
 
-/* -------------------- Charlie context helper -------------------- */
-function planCharlieSummary(key){ var p=productions[key]; try{ ensurePlan(key); }catch(e){ return null; }
+/* -------------------- Muse context helper -------------------- */
+function planMuseAiSummary(key){ var p=productions[key]; try{ ensurePlan(key); }catch(e){ return null; }
   var r=planCompute(key); var ev=planEVMFor(key); var gates=planGates(key);
   var crit=r.critical.map(function(id){ var a=r.byId[id]; return a?a.name:id; });
   var behind=r.activities.filter(function(a){ return a.totalFloat<0; }).length;
@@ -12180,43 +12182,43 @@ function planGanttViewHTML(key){ var p=productions[key]; var plan=ensurePlanRaw(
   function X(iso){ var d=(iso instanceof Date)?iso:(planParseISO(iso)||minD); return LBL+planDayDiff(d,minD)*ppd; }
   var rowH=22, top=48, H=top+acts.length*rowH+34;
   var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:'+Math.min(W,2600)+'px;display:block;font-family:inherit">';
-  svg+='<defs><marker id="pgArr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>';
+  svg+='<defs><marker id="pgArr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#9ba2b1"/></marker></defs>';
   /* month gridlines */
   var cur=new Date(minD.getFullYear(),minD.getMonth(),1), guard=0;
   while(cur<=maxD && guard<60){ if(cur>=minD){ var mx=X(cur);
-    svg+='<line x1="'+mx.toFixed(1)+'" y1="'+top+'" x2="'+mx.toFixed(1)+'" y2="'+(H-24)+'" stroke="#f1f5f9" stroke-width="1"/>'+
-      '<text x="'+(mx+3).toFixed(1)+'" y="'+(top-6)+'" font-size="9" fill="#94a3b8" font-weight="700">'+cur.toLocaleDateString('en-US',{month:'short'})+(cur.getMonth()===0?" '"+(''+cur.getFullYear()).slice(2):'')+'</text>'; }
+    svg+='<line x1="'+mx.toFixed(1)+'" y1="'+top+'" x2="'+mx.toFixed(1)+'" y2="'+(H-24)+'" stroke="#f1f4f9" stroke-width="1"/>'+
+      '<text x="'+(mx+3).toFixed(1)+'" y="'+(top-6)+'" font-size="9" fill="#9ba2b1" font-weight="700">'+cur.toLocaleDateString('en-US',{month:'short'})+(cur.getMonth()===0?" '"+(''+cur.getFullYear()).slice(2):'')+'</text>'; }
     cur=new Date(cur.getFullYear(),cur.getMonth()+1,1); guard++; }
   /* data-date line */
-  var ddX=X(plan.dataDate); if(ddX>=LBL&&ddX<=W){ svg+='<line x1="'+ddX.toFixed(1)+'" y1="'+(top-2)+'" x2="'+ddX.toFixed(1)+'" y2="'+(H-24)+'" stroke="#ef4444" stroke-width="1.4" stroke-dasharray="3 2"/><text x="'+ddX.toFixed(1)+'" y="'+(top-16)+'" font-size="8" font-weight="700" fill="#ef4444" text-anchor="middle">DATA DATE</text>'; }
+  var ddX=X(plan.dataDate); if(ddX>=LBL&&ddX<=W){ svg+='<line x1="'+ddX.toFixed(1)+'" y1="'+(top-2)+'" x2="'+ddX.toFixed(1)+'" y2="'+(H-24)+'" stroke="#ef4461" stroke-width="1.4" stroke-dasharray="3 2"/><text x="'+ddX.toFixed(1)+'" y="'+(top-16)+'" font-size="8" font-weight="700" fill="#ef4461" text-anchor="middle">DATA DATE</text>'; }
   /* dependency arrows (behind bars) */
   acts.forEach(function(a,i){ var y=top+i*rowH+8; (a.pred||[]).forEach(function(pr){ var pi=idIdx[pr.id]; if(pi==null) return; var pa=acts[pi];
     var py=top+pi*rowH+8; var x1=X(pa.finish)+ppd, x2=X(a.start); var mid=(y+py)/2;
-    svg+='<path d="M'+x1.toFixed(1)+','+(py+5)+' L'+((x1+8)).toFixed(1)+','+(py+5)+' L'+((x1+8)).toFixed(1)+','+(y+5)+' L'+(x2-2).toFixed(1)+','+(y+5)+'" fill="none" stroke="#cbd5e1" stroke-width="1" marker-end="url(#pgArr)"/>'; }); });
+    svg+='<path d="M'+x1.toFixed(1)+','+(py+5)+' L'+((x1+8)).toFixed(1)+','+(py+5)+' L'+((x1+8)).toFixed(1)+','+(y+5)+' L'+(x2-2).toFixed(1)+','+(y+5)+'" fill="none" stroke="#d1d4db" stroke-width="1" marker-end="url(#pgArr)"/>'; }); });
   /* rows */
-  acts.forEach(function(a,i){ var y=top+i*rowH; var by=y+4, bh=13; var col=a.critical?'#ef4444':planDepCol(a.dept);
+  acts.forEach(function(a,i){ var y=top+i*rowH; var by=y+4, bh=13; var col=a.critical?'#ef4461':planDepCol(a.dept);
     var x1=X(a.start), x2=X(a.finish)+ppd; if(x2<x1+3)x2=x1+3;
     /* label */
     var nm=(a.wbs?a.wbs+' ':'')+a.name; if(nm.length>34)nm=nm.slice(0,33)+'…';
-    svg+='<text x="6" y="'+(y+13)+'" font-size="9.5" fill="'+(a.critical?'#dc2626':'#374151')+'" font-weight="'+(a.critical?'700':'600')+'">'+esc(nm)+'</text>';
+    svg+='<text x="6" y="'+(y+13)+'" font-size="9.5" fill="'+(a.critical?'#dc2644':'#424346')+'" font-weight="'+(a.critical?'700':'600')+'">'+esc(nm)+'</text>';
     /* baseline bar */
     if(bl&&bl.snap[a.id]){ var b=bl.snap[a.id]; var bx1=X(b.start), bx2=X(b.finish)+ppd; if(bx2<bx1+2)bx2=bx1+2;
-      svg+='<rect x="'+bx1.toFixed(1)+'" y="'+(y+rowH-5)+'" width="'+(bx2-bx1).toFixed(1)+'" height="3" rx="1.5" fill="#cbd5e1"><title>Baseline: '+planQ(planFmtD(b.start)+' → '+planFmtD(b.finish))+'</title></rect>'; }
+      svg+='<rect x="'+bx1.toFixed(1)+'" y="'+(y+rowH-5)+'" width="'+(bx2-bx1).toFixed(1)+'" height="3" rx="1.5" fill="#d1d4db"><title>Baseline: '+planQ(planFmtD(b.start)+' → '+planFmtD(b.finish))+'</title></rect>'; }
     /* float bar */
     if(a.totalFloat>0){ var fe=X(planISO(ordDate(a.lf>0?a.lf-1:a.lf)))+ppd; if(fe>x2+1){ svg+='<rect x="'+x2.toFixed(1)+'" y="'+(by+3)+'" width="'+(fe-x2).toFixed(1)+'" height="6" rx="3" fill="'+col+'" opacity="0.18"><title>Total float '+a.totalFloat+'d</title></rect>'; } }
     /* main bar or milestone */
     var tip=a.name+' · '+planFmtD(a.start)+'→'+planFmtD(a.finish)+' · '+a.dur+'d · float '+a.totalFloat+'d · '+(a.pct||0)+'%'; /* raw — planQ escapes once (no double-escape) */
     if(a.milestone||a.dur===0){ var mxp=x1; svg+='<path d="M'+mxp+','+by+' l7,'+(bh/2)+' l-7,'+(bh/2)+' l-7,-'+(bh/2)+' Z" fill="'+col+'"><title>'+planQ(tip)+'</title></path>'; }
     else { svg+='<rect x="'+x1.toFixed(1)+'" y="'+by+'" width="'+(x2-x1).toFixed(1)+'" height="'+bh+'" rx="3" fill="'+col+'" opacity="0.9"><title>'+planQ(tip)+'</title></rect>';
-      var pw=(x2-x1)*Math.max(0,Math.min(100,a.pct||0))/100; if(pw>0)svg+='<rect x="'+x1.toFixed(1)+'" y="'+by+'" width="'+pw.toFixed(1)+'" height="'+bh+'" rx="3" fill="#000" opacity="0.28"/>';
-      if((x2-x1)>26)svg+='<text x="'+((x1+x2)/2).toFixed(1)+'" y="'+(by+10)+'" font-size="8" fill="#fff" text-anchor="middle" font-weight="700">'+(a.pct||0)+'%</text>'; }
+      var pw=(x2-x1)*Math.max(0,Math.min(100,a.pct||0))/100; if(pw>0)svg+='<rect x="'+x1.toFixed(1)+'" y="'+by+'" width="'+pw.toFixed(1)+'" height="'+bh+'" rx="3" fill="#000000" opacity="0.28"/>';
+      if((x2-x1)>26)svg+='<text x="'+((x1+x2)/2).toFixed(1)+'" y="'+(by+10)+'" font-size="8" fill="#ffffff" text-anchor="middle" font-weight="700">'+(a.pct||0)+'%</text>'; }
   });
   svg+='</svg>';
   var legend='<div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-gray-100 text-[8px] text-gray-500">'+
-    '<span class="flex items-center gap-1"><span class="w-3 h-2 rounded-sm" style="background:#ef4444"></span>Critical path</span>'+
-    '<span class="flex items-center gap-1"><span class="w-3 h-1 rounded-sm" style="background:#cbd5e1"></span>Baseline</span>'+
-    '<span class="flex items-center gap-1"><span class="w-3 h-1.5 rounded-sm" style="background:#94a3b8;opacity:.4"></span>Total float</span>'+
-    '<span class="flex items-center gap-1"><span class="w-2 h-2" style="background:#64748b;transform:rotate(45deg)"></span>Milestone</span>'+
+    '<span class="flex items-center gap-1"><span class="w-3 h-2 rounded-sm" style="background:#ef4461"></span>Critical path</span>'+
+    '<span class="flex items-center gap-1"><span class="w-3 h-1 rounded-sm" style="background:#d1d4db"></span>Baseline</span>'+
+    '<span class="flex items-center gap-1"><span class="w-3 h-1.5 rounded-sm" style="background:#9ba2b1;opacity:.4"></span>Total float</span>'+
+    '<span class="flex items-center gap-1"><span class="w-2 h-2" style="background:#74767b;transform:rotate(45deg)"></span>Milestone</span>'+
     '<span class="flex items-center gap-1"><span class="inline-block w-0 h-3 border-l border-dashed border-red-500"></span>Data date</span></div>';
   var zoomCtl='<div class="inline-flex items-center gap-0.5 bg-gray-100 rounded-lg p-0.5">'+['compact','normal','wide'].map(function(z){return '<button onclick="planSetZoom(\''+key+'\',\''+z+'\')" class="px-2 py-1 rounded text-[9px] font-bold '+(zoom===z?'bg-white text-gray-900 shadow-sm':'text-gray-500')+'">'+z.charAt(0).toUpperCase()+z.slice(1)+'</button>';}).join('')+'</div>';
   var blSel=planBaselineControlHTML(key);
@@ -12242,7 +12244,7 @@ function planGridViewHTML(key){ var p=productions[key]; var plan=ensurePlanRaw(p
   var rowNum={}; acts.forEach(function(a,i){ rowNum[a.id]=i+1; });
   var bl=planCurrentBaseline(plan);
   function predText(a){ return (a.pred||[]).map(function(pr){ var n=rowNum[pr.id]; if(!n) return ''; var t=(pr.type&&pr.type!=='FS')?pr.type:''; var lg=pr.lag?((pr.lag>0?'+':'')+pr.lag):''; return n+t+lg; }).filter(Boolean).join(', '); }
-  var rows=acts.map(function(a){ var col=a.critical?'#ef4444':planDepCol(a.dept); var overdue=a.totalFloat<0;
+  var rows=acts.map(function(a){ var col=a.critical?'#ef4461':planDepCol(a.dept); var overdue=a.totalFloat<0;
     var b=bl?bl.snap[a.id]:null; var fVar=(b&&a.finish&&b.finish)?planDayDiff(planParseISO(a.finish),planParseISO(b.finish)):null;
     return '<tr class="'+(overdue?'bg-red-50/50':'hover:bg-gray-50/60')+' border-t border-gray-100">'+
       '<td class="py-1 pr-1 text-[9px] mono text-gray-400 text-right">'+rowNum[a.id]+'</td>'+
@@ -12281,14 +12283,14 @@ function planResourcesViewHTML(key){ var p=productions[key]; var r=planCompute(k
     var days=mx-mn+1; var bw=Math.max(3,Math.min(16,Math.floor(560/days))); var W=Math.max(560,days*bw+80), H=120, base=96, top=14;
     var maxV=Math.max(res.cap,peak,1); function Y(v){ return base-(v/maxV)*(base-top); }
     var bars=''; for(var o=mn;o<=mx;o++){ var v=d[o]||0; if(!v) continue; var x=40+(o-mn)*bw; var h=base-Y(v); var ov=v>res.cap;
-      bars+='<rect x="'+x+'" y="'+Y(v).toFixed(1)+'" width="'+(bw-1)+'" height="'+h.toFixed(1)+'" fill="'+(ov?'#ef4444':'#3b82f6')+'" opacity="'+(ov?0.9:0.7)+'"><title>'+planQ(planFmtD(planISO(ordDate(o)))+': '+v+' / cap '+res.cap)+'</title></rect>'; }
+      bars+='<rect x="'+x+'" y="'+Y(v).toFixed(1)+'" width="'+(bw-1)+'" height="'+h.toFixed(1)+'" fill="'+(ov?'#ef4461':'#3b86f6')+'" opacity="'+(ov?0.9:0.7)+'"><title>'+planQ(planFmtD(planISO(ordDate(o)))+': '+v+' / cap '+res.cap)+'</title></rect>'; }
     var capY=Y(res.cap); var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:'+Math.min(W,1400)+'px;display:block">'+
       '<line x1="40" y1="'+base+'" x2="'+(W-20)+'" y2="'+base+'" stroke="#e5e7eb"/>'+
-      '<line x1="40" y1="'+capY.toFixed(1)+'" x2="'+(W-20)+'" y2="'+capY.toFixed(1)+'" stroke="#f59e0b" stroke-width="1.4" stroke-dasharray="4 3"/>'+
-      '<text x="'+(W-18)+'" y="'+(capY-3).toFixed(1)+'" font-size="8" fill="#b45309" text-anchor="end" font-weight="700">capacity '+res.cap+'</text>'+
+      '<line x1="40" y1="'+capY.toFixed(1)+'" x2="'+(W-20)+'" y2="'+capY.toFixed(1)+'" stroke="#f56c0b" stroke-width="1.4" stroke-dasharray="4 3"/>'+
+      '<text x="'+(W-18)+'" y="'+(capY-3).toFixed(1)+'" font-size="8" fill="#b45009" text-anchor="end" font-weight="700">capacity '+res.cap+'</text>'+
       bars+'</svg>';
     charts+='<div class="bg-white rounded-2xl p-4 border border-gray-200/60 mb-3" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
-      '<div class="flex items-center justify-between mb-1"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" style="background:'+(over?'#ef4444':'#3b82f6')+'"></span><h4 class="text-[11px] font-bold text-gray-800">'+esc(res.name)+'</h4><span class="text-[9px] text-gray-400">'+esc(res.source)+' · '+planMoney(res.rate)+'/day</span></div>'+
+      '<div class="flex items-center justify-between mb-1"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" style="background:'+(over?'#ef4461':'#3b86f6')+'"></span><h4 class="text-[11px] font-bold text-gray-800">'+esc(res.name)+'</h4><span class="text-[9px] text-gray-400">'+esc(res.source)+' · '+planMoney(res.rate)+'/day</span></div>'+
       '<span class="text-[9px] font-bold '+(over?'text-red-600':'text-emerald-600')+'">peak '+peak+' / cap '+res.cap+(over?' · OVER':' · OK')+'</span></div>'+
       '<div class="overflow-x-auto">'+svg+'</div></div>'; }
   var levelBtns=overAny?'<div class="flex flex-wrap items-center gap-2 mb-3"><span class="text-[10px] font-semibold text-red-700">⚠ Resource over-allocation detected.</span>'+
@@ -12334,13 +12336,13 @@ function planEVMViewHTML(key){ var ev=planEVMFor(key); var vr=planVariance(key);
     var bacY=Y(ev.BAC), eacY=Y(ev.EAC);
     svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:520px;display:block">'+
       '<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="#e5e7eb"/>'+
-      '<line x1="'+L+'" y1="'+bacY.toFixed(1)+'" x2="'+R+'" y2="'+bacY.toFixed(1)+'" stroke="#9ca3af" stroke-width="1" stroke-dasharray="4 3"/><text x="'+(R)+'" y="'+(bacY-3).toFixed(1)+'" font-size="8" fill="#6b7280" text-anchor="end">BAC '+planMoney(ev.BAC)+'</text>'+
-      '<line x1="'+L+'" y1="'+eacY.toFixed(1)+'" x2="'+R+'" y2="'+eacY.toFixed(1)+'" stroke="#ef4444" stroke-width="1" stroke-dasharray="2 2" opacity="0.6"/><text x="'+(R)+'" y="'+(eacY+9).toFixed(1)+'" font-size="8" fill="#dc2626" text-anchor="end">EAC '+planMoney(ev.EAC)+'</text>'+
-      '<path d="'+path('pv')+'" fill="none" stroke="#94a3b8" stroke-width="2"/>'+
-      '<path d="'+path('ev')+'" fill="none" stroke="#00A15D" stroke-width="2"/>'+
-      '<path d="'+path('ac')+'" fill="none" stroke="#ef4444" stroke-width="2"/>'+
+      '<line x1="'+L+'" y1="'+bacY.toFixed(1)+'" x2="'+R+'" y2="'+bacY.toFixed(1)+'" stroke="#9ba2b0" stroke-width="1" stroke-dasharray="4 3"/><text x="'+(R)+'" y="'+(bacY-3).toFixed(1)+'" font-size="8" fill="#727479" text-anchor="end">BAC '+planMoney(ev.BAC)+'</text>'+
+      '<line x1="'+L+'" y1="'+eacY.toFixed(1)+'" x2="'+R+'" y2="'+eacY.toFixed(1)+'" stroke="#ef4461" stroke-width="1" stroke-dasharray="2 2" opacity="0.6"/><text x="'+(R)+'" y="'+(eacY+9).toFixed(1)+'" font-size="8" fill="#dc2644" text-anchor="end">EAC '+planMoney(ev.EAC)+'</text>'+
+      '<path d="'+path('pv')+'" fill="none" stroke="#9ba2b1" stroke-width="2"/>'+
+      '<path d="'+path('ev')+'" fill="none" stroke="#31A24C" stroke-width="2"/>'+
+      '<path d="'+path('ac')+'" fill="none" stroke="#ef4461" stroke-width="2"/>'+
       '</svg>'; }
-  var leg='<div class="flex flex-wrap gap-3 mt-1 text-[8px] text-gray-500"><span class="flex items-center gap-1"><span class="w-3 h-0.5" style="background:#94a3b8"></span>PV (planned)</span><span class="flex items-center gap-1"><span class="w-3 h-0.5" style="background:#00A15D"></span>EV (earned)</span><span class="flex items-center gap-1"><span class="w-3 h-0.5" style="background:#ef4444"></span>AC (actual)</span></div>';
+  var leg='<div class="flex flex-wrap gap-3 mt-1 text-[8px] text-gray-500"><span class="flex items-center gap-1"><span class="w-3 h-0.5" style="background:#9ba2b1"></span>PV (planned)</span><span class="flex items-center gap-1"><span class="w-3 h-0.5" style="background:#31A24C"></span>EV (earned)</span><span class="flex items-center gap-1"><span class="w-3 h-0.5" style="background:#ef4461"></span>AC (actual)</span></div>';
   /* variance table (top slips) */
   var slips=vr.rows.filter(function(x){return x.finishVar!=null&&x.finishVar!==0;}).sort(function(a,b){return Math.abs(b.finishVar)-Math.abs(a.finishVar);}).slice(0,8);
   var vt=slips.length?('<table class="w-full text-left text-[10px] mt-1"><thead><tr class="text-gray-500 uppercase text-[8px] border-b border-gray-200"><th class="pb-1 pr-2">Activity</th><th class="pb-1 pr-2">Baseline finish</th><th class="pb-1 pr-2">Current finish</th><th class="pb-1">Slip</th></tr></thead><tbody>'+
@@ -12354,9 +12356,9 @@ function planEVMViewHTML(key){ var ev=planEVMFor(key); var vr=planVariance(key);
 
 /* ---------------- GATES ---------------- */
 function planGatesViewHTML(key){ var gates=planGates(key);
-  var stCol={passed:['#00A15D','bg-emerald-50 text-emerald-700 border-emerald-200','Passed'],open:['#3b82f6','bg-blue-50 text-blue-700 border-blue-200','Open'],blocked:['#ef4444','bg-red-50 text-red-700 border-red-200','Blocked'],pending:['#9ca3af','bg-gray-100 text-gray-500 border-gray-200','Pending']};
+  var stCol={passed:['#31A24C','bg-emerald-50 text-emerald-700 border-emerald-200','Passed'],open:['#3b86f6','bg-blue-50 text-blue-700 border-blue-200','Open'],blocked:['#ef4461','bg-red-50 text-red-700 border-red-200','Blocked'],pending:['#9ba2b0','bg-gray-100 text-gray-500 border-gray-200','Pending']};
   var cards=gates.map(function(g){ var sc=stCol[g.status]||stCol.pending;
-    var crit=g.criteria.map(function(c){ var ic=c.met?'<span style="color:#00A15D">✓</span>':(c.overdue?'<span style="color:#ef4444">✕</span>':'<span style="color:#9ca3af">○</span>');
+    var crit=g.criteria.map(function(c){ var ic=c.met?'<span style="color:#31A24C">✓</span>':(c.overdue?'<span style="color:#ef4461">✕</span>':'<span style="color:#9ba2b0">○</span>');
       return '<div class="flex items-center gap-2 text-[10px] '+(c.met?'text-gray-700':(c.overdue?'text-red-600':'text-gray-500'))+'">'+ic+'<span class="flex-1">'+esc(c.label)+'</span>'+(c.pct!=null?'<span class="mono text-[9px] text-gray-400">'+c.pct+'%</span>':'')+'</div>'; }).join('');
     return '<div class="rounded-xl border p-3 '+sc[1].replace(/text-[a-z]+-\d+/,'').replace(/bg-[a-z]+-\d+/,'')+'" style="border-color:'+sc[0]+'33">'+
       '<div class="flex items-center justify-between mb-2"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full" style="background:'+sc[0]+'"></span><h4 class="text-[11px] font-bold text-gray-800">'+esc(g.name)+'</h4></div><span class="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded border '+sc[1]+'">'+sc[2]+'</span></div>'+
@@ -12509,14 +12511,14 @@ function portfolioControlsHTML(){
     function X(d){ return LBL+planDayDiff(d,allS)*ppd; } var rowH=24,top=30,H=top+data.length*rowH+30;
     var svg='<svg viewBox="0 0 '+W+' '+H+'" width="100%" style="min-width:'+Math.min(W,1600)+'px;display:block">';
     var cur=new Date(allS.getFullYear(),allS.getMonth(),1),g2=0;
-    while(cur<=allF&&g2<60){ if(cur>=allS){ var mx=X(cur); svg+='<line x1="'+mx.toFixed(1)+'" y1="'+top+'" x2="'+mx.toFixed(1)+'" y2="'+(H-24)+'" stroke="#f1f5f9"/><text x="'+(mx+2).toFixed(1)+'" y="'+(top-4)+'" font-size="8" fill="#94a3b8" font-weight="700">'+cur.toLocaleDateString('en-US',{month:'short'})+(cur.getMonth()===0?" '"+(''+cur.getFullYear()).slice(2):'')+'</text>'; } cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);g2++; }
-    var todayX=X(planParseISO(planTodayISO())); if(todayX>=LBL)svg+='<line x1="'+todayX.toFixed(1)+'" y1="'+(top-2)+'" x2="'+todayX.toFixed(1)+'" y2="'+(H-24)+'" stroke="#ef4444" stroke-width="1.2" stroke-dasharray="3 2"/>';
+    while(cur<=allF&&g2<60){ if(cur>=allS){ var mx=X(cur); svg+='<line x1="'+mx.toFixed(1)+'" y1="'+top+'" x2="'+mx.toFixed(1)+'" y2="'+(H-24)+'" stroke="#f1f4f9"/><text x="'+(mx+2).toFixed(1)+'" y="'+(top-4)+'" font-size="8" fill="#9ba2b1" font-weight="700">'+cur.toLocaleDateString('en-US',{month:'short'})+(cur.getMonth()===0?" '"+(''+cur.getFullYear()).slice(2):'')+'</text>'; } cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);g2++; }
+    var todayX=X(planParseISO(planTodayISO())); if(todayX>=LBL)svg+='<line x1="'+todayX.toFixed(1)+'" y1="'+(top-2)+'" x2="'+todayX.toFixed(1)+'" y2="'+(H-24)+'" stroke="#ef4461" stroke-width="1.2" stroke-dasharray="3 2"/>';
     data.forEach(function(d,i){ var y=top+i*rowH; var s=planParseISO(d.r.projectStart),f=planParseISO(d.r.projectFinish); var x1=X(s),x2=X(f)+ppd;
-      var col=d.ev.SPI>=0.98?'#00A15D':(d.ev.SPI>=0.9?'#f59e0b':'#ef4444');
+      var col=d.ev.SPI>=0.98?'#31A24C':(d.ev.SPI>=0.9?'#f56c0b':'#ef4461');
       var nm=d.name.length>22?d.name.slice(0,21)+'…':d.name;
-      svg+='<text x="6" y="'+(y+14)+'" font-size="9.5" fill="#374151" font-weight="600">'+esc(nm)+'</text>'+
+      svg+='<text x="6" y="'+(y+14)+'" font-size="9.5" fill="#424346" font-weight="600">'+esc(nm)+'</text>'+
         '<rect x="'+x1.toFixed(1)+'" y="'+(y+4)+'" width="'+Math.max(3,x2-x1).toFixed(1)+'" height="13" rx="3" fill="'+col+'" opacity="0.85"><title>'+planQ(d.name+' · '+planFmtDY(d.r.projectStart)+' → '+planFmtDY(d.r.projectFinish))+'</title></rect>';
-      var air=planAirDate(d.key); if(air){ var ax=X(air); svg+='<path d="M'+ax+','+(y+2)+' l4,'+(6)+' l-4,6 l-4,-6 Z" fill="#111827"><title>Air '+planQ(planFmtDY(planISO(air)))+'</title></path>'; } });
+      var air=planAirDate(d.key); if(air){ var ax=X(air); svg+='<path d="M'+ax+','+(y+2)+' l4,'+(6)+' l-4,6 l-4,-6 Z" fill="#1B1C1D"><title>Air '+planQ(planFmtDY(planISO(air)))+'</title></path>'; } });
     svg+='</svg>';
     pg='<div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60 mb-4" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">Portfolio Timeline</h3><div class="overflow-x-auto">'+svg+'</div><p class="text-[8px] text-gray-400 mt-1">Bar color = schedule health (SPI). ◆ = air date. Red dashed = today.</p></div>'; }
   /* resource capacity map across portfolio */
@@ -12528,7 +12530,7 @@ function portfolioControlsHTML(){
   for(var rid3 in resByDate){ if(!resByDate.hasOwnProperty(rid3))continue; var mxp=0; var dmap=resByDate[rid3]; for(var iso3 in dmap){ if(dmap.hasOwnProperty(iso3)&&dmap[iso3]>mxp)mxp=dmap[iso3]; } resTot[rid3].peak=mxp; }
   var rrows=''; for(var rid in ppool){ if(!ppool.hasOwnProperty(rid))continue; var cap=ppool[rid].cap; var pk=(resTot[rid]?resTot[rid].peak:0); var md=(resTot[rid]?resTot[rid].md:0);
     var pctP=cap?Math.min(100,Math.round(pk/cap*100)):0; var over=pk>cap;
-    rrows+='<tr class="border-t border-gray-100"><td class="py-1.5 pr-2 text-[11px] font-semibold text-gray-800">'+esc(ppool[rid].name)+'</td><td class="py-1.5 pr-2 mono text-[10px] text-gray-600 text-center">'+cap+'</td><td class="py-1.5 pr-2 mono text-[10px] text-center '+(over?'text-red-600 font-bold':'text-gray-600')+'">'+pk+'</td><td class="py-1.5 pr-2"><div class="h-2 rounded-full bg-gray-100 overflow-hidden w-full max-w-[160px]"><div class="h-full" style="width:'+pctP+'%;background:'+(over?'#ef4444':'#3b82f6')+'"></div></div></td><td class="py-1.5 mono text-[10px] text-gray-500 text-right">'+md+' unit-days</td></tr>'; }
+    rrows+='<tr class="border-t border-gray-100"><td class="py-1.5 pr-2 text-[11px] font-semibold text-gray-800">'+esc(ppool[rid].name)+'</td><td class="py-1.5 pr-2 mono text-[10px] text-gray-600 text-center">'+cap+'</td><td class="py-1.5 pr-2 mono text-[10px] text-center '+(over?'text-red-600 font-bold':'text-gray-600')+'">'+pk+'</td><td class="py-1.5 pr-2"><div class="h-2 rounded-full bg-gray-100 overflow-hidden w-full max-w-[160px]"><div class="h-full" style="width:'+pctP+'%;background:'+(over?'#ef4461':'#3b86f6')+'"></div></div></td><td class="py-1.5 mono text-[10px] text-gray-500 text-right">'+md+' unit-days</td></tr>'; }
   rmap='<div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">Resource Capacity vs Portfolio Demand</h3><div class="overflow-x-auto"><table class="w-full text-left" style="min-width:520px"><thead><tr class="text-gray-500 uppercase text-[8px] border-b border-gray-200"><th class="pb-1 pr-2">Resource</th><th class="pb-1 pr-2 text-center">Portfolio cap</th><th class="pb-1 pr-2 text-center">Peak demand</th><th class="pb-1 pr-2">Utilization</th><th class="pb-1 text-right">Total demand</th></tr></thead><tbody>'+rrows+'</tbody></table></div><p class="text-[8px] text-gray-400 mt-1">Peak = max simultaneous demand for the resource across the pipeline. Capacity aggregates each production\'s pool.</p></div>';
   return '<div>'+kpis+grid+pg+rmap+'</div>'; }
 
@@ -12559,14 +12561,14 @@ function planGanttPDFSVG(key){ var r=planCompute(key); var plan=productions[key]
   var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" font-family="Helvetica,Arial,sans-serif">';
   svg+='<rect width="'+W+'" height="'+H+'" fill="#ffffff"/>';
   var cur=new Date(minD.getFullYear(),minD.getMonth(),1),g=0;
-  while(cur<=maxD&&g<48){ if(cur>=minD){ var mx=X(planISO(cur)); svg+='<line x1="'+mx.toFixed(1)+'" y1="'+top+'" x2="'+mx.toFixed(1)+'" y2="'+(H-14)+'" stroke="#eef2f7"/><text x="'+(mx+2).toFixed(1)+'" y="'+(top-4)+'" font-size="7" fill="#94a3b8">'+cur.toLocaleDateString('en-US',{month:'short'})+'</text>'; } cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);g++; }
-  var ddx=X(plan.dataDate); svg+='<line x1="'+ddx.toFixed(1)+'" y1="'+top+'" x2="'+ddx.toFixed(1)+'" y2="'+(H-14)+'" stroke="#ef4444" stroke-width="1" stroke-dasharray="2 2"/>';
-  acts.forEach(function(a,i){ var y=top+i*rowH; var col=a.critical?'#ef4444':planDepCol(a.dept); var x1=X(a.start),x2=X(a.finish)+ppd; if(x2<x1+2)x2=x1+2;
+  while(cur<=maxD&&g<48){ if(cur>=minD){ var mx=X(planISO(cur)); svg+='<line x1="'+mx.toFixed(1)+'" y1="'+top+'" x2="'+mx.toFixed(1)+'" y2="'+(H-14)+'" stroke="#eef2f7"/><text x="'+(mx+2).toFixed(1)+'" y="'+(top-4)+'" font-size="7" fill="#9ba2b1">'+cur.toLocaleDateString('en-US',{month:'short'})+'</text>'; } cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);g++; }
+  var ddx=X(plan.dataDate); svg+='<line x1="'+ddx.toFixed(1)+'" y1="'+top+'" x2="'+ddx.toFixed(1)+'" y2="'+(H-14)+'" stroke="#ef4461" stroke-width="1" stroke-dasharray="2 2"/>';
+  acts.forEach(function(a,i){ var y=top+i*rowH; var col=a.critical?'#ef4461':planDepCol(a.dept); var x1=X(a.start),x2=X(a.finish)+ppd; if(x2<x1+2)x2=x1+2;
     var nm=(a.wbs?a.wbs+' ':'')+a.name; if(nm.length>26)nm=nm.slice(0,25)+'…';
-    svg+='<text x="4" y="'+(y+9)+'" font-size="7.5" fill="'+(a.critical?'#dc2626':'#374151')+'">'+planXmlEsc(nm)+'</text>';
+    svg+='<text x="4" y="'+(y+9)+'" font-size="7.5" fill="'+(a.critical?'#dc2644':'#424346')+'">'+planXmlEsc(nm)+'</text>';
     if(a.milestone||a.dur===0){ svg+='<path d="M'+x1+','+(y+2)+' l5,4 l-5,4 l-5,-4 Z" fill="'+col+'"/>'; }
     else { svg+='<rect x="'+x1.toFixed(1)+'" y="'+(y+2)+'" width="'+(x2-x1).toFixed(1)+'" height="9" rx="2" fill="'+col+'" opacity="0.9"/>';
-      var pw=(x2-x1)*Math.max(0,Math.min(100,a.pct||0))/100; if(pw>0)svg+='<rect x="'+x1.toFixed(1)+'" y="'+(y+2)+'" width="'+pw.toFixed(1)+'" height="9" rx="2" fill="#000" opacity="0.25"/>'; } });
+      var pw=(x2-x1)*Math.max(0,Math.min(100,a.pct||0))/100; if(pw>0)svg+='<rect x="'+x1.toFixed(1)+'" y="'+(y+2)+'" width="'+pw.toFixed(1)+'" height="9" rx="2" fill="#000000" opacity="0.25"/>'; } });
   svg+='</svg>'; return {svg:svg,w:W,h:H}; }
 function planEVMPDFSVG(key){ var ev=planEVMFor(key); var s=ev.series; if(!s||!s.length) return null;
   var W=560,H=200,L=44,R=548,T=12,B=170; var maxV=Math.max(ev.BAC,ev.EAC,1); s.forEach(function(p){ if(p.pv>maxV)maxV=p.pv; }); maxV*=1.05;
@@ -12574,20 +12576,20 @@ function planEVMPDFSVG(key){ var ev=planEVMFor(key); var s=ev.series; if(!s||!s.
   function path(f){ var d='',first=true; for(var i=0;i<s.length;i++){ var v=s[i][f]; if(v==null)continue; d+=(first?'M':'L')+X(i).toFixed(1)+','+Y(v).toFixed(1)+' '; first=false; } return d; }
   var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" font-family="Helvetica,Arial,sans-serif"><rect width="'+W+'" height="'+H+'" fill="#ffffff"/>'+
     '<line x1="'+L+'" y1="'+B+'" x2="'+R+'" y2="'+B+'" stroke="#e5e7eb"/>'+
-    '<line x1="'+L+'" y1="'+Y(ev.BAC).toFixed(1)+'" x2="'+R+'" y2="'+Y(ev.BAC).toFixed(1)+'" stroke="#9ca3af" stroke-dasharray="4 3"/>'+
-    '<path d="'+path('pv')+'" fill="none" stroke="#94a3b8" stroke-width="2"/>'+
-    '<path d="'+path('ev')+'" fill="none" stroke="#00A15D" stroke-width="2"/>'+
-    '<path d="'+path('ac')+'" fill="none" stroke="#ef4444" stroke-width="2"/>'+
-    '<text x="'+L+'" y="10" font-size="8" fill="#6b7280">PV (gray) · EV (green) · AC (red) · BAC '+planMoney(ev.BAC)+'</text></svg>';
+    '<line x1="'+L+'" y1="'+Y(ev.BAC).toFixed(1)+'" x2="'+R+'" y2="'+Y(ev.BAC).toFixed(1)+'" stroke="#9ba2b0" stroke-dasharray="4 3"/>'+
+    '<path d="'+path('pv')+'" fill="none" stroke="#9ba2b1" stroke-width="2"/>'+
+    '<path d="'+path('ev')+'" fill="none" stroke="#31A24C" stroke-width="2"/>'+
+    '<path d="'+path('ac')+'" fill="none" stroke="#ef4461" stroke-width="2"/>'+
+    '<text x="'+L+'" y="10" font-size="8" fill="#727479">PV (gray) · EV (green) · AC (red) · BAC '+planMoney(ev.BAC)+'</text></svg>';
   return {svg:svg,w:W,h:H}; }
 function planHistPDFSVG(key){ var r=planCompute(key); var pool=planResourcePool(key); var dem=planResourceDemand(r.activities);
   var rid='CREW'; var d=dem[rid]; if(!d) return null; var res=pool[rid]; var ords=Object.keys(d).map(Number); if(!ords.length)return null;
   var mn=Math.min.apply(null,ords),mx=Math.max.apply(null,ords),days=mx-mn+1; var bw=Math.max(3,Math.min(14,Math.floor(500/days)));
   var W=Math.max(520,days*bw+60),H=140,base=112,top=14; var peak=planPeak(dem,rid),maxV=Math.max(res.cap,peak,1); function Y(v){ return base-(v/maxV)*(base-top); }
   var svg='<svg xmlns="http://www.w3.org/2000/svg" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" font-family="Helvetica,Arial,sans-serif"><rect width="'+W+'" height="'+H+'" fill="#ffffff"/>';
-  for(var o=mn;o<=mx;o++){ var v=d[o]||0; if(!v)continue; var x=34+(o-mn)*bw; svg+='<rect x="'+x+'" y="'+Y(v).toFixed(1)+'" width="'+(bw-1)+'" height="'+(base-Y(v)).toFixed(1)+'" fill="'+(v>res.cap?'#ef4444':'#3b82f6')+'"/>'; }
-  svg+='<line x1="34" y1="'+base+'" x2="'+(W-16)+'" y2="'+base+'" stroke="#e5e7eb"/><line x1="34" y1="'+Y(res.cap).toFixed(1)+'" x2="'+(W-16)+'" y2="'+Y(res.cap).toFixed(1)+'" stroke="#f59e0b" stroke-dasharray="4 3"/>'+
-    '<text x="34" y="10" font-size="8" fill="#6b7280">'+planXmlEsc(res.name)+' demand vs capacity '+res.cap+'</text></svg>'; return {svg:svg,w:W,h:H}; }
+  for(var o=mn;o<=mx;o++){ var v=d[o]||0; if(!v)continue; var x=34+(o-mn)*bw; svg+='<rect x="'+x+'" y="'+Y(v).toFixed(1)+'" width="'+(bw-1)+'" height="'+(base-Y(v)).toFixed(1)+'" fill="'+(v>res.cap?'#ef4461':'#3b86f6')+'"/>'; }
+  svg+='<line x1="34" y1="'+base+'" x2="'+(W-16)+'" y2="'+base+'" stroke="#e5e7eb"/><line x1="34" y1="'+Y(res.cap).toFixed(1)+'" x2="'+(W-16)+'" y2="'+Y(res.cap).toFixed(1)+'" stroke="#f56c0b" stroke-dasharray="4 3"/>'+
+    '<text x="34" y="10" font-size="8" fill="#727479">'+planXmlEsc(res.name)+' demand vs capacity '+res.cap+'</text></svg>'; return {svg:svg,w:W,h:H}; }
 function planXmlEsc(s){ return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 /* extra sections for the Schedule Book PDF (pure tables — render in the techbook loop) */
@@ -12624,12 +12626,12 @@ function downloadControlsBook(key){ var p=productions[key]; if(!p){ toast('Open 
 
 function planBuildControlsPDF(key,ganttPNG,evmPNG,histPNG){ var p=productions[key]; var jsPDF=window.jspdf.jsPDF; var doc=new jsPDF({unit:'pt',format:'a4'});
   var W=doc.internal.pageSize.getWidth(), M=40; var r=planCompute(key), ev=planEVMFor(key), gates=planGates(key);
-  var PC=['#E51B24','#EF7B10','#F7B717','#00A15D','#00A0DE','#632E8A'];
+  var PC=['#0064E0','#0070EC','#0082FB','#0082FB','#0070EC','#0064E0'];
   function bar(y){ for(var i=0;i<6;i++){ doc.setFillColor(PC[i]); doc.rect(i*(W/6),y,W/6,5,'F'); } }
   function head(title,sub){ bar(0); doc.setFillColor(17,17,18); doc.rect(0,5,W,52,'F'); doc.setFont('helvetica','bold'); doc.setFontSize(15); doc.setTextColor(255,255,255); doc.text(planPdfSafe(title),M,32); if(sub){ doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(185,187,193); doc.text(planPdfSafe(sub),M,46); } doc.setTextColor(20,20,20); }
   head('PROJECT CONTROLS REPORT', p.name+'  ·  CPM · EVM · Resources · Gates  ·  '+planFmtDY(planTodayISO()));
   /* exec summary */
-  var sc=planCharlieSummary(key); var y=76; doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('Executive Summary',M,y); y+=6;
+  var sc=planMuseAiSummary(key); var y=76; doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('Executive Summary',M,y); y+=6;
   doc.autoTable({startY:y,theme:'plain',margin:{left:M,right:M},styles:{fontSize:8.5,cellPadding:2},
     body:[['Forecast finish',planFmtDY(r.projectFinish),'SPI',ev.SPI.toFixed(2)],['Critical activities',''+r.critical.length,'CPI',ev.CPI.toFixed(2)],
       ['% Complete',Math.round(ev.pctComplete)+'%','EAC',planMoney(ev.EAC)],['Behind (neg. float)',''+r.activities.filter(function(a){return a.totalFloat<0;}).length,'VAC',planMoney(ev.VAC)]]});
@@ -12660,8 +12662,8 @@ function printControlsBook(key){ var p=productions[key]; ensurePlan(key); var r=
   var acts=r.activities.slice().sort(function(a,b){ if(a.es!==b.es)return a.es-b.es; return (''+a.wbs<''+b.wbs?-1:1); }); var rn={}; acts.forEach(function(a,i){rn[a.id]=i+1;});
   var rows=acts.map(function(a){ return '<tr'+(a.critical?' class="c"':'')+'><td>'+rn[a.id]+'</td><td>'+esc(a.wbs||'')+'</td><td>'+esc(a.name)+'</td><td>'+a.dur+'d</td><td>'+planFmtD(a.start)+'</td><td>'+planFmtD(a.finish)+'</td><td>'+a.totalFloat+'d</td><td>'+(a.pct||0)+'%</td></tr>'; }).join('');
   var grows=gates.map(function(x){ return '<tr><td>'+esc(x.name)+'</td><td>'+esc(x.phase)+'</td><td>'+x.status.toUpperCase()+'</td><td>'+x.criteria.filter(function(c){return c.met;}).length+'/'+x.criteria.length+'</td></tr>'; }).join('');
-  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Project Controls — '+esc(p.name)+'</title><style>@page{size:A4;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#222}.bar{display:flex;height:5px}.bar i{flex:1}h1{font-size:18px;margin:8px 0 2px}h2{font-size:12px;margin:16px 0 4px;text-transform:uppercase;letter-spacing:.5px;color:#555}table{width:100%;border-collapse:collapse;font-size:9px;margin-top:4px}th{background:#111;color:#fff;text-align:left;padding:4px 6px}td{border-bottom:.5px solid #e6e6e9;padding:3px 6px}tr.c td{color:#dc2626;font-weight:700}.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:11px;margin:6px 0}.kv b{font-family:monospace}svg{max-width:100%}</style></head><body>'+
-    '<div class="bar"><i style="background:#E51B24"></i><i style="background:#EF7B10"></i><i style="background:#F7B717"></i><i style="background:#00A15D"></i><i style="background:#00A0DE"></i><i style="background:#632E8A"></i></div>'+
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Project Controls — '+esc(p.name)+'</title><style>@page{size:A4;margin:12mm}*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;color:#212223}.bar{display:flex;height:5px}.bar i{flex:1}h1{font-size:18px;margin:8px 0 2px}h2{font-size:12px;margin:16px 0 4px;text-transform:uppercase;letter-spacing:.5px;color:#525458}table{width:100%;border-collapse:collapse;font-size:9px;margin-top:4px}th{background:#101112;color:#ffffff;text-align:left;padding:4px 6px}td{border-bottom:.5px solid #e5e7ea;padding:3px 6px}tr.c td{color:#dc2644;font-weight:700}.kv{display:flex;gap:18px;flex-wrap:wrap;font-size:11px;margin:6px 0}.kv b{font-family:monospace}svg{max-width:100%}</style></head><body>'+
+    '<div class="bar"><i style="background:#0064E0"></i><i style="background:#0070EC"></i><i style="background:#0082FB"></i><i style="background:#0082FB"></i><i style="background:#0070EC"></i><i style="background:#0064E0"></i></div>'+
     '<h1>Project Controls Report — '+esc(p.name)+'</h1>'+
     '<div class="kv"><span>Forecast finish <b>'+planFmtDY(r.projectFinish)+'</b></span><span>SPI <b>'+ev.SPI.toFixed(2)+'</b></span><span>CPI <b>'+ev.CPI.toFixed(2)+'</b></span><span>EAC <b>'+planMoney(ev.EAC)+'</b></span><span>% Complete <b>'+Math.round(ev.pctComplete)+'%</b></span></div>'+
     '<h2>CPM Gantt</h2>'+(g?g.svg:'')+
@@ -12679,7 +12681,7 @@ function printControlsBook(key){ var p=productions[key]; ensurePlan(key); var r=
    template from the filename (COI, rental agreement, quote, invoice, RF plan,
    delivery note, PO) and fills it with the production / vendor context.
    ========================================================================== */
-function hexA(hex,a){hex=(''+(hex||'#000')).replace('#','');if(hex.length===3)hex=hex.split('').map(function(c){return c+c;}).join('');var n=parseInt(hex,16)||0;return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
+function hexA(hex,a){hex=(''+(hex||'#000000')).replace('#','');if(hex.length===3)hex=hex.split('').map(function(c){return c+c;}).join('');var n=parseInt(hex,16)||0;return 'rgba('+((n>>16)&255)+','+((n>>8)&255)+','+(n&255)+','+a+')';}
 function simMoney(n){try{return (typeof $fmt==='function')?$fmt(n):('$'+Math.round(n||0).toLocaleString());}catch(e){return '$'+(n||0);}}
 function simToday(){try{return new Date().toLocaleDateString('en-US',{year:'numeric',month:'2-digit',day:'2-digit'});}catch(e){return '2026';}}
 function simYear(ctx){var d=(ctx&&ctx.date)||'';var mm=(''+d).match(/(20\d\d)/);return mm?mm[1]:'2026';}
@@ -12692,8 +12694,8 @@ function simDocType(name){var n=(name||'').toLowerCase();
   if(/(^|_| )po[-_ ]?\d|purchase[_ ]?order|(^|_)po$/.test(n))return 'po';
   if(/rental|agreement|contract|master|service|lease/.test(n))return 'agreement';
   return 'generic';}
-var SIM_SPECTRUM=['#E51B24','#EF7B10','#F7B717','#00A15D','#00A0DE','#632E8A'];
-var MUSE_ADDR='Muse Live, Inc. \u2014 1 Muse Plaza, New York, NY 10001';
+var SIM_SPECTRUM=['#0064E0','#0070EC','#0082FB','#0082FB','#0070EC','#0064E0'];
+var MUSE_ADDR='Meta Platforms, Inc. \u2014 1 Hacker Way, Menlo Park, CA 94025';
 function simBar(doc,W,y){SIM_SPECTRUM.forEach(function(c,i){doc.setFillColor(c);doc.rect(i*(W/6),y,W/6,5,'F');});}
 function simHead(doc,W,M,title,sub,right){simBar(doc,W,0);
   doc.setFillColor(17,17,18);doc.rect(0,5,W,54,'F');
@@ -12705,7 +12707,7 @@ function simHead(doc,W,M,title,sub,right){simBar(doc,W,0);
 function simFoot(doc,W,M){var h=doc.internal.pageSize.getHeight();
   doc.setDrawColor(225,226,230);doc.setLineWidth(1);doc.line(M,h-50,W-M,h-50);
   doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(150,152,158);
-  doc.text('Muse Live \u00B7 Simulated document for demonstration \u00B7 Muse Live Broadcast Telemetry',M,h-38);
+  doc.text('Muse Live \u00B7 Simulated document for demonstration \u00B7 Meta Broadcast Telemetry',M,h-38);
   doc.text('Reference representation only \u2014 not a legally executed document.',M,h-30);
   simBar(doc,W,h-6);}
 function simH2(doc,M,W,y,t){doc.setFillColor(244,244,247);doc.rect(M,y-9,W-2*M,15,'F');doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(60,62,68);doc.text((t||'').toUpperCase(),M+6,y+1);return y+20;}
@@ -12750,7 +12752,7 @@ function openSimDoc(name,ctx){name=name||'Document.pdf';ctx=ctx||{};
         ['Workers Comp & Employers Liability','WC-'+yr+'-'+(4000+((''+v).length*9)%5000),'01/01/'+yr,'01/01/'+(+yr+1),'Statutory / $1,000,000 EL']]);
       y+=14;y=simH2(doc,M,W,y,'Description of Operations');
       doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(40,42,48);
-      var dsc='Muse Live, Inc., its parent, subsidiaries and affiliated companies are named as Additional Insured with respect to '+prod+(venue?' at '+venue:'')+'. Coverage is primary and non-contributory; a waiver of subrogation applies in favor of the certificate holder.';
+      var dsc='Meta Platforms, Inc., its parent, subsidiaries and affiliated companies are named as Additional Insured with respect to '+prod+(venue?' at '+venue:'')+'. Coverage is primary and non-contributory; a waiver of subrogation applies in favor of the certificate holder.';
       var dl=doc.splitTextToSize(dsc,W-2*M);doc.text(dl,M,y+4);y+=4+dl.length*11+14;
       y=simKV(doc,M,y,'Certificate Holder',MUSE_ADDR,W-2*M);
       simSign(doc,M,W,Math.min(H-110,Math.max(y,H-160)),'','','Authorized Representative','Marsh USA Inc.');
@@ -12821,7 +12823,7 @@ function simDocFallback(name,ctx){ctx=ctx||{};var t=simDocType(name);
   var rows=[['Vendor',ctx.vendor||'\u2014'],['Production',ctx.production||'\u2014'],['Venue',ctx.venue||'\u2014'],['Reference',ctx.id||ctx.ref||'\u2014'],['Amount',ctx.amount?simMoney(ctx.amount):'\u2014']];
   var w=window.open('','_blank');if(!w){toast&&toast('Allow pop-ups to open '+name);return;}
   var bar=SIM_SPECTRUM.map(function(c){return '<i style="flex:1;background:'+c+'"></i>';}).join('');
-  var body='<div style="display:flex;height:5px">'+bar+'</div><div style="background:#111112;color:#fff;padding:16px 22px"><div style="font:800 18px sans-serif">'+esc(title).toUpperCase()+'</div><div style="font:400 11px sans-serif;color:#bbb;margin-top:3px">'+esc(name)+'</div></div><div style="padding:20px 22px;font:400 13px sans-serif;color:#222">'+rows.map(function(r){return '<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #eee"><b style="width:120px;color:#666;font-size:11px;text-transform:uppercase">'+esc(r[0])+'</b><span>'+esc(r[1])+'</span></div>';}).join('')+'<p style="margin-top:18px;color:#888;font-size:11px">Muse Live \u2014 simulated document for demonstration. Not a legally executed document.</p></div>';
+  var body='<div style="display:flex;height:5px">'+bar+'</div><div style="background:#111112;color:#ffffff;padding:16px 22px"><div style="font:800 18px sans-serif">'+esc(title).toUpperCase()+'</div><div style="font:400 11px sans-serif;color:#b3b8c3;margin-top:3px">'+esc(name)+'</div></div><div style="padding:20px 22px;font:400 13px sans-serif;color:#212223">'+rows.map(function(r){return '<div style="display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #ecedf0"><b style="width:120px;color:#636569;font-size:11px;text-transform:uppercase">'+esc(r[0])+'</b><span>'+esc(r[1])+'</span></div>';}).join('')+'<p style="margin-top:18px;color:#7A8396;font-size:11px">Muse Live \u2014 simulated document for demonstration. Not a legally executed document.</p></div>';
   w.document.open();w.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(name)+'</title></head><body style="margin:0">'+body+'<script>setTimeout(function(){window.print&&window.print();},400);<\/script></body></html>');w.document.close();
   toast&&toast('Opening '+name);}
 function openVendorDocPDF(key,vid,di){var p=productions[key];if(!p)return;var e=projVendorEntry(p,vid);var d=e&&e.docs&&e.docs[di];if(!d)return;var vn='';try{var vv=vendorById(vid);vn=vv?vv.name:'';}catch(err){}
@@ -12841,14 +12843,14 @@ function crewToggleColumn(key,ph){var p=productions[key];if(!p.crewMatrix)p.crew
 /* ============================================================
    MULTI-LOCATION (SUB-SITES) MODULE
    A production may span multiple venues simultaneously (e.g. the
-   2026 FIFA World Cup). Each location keeps its own time zone,
+   2026 Tour Muse AI World Tour). Each location keeps its own time zone,
    GPS, role and per-site survey while staying tied to the parent
    project. Single-location projects are completely untouched.
    ============================================================ */
 var projLoc={}; /* key -> active location id (UI state) */
-var WC26_LOCATIONS=[
+var MAWT26_LOCATIONS=[
  {id:'ibc',      name:'IBC',                    venue:'Kay Bailey Hutchison Convention Center', city:'Dallas, TX, USA',            cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Chicago',     tzl:'CT',  lat:32.7743, lng:-96.8010,  role:'IBC \u00B7 Broadcast Hub', note:'Master control, central distribution & unilateral feeds'},
- {id:'metlife',  name:'MetLife Stadium',         venue:'MetLife Stadium · NYNJ',     city:'East Rutherford, NJ, USA',   cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:40.8135, lng:-74.0745,  role:'FINAL \u00B7 Jul 19 2026', note:'1 MetLife Stadium Dr · Muse Live Field Ops · Flypack Double Technical Cabin', address:'1 MetLife Stadium Dr, East Rutherford, NJ 07073'},
+ {id:'metlife',  name:'MetLife Stadium',         venue:'MetLife Stadium · NYNJ',     city:'East Rutherford, NJ, USA',   cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:40.8135, lng:-74.0745,  role:'FINAL \u00B7 Jul 19 2026', note:'1 MetLife Stadium Dr · Meta Field Ops · Flypack Double Technical Cabin', address:'1 MetLife Stadium Dr, East Rutherford, NJ 07073'},
  {id:'attstad',  name:'AT&T Stadium',            venue:'AT&T Stadium',               city:'Arlington, TX, USA',         cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Chicago',     tzl:'CT',  lat:32.7473, lng:-97.0945,  role:'Semifinal \u00B7 9 matches', note:'Dallas host city — most matches of any venue'},
  {id:'mbz',      name:'Mercedes-Benz Stadium',   venue:'Mercedes-Benz Stadium',      city:'Atlanta, GA, USA',           cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:33.7554, lng:-84.4010,  role:'Semifinal \u00B7 8 matches', note:'Atlanta host city'},
  {id:'hardrock', name:'Hard Rock Stadium',       venue:'Hard Rock Stadium',          city:'Miami Gardens, FL, USA',     cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:25.9580, lng:-80.2389,  role:'Bronze Final \u00B7 7 matches', note:'Miami host city'},
@@ -12866,13 +12868,13 @@ var WC26_LOCATIONS=[
  {id:'akron',    name:'Estadio Akron',           venue:'Estadio Akron',              city:'Guadalajara (Zapopan), Mexico', cc:'MX', flag:'\uD83C\uDDF2\uD83C\uDDFD', tz:'America/Mexico_City', tzl:'CST', lat:20.6817, lng:-103.4626, role:'4 matches', note:'Guadalajara host city'}
 ];
 function ensureLocations(){try{
-  var p=productions['worldcup'];
-  if(p&&!p.locations){p.locations=WC26_LOCATIONS.map(function(l){return Object.assign({},l);});}
+  var p=productions['museaitour'];
+  if(p&&!p.locations){p.locations=MAWT26_LOCATIONS.map(function(l){return Object.assign({},l);});}
   /* re-run FWC seed once locations exist (MetLife address, Zócalo, fiberLoc) */
-  try{if(p&&typeof seedWorldcupPacklist==='function')seedWorldcupPacklist(p,'worldcup');}catch(eF){}
+  try{if(p&&typeof seedWorldcupPacklist==='function')seedWorldcupPacklist(p,'museaitour');}catch(eF){}
   order.forEach(function(k){var pp=productions[k];
     if(pp&&pp.locations&&pp.locations.length&&!projLoc[k]){
-      var prefer=(k==='worldcup')?'metlife':null;var found=null;
+      var prefer=(k==='museaitour')?'metlife':null;var found=null;
       if(prefer){for(var li=0;li<pp.locations.length;li++)if(pp.locations[li].id===prefer){found=prefer;break;}}
       projLoc[k]=found||pp.locations[0].id;}
     });
@@ -13069,7 +13071,7 @@ function m365Configured(){return !!(window.M365Config&&window.M365Config.clientI
    For now it logs the exact flow to the console and resolves a fake token so the
    downstream functions (calendar sync, Teams notify) can be exercised end-to-end. */
 async function m365AcquireToken(scope){
-  console.groupCollapsed('%c[M365] Token acquisition (SIMULATED)','color:#0f6cbd;font-weight:bold');
+  console.groupCollapsed('%c[M365] Token acquisition (SIMULATED)','color:#0f55bd;font-weight:bold');
   console.log('Authority :','https://login.microsoftonline.com/'+(window.M365Config.tenantId||'{tenantId — NOT SET}'));
   console.log('Client ID :',window.M365Config.clientId||'{clientId — NOT SET}');
   console.log('Scope     :',scope);
@@ -13087,13 +13089,13 @@ async function m365AcquireToken(scope){
 async function syncOutlookCalendar(){
   var token=await m365AcquireToken('Calendars.Read');
   var url=(window.M365Config.graphEndpoint||'{graphEndpoint — NOT SET}')+'/me/calendarView';
-  console.groupCollapsed('%c[M365] syncOutlookCalendar() (SIMULATED)','color:#0f6cbd;font-weight:bold');
+  console.groupCollapsed('%c[M365] syncOutlookCalendar() (SIMULATED)','color:#0f55bd;font-weight:bold');
   console.log('Request  :','GET '+url);
   console.log('Headers  :',{Authorization:'Bearer '+token,Prefer:'outlook.timezone="Eastern Standard Time"'});
   console.log('Response :',{value:[
-    {subject:'World Cup — IBC compound walkthrough',start:'2026-07-06T09:00',organizer:'Riley Stanton'},
-    {subject:'SB LXI comms plan review',start:'2026-07-07T14:00',organizer:'Dana Whitfield'},
-    {subject:'Xytech booking sync — facilities',start:'2026-07-08T10:30',organizer:'TOC Stamford'}
+    {subject:'Muse AI World Tour — IBC compound walkthrough',start:'2026-07-06T09:00',organizer:'Riley Stanton'},
+    {subject:'Orion comms plan review',start:'2026-07-07T14:00',organizer:'Dana Whitfield'},
+    {subject:'Xytech booking sync — facilities',start:'2026-07-08T10:30',organizer:'TOC Menlo Park'}
   ],'@odata.nextLink':null});
   console.log('Status   :','200 OK (mock) — 3 events merged into local schedule cache');
   console.groupEnd();
@@ -13111,14 +13113,14 @@ async function syncMicrosoftContacts(){
   var token=await m365AcquireToken('Contacts.Read People.Read');
   var base=window.M365Config.graphEndpoint||'{graphEndpoint — NOT SET}';
   var url=base+'/me/contacts?$top=50&$select=displayName,emailAddresses,businessPhones,jobTitle,companyName';
-  console.groupCollapsed('%c[M365] syncMicrosoftContacts() (SIMULATED)','color:#0f6cbd;font-weight:bold');
+  console.groupCollapsed('%c[M365] syncMicrosoftContacts() (SIMULATED)','color:#0f55bd;font-weight:bold');
   console.log('Request  :','GET '+url);
   console.log('Headers  :',{Authorization:'Bearer '+token});
   console.log('Configured:',m365Configured()?'yes — would call Graph':'no — mock only (fill window.M365Config)');
   var mock=[
-    {displayName:'Jordan Lee',jobTitle:'Technical Director',companyName:'Demo Network',emailAddresses:[{address:'jordan.lee@muselive.com'}],businessPhones:['(212) 555-0190']},
-    {displayName:'Drew Kessler',jobTitle:'A1',companyName:'Demo Freelance',emailAddresses:[{address:'drew.k@muselive.com'}],businessPhones:['(212) 556-0144']},
-    {displayName:'Sam Okada',jobTitle:'Transmission · TOC',companyName:'Demo Ops',emailAddresses:[{address:'sam.okada@muselive.com'}],businessPhones:['(212) 557-0129']}
+    {displayName:'Jordan Lee',jobTitle:'Technical Director',companyName:'Demo Network',emailAddresses:[{address:'jordan.lee@meta.com'}],businessPhones:['(212) 555-0190']},
+    {displayName:'Drew Kessler',jobTitle:'A1',companyName:'Demo Freelance',emailAddresses:[{address:'drew.k@meta.com'}],businessPhones:['(212) 556-0144']},
+    {displayName:'Sam Okada',jobTitle:'Transmission · TOC',companyName:'Demo Ops',emailAddresses:[{address:'sam.okada@meta.com'}],businessPhones:['(212) 557-0129']}
   ];
   console.log('Response :',{value:mock,'@odata.nextLink':null});
   console.groupEnd();
@@ -13166,11 +13168,11 @@ var M365ExcelAPI={
   baseUrl:'https://graph.microsoft.com/v1.0',
   request:function(method,path,payload){
     if(!this.enabled){
-      console.info('%c[M365·Excel] stub DISABLED — call ignored','color:#0f6cbd;font-weight:bold',method,path);
+      console.info('%c[M365·Excel] stub DISABLED — call ignored','color:#0f55bd;font-weight:bold',method,path);
       return Promise.resolve({status:501,simulated:true,disabled:true,message:'M365ExcelAPI is disabled by default. Set M365ExcelAPI.enabled=true and configure M365Config to activate.'});}
     var self=this;
     return m365AcquireToken('Files.ReadWrite').then(function(token){
-      console.groupCollapsed('%c[M365·Excel] '+method+' '+path+' (SIMULATED)','color:#0f6cbd;font-weight:bold');
+      console.groupCollapsed('%c[M365·Excel] '+method+' '+path+' (SIMULATED)','color:#0f55bd;font-weight:bold');
       console.log('Request :',method+' '+self.baseUrl+path);
       console.log('Headers :',{Authorization:'Bearer '+token,'Content-Type':'application/json'});
       if(payload)console.log('Payload :',payload);
@@ -13185,8 +13187,8 @@ var M365ExcelAPI={
 /* SMS gateway stub — same honest-simulation contract as the Graph stubs (v28 · WI5).
    Console-only; never claims a real message left the building. */
 function sendSmsNotification(recipients,body){
-  console.groupCollapsed('%c[SMS] sendSmsNotification() (SIMULATED)','color:#d97706;font-weight:bold');
-  console.log('Gateway :','POST https://sms-gw.muselive.example/v1/messages (mock)');
+  console.groupCollapsed('%c[SMS] sendSmsNotification() (SIMULATED)','color:#d95e06;font-weight:bold');
+  console.log('Gateway :','POST https://sms-gw.meta.example/v1/messages (mock)');
   console.log('To      :',recipients);
   console.log('Body    :',body);
   console.log('Status  :','202 Accepted (mock) — '+((recipients&&recipients.length)||0)+' message(s) queued');
@@ -13197,7 +13199,7 @@ function sendSmsNotification(recipients,body){
 async function sendTeamsNotification(channelId,message){
   var token=await m365AcquireToken('ChannelMessage.Send');
   var url=(window.M365Config.graphEndpoint||'{graphEndpoint — NOT SET}')+'/teams/{teamId}/channels/'+(channelId||'{channelId}')+'/messages';
-  console.groupCollapsed('%c[M365] sendTeamsNotification() (SIMULATED)','color:#5b5fc7;font-weight:bold');
+  console.groupCollapsed('%c[M365] sendTeamsNotification() (SIMULATED)','color:#347eee;font-weight:bold');
   console.log('Request :','POST '+url);
   console.log('Headers :',{Authorization:'Bearer '+token,'Content-Type':'application/json'});
   console.log('Payload :',{body:{contentType:'text',content:message}});
@@ -13215,64 +13217,64 @@ async function sendTeamsNotification(channelId,message){
 
 /* ---- simulated ops-room chat per production (Teams-style quick traffic) ---- */
 var OMNI_OPS_CHAT={
- worldcup:[
+ museaitour:[
   {from:'Dana Whitfield · A1',body:'Control Room A audio levels checked — program bus at -20 LKFS, IFB returns clean.',ts:'06:42',dir:'in'},
   {from:'Luis Peraza · GFX',body:'Graphics package pushed to PCR1 — match clock + lower thirds v3.2 live on the still store.',ts:'06:55',dir:'in'},
   {from:'You',body:'Copy both. Meade — confirm Aggreko auto-transfer test before we green-light the compound.',ts:'07:02',dir:'out'},
   {from:'Nolan Grant · ENG',body:'Auto-transfer tested under load, 2x 500kVA nominal. Power contingency doc uploading now.',ts:'07:18',dir:'in'},
   {from:'Sam Okada · TOC',body:'Galaxy-19 Tp12 path verified end-to-end, backup on Eutelsat 113 armed.',ts:'07:31',dir:'in'}],
- superbowl:[
+ orion:[
   {from:'Dana Whitfield · A1',body:"48x RTS ADAM trunk mapped — talent IFB shortfall resolved, ClearWave units on site.",ts:'08:10',dir:'in'},
   {from:'You',body:'Freq coordination filed with the venue? That is the hard blocker for load-in.',ts:'08:14',dir:'out'},
   {from:'RF Desk',body:'Filed and stamped. Venue RF czar cleared all 24 IFB freqs + 8 wireless cams.',ts:'08:27',dir:'in'}],
- parade:[
+ igcreators:[
   {from:'AMV Ops',body:'Float-cam rigs 1–4 weather-sealed and bench-tested. 5 and 6 in fabrication, on track for Nov 20 tech check.',ts:'09:05',dir:'in'},
   {from:'You',body:'Send rigging specs to structural before mount approval. Hardwired comms verified back to floats?',ts:'09:12',dir:'out'},
   {from:'AMV Ops',body:'Comms verified on rigs 1–4, loop-through tested at 400 ft.',ts:'09:20',dir:'in'}],
- sail250:[
+ raybangen3:[
   {from:'Marine Ops',body:'Chase boat B camera mount re-torqued, gyro head stable at 22 kts.',ts:'07:44',dir:'in'},
   {from:'You',body:'Governors Island uplink truck call time moves to 04:30 — confirm crew notified.',ts:'07:50',dir:'out'},
   {from:'Travel Desk',body:'Crew notified, hotel shuttle re-booked for the earlier call.',ts:'07:58',dir:'in'}],
- winterolympics:[
-  {from:"Replay Support",body:'XT-VIA replay cluster racked at Milano IBC — Nevion fabric interconnect green across the board.',ts:'05:30',dir:'in'},
-  {from:'You',body:'Schedule the Vyvx 10G handoff test with Stamford for Thursday 09:00 CET.',ts:'05:41',dir:'out'}],
- muse100:[
+ charm:[
+  {from:"Replay Support",body:'XT-VIA replay cluster racked at Milan IBC — Nevion fabric interconnect green across the board.',ts:'05:30',dir:'in'},
+  {from:'You',body:'Schedule the Vyvx 10G handoff test with Menlo Park for Thursday 09:00 CET.',ts:'05:41',dir:'out'}],
+ museailaunch:[
   {from:'Studio Ops',body:'8H stage reset complete, archival film scanner calibrated for the retrospective package.',ts:'10:02',dir:'in'}],
- midterms:[
-  {from:'Sam Okada · TOC',body:'Midterms primary re-booked on Eutelsat 113 Tp7, Galaxy-19 held as backup only.',ts:'11:15',dir:'in'},
+ whatsapp:[
+  {from:'Sam Okada · TOC',body:'WhatsApp Summit primary re-booked on Eutelsat 113 Tp7, Galaxy-19 held as backup only.',ts:'11:15',dir:'in'},
   {from:'You',body:'Confirm space segment with the teleport and log it in Xytech.',ts:'11:22',dir:'out'}]
 };
 
 /* ---- simulated Xytech notification log per production ---- */
 var OMNI_XY_LOG={
- worldcup:[
+ museaitour:[
   {ts:'07:20',code:'JM-26198',lvl:'ok',msg:'JmJob confirmed — IBC compound power distro (PO-88134) linked to work order.'},
-  {ts:'06:58',code:'RB-4471',lvl:'warn',msg:'RmBooking conflict cleared — PCR1 double-book resolved against Midterms rehearsal.'},
+  {ts:'06:58',code:'RB-4471',lvl:'warn',msg:'RmBooking conflict cleared — PCR1 double-book resolved against WhatsApp Summit rehearsal.'},
   {ts:'06:00',code:'AIR-78',lvl:'crit',msg:'Air-readiness 78% — 2 vendor COIs outstanding, RF coordination Tp12 pending.'}],
- superbowl:[
+ orion:[
   {ts:'08:30',code:'JM-26204',lvl:'ok',msg:'JmJob updated — 24x additional IFB units appended to ClearWave RF purchase order.'},
   {ts:'08:05',code:'RB-4468',lvl:'ok',msg:'RmBooking confirmed — compound load-in window locked at venue.'}],
- parade:[
+ igcreators:[
   {ts:'09:25',code:'JM-26188',lvl:'ok',msg:'JmJob milestone — float cam fabrication x6 at 66%, tech check Nov 20.'}],
- sail250:[
+ raybangen3:[
   {ts:'07:40',code:'RB-4452',lvl:'ok',msg:'RmBooking — Governors Island uplink truck call time amended to 04:30.'}],
- winterolympics:[
-  {ts:'05:45',code:'LB-9902',lvl:'ok',msg:'LibMaster — Milano IBC replay cluster asset records ingested (12 items).'}],
- muse100:[
+ charm:[
+  {ts:'05:45',code:'LB-9902',lvl:'ok',msg:'LibMaster — Milan IBC replay cluster asset records ingested (12 items).'}],
+ museailaunch:[
   {ts:'10:10',code:'RB-4460',lvl:'ok',msg:'RmBooking — Studio M1 archival scan block extended 4 hours.'}],
- midterms:[
+ whatsapp:[
   {ts:'11:30',code:'RB-4473',lvl:'warn',msg:'RmBooking — transmission path swapped to Eutelsat 113 Tp7, backup retained.'}]
 };
 
 /* ---- live intercom / channel status per production (drives the status badges) ---- */
 var OMNI_CHANNELS={
- worldcup:[{n:'CRK-1 Production',s:'active'},{n:'CRK-2 Engineering',s:'active'},{n:'CRK-4 Cameras',s:'monitored'},{n:'PL-7 Transmission',s:'active'}],
- superbowl:[{n:'CRK-1 Production',s:'monitored'},{n:'CRK-3 Audio',s:'active'},{n:'PL-2 RF Coord',s:'monitored'}],
- parade:[{n:'CRK-1 Production',s:'standby'},{n:'PL-5 Float Ops',s:'monitored'}],
- sail250:[{n:'CRK-1 Production',s:'active'},{n:'PL-9 Marine Ops',s:'active'}],
- winterolympics:[{n:'CRK-1 Production',s:'standby'},{n:'PL-3 Milano IBC',s:'monitored'}],
- muse100:[{n:'CRK-1 Production',s:'standby'}],
- midterms:[{n:'CRK-1 Production',s:'monitored'},{n:'PL-7 Transmission',s:'active'}]
+ museaitour:[{n:'CRK-1 Production',s:'active'},{n:'CRK-2 Engineering',s:'active'},{n:'CRK-4 Cameras',s:'monitored'},{n:'PL-7 Transmission',s:'active'}],
+ orion:[{n:'CRK-1 Production',s:'monitored'},{n:'CRK-3 Audio',s:'active'},{n:'PL-2 RF Coord',s:'monitored'}],
+ igcreators:[{n:'CRK-1 Production',s:'standby'},{n:'PL-5 Float Ops',s:'monitored'}],
+ raybangen3:[{n:'CRK-1 Production',s:'active'},{n:'PL-9 Marine Ops',s:'active'}],
+ charm:[{n:'CRK-1 Production',s:'standby'},{n:'PL-3 Milan IBC',s:'monitored'}],
+ museailaunch:[{n:'CRK-1 Production',s:'standby'}],
+ whatsapp:[{n:'CRK-1 Production',s:'monitored'},{n:'PL-7 Transmission',s:'active'}]
 };
 
 /* ---- drawer state ---- */
@@ -13293,14 +13295,14 @@ function omniCurrentProd(){
 
 function museSyncEdgeTabs(){
   var omniOn=!!(typeof omniDrawerOpen!=='undefined'&&omniDrawerOpen);
-  var chaOn=!!(typeof charlieOpen!=='undefined'&&charlieOpen);
+  var chaOn=!!(typeof museaiOpen!=='undefined'&&museaiOpen);
   try{
     document.body.classList.toggle('omni-open',omniOn);
-    document.body.classList.toggle('charlie-open',chaOn);
+    document.body.classList.toggle('museai-open',chaOn);
   }catch(e){}
   var hide=omniOn||chaOn;
   var omni=document.querySelector('.omni-fab');
-  var cha=document.getElementById('charlieLauncher');
+  var cha=document.getElementById('museaiLauncher');
   if(omni)omni.style.display=hide?'none':'flex';
   if(cha)cha.style.display=hide?'none':'flex';
 }
@@ -13308,8 +13310,8 @@ function toggleOmniDrawer(){omniDrawerOpen?closeOmniDrawer():openOmniDrawer();}
 /* open the unified Omni-Channel drawer pinned to a specific production (per-project entry point) */
 function openOmniForProject(key){if(key&&productions[key])omniCtx=key;openOmniDrawer();}
 function openOmniDrawer(){
-  /* Close Charlie so Omni is not covered / fighting the same edge */
-  try{if(typeof charlieOpen!=='undefined'&&charlieOpen&&typeof toggleCharlie==='function')toggleCharlie();}catch(eC){}
+  /* Close Muse so Omni is not covered / fighting the same edge */
+  try{if(typeof museaiOpen!=='undefined'&&museaiOpen&&typeof toggleMuseAi==='function')toggleMuseAi();}catch(eC){}
   omniDrawerOpen=true;
   markInboundCommsRead();
   var d=document.getElementById('omniDrawer'),s=document.getElementById('omniDrawerScrim');
@@ -13334,14 +13336,14 @@ function setOmniCtx(v){omniCtx=(v==='auto')?null:v;renderOmniDrawer();}
 
 function omniFabBadge(){
   var omniN=(typeof commsUnread==='function')?commsUnread():0;
-  var chaN=(typeof badgeUnacked==='function')?badgeUnacked('charlie',typeof attentionCount==='function'?attentionCount():0):(typeof attentionCount==='function'?attentionCount():0);
+  var chaN=(typeof badgeUnacked==='function')?badgeUnacked('museai',typeof attentionCount==='function'?attentionCount():0):(typeof attentionCount==='function'?attentionCount():0);
   var omni=document.querySelector('.omni-fab');
-  var cha=document.getElementById('charlieLauncher');
+  var cha=document.getElementById('museaiLauncher');
   if(typeof museMountBadge==='function'){
     museMountBadge(omni,omniN,'Omni');
-    museMountBadge(cha,chaN,'Ask Charlie');
+    museMountBadge(cha,chaN,'Ask Muse');
   }
-  ['omniFabBadge','charlieFabBadge'].forEach(function(id){
+  ['omniFabBadge','museaiFabBadge'].forEach(function(id){
     var stale=document.getElementById(id);
     if(stale&&stale.classList&&stale.classList.contains('omni-fab-badge')&&stale.parentNode)stale.parentNode.removeChild(stale);
   });
@@ -13426,62 +13428,62 @@ function omniChatHTML(prod){
   }).join('');
 }
 function omniChatFootHTML(){
-  var pend=window._omniCharliePend;
-  var bar=pend?'<div class="mb-2 p-2 rounded-lg border border-gray-200 bg-gray-50 text-[10px]">Charlie can write this into Muse Live. '+
-    '<button type="button" onclick="omniCharlieConfirm()" class="ml-1 text-[10px] font-bold text-white bg-gray-900 rounded px-2 py-0.5">Confirm</button> '+
-    '<button type="button" onclick="omniCharlieCancel()" class="text-[10px] font-bold border border-gray-300 rounded px-2 py-0.5">Cancel</button></div>':'';
+  var pend=window._omniMuseAiPend;
+  var bar=pend?'<div class="mb-2 p-2 rounded-lg border border-gray-200 bg-gray-50 text-[10px]">Muse can write this into Muse Live. '+
+    '<button type="button" onclick="omniMuseAiConfirm()" class="ml-1 text-[10px] font-bold text-white bg-gray-900 rounded px-2 py-0.5">Confirm</button> '+
+    '<button type="button" onclick="omniMuseAiCancel()" class="text-[10px] font-bold border border-gray-300 rounded px-2 py-0.5">Cancel</button></div>':'';
   return bar+'<div class="flex items-center gap-2">'+
-    '<input id="omniChatInput" class="omni-input flex-1" placeholder="Message ops, or ask Charlie…" onkeydown="if(event.key===\'Enter\')omniSendChat()">'+
-    '<button type="button" onclick="omniAskCharlie()" class="text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0" style="background:#632E8A">Charlie</button>'+
+    '<input id="omniChatInput" class="omni-input flex-1" placeholder="Message ops, or ask Muse…" onkeydown="if(event.key===\'Enter\')omniSendChat()">'+
+    '<button type="button" onclick="omniAskMuseAi()" class="text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0" style="background:#0866FF">Muse</button>'+
     '<button onclick="omniSendChat()" class="omni-send text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0">Send</button></div>';
 }
 function omniPushOps(prod, from, body, dir){
   if(!OMNI_OPS_CHAT[prod])OMNI_OPS_CHAT[prod]=[];
   OMNI_OPS_CHAT[prod].push({from:from,body:body,ts:(typeof nowStamp==='function'?nowStamp().slice(11,16):''),dir:dir||'in'});
 }
-function omniAskCharlie(preset){
+function omniAskMuseAi(preset){
   var inp=document.getElementById('omniChatInput');
   var txt=(preset||(inp&&inp.value)||'').trim();
-  if(!txt){toast('Ask Charlie something first');return;}
-  if(/^@?charlie\s+/i.test(txt))txt=txt.replace(/^@?charlie\s+/i,'');
+  if(!txt){toast('Ask Muse something first');return;}
+  if(/^@?museai\s+/i.test(txt))txt=txt.replace(/^@?museai\s+/i,'');
   var prod=omniCurrentProd();
   omniPushOps(prod,'You',txt,'out');
   if(inp)inp.value='';
-  omniPushOps(prod,'Charlie','Thinking…','in');
+  omniPushOps(prod,'Muse','Thinking…','in');
   renderOmniDrawer();
-  var ask=(typeof CharlieCharlie!=='undefined'&&CharlieCharlie.ask)?CharlieCharlie.ask(txt):Promise.reject();
+  var ask=(typeof MuseAiMuseAi!=='undefined'&&MuseAiMuseAi.ask)?MuseAiMuseAi.ask(txt):Promise.reject();
   ask.then(function(ans){
     var list=OMNI_OPS_CHAT[prod]||[];
-    if(list.length&&list[list.length-1].from==='Charlie'&&list[list.length-1].body==='Thinking…')list.pop();
-    omniPushOps(prod,'Charlie',String(ans||'').slice(0,2000),'in');
+    if(list.length&&list[list.length-1].from==='Muse'&&list[list.length-1].body==='Thinking…')list.pop();
+    omniPushOps(prod,'Muse',String(ans||'').slice(0,2000),'in');
     try{
-      var act=typeof charlieParseAction==='function'?charlieParseAction(txt):null;
-      window._omniCharliePend=act||null;
-    }catch(e){window._omniCharliePend=null;}
+      var act=typeof museaiParseAction==='function'?museaiParseAction(txt):null;
+      window._omniMuseAiPend=act||null;
+    }catch(e){window._omniMuseAiPend=null;}
     renderOmniDrawer();
   }).catch(function(){
     var list=OMNI_OPS_CHAT[prod]||[];
     if(list.length&&list[list.length-1].body==='Thinking…')list.pop();
-    omniPushOps(prod,'Charlie','Could not reach live Charlie. Try the Charlie rail.','in');
+    omniPushOps(prod,'Muse','Could not reach live Muse. Try the Muse rail.','in');
     renderOmniDrawer();
   });
 }
-function omniCharlieConfirm(){
-  var act=window._omniCharliePend;window._omniCharliePend=null;
+function omniMuseAiConfirm(){
+  var act=window._omniMuseAiPend;window._omniMuseAiPend=null;
   if(!act){toast('Nothing to confirm');return;}
-  try{_charliePending=act;if(typeof charlieConfirmAction==='function')charlieConfirmAction();}catch(e){}
-  omniPushOps(omniCurrentProd(),'Charlie','Confirmed in Muse Live.','in');
+  try{_museaiPending=act;if(typeof museaiConfirmAction==='function')museaiConfirmAction();}catch(e){}
+  omniPushOps(omniCurrentProd(),'Muse','Confirmed in Muse Live.','in');
   renderOmniDrawer();
 }
-function omniCharlieCancel(){
-  window._omniCharliePend=null;
-  omniPushOps(omniCurrentProd(),'Charlie','Cancelled — no write.','in');
+function omniMuseAiCancel(){
+  window._omniMuseAiPend=null;
+  omniPushOps(omniCurrentProd(),'Muse','Cancelled — no write.','in');
   renderOmniDrawer();
 }
 function omniSendChat(){
   var inp=document.getElementById('omniChatInput');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt){toast('Type a message first');return;}
-  if(/^@?charlie\b/i.test(txt)||/^\/charlie\b/i.test(txt)){omniAskCharlie(txt);return;}
+  if(/^@?museai\b/i.test(txt)||/^\/museai\b/i.test(txt)){omniAskMuseAi(txt);return;}
   var prod=omniCurrentProd();
   var nmax=9006;comms.forEach(function(m){var n=parseInt((m.id||'').replace('MSG-',''),10);if(n>nmax)nmax=n;});
   comms.unshift({id:'MSG-'+(nmax+1),channel:'teams',dir:'out',priority:'normal',from:'Rowan Blake',to:'Ops Room',
@@ -13514,7 +13516,7 @@ function omniMailHTML(prod){
   var xy=OMNI_XY_LOG[prod]||[];
   out+='<h4 class="omni-h4 mt-4">Xytech Notification Log</h4>';
   out+=xy.length?xy.map(function(x){
-    var tone=x.lvl==='crit'?'color:var(--live-red)':(x.lvl==='warn'?'color:#c2410c':'color:#047857');
+    var tone=x.lvl==='crit'?'color:var(--live-red)':(x.lvl==='warn'?'color:#c2580c':'color:#04781F');
     return '<div class="omni-xyrow"><span class="omni-xycode" style="'+tone+'">'+esc(x.code)+'</span><p class="text-[10px] text-gray-600 flex-1 min-w-0">'+esc(x.msg)+'</p><span class="text-[8px] mono text-gray-400 flex-shrink-0">'+esc(x.ts)+'</span></div>';
   }).join(''):'<p class="text-[10px] text-gray-400 py-2">No Xytech notifications for this production.</p>';
   return out;
@@ -13906,13 +13908,13 @@ function xlsxRenderPreview(){var ov=document.getElementById('xlsxOverlay');var b
   var bad=live.filter(function(r){return r.errors.length;});
   var good=live.length-bad.length;
   var canApply=!C.headerErrors.length&&live.length>0&&bad.length===0;
-  var hdrBlock=C.headerErrors.length?'<div class="sim-note mb-3" style="border-color:#fca5a5;background:#fef2f2;color:#b91c1c"><span>⛔</span><span><b>Header mismatch — fix the file first.</b><br>'+C.headerErrors.map(esc).join('<br>')+'</span></div>':'';
+  var hdrBlock=C.headerErrors.length?'<div class="sim-note mb-3" style="border-color:#fca5b3;background:#fef2f4;color:#b91c36"><span>⛔</span><span><b>Header mismatch — fix the file first.</b><br>'+C.headerErrors.map(esc).join('<br>')+'</span></div>':'';
   var rowsHtml=C.rows.slice(0,200).map(function(r,i){
     var tone=r.skip?'opacity:.45':'';
     return '<div class="xlsx-row'+(r.errors.length?' bad':'')+'" style="'+tone+'">'+
       '<span class="text-[8px] mono text-gray-400 w-10 flex-shrink-0">Row '+r.n+'</span>'+
       '<div class="min-w-0 flex-1"><p class="text-[10px] text-gray-800 truncate mono">'+(r.line?esc(r.line):spec.cols.map(function(c){return esc(r.vals[c.k]||'—');}).join(' · '))+'</p>'+
-      (r.errors.length?'<p class="text-[9px] font-semibold" style="color:#b91c1c">'+r.errors.map(esc).join(' · ')+'</p>':'')+'</div>'+
+      (r.errors.length?'<p class="text-[9px] font-semibold" style="color:#b91c36">'+r.errors.map(esc).join(' · ')+'</p>':'')+'</div>'+
       (r.errors.length?'<label class="flex items-center gap-1 text-[9px] font-bold text-gray-500 flex-shrink-0 cursor-pointer"><input type="checkbox" '+(r.skip?'checked':'')+' onchange="xlsxToggleSkip('+i+')" class="rounded">Skip</label>':'<span class="text-[9px] font-bold text-emerald-600 flex-shrink-0">✓</span>')+
     '</div>';}).join('');
   bx.innerHTML='<div class="flex items-start justify-between mb-2"><div><h3 class="text-sm font-bold text-gray-900 leading-none">Import preview — '+esc(spec.label)+'</h3>'+
@@ -14020,7 +14022,7 @@ xlsxRegister({key:'equipment',label:'Equipment Library',sheet:'Equipment',
         {k:'value',label:'Value (USD)',req:false,type:'num'},
         {k:'condition',label:'Condition',req:false,type:'text'},
         {k:'notes',label:'Notes',req:false,type:'text'}],
-  example:['MUSE-CAM-100999',"Sony HDC-5500",'Cameras','3500-90001','available','Muse Live Sports — Stamford CG','','','62000','Good','System camera'],
+  example:['MUSE-CAM-100999',"Sony HDC-5500",'Cameras','3500-90001','available','Meta Live Events — Menlo Park MPK','','','62000','Good','System camera'],
   validateRow:function(v){var errs=[];
     if(v.project&&!productions[v.project])errs.push('“Project Key” must be a production key ('+order.join(', ')+') or empty — got “'+v.project+'”');
     return errs;},
@@ -14031,7 +14033,7 @@ xlsxRegister({key:'equipment',label:'Equipment Library',sheet:'Equipment',
       if(hit){hit.name=v.name;hit.category=v.category;hit.serial=v.serial;hit.status=v.status;hit.location=v.location;
         hit.project=v.project;hit.assignedTo=v.assignedTo;hit.value=num;hit.condition=v.condition;hit.notes=v.notes;upd++;}
       else{inventory.push({id:'inv_x'+Date.now().toString(36)+added,barcode:v.barcode,name:v.name,category:v.category,serial:v.serial,
-        status:v.status,location:v.location||'Muse Live Sports — Stamford CG',project:v.project||'',assignedTo:v.assignedTo||'',
+        status:v.status,location:v.location||'Meta Live Events — Menlo Park MPK',project:v.project||'',assignedTo:v.assignedTo||'',
         value:num,condition:v.condition||'Good',notes:v.notes||''});added++;}});
     saveInventory();try{renderEquipView();}catch(e){}
     return 'Equipment: '+upd+' updated, '+added+' added';}});
@@ -14045,7 +14047,7 @@ xlsxRegister({key:'vendors',label:'Vendor Directory',sheet:'Vendors',perm:'vendo
         {k:'email',label:'Email',req:false,type:'text'},
         {k:'afterHours',label:'After Hours',req:false,type:'text'},
         {k:'notes',label:'Notes',req:false,type:'text'}],
-  example:['ClearWave RF','RF Coordination','1200 Biscayne Blvd, Miami FL','Dana Ortiz','Account Director','(212) 556-0142','ops@clearwaverf.example','(212) 556-0400','World Cup RF coordination'],
+  example:['ClearWave RF','RF Coordination','1200 Biscayne Blvd, Miami FL','Dana Ortiz','Account Director','(212) 556-0142','ops@clearwaverf.example','(212) 556-0400','Muse AI World Tour RF coordination'],
   validateRow:function(v){var errs=[];
     if(v.email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email))errs.push('“Email” doesn’t look like an email address — got “'+v.email+'”');
     return errs;},
@@ -14079,7 +14081,7 @@ xlsxRegister({key:'personnel',label:'Personnel',sheet:'Personnel',
         {k:'hotels',label:'Hotel Loyalty (comma-sep)',req:false,type:'text'}],
   /* NOTE: portalAccessKey and exportExempt are intentionally NOT columns — the key is a
      secret (never serialized) and the exemption is settable only at account creation. */
-  example:['Jordan Lee',"Replay Operator",'PCR / Control Room','jordan.lee@muselive.com','(212) 556-0177','Demo Network Ops','P-00000000','MIA','Freelancer','Technical Crew','KTN000000000','AA:AA00000','CC-DEMO-A1','PRJ-DEMO-01','aisle','','Demo Hotel Loyalty 00000'],
+  example:['Jordan Lee',"Replay Operator",'PCR / Control Room','jordan.lee@meta.com','(212) 556-0177','Demo Network Ops','P-00000000','MIA','Freelancer','Technical Crew','KTN000000000','AA:AA00000','CC-DEMO-A1','PRJ-DEMO-01','aisle','','Demo Hotel Loyalty 00000'],
   validateRow:function(v){var errs=[];
     if(v.homeBase&&!/^[A-Za-z]{3}$/.test(v.homeBase))errs.push('“Home Base (IATA)” should be a 3-letter airport code — got “'+v.homeBase+'”');
     if(v.email&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v.email))errs.push('“Email” doesn’t look like an email address — got “'+v.email+'”');
@@ -14305,7 +14307,7 @@ function finWsPDF(key,section){
   if(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API&&typeof window.jspdf.jsPDF.API.autoTable==='function'){
     try{var J=window.jspdf.jsPDF,doc=new J({unit:'pt',format:'letter',orientation:'landscape'});
       var PW=doc.internal.pageSize.getWidth(),PH=doc.internal.pageSize.getHeight();
-      var SPECTRUM=['#F7B717','#EF7B10','#E51B24','#632E8A','#00A0DE','#00A15D'];
+      var SPECTRUM=['#0064E0','#0070EC','#0082FB','#0082FB','#0070EC','#0064E0'];
       secs.forEach(function(sec,si){if(si>0)doc.addPage();
         SPECTRUM.forEach(function(c2,i){doc.setFillColor(c2);doc.rect(i*(PW/6),0,PW/6,4,'F');});
         doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(17,17,18);doc.text('MUSE LIVE — FINANCE WORKSPACE',40,36);
@@ -14375,8 +14377,8 @@ function permComms(){var all=(typeof comms!=='undefined')?comms:[];
 
 /* ---- executive-circle chat (Omni drawer · visible only with full comms access) ---- */
 var OMNI_EXEC_CHAT=[
- {from:'Elena Vasquez · CFO Office',body:'FY26 broadcast capex review moved to Thursday. Need the World Cup EFC and the Super Bowl draft budget on the deck.',ts:'08:05',dir:'in'},
- {from:'Legal · Rights Desk',body:'Three music sync clearances for World Cup are in final review — outside counsel expects sign-off Friday.',ts:'08:22',dir:'in'},
+ {from:'Elena Vasquez · CFO Office',body:'FY26 broadcast capex review moved to Thursday. Need the Muse AI World Tour EFC and the Orion Reveal draft budget on the deck.',ts:'08:05',dir:'in'},
+ {from:'Legal · Rights Desk',body:'Three music sync clearances for Muse AI World Tour are in final review — outside counsel expects sign-off Friday.',ts:'08:22',dir:'in'},
  {from:'You',body:'Holding the vendor POs over $250k until the capex review clears. Flag anything that risks the load-in dates.',ts:'08:31',dir:'out'},
  {from:'Elena Vasquez · CFO Office',body:'Understood. Aggreko and NEP are inside the approved envelope — no schedule risk from finance.',ts:'08:44',dir:'in'}];
 
@@ -14432,7 +14434,7 @@ function genAccountFor(name){permLoad();
     museAccounts[name]=a;permSave();
     /* SIMULATED invite email through the established comms stub — logged, never actually sent */
     try{var nmax=9006;comms.forEach(function(m){var n=parseInt((m.id||'').replace('MSG-',''),10);if(n>nmax)nmax=n;});
-      comms.unshift({id:'MSG-'+(nmax+1),channel:'email',dir:'out',priority:'normal',from:'Muse Live Provisioning',
+      comms.unshift({id:'MSG-'+(nmax+1),channel:'email',dir:'out',priority:'normal',from:'Meta Provisioning',
         to:name+(a.email?' <'+a.email+'>':''),subject:'[SIMULATED] You’re invited to Muse Live',
         body:'Hi '+name.split(' ')[0]+' — an Muse Live account has been created for you. Open your invite to set up access: '+inviteLink(a)+' (Simulated provisioning email — demo only, nothing was sent externally.)',
         ts:nowStamp(),linkType:'account',linkId:name,prod:'',read:true,thread:'T-acct-'+a.token});
@@ -14469,7 +14471,7 @@ function openAccountModal(name,mode){permLoad();var a=museAccounts[name];if(!a){
     '<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">● Invited · awaiting activation</span>';
   var tabs=['invite','form','perms'].map(function(t){var lab={invite:'Invite',form:'Invite Form (their view)',perms:'Permissions'}[t];
     return '<button onclick="openAccountModal(\''+nm+'\',\''+t+'\')" class="text-[10px] font-bold px-3 py-1.5 rounded-lg '+(mode===t?'bg-gray-900 text-white':'text-gray-600 hover:bg-gray-100')+'">'+lab+'</button>';}).join('');
-  var head='<div class="flex items-start justify-between mb-1"><div><h3 class="text-sm font-bold text-gray-900 leading-none">Muse Live Account — '+esc(name)+'</h3>'+
+  var head='<div class="flex items-start justify-between mb-1"><div><h3 class="text-sm font-bold text-gray-900 leading-none">Meta Account — '+esc(name)+'</h3>'+
     '<p class="text-[10px] text-gray-500 mt-1">'+esc(a.title||'')+'</p></div><button onclick="closeAccountModal()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button></div>'+
     '<div class="flex items-center gap-2 mb-3">'+statusChip+'<span class="text-[9px] mono text-gray-400">invited '+esc(a.invitedOn||'')+(a.activatedOn?' · activated '+esc(a.activatedOn):'')+'</span></div>'+
     '<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 mb-4">'+tabs+'</div>';
@@ -14514,7 +14516,7 @@ function openAccountModal(name,mode){permLoad();var a=museAccounts[name];if(!a){
       scopeRow('equipment','Equipment','Which tracked gear is visible',[['all','All gear'],['own','Own gear']])+
       scopeRow('travel','Travel','Which itineraries are visible',[['all','All crew'],['own','Own only']])+
       scopeRow('comms','Omni-Channel','Exec-level threads & chat groups',[['all','All groups'],['team','Team only']])+
-      '<div class="perm-row" style="border-color:#e9d5ff;background:#faf5ff"><div class="min-w-0"><p class="text-[11px] font-bold text-purple-900">Administrator</p><p class="text-[9px] text-purple-500">Full control · can provision accounts</p></div>'+
+      '<div class="perm-row" style="border-color:#d5e6ff;background:#f5f9ff"><div class="min-w-0"><p class="text-[11px] font-bold text-purple-900">Administrator</p><p class="text-[9px] text-purple-500">Full control · can provision accounts</p></div>'+
         '<button class="perm-toggle'+(a.admin?' on':'')+'" onclick="permSet(\''+nm+'\',\'admin\','+(a.admin?'false':'true')+')" aria-label="Toggle Administrator" role="switch" aria-checked="'+(a.admin?'true':'false')+'"></button></div>';}
   bx.innerHTML=head+body;ov.style.display='flex';}
 function activateAccount(name){var a=accountFor(name);if(!a)return;

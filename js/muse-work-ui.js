@@ -2218,7 +2218,7 @@
           "Muse-knowledge-edition.html",
           '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'"><title>' +
             esc(f.get("edition")) +
-            "</title><style>body{font:16px system-ui;max-width:900px;margin:auto;padding:24px;color:#172032;background:#fff}input{font:inherit;padding:12px;width:90%}article{border-top:1px solid #bbb;margin-top:24px}pre{white-space:pre-wrap;font:inherit;overflow-wrap:anywhere}@media(prefers-color-scheme:dark){body{background:#111827;color:#eee}}</style><h1>" +
+            "</title><style>body{font:16px system-ui;max-width:900px;margin:auto;padding:24px;color:#232426;background:#ffffff}input{font:inherit;padding:12px;width:90%}article{border-top:1px solid #b3b8c3;margin-top:24px}pre{white-space:pre-wrap;font:inherit;overflow-wrap:anywhere}@media(prefers-color-scheme:dark){body{background:#1B1C1D;color:#ecedf0}}</style><h1>" +
             esc(f.get("edition")) +
             "</h1><p>Frozen " +
             new Date().toISOString() +

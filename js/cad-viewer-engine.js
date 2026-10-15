@@ -14,7 +14,7 @@
     SUPPORTED: ['dxf', 'dwg', 'obj', 'stl', 'image', 'pdf', 'json']
   };
 
-  var NOTE_COLORS = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#ec4899', '#14b8a6', '#eab308'];
+  var NOTE_COLORS = ['#ef4461', '#f56c0b', '#22c548', '#3b86f6', '#5596f7', '#ec4863', '#14a8b8', '#eaaa08'];
 
   function isPhoneView() {
     try {
@@ -92,23 +92,23 @@
     if (el) return;
     el = document.createElement('div');
     el.id = 'museCadView';
-    el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#0b0e12;font-family:Inter,system-ui,sans-serif;color:#e6edf3';
+    el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#0e0e0f;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3';
     el.innerHTML =
       '<style>' +
-      '#museCadView .cvb{padding:6px 11px;background:#1c2330;border:1px solid #2d3748;color:#c9d1d9;border-radius:8px;font:700 11px Inter,sans-serif;cursor:pointer;white-space:nowrap}' +
-      '#museCadView .cvb:hover{background:#2a3444;color:#fff}' +
-      '#museCadView .cvb.on{background:#2563eb;border-color:#2563eb;color:#fff}' +
-      '#museCadView .cvb.note{border-color:#f59e0b}' +
-      '#museCadView .cvb.note.on{background:#f59e0b;border-color:#f59e0b;color:#0d1117}' +
-      '#museCadView .cvb.ok{background:#238636;border-color:#2ea043;color:#fff}' +
-      '#museCadView .cvb.bad{background:#3d1117;border-color:#5c2027;color:#ff9b9b}' +
-      '#museCadView .ndot{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.55);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
+      '#museCadView .cvb{padding:6px 11px;background:#252627;border:1px solid #393a3c;color:#cbcfd7;border-radius:8px;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;cursor:pointer;white-space:nowrap}' +
+      '#museCadView .cvb:hover{background:#353639;color:#ffffff}' +
+      '#museCadView .cvb.on{background:#2374ed;border-color:#2374ed;color:#ffffff}' +
+      '#museCadView .cvb.note{border-color:#f56c0b}' +
+      '#museCadView .cvb.note.on{background:#f56c0b;border-color:#f56c0b;color:#111213}' +
+      '#museCadView .cvb.ok{background:#23863A;border-color:#2ea049;color:#ffffff}' +
+      '#museCadView .cvb.bad{background:#3d1118;border-color:#5c202a;color:#ff9bac}' +
+      '#museCadView .ndot{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #ffffff;box-shadow:0 2px 10px rgba(0,0,0,.55);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
       '#museCadView .ndot:hover{transform:translate(-50%,-50%) scale(1.25)}' +
       '#museCadView .ndot.sel{box-shadow:0 0 0 3px rgba(255,255,255,.85),0 2px 12px rgba(0,0,0,.6)}' +
-      '#museCadView .npop{position:absolute;z-index:10;width:280px;max-width:90vw;background:rgba(22,27,34,.98);border:1px solid #30363d;border-radius:12px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:600 12px Inter,sans-serif}' +
-      '#museCadView .npop textarea{width:100%;min-height:72px;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:8px;padding:8px;resize:vertical;font:600 12px Inter,sans-serif;box-sizing:border-box}' +
-      '#museCadView .npop input{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;border-radius:8px;padding:6px 8px;box-sizing:border-box;font:600 12px Inter,sans-serif}' +
-      '#museCadView .cv-side{width:220px;background:#10151d;border-right:1px solid #21262d;display:flex;flex-direction:column;flex-shrink:0}' +
+      '#museCadView .npop{position:absolute;z-index:10;width:280px;max-width:90vw;background:rgba(27,28,29,.98);border:1px solid #353638;border-radius:12px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}' +
+      '#museCadView .npop textarea{width:100%;min-height:72px;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:8px;padding:8px;resize:vertical;font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;box-sizing:border-box}' +
+      '#museCadView .npop input{width:100%;background:#111213;border:1px solid #353638;color:#e6ebf3;border-radius:8px;padding:6px 8px;box-sizing:border-box;font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}' +
+      '#museCadView .cv-side{width:220px;background:#161617;border-right:1px solid #262728;display:flex;flex-direction:column;flex-shrink:0}' +
       'html.muse-cv-land,html.muse-cv-land body{overflow:hidden!important}' +
       '@media (max-width:900px){' +
         '#museCadView .cv-side{width:min(168px,34vw)}' +
@@ -122,36 +122,36 @@
         'transform:rotate(90deg) translateY(-100%);transform-origin:top left;' +
       '}' +
       '</style>' +
-      '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:linear-gradient(180deg,#161b22,#0f141b);border-bottom:1px solid #21262d;flex-wrap:wrap">' +
-        '<div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#e65100,#212121);display:flex;align-items:center;justify-content:center;font:800 10px Inter,sans-serif">CV</div>' +
-        '<div><div id="cvTitle" style="font:700 13px Inter,sans-serif">CAD Viewer</div>' +
-        '<div id="cvMeta" style="font:600 9px DM Mono,monospace;color:#6e7681">READ-ONLY · NOTES</div></div>' +
-        '<div style="width:1px;height:26px;background:#30363d"></div>' +
+      '<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:linear-gradient(180deg,#1b1c1d,#141516);border-bottom:1px solid #262728;flex-wrap:wrap">' +
+        '<div style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#e66000,#202122);display:flex;align-items:center;justify-content:center;font:800 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">CV</div>' +
+        '<div><div id="cvTitle" style="font:700 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif">CAD Viewer</div>' +
+        '<div id="cvMeta" style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#74767b">READ-ONLY · NOTES</div></div>' +
+        '<div style="width:1px;height:26px;background:#353638"></div>' +
         '<button type="button" class="cvb on" data-act="mode2d" id="cvBtn2d">2D</button>' +
         '<button type="button" class="cvb" data-act="mode3d" id="cvBtn3d">3D</button>' +
-        '<div style="width:1px;height:26px;background:#30363d"></div>' +
+        '<div style="width:1px;height:26px;background:#353638"></div>' +
         '<button type="button" class="cvb on" data-tool="orbit" id="cvOrbit">Orbit / Pan</button>' +
         '<button type="button" class="cvb note" data-tool="note" id="cvNote">● Add note</button>' +
         '<button type="button" class="cvb" data-act="fit">Fit</button>' +
-        '<div style="width:1px;height:26px;background:#30363d"></div>' +
+        '<div style="width:1px;height:26px;background:#353638"></div>' +
         '<label class="cvb" style="cursor:pointer">Upload<input type="file" id="cvFile" accept=".dxf,.dwg,.obj,.stl,.png,.jpg,.jpeg,.webp,.pdf,.txt,image/*" style="display:none"></label>' +
         '<button type="button" class="cvb ok" data-act="saveNotes">Save notes</button>' +
         '<span style="flex:1"></span>' +
-        '<span id="cvStatus" style="font:600 10px DM Mono,monospace;color:#8b949e"></span>' +
+        '<span id="cvStatus" style="font:600 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8890a1"></span>' +
         '<button type="button" class="cvb bad" data-act="close">✕</button>' +
       '</div>' +
       '<div style="flex:1;display:flex;min-height:0">' +
         '<div class="cv-side">' +
-          '<div style="padding:10px;font:700 9px Inter,sans-serif;letter-spacing:.08em;color:#8b949e;text-transform:uppercase">Notes (<span id="cvNoteCount">0</span>)</div>' +
+          '<div style="padding:10px;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.08em;color:#8890a1;text-transform:uppercase">Notes (<span id="cvNoteCount">0</span>)</div>' +
           '<div id="cvNoteList" style="flex:1;overflow:auto;padding:6px"></div>' +
-          '<div style="padding:8px 10px;border-top:1px solid #21262d;font:600 9px Inter,sans-serif;color:#6e7681;line-height:1.4">Read-only geometry. Click ● Add note, then click the model. Others see the same notes when saved.</div>' +
+          '<div style="padding:8px 10px;border-top:1px solid #262728;font:600 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#74767b;line-height:1.4">Read-only geometry. Click ● Add note, then click the model. Others see the same notes when saved.</div>' +
         '</div>' +
-        '<div id="cvWrap" style="flex:1;position:relative;min-width:0;background:#0d1117;overflow:hidden">' +
+        '<div id="cvWrap" style="flex:1;position:relative;min-width:0;background:#111213;overflow:hidden">' +
           '<canvas id="cv3d" style="position:absolute;inset:0;width:100%;height:100%;display:none"></canvas>' +
           '<canvas id="cv2d" style="position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none"></canvas>' +
           '<div id="cvDots" style="position:absolute;inset:0;pointer-events:none;z-index:5"></div>' +
           '<div id="cvPop" class="npop" style="display:none"></div>' +
-          '<div id="cvHint" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(22,27,34,.92);border:1px solid #30363d;border-radius:20px;padding:6px 14px;font:600 11px Inter,sans-serif;color:#c9d1d9;pointer-events:none;white-space:nowrap;z-index:4">Read-only viewer · drag to pan · wheel zoom</div>' +
+          '<div id="cvHint" style="position:absolute;left:50%;bottom:14px;transform:translateX(-50%);background:rgba(27,28,29,.92);border:1px solid #353638;border-radius:20px;padding:6px 14px;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#cbcfd7;pointer-events:none;white-space:nowrap;z-index:4">Read-only viewer · drag to pan · wheel zoom</div>' +
         '</div>' +
       '</div>';
     document.body.appendChild(el);
@@ -327,10 +327,10 @@
   function draw2d() {
     var c = canvas2d.getContext('2d');
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
-    c.fillStyle = '#0d1117';
+    c.fillStyle = '#111213';
     c.fillRect(0, 0, W, H);
     /* grid */
-    c.strokeStyle = 'rgba(48,54,61,.55)';
+    c.strokeStyle = 'rgba(53,54,56,.55)';
     c.lineWidth = 1;
     var step = niceStep(80 / cam2d.scale);
     var x0 = Math.floor((cam2d.cx - W / 2 / cam2d.scale) / step) * step;
@@ -358,17 +358,17 @@
     segs.forEach(function (s) {
       var a = worldToScreen2d(s.x1, s.y1), b = worldToScreen2d(s.x2, s.y2);
       c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y);
-      c.strokeStyle = s.color || '#9fb0c5';
+      c.strokeStyle = s.color || '#a9afbb';
       c.lineWidth = 1.4;
       c.stroke();
     });
     /* badge */
-    c.fillStyle = 'rgba(13,17,23,.9)';
+    c.fillStyle = 'rgba(17,18,19,.9)';
     c.fillRect(10, 10, 210, 36);
-    c.fillStyle = '#f59e0b';
-    c.font = '700 10px Inter,sans-serif';
+    c.fillStyle = '#f56c0b';
+    c.font = '700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
     c.fillText('READ-ONLY · ' + (ctx.fmt || 'MODEL').toUpperCase(), 16, 26);
-    c.fillStyle = '#8b949e';
+    c.fillStyle = '#8890a1';
     c.fillText(segs.length + ' segs · ' + notes.length + ' notes · v' + CadViewer.version, 16, 40);
   }
   function niceStep(raw) {
@@ -420,7 +420,7 @@
       d.className = 'ndot' + (selectedNote && selectedNote.id === n.id ? ' sel' : '');
       d.style.left = p.x + 'px';
       d.style.top = p.y + 'px';
-      d.style.background = n.color || '#3b82f6';
+      d.style.background = n.color || '#3b86f6';
       d.style.pointerEvents = 'auto';
       d.title = (n.author || 'Note') + ': ' + (n.text || '').slice(0, 80);
       d.onclick = function (e) {
@@ -452,21 +452,21 @@
     pop.style.top = Math.min(H - 200, Math.max(8, sy + 14)) + 'px';
     pop.innerHTML =
       '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' +
-        '<span style="width:12px;height:12px;border-radius:50%;background:' + esc(n.color || '#3b82f6') + ';border:1px solid #fff"></span>' +
+        '<span style="width:12px;height:12px;border-radius:50%;background:' + esc(n.color || '#3b86f6') + ';border:1px solid #ffffff"></span>' +
         '<b style="flex:1;font-size:12px">' + esc(n.author || 'Note') + '</b>' +
         '<button type="button" class="cvb bad" id="cvDelNote" style="padding:3px 8px">Delete</button>' +
         '<button type="button" class="cvb" id="cvClosePop" style="padding:3px 8px">✕</button></div>' +
-      '<label style="font-size:9px;color:#8b949e;display:block;margin-bottom:3px">Author</label>' +
+      '<label style="font-size:9px;color:#8890a1;display:block;margin-bottom:3px">Author</label>' +
       '<input id="cvAuthor" value="' + esc(n.author || '') + '">' +
-      '<label style="font-size:9px;color:#8b949e;display:block;margin:8px 0 3px">Message</label>' +
+      '<label style="font-size:9px;color:#8890a1;display:block;margin:8px 0 3px">Message</label>' +
       '<textarea id="cvText">' + esc(n.text || '') + '</textarea>' +
       '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="cvColors"></div>' +
       '<button type="button" class="cvb ok" id="cvSaveNote" style="width:100%;margin-top:10px">Update note</button>' +
-      '<div style="font:600 9px DM Mono,monospace;color:#6e7681;margin-top:6px">' + esc(n.ts || '') + '</div>';
+      '<div style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#74767b;margin-top:6px">' + esc(n.ts || '') + '</div>';
     NOTE_COLORS.forEach(function (c) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.style.cssText = 'width:18px;height:18px;border-radius:50%;border:2px solid ' + (n.color === c ? '#fff' : 'transparent') + ';background:' + c + ';cursor:pointer';
+      b.style.cssText = 'width:18px;height:18px;border-radius:50%;border:2px solid ' + (n.color === c ? '#ffffff' : 'transparent') + ';background:' + c + ';cursor:pointer';
       b.onclick = function () { n.color = c; ctx.dirty = true; showNotePop(n, sx, sy); projectNotes(); paint(); };
       pop.querySelector('#cvColors').appendChild(b);
     });
@@ -491,15 +491,15 @@
     var list = el.querySelector('#cvNoteList');
     el.querySelector('#cvNoteCount').textContent = String(notes.length);
     if (!notes.length) {
-      list.innerHTML = '<div style="color:#6e7681;padding:8px;font-size:11px;line-height:1.4">No notes yet. Click <b style="color:#f59e0b">● Add note</b>, then click the drawing.</div>';
+      list.innerHTML = '<div style="color:#74767b;padding:8px;font-size:11px;line-height:1.4">No notes yet. Click <b style="color:#f56c0b">● Add note</b>, then click the drawing.</div>';
       return;
     }
     list.innerHTML = notes.map(function (n, i) {
       return '<div data-i="' + i + '" style="display:flex;gap:8px;padding:8px;border-radius:8px;cursor:pointer;margin:2px 0;background:' +
-        (selectedNote && selectedNote.id === n.id ? '#1f3a5f' : '#161b22') + ';border:1px solid #21262d">' +
+        (selectedNote && selectedNote.id === n.id ? '#1f395f' : '#1b1c1d') + ';border:1px solid #262728">' +
         '<span style="width:10px;height:10px;border-radius:50%;background:' + esc(n.color) + ';margin-top:3px;flex-shrink:0"></span>' +
-        '<div style="min-width:0;flex:1"><div style="font:700 11px Inter,sans-serif;color:#e6edf3">' + esc(n.author || 'Note') + '</div>' +
-        '<div style="font:600 10px Inter,sans-serif;color:#8b949e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc((n.text || '').slice(0, 60)) + '</div></div></div>';
+        '<div style="min-width:0;flex:1"><div style="font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e6ebf3">' + esc(n.author || 'Note') + '</div>' +
+        '<div style="font:600 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8890a1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc((n.text || '').slice(0, 60)) + '</div></div></div>';
     }).join('');
     list.querySelectorAll('[data-i]').forEach(function (row) {
       row.onclick = function () {
@@ -690,7 +690,7 @@
       for (var j = 0; j < f.length; j++) {
         var a = verts[f[j]], b = verts[f[(j + 1) % f.length]];
         if (!a || !b) continue;
-        segs.push({ x1: a[0], y1: a[2], x2: b[0], y2: b[2], layer: 'OBJ', color: '#7dd3fc' });
+        segs.push({ x1: a[0], y1: a[2], x2: b[0], y2: b[2], layer: 'OBJ', color: '#7db0fc' });
       }
     });
     var pos = [];
@@ -706,7 +706,7 @@
     if (!segs.length && verts.length) {
       /* point cloud fallback as tiny crosses */
       verts.forEach(function (v) {
-        segs.push({ x1: v[0] - 0.01, y1: v[2], x2: v[0] + 0.01, y2: v[2], layer: 'OBJ', color: '#7dd3fc' });
+        segs.push({ x1: v[0] - 0.01, y1: v[2], x2: v[0] + 0.01, y2: v[2], layer: 'OBJ', color: '#7db0fc' });
       });
     }
     return faces.length || verts.length;
@@ -738,9 +738,9 @@
         var a = trip[t], b = trip[t+1], c = trip[t+2];
         pos.push(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
         track(a[0], a[2]); track(b[0], b[2]); track(c[0], c[2]);
-        segs.push({ x1: a[0], y1: a[2], x2: b[0], y2: b[2], layer: 'STL', color: '#86efac' });
-        segs.push({ x1: b[0], y1: b[2], x2: c[0], y2: c[2], layer: 'STL', color: '#86efac' });
-        segs.push({ x1: c[0], y1: c[2], x2: a[0], y2: a[2], layer: 'STL', color: '#86efac' });
+        segs.push({ x1: a[0], y1: a[2], x2: b[0], y2: b[2], layer: 'STL', color: '#86ef9f' });
+        segs.push({ x1: b[0], y1: b[2], x2: c[0], y2: c[2], layer: 'STL', color: '#86ef9f' });
+        segs.push({ x1: c[0], y1: c[2], x2: a[0], y2: a[2], layer: 'STL', color: '#86ef9f' });
       }
     } else {
       var dv = new DataView(buf);
@@ -755,9 +755,9 @@
         off += 2; /* attr */
         pos.push(ax, ay, az, bx, by, bz, cx, cy, cz);
         track(ax, az); track(bx, bz); track(cx, cz);
-        segs.push({ x1: ax, y1: az, x2: bx, y2: bz, layer: 'STL', color: '#86efac' });
-        segs.push({ x1: bx, y1: bz, x2: cx, y2: cz, layer: 'STL', color: '#86efac' });
-        segs.push({ x1: cx, y1: cz, x2: ax, y2: az, layer: 'STL', color: '#86efac' });
+        segs.push({ x1: ax, y1: az, x2: bx, y2: bz, layer: 'STL', color: '#86ef9f' });
+        segs.push({ x1: bx, y1: bz, x2: cx, y2: cz, layer: 'STL', color: '#86ef9f' });
+        segs.push({ x1: cx, y1: cz, x2: ax, y2: az, layer: 'STL', color: '#86ef9f' });
       }
     }
     mesh = pos.length ? { pos: new Float32Array(pos), count: pos.length / 3 } : null;
@@ -774,10 +774,10 @@
         bounds = { minX: 0, maxX: w, minY: 0, maxY: h };
         /* border segs for 3D frame */
         segs = [
-          { x1: 0, y1: 0, x2: w, y2: 0, layer: 'IMG', color: '#64748b' },
-          { x1: w, y1: 0, x2: w, y2: h, layer: 'IMG', color: '#64748b' },
-          { x1: w, y1: h, x2: 0, y2: h, layer: 'IMG', color: '#64748b' },
-          { x1: 0, y1: h, x2: 0, y2: 0, layer: 'IMG', color: '#64748b' }
+          { x1: 0, y1: 0, x2: w, y2: 0, layer: 'IMG', color: '#74767b' },
+          { x1: w, y1: 0, x2: w, y2: h, layer: 'IMG', color: '#74767b' },
+          { x1: w, y1: h, x2: 0, y2: h, layer: 'IMG', color: '#74767b' },
+          { x1: 0, y1: h, x2: 0, y2: 0, layer: 'IMG', color: '#74767b' }
         ];
         buildMeshFromSegs();
         resolve(1);
@@ -972,8 +972,8 @@
       /* empty board for notes only */
       bounds = { minX: -5, maxX: 5, minY: -5, maxY: 5 };
       segs = [
-        { x1: -5, y1: 0, x2: 5, y2: 0, color: '#334155' },
-        { x1: 0, y1: -5, x2: 0, y2: 5, color: '#334155' }
+        { x1: -5, y1: 0, x2: 5, y2: 0, color: '#424346' },
+        { x1: 0, y1: -5, x2: 0, y2: 5, color: '#424346' }
       ];
       done('Empty board — upload DXF / DWG / OBJ / STL');
     }

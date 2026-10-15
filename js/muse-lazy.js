@@ -281,12 +281,12 @@
   }
 
   function ensureLocal() {
-    if (typeof global.CharlieLocal !== 'undefined') {
-      return Promise.resolve(global.CharlieLocal);
+    if (typeof global.MuseAiLocal !== 'undefined') {
+      return Promise.resolve(global.MuseAiLocal);
     }
-    return loadScript('js/muse-charlie-local.js?v=20260925-build1', 'muse-charlie-local').then(function () {
-      if (typeof global.CharlieLocal === 'undefined') throw new Error('CharlieLocal missing after load');
-      return global.CharlieLocal;
+    return loadScript('js/muse-ai-local.js?v=20260925-build1', 'muse-ai-local').then(function () {
+      if (typeof global.MuseAiLocal === 'undefined') throw new Error('MuseAiLocal missing after load');
+      return global.MuseAiLocal;
     });
   }
 

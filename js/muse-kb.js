@@ -1031,7 +1031,7 @@
     });
   }
 
-  /* ---------- search / charlie ---------- */
+  /* ---------- search / museai ---------- */
   function toDoc(page) {
     if (!page) return null;
     return {
@@ -1084,7 +1084,7 @@
     scored.sort(function (a, b) { return b.s - a.s; });
     return scored.map(function (r) { return r.d; });
   }
-  function chunksForCharlie(q, limit) {
+  function chunksForMuseAi(q, limit) {
     limit = limit || 6;
     var hits = search(q);
     var hideFin = typeof permCan === 'function' && !permCan('finance');
@@ -1400,7 +1400,7 @@
     if (kind === 'incident') {
       return [
         F('team', 'Department', '', { type: 'team' }),
-        F('show', 'Show / venue', 'e.g. World Cup compound'),
+        F('show', 'Show / venue', 'e.g. Muse AI World Tour compound'),
         F('symptom', 'Symptom', 'Type what you saw.', { rows: 2 }),
         F('action', 'What you did', 'Type what the truck did.', { rows: 3 }),
         F('outcome', 'Outcome', 'Type the outcome.', { rows: 2 })
@@ -2093,7 +2093,7 @@
       var bits = [d.kind, d.team || ''];
       if (d.verified) bits.push('verified');
       var pills = (d.cats || []).slice(0, 3).map(function (tg) {
-        return '<span class="wiki-pill" style="background:rgba(99,46,138,.10);color:#632E8A">#' + esc(String(tg).toLowerCase().replace(/\s+/g, '-')) + '</span>';
+        return '<span class="wiki-pill" style="background:rgba(8,102,255,.10);color:#0866FF">#' + esc(String(tg).toLowerCase().replace(/\s+/g, '-')) + '</span>';
       }).join('');
       return '<a class="wiki-row' + (on ? ' is-on' : '') + '" href="#/kb/' + encodeURIComponent(d.slug) + '" data-wiki-go="' + escAttr(d.slug) + '"><p class="wiki-row-title">' + esc(d.prefixed) + '</p><p class="wiki-row-meta">' + esc(bits.filter(Boolean).join(' · ')) + '</p>' + (pills ? '<div class="wiki-row-tags">' + pills + '</div>' : '') + '</a>';
     }
@@ -2121,7 +2121,7 @@
     host.innerHTML =
       '<div class="wiki-shell">' +
       '<div class="wiki-toolbar">' +
-      '<div class="wiki-title min-w-0"><h1>Wiki</h1><p class="wiki-lede">Central knowledge base for live television broadcast — equipment, manuals, repairs, and troubleshooting. Charlie searches these pages.</p></div>' +
+      '<div class="wiki-title min-w-0"><h1>Wiki</h1><p class="wiki-lede">Central knowledge base for live television broadcast — equipment, manuals, repairs, and troubleshooting. Muse searches these pages.</p></div>' +
       '<div class="wiki-actions">' + composer +
       '<div class="wiki-search-wrap"><input id="kbSearch" value="' + escAttr(_q) + '" oninput="MuseKB.onSearch(this)" onkeydown="MuseKB.onSearchKey(event)" placeholder="Search wiki… cameras, RF, fiber" autocomplete="off">' + sug + '</div>' +
       '</div></div>' +
@@ -2154,7 +2154,7 @@
       try { if (typeof switchView === 'function') switchView('equipment'); } catch (e2) {}
     },
     related: related,
-    chunksForCharlie: chunksForCharlie,
+    chunksForMuseAi: chunksForMuseAi,
     seedShow: seedShow,
     toggleVerified: function () {
       if (!canEdit()) return null;

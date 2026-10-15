@@ -7,7 +7,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#f7f8fb">
+<meta name="theme-color" content="#f7f9fb">
 <meta name="color-scheme" content="light dark">
 <title>Muse Live</title>
 <script>
@@ -50,7 +50,7 @@
       document.documentElement.style.colorScheme=pref;
     }
     document.documentElement.classList.toggle('dark',dark);
-    var bar=dark?'#0b1018':'#f7f8fb';
+    var bar=dark?'#111112':'#f7f9fb';
     var metas=document.querySelectorAll('meta[name="theme-color"]');
     if(metas.length)metas[0].setAttribute('content',bar);
     try{document.cookie='Muse-Theme='+(dark?'dark':'light')+'; Path=/; Max-Age=31536000; SameSite=Lax';}catch(e1){}
@@ -85,19 +85,19 @@
       var done=false;
       function go(){if(done)return;done=true;location.replace(dest);}
       img.onload=go;img.onerror=function(){/* server not up — banner after DOM */};
-      img.src='http://127.0.0.1:'+port+'/assets/brand/muse-live-mark.svg?t='+Date.now();
+      img.src='http://127.0.0.1:'+port+'/assets/brand/meta-mark-animated.svg?t='+Date.now();
       setTimeout(function(){
         if(done)return;
         document.addEventListener('DOMContentLoaded',function(){
           var b=document.createElement('div');
           b.id='museFileBanner';
-          b.style.cssText='position:fixed;inset:0;z-index:999999;background:#0b0f17;color:#e6edf3;display:flex;align-items:center;justify-content:center;padding:24px;font-family:Inter,system-ui,sans-serif';
-          b.innerHTML='<div style="max-width:520px;background:#161b22;border:1px solid #30363d;border-radius:16px;padding:28px;text-align:center">'+
-            '<div style="font:800 20px Inter,sans-serif;margin-bottom:10px;color:#f59e0b">Open Muse Live via the local server</div>'+
-            '<p style="font:600 13px Inter,sans-serif;color:#8b949e;line-height:1.5;margin:0 0 16px">You opened a <b style="color:#e6edf3">file://</b> URL. This browser blocks DWG (LibreDWG), maps, and modules from file origins.<br><br>In Terminal:</p>'+
-            '<pre style="text-align:left;background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:12px;font:700 12px DM Mono,monospace;color:#3fb950;overflow:auto">cd ~/MuseLive\n./start-muse.sh</pre>'+
-            '<p style="font:600 12px Inter,sans-serif;color:#8b949e;margin:14px 0 18px">Then use <b style="color:#58a6ff">http://127.0.0.1:'+port+'/'+name+'</b></p>'+
-            '<a href="'+dest+'" style="display:inline-block;background:#238636;color:#fff;font:700 13px Inter,sans-serif;padding:10px 18px;border-radius:10px;text-decoration:none">Try open http://127.0.0.1:'+port+'</a>'+
+          b.style.cssText='position:fixed;inset:0;z-index:999999;background:#101112;color:#e6ebf3;display:flex;align-items:center;justify-content:center;padding:24px;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif';
+          b.innerHTML='<div style="max-width:520px;background:#1b1c1d;border:1px solid #353638;border-radius:16px;padding:28px;text-align:center">'+
+            '<div style="font:800 20px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-bottom:10px;color:#f56c0b">Open Muse Live via the local server</div>'+
+            '<p style="font:600 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8890a1;line-height:1.5;margin:0 0 16px">You opened a <b style="color:#e6ebf3">file://</b> URL. This browser blocks DWG (LibreDWG), maps, and modules from file origins.<br><br>In Terminal:</p>'+
+            '<pre style="text-align:left;background:#111213;border:1px solid #353638;border-radius:10px;padding:12px;font:700 12px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#3fb95b;overflow:auto">cd ~/MuseLive\n./start-muse.sh</pre>'+
+            '<p style="font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#8890a1;margin:14px 0 18px">Then use <b style="color:#589bff">http://127.0.0.1:'+port+'/'+name+'</b></p>'+
+            '<a href="'+dest+'" style="display:inline-block;background:#23863A;color:#ffffff;font:700 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:10px 18px;border-radius:10px;text-decoration:none">Try open http://127.0.0.1:'+port+'</a>'+
             '</div>';
           document.body.appendChild(b);
         });
@@ -111,7 +111,7 @@
 <link rel="preload" href="css/muse-tw.css?v=0530" as="style">
 <link rel="preload" href="css/muse-shell.css?v=0536" as="style">
 <link rel="preload" href="css/muse-dark.css?v=0528" as="style">
-<link rel="preload" href="assets/brand/muse-live-mark.svg" as="image">
+<link rel="preload" href="assets/brand/meta-mark-animated.svg" as="image">
 <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=DM+Mono:wght@400;500&display=swap" as="style">
 <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,100..900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/muse-tw.css?v=0530">
@@ -142,7 +142,7 @@
 <script src="js/muse-work-ui.js?v=20260915-enrichment1" defer></script>
 <script src="js/muse-mcp.js?v=0521" defer></script>
 <script src="js/muse-generic-kit.js?v=20260925-build1" defer></script>
-<script src="js/muse-charlie.js?v=20260925-build1" defer></script>
+<script src="js/muse-ai.js?v=20260925-build1" defer></script>
 <script src="js/muse-survey-media.js?v=0513" defer></script>
 <style id="museDashLayout">
 /* Classic dashboard + telemetry layout — desktop columns by default */
@@ -158,14 +158,14 @@
   .dash-trk-map{min-height:240px!important;height:42vh!important;max-height:420px!important}
 }
 </style>
-<!-- Charlie — under construction for this snapshot. -->
+<!-- Muse — under construction for this snapshot. -->
 <script>window.MUSE_LIVE_CONFIG={OPEN_METEO_BASE:"https://api.open-meteo.com/v1/forecast",USE_VENDOR_CDN:false,_source:"none"};</script>
 <script>
-window.CHARLIE_EDGE_ENABLED=false;
-window.CHARLIE_LOCAL_ENABLED=false;
-window.CHARLIE_CLOUD_ENABLED=false;
-window.CHARLIE_AI_ENABLED=false;
-window.CHARLIE_UNDER_CONSTRUCTION=true;
+window.MUSEAI_EDGE_ENABLED=false;
+window.MUSEAI_LOCAL_ENABLED=false;
+window.MUSEAI_CLOUD_ENABLED=false;
+window.MUSEAI_AI_ENABLED=false;
+window.MUSEAI_UNDER_CONSTRUCTION=true;
 </script>
 <script src="config/config.example.js"></script>
 <script src="config/config.local.js"></script>
@@ -189,9 +189,9 @@ html.muse-gated,html.muse-gated body{overflow:hidden;}
   padding:max(28px,env(safe-area-inset-top,0px)) max(20px,env(safe-area-inset-right,0px)) max(28px,env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));
   text-align:center;
   font-family:system-ui,-apple-system,Segoe UI,sans-serif;
-  color:#111827;
-  background-color:#f7f8fb;
-  background-image:linear-gradient(180deg,rgba(255,255,255,.52) 0%,rgba(255,255,255,.1) 46%,rgba(255,255,255,.36) 100%),linear-gradient(125deg,rgba(229,27,36,.1),rgba(239,123,16,.09) 17%,rgba(247,183,23,.08) 34%,rgba(0,161,93,.07) 50%,rgba(0,160,222,.09) 67%,rgba(99,46,138,.1) 84%,rgba(255,255,255,.32));
+  color:#1B1C1D;
+  background-color:#f7f9fb;
+  background-image:linear-gradient(180deg,rgba(255,255,255,.52) 0%,rgba(255,255,255,.1) 46%,rgba(255,255,255,.36) 100%),linear-gradient(125deg,rgba(228,30,63,.1),rgba(245,131,42,.09) 17%,rgba(247,185,40,.08) 34%,rgba(49,162,76,.07) 50%,rgba(8,102,255,.09) 67%,rgba(8,102,255,.1) 84%,rgba(255,255,255,.32));
   visibility:hidden;
   pointer-events:none;
   opacity:0;
@@ -202,18 +202,18 @@ html.muse-gated,html.muse-gated body{overflow:hidden;}
 html.muse-gated #museGate{visibility:visible;pointer-events:auto;opacity:1;}
 html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 #museGate .wrap{width:100%;max-width:360px;position:relative;z-index:3;contain:layout;overflow:hidden;}
-#museGate h1{margin:0 0 8px;font-size:clamp(18px,5.5vw,22px);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#111827;line-height:1.2;min-height:1.2em;}
-#museGate .sub{display:block;box-sizing:border-box;margin:0 auto 22px;width:280px;max-width:100%;min-height:38px;font-size:13px;font-weight:500;color:#374151;line-height:19px;}
-#museGate .err{display:block;box-sizing:border-box;margin:0 auto 16px;width:280px;max-width:100%;min-height:17px;font-size:13px;font-weight:600;color:#b91c1c;line-height:17px;}
+#museGate h1{margin:0 0 8px;font-size:clamp(18px,5.5vw,22px);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#1B1C1D;line-height:1.2;min-height:1.2em;}
+#museGate .sub{display:block;box-sizing:border-box;margin:0 auto 22px;width:280px;max-width:100%;min-height:38px;font-size:13px;font-weight:500;color:#424346;line-height:19px;}
+#museGate .err{display:block;box-sizing:border-box;margin:0 auto 16px;width:280px;max-width:100%;min-height:17px;font-size:13px;font-weight:600;color:#b91c36;line-height:17px;}
 #museGate .err:empty{visibility:hidden;}
 #museGate .field{width:100%;margin:0 0 14px;}
-#museGate .field input{width:100%;height:48px;padding:0 18px;border:0;border-radius:999px;background:rgba(255,255,255,.55);color:#111827;font:500 16px system-ui,-apple-system,sans-serif;text-align:center;letter-spacing:.18em;outline:none;box-shadow:inset 0 2px 6px rgba(15,23,42,.1),inset 0 1px 1px rgba(15,23,42,.08);}
-#museGate button{display:block;width:100%;height:48px;border:0;border-radius:999px;cursor:pointer;font:700 14px system-ui,-apple-system,sans-serif;letter-spacing:.04em;color:#fff;background:#632E8A;box-shadow:0 8px 22px rgba(99,46,138,.28);position:relative;z-index:2;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+#museGate .field input{width:100%;height:48px;padding:0 18px;border:0;border-radius:999px;background:rgba(255,255,255,.55);color:#1B1C1D;font:500 16px system-ui,-apple-system,sans-serif;text-align:center;letter-spacing:.18em;outline:none;box-shadow:inset 0 2px 6px rgba(28,28,29,.1),inset 0 1px 1px rgba(28,28,29,.08);}
+#museGate button{display:block;width:100%;height:48px;border:0;border-radius:999px;cursor:pointer;font:700 14px system-ui,-apple-system,sans-serif;letter-spacing:.04em;color:#ffffff;background:#0866FF;box-shadow:0 8px 22px rgba(8,102,255,.28);position:relative;z-index:2;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 #museGate .field,#museGate .foot{position:relative;z-index:2;}
-#museGate .foot{margin:18px 0 0;font-size:12px;font-weight:600;color:#374151;letter-spacing:.01em;}
-#museGate .foot strong{font-weight:800;color:#111827;}
+#museGate .foot{margin:18px 0 0;font-size:12px;font-weight:600;color:#424346;letter-spacing:.01em;}
+#museGate .foot strong{font-weight:800;color:#1B1C1D;}
 #museGate .spectrum{width:112px;height:112px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;}
-#museGate .spectrum img{width:96px;height:56px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(15,23,42,.12));}
+#museGate .spectrum img{width:96px;height:56px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(28,28,29,.12));}
 #museGate .gate-minions{
   object-fit:contain;object-position:right bottom;
   pointer-events:none !important;
@@ -233,7 +233,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
     border:1px solid rgba(255,255,255,.9);
     border-radius:22px;
     padding:28px 22px 22px;
-    box-shadow:0 16px 48px rgba(15,23,42,.12);
+    box-shadow:0 16px 48px rgba(28,28,29,.12);
   }
   #museGate .wrap .field,
   #museGate .wrap .field input,
@@ -275,11 +275,11 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   }
   #museGate .wrap{
     z-index:3;margin-top:0;max-width:min(360px,100%);
-    background:#fff;
+    background:#ffffff;
     border:1px solid rgba(255,255,255,.8);
     border-radius:22px;
     padding:20px 16px 128px;
-    box-shadow:0 12px 40px rgba(15,23,42,.12);
+    box-shadow:0 12px 40px rgba(28,28,29,.12);
     overflow:hidden;
   }
   #museGate .gate-minions--corner{display:none !important;}
@@ -298,7 +298,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
     z-index:1;
     object-position:right bottom;
   }
-  #museGate .foot{margin-top:12px;font-size:12px;color:#1f2937;}
+  #museGate .foot{margin-top:12px;font-size:12px;color:#2a2b2c;}
   #museGate .spectrum{width:72px;height:72px;margin-bottom:10px;}
   #museGate .spectrum img{width:64px;height:38px;}
   #museGate .sub{margin-bottom:12px;}
@@ -316,7 +316,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 <body class="min-h-screen flex flex-col muse-has-rail muse-has-navrail">
 <div id="museGate" role="dialog" aria-modal="true" aria-labelledby="museGateTitle" aria-hidden="true">
   <form class="wrap" id="museGateForm" autocomplete="off">
-    <div class="spectrum"><img src="assets/brand/muse-live-mark.svg" alt="Muse Live" width="72" height="42"/></div>
+    <div class="spectrum"><img src="assets/brand/meta-mark-animated.svg" alt="Meta" width="72" height="42"/></div>
     <h1 id="museGateTitle">Muse Live</h1>
     <p class="sub">A collaborative digital techbook OS for live broadcast operations.</p>
     <p class="err" id="museGateErr" aria-live="polite"></p>
@@ -388,7 +388,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   else{bind();check();}
 })();
 </script>
-  <!-- left: nav rail · right: Charlie/Omni rails · phones: compact icon rail -->
+  <!-- left: nav rail · right: Muse/Omni rails · phones: compact icon rail -->
 
 <!-- LEFT NAV RAIL — collapsible icon rail (labels when expanded) -->
 <aside id="navRail" class="nav-rail" aria-label="Primary navigation">
@@ -426,9 +426,9 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
     </button>
     <div class="flex items-center space-x-3 cursor-pointer group min-w-0" onclick="switchView('dashboard')" title="Return to Dashboard" role="button">
       <div class="muse-brand-mark relative w-11 h-11 flex items-center justify-center flex-shrink-0">
-        <svg class="absolute w-full h-full pk-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#00A0DE" stroke-width="3" opacity="0.4"/></svg>
-        <svg class="absolute w-full h-full pk-ring2" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#EF7B10" stroke-width="3" opacity="0.4"/></svg>
-        <img class="spectrum-mark w-10 h-10 z-10 relative object-contain" src="assets/brand/muse-live-mark.svg" alt="Muse Live" width="40" height="40" draggable="false" decoding="async" fetchpriority="high">
+        <svg class="absolute w-full h-full pk-ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#0866FF" stroke-width="3" opacity="0.4"/></svg>
+        <svg class="absolute w-full h-full pk-ring2" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="#F5832A" stroke-width="3" opacity="0.4"/></svg>
+        <img class="spectrum-mark w-10 h-10 z-10 relative object-contain" src="assets/brand/meta-mark-animated.svg" alt="Meta" width="40" height="40" draggable="false" decoding="async" fetchpriority="high">
       </div>
       <div class="h-5 w-px bg-gray-300 hidden sm:block"></div>
       <div class="muse-brand-title flex flex-col leading-none min-w-0">
@@ -523,7 +523,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
     <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80 mb-5">
       <div class="flex-shrink-0"><h1 class="text-xl sm:text-2xl font-semibold tracking-tight text-gray-900">Broadcast Progress Snapshot</h1><p class="text-xs sm:text-sm text-gray-600 mt-0.5">Live production requirement fulfillment across all major projects.</p></div>
       <div id="snapFilterPills" class="flex items-center justify-center gap-2 flex-wrap flex-1"></div>
-      <div class="flex items-center gap-2 sm:gap-3 flex-wrap flex-shrink-0"><button onclick="openCreateModal()" class="muse-cta group relative flex items-center gap-2 text-white rounded-xl pl-3 pr-4 py-2 text-xs font-bold transition-all hover:-translate-y-px overflow-hidden"><span class="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 transition-transform group-hover:rotate-90" style="backdrop-filter:blur(2px)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>New Project<span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#E51B24,#EF7B10,#F7B717,#00A15D,#00A0DE,#632E8A);opacity:.85"></span></button><span class="text-xs font-semibold text-gray-600 mono">Sync: <span class="text-gray-900" id="lastSync">Just Now</span></span><button onclick="refreshData()" class="bg-white border border-gray-300 rounded-lg px-4 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50">↻ Refresh</button></div>
+      <div class="flex items-center gap-2 sm:gap-3 flex-wrap flex-shrink-0"><button onclick="openCreateModal()" class="muse-cta group relative flex items-center gap-2 text-white rounded-xl pl-3 pr-4 py-2 text-xs font-bold transition-all hover:-translate-y-px overflow-hidden"><span class="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 transition-transform group-hover:rotate-90" style="backdrop-filter:blur(2px)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>New Project<span style="position:absolute;left:0;right:0;bottom:0;height:2px;background:linear-gradient(90deg,#0064E0 0%,#0082FB 100%);opacity:.85"></span></button><span class="text-xs font-semibold text-gray-600 mono">Sync: <span class="text-gray-900" id="lastSync">Just Now</span></span><button onclick="refreshData()" class="bg-white border border-gray-300 rounded-lg px-4 py-1.5 text-xs font-semibold shadow-sm hover:bg-gray-50">↻ Refresh</button></div>
     </div>
     <div id="snapshotGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4"></div>
     </section>
@@ -533,10 +533,10 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
     <div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
       <div class="flex items-center justify-between mb-4 pb-3 border-b border-gray-200"><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Live Operation Log</h3><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span></div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-        <div onclick="openProject('superbowl')" class="relative pl-4 border-l-2 border-red-300 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">09:12 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">⚠ SB LXI Power Alert</p><p class="text-[10px] text-gray-600 mt-0.5">Venue electrical confirmation escalated to Muse Live Engineering VP.</p></div>
-        <div onclick="openProject('worldcup')" class="relative pl-4 border-l-2 border-blue-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">08:41 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">Power Management &amp; Contingency Pending</p><p class="text-[10px] text-gray-600 mt-0.5">Nolan Grant committed verified MOS layout for World Cup IBC.</p></div>
-        <div onclick="openProject('superbowl')" class="relative pl-4 border-l-2 border-emerald-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">06:14 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">Super Bowl CAD Document Uploaded</p><p class="text-[10px] text-gray-600 mt-0.5">CAD document uploaded for Super Bowl LXI. Pending approval.</p></div>
-        <div onclick="openProject('worldcup')" class="relative pl-4 border-l-2 border-amber-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">Yesterday</p><p class="text-xs font-semibold text-gray-900 mt-0.5">World Cup Camera Setup Approved</p><p class="text-[10px] text-gray-600 mt-0.5">World Cup Director has approved the camera setup configuration.</p></div>
+        <div onclick="openProject('orion')" class="relative pl-4 border-l-2 border-red-300 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-red-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">09:12 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">⚠ Orion Power Alert</p><p class="text-[10px] text-gray-600 mt-0.5">Venue electrical confirmation escalated to Meta Engineering VP.</p></div>
+        <div onclick="openProject('museaitour')" class="relative pl-4 border-l-2 border-blue-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">08:41 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">Power Management &amp; Contingency Pending</p><p class="text-[10px] text-gray-600 mt-0.5">Nolan Grant committed verified MOS layout for Muse AI World Tour IBC.</p></div>
+        <div onclick="openProject('orion')" class="relative pl-4 border-l-2 border-emerald-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">06:14 EDT</p><p class="text-xs font-semibold text-gray-900 mt-0.5">Orion Reveal CAD Document Uploaded</p><p class="text-[10px] text-gray-600 mt-0.5">CAD document uploaded for Orion AR Glasses Reveal. Pending approval.</p></div>
+        <div onclick="openProject('museaitour')" class="relative pl-4 border-l-2 border-amber-200 cursor-pointer hover:bg-gray-50 rounded -ml-1 pr-1 py-0.5"><div class="absolute w-2.5 h-2.5 rounded-full bg-amber-500 border-2 border-white" style="left:-2px;top:8px"></div><p class="text-[9px] text-gray-500 font-bold mono">Yesterday</p><p class="text-xs font-semibold text-gray-900 mt-0.5">Muse AI World Tour Camera Setup Approved</p><p class="text-[10px] text-gray-600 mt-0.5">Muse AI World Tour Director has approved the camera setup configuration.</p></div>
       </div>
     </div>
   </section>
@@ -591,12 +591,12 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
       <button onclick="perExportJSON()" title="Machine-readable export — secrets stripped, exempt people omitted" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">JSON</button>
       <button onclick="perExportCSV()" title="Machine-readable export — secrets stripped, exempt people omitted" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">CSV</button>
       <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Microsoft 365</span>
-      <button onclick="syncMicrosoftContacts()" title="Link Outlook / Microsoft enterprise contacts (Graph stub — configure M365Config to go live)" class="text-[10px] font-bold text-[#0f6cbd] border border-[#0f6cbd]/40 rounded-lg px-2 py-1.5 hover:bg-[#0f6cbd]/08">Link Contacts</button>
+      <button onclick="syncMicrosoftContacts()" title="Link Outlook / Microsoft enterprise contacts (Graph stub — configure M365Config to go live)" class="text-[10px] font-bold text-[#0f55bd] border border-[#0f55bd]/40 rounded-lg px-2 py-1.5 hover:bg-[#0f55bd]/08">Link Contacts</button>
       <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Talent</span>
       <button onclick="xlsxTemplate('talent')" title="Download a pre-formatted template" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Template</button>
       <button onclick="xlsxImportOpen('talent',null)" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2 py-1.5 hover:bg-gray-800">Import</button>
       <button onclick="xlsxExport('talent',null)" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Export</button>
-      <button onclick="openPersonnelAdd()" class="flex items-center gap-1.5 text-[11px] font-bold text-white bg-blue-600 rounded-lg px-3 py-2 hover:bg-blue-700"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Add Personnel</button></div>
+      <button onclick="openPersonnelAdd()" class="flex items-center gap-1.5 text-[11px] font-bold text-white bg-blue-600 rounded-lg px-3 py-2 hover:bg-blue-700"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>Add Personnel</button></div>
   </div>
   <div class="rounded-xl border border-amber-200 bg-amber-50/80 px-4 py-3 flex flex-wrap items-start gap-3">
     <span class="text-[9px] font-bold uppercase tracking-wider text-amber-800 bg-amber-100 border border-amber-300 rounded px-1.5 py-0.5 flex-shrink-0 mt-0.5">Demo data</span>
@@ -639,7 +639,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 <!-- v31 PHASE 4: PERSONNEL PORTAL (traveler-facing itinerary dashboard) -->
 <div id="view-portal" class="view-pane space-y-6"><div id="portalHost"></div></div>
 <div id="view-schedule" class="view-pane space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80"><div><h1 class="text-2xl font-semibold tracking-tight text-gray-900 inline-flex items-center gap-2.5">Master Production Schedule <span id="schedConflictBubble"></span></h1><p class="text-sm text-gray-600 mt-0.5">Broadcast air grid, facility &amp; control-room bookings, and Xytech scheduling bridge.</p></div><div class="flex items-center gap-3"><button onclick="downloadScheduleBook(order[0])" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Schedule Book PDF</button><button type="button" onclick="try{museSyncCalendar(order[0]);}catch(e){if(typeof toast==='function')toast(String(e));}" class="flex items-center gap-1.5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-100" title="Download schedule as .ics">Export .ics</button></div></div>
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80"><div><h1 class="text-2xl font-semibold tracking-tight text-gray-900 inline-flex items-center gap-2.5">Master Production Schedule <span id="schedConflictBubble"></span></h1><p class="text-sm text-gray-600 mt-0.5">Broadcast air grid, facility &amp; control-room bookings, and Xytech scheduling bridge.</p></div><div class="flex items-center gap-3"><button onclick="downloadScheduleBook(order[0])" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Schedule Book PDF</button><button type="button" onclick="try{museSyncCalendar(order[0]);}catch(e){if(typeof toast==='function')toast(String(e));}" class="flex items-center gap-1.5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-100" title="Download schedule as .ics">Export .ics</button></div></div>
   <div id="schedTabBar" class="flex justify-center"></div>
   <div class="bg-white rounded-2xl p-5 border border-gray-200/60 overflow-x-auto" style="box-shadow:0 4px 20px rgba(0,0,0,.03)" id="scheduleGantt"></div>
 </div>
@@ -670,7 +670,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">
     <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Equipment Library</h1><p class="text-sm text-gray-600 mt-0.5">Barcode-tracked inventory — serial numbers, check-in / check-out, and live status across every production.</p></div>
     <div class="flex items-center gap-2">
-      <button onclick="openScan()" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14"/></svg> Scan Barcode</button>
+      <button onclick="openScan()" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M3 5v14M7 5v14M11 5v14M15 5v14M19 5v14"/></svg> Scan Barcode</button>
       <button onclick="openCsvImport('equipment')" class="text-xs font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-1.5 hover:bg-gray-50">Import CSV</button>
       <span class="text-[8px] font-bold uppercase tracking-wider text-gray-400 ml-1">Excel</span>
       <button onclick="xlsxTemplate('equipment')" title="Download a pre-formatted template" class="text-[10px] font-bold text-gray-600 border border-gray-200 rounded-lg px-2 py-1.5 hover:bg-gray-50">Template</button>
@@ -756,7 +756,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 <!-- COMPOSE MODAL -->
 <div id="composeOverlay" onclick="if(event.target===this)closeCompose()" style="display:none;position:fixed;inset:0;z-index:72;align-items:flex-start;justify-content:center;padding:48px 16px;overflow-y:auto;background:rgba(17,17,18,.52);backdrop-filter:blur(5px)">
   <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:560px;margin:auto">
-    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112,#1e1e20)">
+    <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112,#1e1f20)">
       <p class="text-[11px] font-bold text-white uppercase tracking-widest">New Message</p>
       <button onclick="closeCompose()" class="text-gray-400 hover:text-white text-lg leading-none">✕</button>
     </div>
@@ -792,7 +792,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
     <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">ENG Requests</h1><p class="text-sm text-gray-600 mt-0.5">Live camera hit logistics — crew, camera package, transmission, audio &amp; standard support gear.</p></div>
     <div class="flex items-center gap-3">
       <span id="engStats" class="text-xs mono text-gray-600"></span>
-      <button onclick="openEngBook()" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> ENG Sheet PDF</button>
+      <button onclick="openEngBook()" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> ENG Sheet PDF</button>
       <button onclick="openEngModal()" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-4 py-1.5 hover:bg-blue-700">+ New ENG Request</button>
     </div>
   </div>
@@ -817,8 +817,8 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 </main>
 
 <footer class="w-full bg-white border-t border-gray-200/70 flex items-center justify-between px-6 text-[10px] font-medium text-gray-500 mt-6" style="height:48px">
-  <div class="mono">Muse Live Media IT Engineering &amp; Broadcast Telemetry · Cycle FY2025–2026</div>
-  <div class="flex space-x-4 mono"><button onclick="toast('Core diagnostics: all routing matrices nominal · 0 faults')" class="hover:text-black">Core Diagnostics</button><span>·</span><button onclick="toast('MAM API · docs open in operations wiki')" class="hover:text-black">MAM API Documentation</button><span>·</span><button onclick="charlieAsk('Give me a portfolio status overview')" class="hover:text-black">Engineering Changelog</button></div>
+  <div class="mono">Meta IT Engineering &amp; Broadcast Telemetry · Cycle FY2025–2026</div>
+  <div class="flex space-x-4 mono"><button onclick="toast('Core diagnostics: all routing matrices nominal · 0 faults')" class="hover:text-black">Core Diagnostics</button><span>·</span><button onclick="toast('MAM API · docs open in operations wiki')" class="hover:text-black">MAM API Documentation</button><span>·</span><button onclick="museaiAsk('Give me a portfolio status overview')" class="hover:text-black">Engineering Changelog</button></div>
 </footer>
 
 <!-- ============================================================
@@ -830,15 +830,15 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:720px;margin:auto">
 
     <!-- header -->
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1e20 100%)">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1f20 100%)">
       <div class="flex items-center gap-3">
         <div class="flex gap-0.5">
-          <div style="width:6px;height:26px;background:#F7B717;border-radius:2px"></div>
-          <div style="width:6px;height:26px;background:#EF7B10;border-radius:2px"></div>
-          <div style="width:6px;height:26px;background:#E51B24;border-radius:2px"></div>
-          <div style="width:6px;height:26px;background:#632E8A;border-radius:2px"></div>
-          <div style="width:6px;height:26px;background:#00A0DE;border-radius:2px"></div>
-          <div style="width:6px;height:26px;background:#00A15D;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#F7B928;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#F5832A;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#E41E3F;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div>
+          <div style="width:6px;height:26px;background:#31A24C;border-radius:2px"></div>
         </div>
         <div>
           <p class="text-[11px] font-bold text-white uppercase tracking-widest">New Financial Document</p>
@@ -912,7 +912,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
       <!-- DESCRIPTION -->
       <div>
         <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1.5">Description / Scope of Work</label>
-        <input id="fb_desc" placeholder="e.g. ND1 mobile unit — World Cup compound package" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none" />
+        <input id="fb_desc" placeholder="e.g. ND1 mobile unit — Muse AI World Tour compound package" class="w-full text-xs border-2 border-gray-200 rounded-lg px-3 py-2 focus:border-gray-900 outline-none" />
       </div>
 
       <!-- LINE ITEMS -->
@@ -984,9 +984,9 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 <!-- ENG REQUEST MODAL -->
 <div id="engModal" class="eng-modal hidden" style="position:fixed;inset:0;z-index:80;display:none;align-items:flex-start;justify-content:center;padding:16px;overflow:hidden;background:rgba(17,17,18,.62)" onclick="if(event.target===this)closeEngModal()">
   <div id="engModalBox" class="eng-modal-box bg-white rounded-2xl shadow-2xl w-full" style="max-width:760px;margin:auto">
-    <div id="engModalHead" class="eng-modal-head flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1e20 100%)">
+    <div id="engModalHead" class="eng-modal-head flex items-center justify-between px-6 py-4 border-b border-gray-200 rounded-t-2xl" style="background:linear-gradient(135deg,#111112 0%,#1e1f20 100%)">
       <div class="flex items-center gap-3">
-        <div class="flex gap-0.5"><div style="width:6px;height:26px;background:#F7B717;border-radius:2px"></div><div style="width:6px;height:26px;background:#EF7B10;border-radius:2px"></div><div style="width:6px;height:26px;background:#E51B24;border-radius:2px"></div><div style="width:6px;height:26px;background:#632E8A;border-radius:2px"></div><div style="width:6px;height:26px;background:#00A0DE;border-radius:2px"></div><div style="width:6px;height:26px;background:#00A15D;border-radius:2px"></div></div>
+        <div class="flex gap-0.5"><div style="width:6px;height:26px;background:#F7B928;border-radius:2px"></div><div style="width:6px;height:26px;background:#F5832A;border-radius:2px"></div><div style="width:6px;height:26px;background:#E41E3F;border-radius:2px"></div><div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div><div style="width:6px;height:26px;background:#0866FF;border-radius:2px"></div><div style="width:6px;height:26px;background:#31A24C;border-radius:2px"></div></div>
         <div><p class="text-[11px] font-bold text-white uppercase tracking-widest" id="engModalTitle">New ENG Request</p><p class="text-[9px] text-gray-400 mt-0.5">Live Camera Hit · Logistics &amp; Gear</p></div>
       </div>
       <button onclick="closeEngModal()" class="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-lg">✕</button>
@@ -1156,16 +1156,16 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   </div>
 </div>
 
-<!-- CHARLIE SETTINGS -->
-<div id="charlieSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeCharlieSettings()">
+<!-- MUSEAI SETTINGS -->
+<div id="museaiSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(17,17,18,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeMuseAiSettings()">
   <div class="bg-white rounded-2xl shadow-2xl" style="width:460px;max-width:94vw">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-      <div><h3 class="text-sm font-bold text-gray-900 leading-none">Charlie — Ops Assistant</h3><p class="text-[10px] text-gray-500 mt-1">Under construction.</p></div>
-      <button onclick="closeCharlieSettings()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
+      <div><h3 class="text-sm font-bold text-gray-900 leading-none">Muse — Ops Assistant</h3><p class="text-[10px] text-gray-500 mt-1">Under construction.</p></div>
+      <button onclick="closeMuseAiSettings()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
     </div>
     <div class="p-6 space-y-3">
       <div class="rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2.5">
-        <p class="text-[11px] font-bold text-emerald-900">Charlie</p>
+        <p class="text-[11px] font-bold text-emerald-900">Muse</p>
         <p class="text-[10px] text-emerald-800/90 mt-0.5 leading-snug">Answers anything about Muse Live — every screen, show, and workflow — and any other question. Chat, listen, or ask for a picture.</p>
       </div>
       <div class="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2">
@@ -1181,15 +1181,15 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
         </div>
       </div>
       <div>
-        <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Charlie model</label>
+        <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Muse model</label>
         <select id="cs_model" class="w-full text-[11px] border border-gray-300 rounded-lg px-3 py-2 bg-white" style="outline:none">
-          <option value="charlie">Charlie</option>
+          <option value="museai">Muse</option>
         </select>
         <p class="text-[9px] text-gray-400 mt-1">Muse Live questions use the in-app rules and live public data.</p>
       </div>
       <div class="flex gap-2">
-        <button type="button" onclick="testCharlie()" class="flex-1 text-[10px] font-bold text-white bg-emerald-700 rounded-lg py-2 hover:bg-emerald-800">Test Charlie</button>
-        <button type="button" onclick="charlieLoadModelNow()" class="flex-1 text-[10px] font-bold text-emerald-900 border border-emerald-300 bg-emerald-50 rounded-lg py-2 hover:bg-emerald-100">Load free model</button>
+        <button type="button" onclick="testMuseAi()" class="flex-1 text-[10px] font-bold text-white bg-emerald-700 rounded-lg py-2 hover:bg-emerald-800">Test Muse</button>
+        <button type="button" onclick="museaiLoadModelNow()" class="flex-1 text-[10px] font-bold text-emerald-900 border border-emerald-300 bg-emerald-50 rounded-lg py-2 hover:bg-emerald-100">Load free model</button>
       </div>
       <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Travelpayouts Marker (flight search)</label>
         <input id="cs_tpmarker" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 mono" placeholder="e.g. 123456">
@@ -1198,8 +1198,8 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
         <textarea id="cs_tpsnippet" rows="3" class="w-full text-[10px] border border-gray-300 rounded-lg px-3 py-2 mono" style="resize:vertical" placeholder="Optional flight-search widget snippet"></textarea>
         <p class="text-[9px] text-gray-400 mt-1">Without it, a default search form + Aviasales fallback is used.</p></div>
       <input id="cs_key" type="hidden" value=""><input id="cs_model" type="hidden" value="">
-      <div id="cs_status" class="text-[10px] mono text-gray-500">● Charlie</div>
-      <button onclick="saveCharlieSettings()" class="w-full bg-gray-900 text-white text-xs font-bold rounded-lg py-2 hover:bg-gray-800">Save</button>
+      <div id="cs_status" class="text-[10px] mono text-gray-500">● Muse</div>
+      <button onclick="saveMuseAiSettings()" class="w-full bg-gray-900 text-white text-xs font-bold rounded-lg py-2 hover:bg-gray-800">Save</button>
     </div>
   </div>
 </div>
@@ -1212,7 +1212,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
       <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-purple-500"></span><h3 class="text-xs font-bold uppercase tracking-wider text-gray-700" id="finDocTitle">Document</h3></div>
       <div class="flex items-center gap-2">
         <button onclick="finDocCompose()" class="flex items-center gap-1.5 text-[10px] font-bold text-blue-700 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-50">✉ Email</button>
-        <button onclick="finDocPDF()" class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Export PDF</button>
+        <button onclick="finDocPDF()" class="flex items-center gap-1.5 text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Export PDF</button>
         <button onclick="closeFinDoc()" class="text-gray-400 hover:text-gray-700 text-lg leading-none w-7 h-7">✕</button>
       </div>
     </div>
@@ -1227,8 +1227,8 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:960px;max-width:97vw;max-height:94vh">
     <div class="flex items-center justify-between px-6 py-3.5 border-b border-gray-200 flex-shrink-0">
       <div class="flex items-center gap-2.5">
-        <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center flex-shrink-0" style="background:#632E8A;box-shadow:0 2px 8px rgba(99,46,138,.35)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
-        <div><h3 class="text-sm font-bold text-gray-900 leading-none">Create New Production</h3><p class="text-[10px] text-gray-500 mt-1">Adds across the dashboard, tabs &amp; Charlie · departments start at Missing · supports multi-day shoots &amp; multiple venues</p></div>
+        <span class="w-9 h-9 rounded-xl text-white flex items-center justify-center flex-shrink-0" style="background:#0866FF;box-shadow:0 2px 8px rgba(8,102,255,.35)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span>
+        <div><h3 class="text-sm font-bold text-gray-900 leading-none">Create New Production</h3><p class="text-[10px] text-gray-500 mt-1">Adds across the dashboard, tabs &amp; Muse · departments start at Missing · supports multi-day shoots &amp; multiple venues</p></div>
       </div>
       <button onclick="closeCreateModal()" class="text-gray-500 hover:text-gray-700 text-lg leading-none w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">✕</button>
     </div>
@@ -1238,7 +1238,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
         <div class="space-y-3.5">
           <div>
             <label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Project Title <span class="text-red-500">*</span></label>
-            <input id="np_title" type="text" placeholder="e.g. Olympic Trials 2028" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2" style="outline:none">
+            <input id="np_title" type="text" placeholder="e.g. Charm Trials 2028" class="w-full text-sm border border-gray-300 rounded-lg px-3 py-2" style="outline:none">
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600 block mb-1">Client / Division</label>
@@ -1315,7 +1315,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:1040px;max-width:97vw;height:88vh">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
       <div class="flex items-center gap-2.5">
-        <span class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg></span>
+        <span class="w-8 h-8 rounded-full bg-gray-900 flex items-center justify-center text-white"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg></span>
         <div><h3 class="text-sm font-bold text-gray-900 leading-none">Vendor Directory — Admin</h3><p class="text-[10px] text-gray-500 mt-1">Third-party rental vendors · contacts, docs &amp; addresses · available when assembling productions</p></div>
       </div>
       <button onclick="closeVendorManager()" class="text-gray-500 hover:text-gray-700 text-lg leading-none">✕</button>
@@ -1338,9 +1338,9 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
       <div class="flex items-center gap-2.5">
         <span class="w-8 h-8 rounded-full bg-gray-900 text-white flex items-center justify-center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         </span>
-        <div><h3 class="text-sm font-bold text-gray-900 leading-none" id="schedTitle">Production Schedule</h3><p class="text-[10px] text-gray-500 mt-1">Add dates, crew calls &amp; broadcast windows — saved to this production &amp; Charlie</p></div>
+        <div><h3 class="text-sm font-bold text-gray-900 leading-none" id="schedTitle">Production Schedule</h3><p class="text-[10px] text-gray-500 mt-1">Add dates, crew calls &amp; broadcast windows — saved to this production &amp; Muse</p></div>
       </div>
       <button onclick="closeSchedModal()" class="text-gray-500 hover:text-gray-700 text-lg leading-none">✕</button>
     </div>
@@ -1362,8 +1362,8 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
       <button onclick="addSchedRow()" class="mt-3 text-xs font-semibold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-3 py-1.5 hover:bg-blue-100">+ Add Row</button>
     </div>
     <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between gap-2">
-      <div class="flex items-center gap-2"><button onclick="downloadTechbook(schedKey)" title="Always exports current live production data — not a saved snapshot" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-4 py-2 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Techbook PDF · live</button>
-      <button onclick="downloadScheduleBook(schedKey)" class="flex items-center gap-1.5 text-xs font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-4 py-2 hover:bg-blue-100"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Schedule Book PDF</button></div>
+      <div class="flex items-center gap-2"><button onclick="downloadTechbook(schedKey)" title="Always exports current live production data — not a saved snapshot" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-4 py-2 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Techbook PDF · live</button>
+      <button onclick="downloadScheduleBook(schedKey)" class="flex items-center gap-1.5 text-xs font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-4 py-2 hover:bg-blue-100"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1266e3" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Schedule Book PDF</button></div>
       <div class="flex items-center gap-2"><button onclick="closeSchedModal()" class="text-xs font-semibold text-gray-600 border border-gray-300 rounded-lg px-4 py-2 hover:bg-gray-50">Cancel</button><button onclick="saveSchedule()" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-5 py-2 hover:bg-blue-700">Save Schedule</button></div>
     </div>
   </div>
@@ -1373,7 +1373,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 <div id="signoffModal" class="hidden" style="position:fixed;inset:0;z-index:62;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(17,17,18,.55);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeSignoff()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:520px;max-width:96vw;max-height:90vh">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-emerald-600 rounded-t-2xl">
-      <h3 id="soTitle" class="text-sm font-bold text-white flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Production Sign-Off</h3>
+      <h3 id="soTitle" class="text-sm font-bold text-white flex items-center gap-2"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Production Sign-Off</h3>
       <button onclick="closeSignoff()" class="text-white/80 hover:text-white text-lg leading-none">✕</button>
     </div>
     <div class="p-6 overflow-y-auto">
@@ -1455,7 +1455,7 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
   <div class="bg-white rounded-2xl shadow-2xl w-full" style="max-width:640px;max-height:78vh;display:flex;flex-direction:column;overflow:hidden">
     <div class="flex items-center gap-3 px-4 py-3 border-b border-gray-100 flex-shrink-0">
       <svg class="text-gray-400 flex-shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input id="gsInput" oninput="globalSearchRender(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();globalSearchAskNow();}" placeholder="Search Muse Live or ask Charlie…" class="flex-1 text-sm outline-none" autocomplete="off">
+      <input id="gsInput" oninput="globalSearchRender(this.value)" onkeydown="if(event.key==='Enter'){event.preventDefault();globalSearchAskNow();}" placeholder="Search Muse Live or ask Muse…" class="flex-1 text-sm outline-none" autocomplete="off">
       <button type="button" onclick="globalSearchAskNow()" title="Run Search (Enter)" class="text-[9px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-2 py-1 hover:bg-emerald-100 flex-shrink-0">Search</button>
       <kbd class="text-[9px] mono text-gray-400 bg-gray-100 border border-gray-200 rounded px-1.5 py-0.5 flex-shrink-0">ESC</kbd>
       <button onclick="globalSearchClose()" class="text-gray-400 hover:text-gray-700 text-lg leading-none flex-shrink-0">✕</button>
@@ -1509,20 +1509,20 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 </div>
 
 <!-- ============ OMNI-CHANNEL OPERATIONS · persistent sliding drawer ============ -->
-<!-- v32: docked tab mirrors the Ask Charlie launcher exactly — same spectrum mark, same type -->
+<!-- v32: docked tab mirrors the Ask Muse launcher exactly — same spectrum mark, same type -->
 <button class="omni-fab" onclick="toggleOmniDrawer()" title="Omni">
   <span id="omniFabBadge" class="omni-fab-badge"></span>
-  <img src="assets/brand/muse-live-mark.svg" alt="Muse Live" width="20" height="13" class="pk-rail-logo" draggable="false">
+  <img src="assets/brand/meta-mark-animated.svg" alt="Meta" width="20" height="13" class="pk-rail-logo" draggable="false">
   <span class="omni-fab-label" style="font-size:10px;font-weight:700;text-transform:uppercase">Omni</span>
 </button>
 <div id="omniDrawerScrim" class="omni-scrim" onclick="closeOmniDrawer()"></div>
 <aside id="omniDrawer" class="omni-drawer">
   <div class="px-4 pt-4 pb-3 border-b border-gray-100 flex-shrink-0">
-    <!-- v30 Module 15: header follows the Ask Charlie pattern (avatar · name · status line) — purple kept -->
+    <!-- v30 Module 15: header follows the Ask Muse pattern (avatar · name · status line) — purple kept -->
     <div class="flex items-center justify-between mb-1">
       <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background:#632E8A">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+        <div class="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0" style="background:#0866FF">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
         </div>
         <div><h3 class="text-sm font-bold text-gray-900 tracking-tight leading-none">Omni</h3>
         <p class="text-[10px] text-gray-500 mt-1">Ops room · Outlook &amp; Teams · simulated until Graph is connected</p></div>
@@ -1546,55 +1546,55 @@ html.muse-gated body > *:not(#museGate){pointer-events:none;visibility:hidden;}
 
 <div id="toastBox" class="fixed bottom-6 right-6 z-50 space-y-2"></div>
 
-<!-- CHARLIE LAUNCHER (docked in right gutter, fixed 42px width) -->
+<!-- MUSEAI LAUNCHER (docked in right gutter, fixed 42px width) -->
 <!-- EXCEL IMPORT PREVIEW (Work Items 7 & 8) -->
-<div id="xlsxOverlay" onclick="if(event.target===this)closeXlsxPreview()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:72;align-items:center;justify-content:center;padding:16px">
+<div id="xlsxOverlay" onclick="if(event.target===this)closeXlsxPreview()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:72;align-items:center;justify-content:center;padding:16px">
   <div id="xlsxBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- SURVEY PDF location chooser (Work Item 6) -->
-<div id="survPdfOverlay" onclick="if(event.target===this)closeSurveyPdfOptions()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:71;align-items:center;justify-content:center;padding:16px">
+<div id="survPdfOverlay" onclick="if(event.target===this)closeSurveyPdfOptions()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:71;align-items:center;justify-content:center;padding:16px">
   <div id="survPdfBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- CONTROL ROOM detail modal (Work Item 4) -->
-<div id="roomOverlay" onclick="if(event.target===this)closeRoomDetail()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+<div id="roomOverlay" onclick="if(event.target===this)closeRoomDetail()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
   <div id="roomBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-sm max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- CITY CONDITIONS modal (Work Item 3) -->
-<div id="wxCityOverlay" onclick="if(event.target===this)closeCityWx()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+<div id="wxCityOverlay" onclick="if(event.target===this)closeCityWx()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
   <div id="wxCityBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-md max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
 <!-- ACCOUNT PROVISIONING & PERMISSIONS modal (Work Item 1) -->
-<div id="accountOverlay" onclick="if(event.target===this)closeAccountModal()" style="display:none;position:fixed;inset:0;background:rgba(15,17,23,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
+<div id="accountOverlay" onclick="if(event.target===this)closeAccountModal()" style="display:none;position:fixed;inset:0;background:rgba(18,19,20,.55);z-index:70;align-items:center;justify-content:center;padding:16px">
   <div id="accountBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
-<button id="charlieLauncher" type="button" onclick="toggleCharlie()" title="Charlie — Under Construction" aria-label="Charlie Under Construction">
-  <span id="charlieFabBadge" class="omni-fab-badge"></span>
-  <img src="assets/brand/s-l1200.png" alt="" width="20" height="20" class="charlie-icon" draggable="false">
-  <span class="charlie-fab-label">Charlie</span>
+<button id="museaiLauncher" type="button" onclick="toggleMuseAi()" title="Muse — Under Construction" aria-label="Muse Under Construction">
+  <span id="museaiFabBadge" class="omni-fab-badge"></span>
+  <img src="assets/brand/muse-ai-icon.svg" alt="" width="20" height="20" class="museai-icon" draggable="false">
+  <span class="museai-fab-label">Muse</span>
 </button>
 
-<!-- CHARLIE DRAWER — under construction -->
-<div id="charlieDrawer" class="glass-drawer shadow-2xl flex flex-col border-l border-gray-200/40" style="position:fixed;top:0;right:0;height:100%;z-index:70;width:370px;max-width:92vw;transform:translateX(100%);transition:transform .25s ease">
+<!-- MUSEAI DRAWER — under construction -->
+<div id="museaiDrawer" class="glass-drawer shadow-2xl flex flex-col border-l border-gray-200/40" style="position:fixed;top:0;right:0;height:100%;z-index:70;width:370px;max-width:92vw;transform:translateX(100%);transition:transform .25s ease">
   <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-gray-50">
     <div class="flex items-center gap-2.5">
-      <p class="text-sm font-bold text-gray-900 leading-none">Charlie</p>
-      <span id="charlieModeDot" class="hidden"></span>
-      <span id="charlieModeLabel" class="hidden" hidden></span>
+      <p class="text-sm font-bold text-gray-900 leading-none">Muse</p>
+      <span id="museaiModeDot" class="hidden"></span>
+      <span id="museaiModeLabel" class="hidden" hidden></span>
     </div>
-    <button onclick="toggleCharlie()" class="text-gray-500 hover:text-gray-700 text-lg leading-none w-7 h-7">✕</button>
+    <button onclick="toggleMuseAi()" class="text-gray-500 hover:text-gray-700 text-lg leading-none w-7 h-7">✕</button>
   </div>
-  <div id="charlieMessages" class="flex-1 overflow-y-auto overflow-x-hidden p-5 min-w-0 flex flex-col items-center justify-center text-center" style="overflow-wrap:anywhere">
+  <div id="museaiMessages" class="flex-1 overflow-y-auto overflow-x-hidden p-5 min-w-0 flex flex-col items-center justify-center text-center" style="overflow-wrap:anywhere">
     <p class="text-base font-bold text-gray-900">Under Construction</p>
   </div>
-  <div id="charlieChips" class="hidden"></div>
+  <div id="museaiChips" class="hidden"></div>
   <div class="p-3 border-t border-gray-200 hidden">
-    <input id="charlieInput" type="text" disabled>
-    <button id="charlieMicBtn" type="button" hidden></button>
+    <input id="museaiInput" type="text" disabled>
+    <button id="museaiMicBtn" type="button" hidden></button>
   </div>
 </div>
 

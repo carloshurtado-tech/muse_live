@@ -21,13 +21,13 @@
   }
   root.MUSE_SURVEY_MEDIA_VER = VER;
   root.MUSE_SURVEY_MEDIA = {
-    worldcup: pack('worldcup', 'MetLife Stadium'),
-    sail250: pack('sail250', 'New York Harbor'),
-    superbowl: pack('superbowl', "Levi's Stadium"),
-    muse100: pack('muse100', '1 Muse Plaza'),
-    midterms: pack('midterms', 'Muse Live News Washington Bureau'),
-    parade: pack('parade', "Herald Square"),
-    winterolympics: pack('winterolympics', 'Milano IBC — Fiera Milano Rho')
+    museaitour: pack('museaitour', 'MetLife Stadium'),
+    raybangen3: pack('raybangen3', 'New York Harbor'),
+    orion: pack('orion', "Levi's Stadium"),
+    museailaunch: pack('museailaunch', 'Meta NYC · Hudson Yards'),
+    whatsapp: pack('whatsapp', 'WhatsApp Washington DC Hub'),
+    igcreators: pack('igcreators', "Herald Square"),
+    charm: pack('charm', 'Milan IBC — Fiera Milano Rho')
   };
   function wrapGetSurvey() {
     if (typeof root.getSurvey !== 'function' || root.getSurvey._media) return false;
@@ -44,7 +44,7 @@
     try {
       var m = /[?&]surv=([a-z]+)/.exec(location.search || '');
       if (m && typeof surveyView !== 'undefined') {
-        var k = 'worldcup';
+        var k = 'museaitour';
         try {
           var h = String(location.hash || '');
           var p = h.replace(/^#\//, '').split('/')[0];
@@ -55,7 +55,7 @@
     } catch (eS) {}
     try {
       if (/[?&]surv=/.test(location.search || '') && typeof setProjTab === 'function') {
-        var hk = 'worldcup';
+        var hk = 'museaitour';
         try {
           var hx = String(location.hash || '').replace(/^#\//, '').split('/')[0];
           if (hx) hk = decodeURIComponent(hx);

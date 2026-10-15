@@ -1,12 +1,12 @@
 /**
- * Charlie is under construction. No remote assistant from this snapshot.
+ * Muse is under construction. No remote assistant from this snapshot.
  */
 export async function onRequest() {
   return new Response(JSON.stringify({
     ok: false,
     configured: false,
     underConstruction: true,
-    text: 'Charlie is under construction.',
+    text: 'Muse is under construction.',
   }), {
     status: 200,
     headers: {

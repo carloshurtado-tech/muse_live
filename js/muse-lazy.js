@@ -243,12 +243,12 @@
   function ensurePdf() {
     if (global.jspdf && global.jspdf.jsPDF) return Promise.resolve(global.jspdf);
     var p1 = loadScript(
-      'js/vendor/jspdf.umd.min.js?v=20261015-meta3',
+      'js/vendor/jspdf.umd.min.js?v=20261015-meta6',
       'jspdf'
     );
     var p2 = p1.then(function () {
       return loadScript(
-        'js/vendor/jspdf-autotable.min.js?v=20261015-meta3',
+        'js/vendor/jspdf-autotable.min.js?v=20261015-meta6',
         'jspdf-autotable'
       );
     });
@@ -284,7 +284,7 @@
     if (typeof global.MuseAiLocal !== 'undefined') {
       return Promise.resolve(global.MuseAiLocal);
     }
-    return loadScript('js/muse-ai-local.js?v=20261015-meta3', 'muse-ai-local').then(function () {
+    return loadScript('js/muse-ai-local.js?v=20261015-meta6', 'muse-ai-local').then(function () {
       if (typeof global.MuseAiLocal === 'undefined') throw new Error('MuseAiLocal missing after load');
       return global.MuseAiLocal;
     });

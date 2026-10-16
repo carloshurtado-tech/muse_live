@@ -12,8 +12,7 @@
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
 /index.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
-  Link: </css/muse-shell.css?v=20261015-meta3>; rel=preload; as=style
-  Link: </css/muse-dark.css?v=20261015-meta3>; rel=preload; as=style
+  Link: </css/muse.css?v=20261015-meta6>; rel=preload; as=style
   Link: </assets/brand/meta-mark-animated.svg>; rel=preload; as=image
 
 /*.html

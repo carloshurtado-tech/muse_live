@@ -3,18 +3,25 @@
 (function (root) {
   'use strict';
   var VER = 20260827;
-  function cap(src, caption) {
-    return { src: src, caption: caption, ts: 'seeded walk', by: 'Site survey' };
+  function cap(src, caption, by) {
+    return { src: src, caption: caption, ts: 'seeded walk', by: by || 'Site survey' };
   }
+  /* Third-party photos (CC BY-SA 4.0, cropped to 16:9) — credited on the photo itself */
+  var CREDIT = {
+    museailaunch: {
+      exterior: 'Photo: Epicgenius / Wikimedia Commons · CC BY-SA 4.0',
+      around: 'Photo: Epicgenius / Wikimedia Commons · CC BY-SA 4.0'
+    }
+  };
   function pack(key, venue, shots) {
-    var b = 'assets/survey/' + key + '/';
+    var b = 'assets/survey/' + key + '/', c = CREDIT[key] || {};
     return {
       gallery: [
-        cap(b + 'exterior.jpg', venue + ' — exterior / approach'),
-        cap(b + 'compound.jpg', venue + ' — compound / platforms')
+        cap(b + 'exterior.jpg', venue + ' — exterior / approach', c.exterior),
+        cap(b + 'compound.jpg', venue + ' — compound / platforms', c.compound)
       ],
       around: [
-        cap(b + 'around.jpg', venue + ' — surrounding area')
+        cap(b + 'around.jpg', venue + ' — surrounding area', c.around)
       ],
       pano: b + 'pano.jpg'
     };

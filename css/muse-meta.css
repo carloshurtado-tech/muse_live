@@ -67,7 +67,7 @@ html body .muse-badge,html body .nav-rail-attn,html body .omni-fab-badge,html bo
 #navRail .nav-rail-btn .muse-badge,#navRail .nav-rail-btn .nav-rail-attn{position:absolute !important;top:3px !important;left:calc(50% + 5px) !important;right:auto !important;bottom:auto !important;
   transform:none !important;margin:0 !important;min-width:17px !important;height:17px !important;padding:0 4px !important;border-radius:9px !important;
   font-size:10.5px !important;line-height:17px !important;z-index:2;}
-body.nav-rail-expanded #navRail .nav-rail-btn .muse-badge,body.nav-rail-expanded #navRail .nav-rail-btn .nav-rail-attn{left:26px !important;}
+body.nav-rail-expanded #navRail .nav-rail-btn .muse-badge,body.nav-rail-expanded #navRail .nav-rail-btn .nav-rail-attn{left:auto !important;right:10px !important;top:50% !important;transform:translateY(-50%) !important;}
 html body .muse-badge:empty,html body .nav-rail-attn:empty,html body .omni-fab-badge:empty{display:none !important;}
 html body .muse-burger-dot{background:var(--m-red) !important;box-shadow:0 0 0 2px var(--m-card) !important;}
 
@@ -128,3 +128,23 @@ html.dark body .wx-tile:hover{background:#4E4F50 !important;}
 html body .wx-tile-sev{background:#FDE7EA !important;}
 html.dark body .wx-tile-sev{background:#3D1219 !important;}
 html body .wx-tile-hi{color:var(--m-text) !important;}
+
+/* 15 · Accessible text contrast (WCAG AA) — light theme ---------------------- */
+html:not(.dark) body .text-gray-300,html:not(.dark) body .text-gray-400,html:not(.dark) body .muse-os-brand,
+html:not(.dark) body .wx-tile-lo,html:not(.dark) body [style*="color:#b0b3b8"],html:not(.dark) body [style*="color:#B0B3B8"],
+html:not(.dark) body [style*="color:#ced0d4"],html:not(.dark) body [style*="color:#CED0D4"]{color:#65676B !important;}
+html:not(.dark) body :is(.text-blue-700,.text-blue-800,.text-purple-700,.text-purple-800,.text-indigo-700,.text-sky-700,.text-cyan-700,.wx-tile-p){color:#0A58CA !important;}
+html:not(.dark) body :is(.text-amber-500,.text-amber-600,.text-amber-700,.text-orange-500,.text-orange-600,.text-orange-700){color:#B24A00 !important;}
+html:not(.dark) body :is(.text-yellow-600,.text-yellow-700){color:#8A5D00 !important;}
+html:not(.dark) body :is(.text-red-500,.text-red-600,.text-red-700){color:#B3122E !important;}
+html:not(.dark) body :is(.text-green-600,.text-green-700,.text-emerald-600,.text-emerald-700){color:#1E7B34 !important;}
+html:not(.dark) body [style*=";color:#f5832a"],html:not(.dark) body [style^="color:#f5832a"],html:not(.dark) body [style*=";color:#F5832A"],html:not(.dark) body [style^="color:#F5832A"]{color:#B24A00 !important;}
+html body .wx-tile-p{font-size:11px !important;}
+html body [role="button"]:focus-visible,html body [role="group"][tabindex]:focus-visible{outline:2px solid var(--m-blue) !important;outline-offset:2px !important;}
+html:not(.dark) body :is(.text-amber-800,.text-amber-900,.text-orange-800,.text-orange-900){color:#B24A00 !important;}
+html:not(.dark) body #museaiChips button,html:not(.dark) body .wiki-pill{color:#0A58CA !important;}
+html:not(.dark) body .wiki-list-k{color:#65676B !important;}
+html body :is(.text-blue-100,.text-blue-200,.text-white\/60,.text-white\/70,.text-white\/80,.text-white\/90),html body [class*="text-blue-200/"]{color:#FFFFFF !important;}
+html body [class*="tracking-wider"].opacity-70{opacity:1 !important;}
+html:not(.dark) body :is(.bg-gray-900,.bg-black,.bg-gray-800) :is(.text-gray-300,.text-gray-400){color:#CED0D4 !important;}
+html:not(.dark){--live-red:#B3122E;}

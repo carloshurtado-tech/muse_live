@@ -1,0 +1,172 @@
+{
+ "summary": {
+  "ran_at": "2026-10-17T16:13:32.877Z",
+  "base": "http://127.0.0.1:8802",
+  "questions": 8,
+  "passed": 8,
+  "accuracy": 100,
+  "partial_score": 100,
+  "median_ms": 6963,
+  "total_tokens": 167108,
+  "wall_ms": 58497,
+  "by_category": {
+   "readiness": {
+    "n": 1,
+    "pass": 1,
+    "ms": 10504
+   },
+   "techbook": {
+    "n": 1,
+    "pass": 1,
+    "ms": 9471
+   },
+   "streaming": {
+    "n": 1,
+    "pass": 1,
+    "ms": 3622
+   },
+   "incidents": {
+    "n": 2,
+    "pass": 2,
+    "ms": 17139
+   },
+   "schedule": {
+    "n": 1,
+    "pass": 1,
+    "ms": 6963
+   },
+   "crew": {
+    "n": 1,
+    "pass": 1,
+    "ms": 4379
+   },
+   "venue": {
+    "n": 1,
+    "pass": 1,
+    "ms": 4264
+   }
+  }
+ },
+ "results": [
+  {
+   "id": "dept-04",
+   "cat": "readiness",
+   "q": "Which departments are missing on the WhatsApp Business Summit?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 10504,
+   "effort": "low",
+   "steps": 3,
+   "tokens": 25972,
+   "trace": "Show overview \u00b7 WhatsApp Business Summit Replay / EVS \u00b7 WhatsApp Business Summit Legal / Rights \u00b7 WhatsApp Business Summit 10.2 s \u00b7 3 steps",
+   "answer": "On the WhatsApp Business Summit \u2014 2 departments are missing:\n\nReplay / EVS \u2014 Replay TBD \u2014 planning phase\nLegal / Rights \u2014 Q&A desk infrastructure spec awaited\n\nThat's why the show is at 7% readiness (1 / 14 approved) \u2014 only Talent / Production is approved.\n\nWhat's outstanding:\n\n1. Replay / EVS \u2014 missing\n\nTechbook: nothing filled. All 11 fields open: Replay Status, Server Platform, Record / Play Channels, Shared Storage, Ops Mode, Replay Operators, PGM Feed Source, Clip Naming Convention, Archive Policy, Slo-Mo Profiles, ST 2110 / PTP Status\nPack list: 0 lines\nCrew: Replay Operator \u2014 Shay Donovan listed, no open positions flagged\nTasks / survey findings: none\nApproval: none\n\n2. Legal / Rights \u2014 missing\n\nTechbook filled: Rights Status = In progress, Clearances = Archive in review\nTechbook unfilled: Vendor COI Status, Union / Labor Notices, Talent Releases, Music / ASCAP-BMI, Privacy / GDPR / Likeness\nPack list: 0 lines\nCrew: none listed\nTasks / survey findings: none\nApproval: none\n\nNext action: lock the replay scope (server platform / channels / ops mode) and the Q&A-desk infrastructure spec that Legal is waiting on. No owner is listed in Muse Live \u2014 that's in the Workflow tab ahead of the Oct 28 Multi-Market Site Surveys."
+  },
+  {
+   "id": "cam-01",
+   "cat": "techbook",
+   "q": "How many cameras are we using for the Muse AI World Tour?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 9471,
+   "effort": "low",
+   "steps": 2,
+   "tokens": 17651,
+   "trace": "Techbook \u00b7 Cameras / Video \u00b7 Muse AI World Tour 2026 Pack list \u00b7 Muse AI World Tour 2026 9.2 s \u00b7 2 steps",
+   "answer": "For Muse AI World Tour 2026 \u2014 11x Sony HDC-5500 bodies + 3x Grass Valley = 14 bodies on the pack list.\n\nHow I counted:\n\nTechbook \u2014 Cameras / Video:\n\nModel: Sony HDC-5500 \u2014 count: 7\nLenses: Canon CJ45ex9.7B\nConfig: Studio pedestal + Porta Jib + FR7 PTZ\nHardcams: 3\nPTZ count: 3\nTransport: Single-mode fiber (TAC-12)\n\nPack list \u2014 Cameras / Video (50 pieces total, all Draft):\n\nSony HDC-5500 \u2014 7x \u2014 Canon CJ45ex9.7B \u00b7 Vinten Vector 750 \u00b7 HDVF-EL30\nGrass Valley LDX 86N \u2014 3x \u2014 Fujinon UA107x8.4 \u00b7 ceiling mount\nSony HDC-5500 \u2014 3x \u2014 no detail\nSony HDC-5500 \u2014 1x \u2014 Camera Body\nSupport: 6x HDCU-3500 CCUs, 6x RCP-3500, 7x Vinten Vector 750, 12x Evertz 7707 fiber Tx/Rx\n\nSo the planned shooting complement is 7x HDC-5500 main chains + 3x LDX 86N, with another 4x HDC-5500 bodies listed as additional / spare.\n\nAll camera pack lines are still status Draft \u2014 none packed yet."
+  },
+  {
+   "id": "str-03",
+   "cat": "streaming",
+   "q": "What loudness target are we using for the Charm stream?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 3622,
+   "effort": "low",
+   "steps": 2,
+   "tokens": 16996,
+   "trace": "Stream health \u00b7 Meta Charm Launch (Milan Design Week) 3.6 s \u00b7 2 steps",
+   "answer": "-23 LUFS \u00b11 (EBU R128), true peak -1 dBTP for the Meta Charm Launch stream.\n\nThat's the EU broadcast spec - correct for the Milan show."
+  },
+  {
+   "id": "inc-01",
+   "cat": "incidents",
+   "q": "Hey what happened at the Rayban event?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 12381,
+   "effort": "medium",
+   "steps": 3,
+   "tokens": 30388,
+   "trace": "Incidents \u00b7 Ray-Ban Meta Gen 3 Launc\u2026 (3) Show overview \u00b7 Ray-Ban Meta Gen 3 Launch INC-2026-0612 INC-2026-0613 INC-2026-0625 12.3 s \u00b7 3 steps",
+   "answer": "Ray-Ban Meta Gen 3 Launch \u2014 Harbor Reveal at Pier 26, June 29th \u2014 had a rough 4 minutes on air, plus one catch in test the day before.\n\nShow went live at 9:00 AM ET. All 14 departments were approved, show is now Complete.\n\nHere's the post-mortem, most severe first:\n\n1. SEV-2 \u2014 Primary SRT contribution lost, 38s of rebuffering \u2014 INC-2026-0612\n\nWhat / when: At 9:14 AM, 14 minutes into the show, primary SRT from Pier 26 went from 0% to 18% loss in 6 seconds. MediaLive didn't fail over to the LiveU bonded backup for 29 seconds.\nViewer impact: Every destination \u2014 Facebook, Instagram, meta.com \u2014 froze. ~297k viewers affected, rebuffering spiked to 7.8% vs 0.4% baseline, for about 38 seconds. Total event 3m 41s on backup. Broke the 99.9% availability target for the event \u2014 hit 99.55%.\nRoot cause: A failing SFP on the venue access switch in the Pier 26 hut flapped the single 1GbE municipal fiber. SRT latency was 1,200ms \u2014 too short for an open-water site \u2014 and the MediaLive auto-failover threshold had been raised from 2s to 10s after a false failover in rehearsal.\nFix: Auto-failover to LiveU input 2, ran clean for 3 min, then TOC switched back to primary manually during a planned VT once SRT held at 0% for 2 min. SFP replaced post-show.\n\n2. SEV-3 \u2014 Captions missing on Facebook for 6 minutes \u2014 INC-2026-0613\n\nWhat / when: Right after that failover at 9:15 AM, CEA-608 captions stopped on Facebook Live until 9:21 AM.\nViewer impact: ~180k viewers, 6m 02s with no captions on Facebook. WebVTT on meta.com was fine.\nRoot cause: The EEG Falcon was inserting 608 only on the primary SDI path \u2014 the LiveU backup carried no caption data.\nFix: Captions returned when we switched back to primary. Facebook took ~3 min to resume rendering.\n\n3. SEV-4 \u2014 LiveU modem on stale firmware in test \u2014 INC-2026-0625\n\nWhat / when: June 28th, day-before signal-path test. Bonded throughput 14 Mbps vs 20 Mbps target because one 5G modem was on old firmware and only negotiated LTE.\nViewer impact: None \u2014 caught in test. Updated on site, retest held 24 Mbps.\n\nStill open:\n\nINC-2026-0612: Add venue switch SNMP/syslog for CRC / link flaps to the TOC wall \u2014 Network Eng D. Okafor \u2014 was due Aug 1, still Open\nINC-2026-0613: Add caption-presence probe per destination to the monitoring wall \u2014 Streaming Eng K. Rhodes \u2014 was due Aug 1, still Open\n\nEverything else from those reports \u2014 2s failover standard, 2,000ms SRT for open-water, diverse-path requirement, captions upstream of the split \u2014 is marked Done.\n\nWant me to pull up the full timeline or the streaming telemetry from that morning?"
+  },
+  {
+   "id": "inc-09",
+   "cat": "incidents",
+   "q": "What action items are still open from the Ray-Ban SRT incident, and who owns them?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 4758,
+   "effort": "low",
+   "steps": 3,
+   "tokens": 26244,
+   "trace": "Incidents \u00b7 SRT (1) INC-2026-0612 4.6 s \u00b7 3 steps",
+   "answer": "From the Ray-Ban Harbor Reveal SRT incident INC-2026-0612 \u2014 SEV-2 on June 29:\n\nWhat happened: Primary SRT from Pier 26 hut spiked 0% \u2192 18% loss, MediaLive took 29s to fail over to LiveU backup. ~38s of rebuffering on all destinations.\n\nImpact: 297k viewers affected, 96.4k viewer-minutes, 99.55% availability - breached 99.9% target.\n\nRoot cause: Failing SFP flapping the single 1 GbE municipal fiber. Failover threshold had been raised to 10s after a rehearsal false-positive.\n\nFixed by: Auto-failover to LiveU, manual return to primary during a VT, SFP replaced post-show.\n\nStill open \u2014 1 of 5 actions:\n\nOpen: Add venue switch SNMP/syslog (CRC, link flaps) to the TOC monitoring wall\nOwner: Network Eng \u2014 D. Okafor\nWas due: 2026-08-01 \u2014 now overdue\n\nThe other 4 are Done: 2s failover threshold (K. Rhodes), diverse-path for waterfront venues (L. Hart), 2,000ms SRT standard for open-water (K. Rhodes), exec comms template (M. Chen)."
+  },
+  {
+   "id": "sch-01",
+   "cat": "schedule",
+   "q": "Are there any scheduling conflicts I should know about?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 6963,
+   "effort": "low",
+   "steps": 2,
+   "tokens": 16889,
+   "trace": "Schedule conflicts (5) 6.9 s \u00b7 2 steps",
+   "answer": "Yes \u2014 5 active conflicts in Muse Schedule you should know about:\n\n1. Double-bookings (2)\n\nCRK 4 \u2014 Sun Oct 18 afternoon/evening\nMuse AI Launch \u2014 Primary uplink (SRT \u2192 MediaConnect) \u2014 17:00\u201321:30\noverlaps WhatsApp Summit \u2014 line-up test \u2014 18:00\u201319:00\nThat's your on-air circuit for tomorrow's Keynote vs a test \u2014 line-up test needs to move.\nAlex Marlowe \u2014 Sun Oct 18\nKeynote call \u00b7 Production Manager \u2014 12:00\u201321:30\noverlaps Creator Week route recce \u2014 14:00\u201317:00\nCan't be in two places \u2014 Keynote is on-air.\n\n2. Crew rest / hours \u2014 Cameron Holt (3 flags, same person)\n\nTurnaround: Only 7h rest between Sat 17 09:00\u201323:00 and Sun 18 06:00\u201321:30 \u2014 under the 10h house minimum\nOvertime Sat: 14h day on Sat Oct 17\nOvertime Sun: 15.5h day on Sun Oct 18\n\nCameron is on back-to-back long calls straight into the Keynote call \u2014 highest fatigue risk on the board.\n\nSuggested next moves:\n\nMove the WhatsApp CRK 4 line-up test to another circuit / time\nSplit or relieve Cameron Holt's Sun 06:00\u201321:30 shift\nReassign the Creator Week recce off Alex Marlowe\n\nWant me to find a free circuit for that Sun 18:00\u201319:00 window and sort the Cameron / Alex overlaps?"
+  },
+  {
+   "id": "crew-01",
+   "cat": "crew",
+   "q": "Who is the EIC on the World Tour?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 4379,
+   "effort": "low",
+   "steps": 2,
+   "tokens": 16259,
+   "trace": "Crew \u00b7 Muse AI World Tour 2026 4.0 s \u00b7 2 steps",
+   "answer": "Quinn Adler is the EIC on Muse AI World Tour 2026.\n\nEllis Voss is listed as EIC 2 / Video Shader."
+  },
+  {
+   "id": "ven-01",
+   "cat": "venue",
+   "q": "Where is the Orion reveal?",
+   "pass": true,
+   "score": 1,
+   "missing": [],
+   "forbidden": [],
+   "ms": 4264,
+   "effort": "low",
+   "steps": 2,
+   "tokens": 16709,
+   "trace": "Show overview \u00b7 Orion AR Glasses Reveal Site & survey \u00b7 Orion AR Glasses Reveal 3.8 s \u00b7 2 steps",
+   "answer": "Levi's Stadium \u00b7 Santa Clara, CA \u2014 that's the Orion AR Glasses Reveal.\n\nOn-air is Feb 4, 2027 at 15:00 \u2014 Orion AR Glasses Reveal \u2014 LIVE.\n\nNo detailed room / compound locations are in Muse Live yet \u2014 site survey and fiber plant are still pending, so no specific gate, lot, or control room position to give you. That's in the Survey tab when it's filled in."
+  }
+ ]
+}

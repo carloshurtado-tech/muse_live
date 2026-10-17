@@ -1,0 +1,178 @@
+/* Muse Live — proactive Muse.
+   Every ~15 s Muse looks at live stream anomalies (MuseStreaming.anomalies) and scheduling
+   conflicts (MuseSchedule.conflicts). Anything new raises a badge on the Muse launcher, a toast
+   and a card in the Ask Muse drawer with the recommended fix. Nothing changes until the user
+   presses Confirm; "Draft incident" prepares an editable incident report from the telemetry.
+   One card per anomaly per session, at most 3 open cards, and a Quiet mode (badge only). */
+(function (root) {
+  'use strict';
+
+  var EVERY_MS = 15000, FIRST_MS = 12000, MAX_OPEN = 3;
+  var SEEN_KEY = 'muselive_proactive_seen', QUIET_KEY = 'muselive_proactive_quiet';
+  var P = root.MuseProactive = { cards: {}, unread: 0 };
+  var seq = 0;
+
+  function $(id) { return document.getElementById(id); }
+  function ui() { return (root.MuseAgent && root.MuseAgent.ui) || null; }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+  function md(s) { var u = ui(); return u ? u.md(s) : '<p>' + esc(s) + '</p>'; }
+  function quiet() { try { return localStorage.getItem(QUIET_KEY) === '1'; } catch (e) { return false; } }
+  function seen() { try { return JSON.parse(sessionStorage.getItem(SEEN_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function markSeen(id) { var s = seen(); s[id] = Date.now(); try { sessionStorage.setItem(SEEN_KEY, JSON.stringify(s)); } catch (e) {} }
+  function toast(m) { try { if (typeof root.toast === 'function') root.toast(m); } catch (e) {} }
+  function prodName(k) { var p = (root.productions || {})[k]; return p ? p.name : k; }
+  function clipText(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : s; }
+  function nowLabel() { return new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); }
+
+  /* ---------------- badge on the launcher ---------------- */
+  function badge() {
+    var l = $('museaiLauncher'); if (!l) return;
+    var b = $('museProactiveBadge');
+    if (!b) { b = document.createElement('span'); b.id = 'museProactiveBadge'; b.className = 'mp-badge'; b.setAttribute('aria-hidden', 'true'); l.appendChild(b); }
+    b.textContent = P.unread > 9 ? '9+' : String(P.unread);
+    b.hidden = !P.unread;
+    l.setAttribute('aria-label', 'Open Muse, the live broadcast agent' + (P.unread ? ' (' + P.unread + ' new alert' + (P.unread > 1 ? 's' : '') + ')' : ''));
+  }
+
+  /* ---------------- quiet-mode toggle in the drawer header ---------------- */
+  var BELL = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/><path class="mp-slash" d="M3 3l18 18"/></svg>';
+  function mountToggle() {
+    var head = document.querySelector('#museaiDrawer button[onclick="MuseAgent.reset()"]');
+    if (!head || $('museaiQuietBtn')) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'museaiQuietBtn'; b.className = 'ma-icon-btn mp-quiet';
+    b.innerHTML = BELL; head.parentNode.insertBefore(b, head);
+    function sync() { var q = quiet(); b.classList.toggle('is-quiet', q); b.setAttribute('aria-pressed', q ? 'true' : 'false'); b.title = q ? 'Proactive alerts: quiet (badge only)' : 'Proactive alerts: on'; b.setAttribute('aria-label', b.title); }
+    b.addEventListener('click', function () { try { localStorage.setItem(QUIET_KEY, quiet() ? '0' : '1'); } catch (e) {} sync(); toast(quiet() ? 'Muse alerts set to quiet. You will still see a badge.' : 'Muse alerts are on.'); });
+    sync();
+  }
+
+  /* ---------------- cards ---------------- */
+  function openCount() { return Object.keys(P.cards).filter(function (k) { return P.cards[k].open; }).length; }
+  function card(item) {
+    var m = $('museaiMessages'); if (!m) return;
+    var id = 'mp' + (++seq); P.cards[id] = item; item.open = true;
+    var el = document.createElement('div'); el.className = 'ma-row ma-bot mp-row'; el.id = id;
+    el.setAttribute('role', 'status');
+    var btns = '';
+    if (item.rec) btns += '<button type="button" class="ma-btn ma-btn-primary" onclick="MuseProactive.confirm(\'' + id + '\')">' + esc(item.rec.label || 'Apply fix') + '</button>';
+    if (item.kind === 'anomaly' && root.MuseIncidents && typeof root.MuseIncidents.draftFromTelemetry === 'function') btns += '<button type="button" class="ma-btn" onclick="MuseProactive.draft(\'' + id + '\')">Draft incident</button>';
+    if (item.kind === 'conflicts') btns += '<button type="button" class="ma-btn ma-btn-primary" onclick="MuseProactive.review(\'' + id + '\')">Review &amp; fix</button>';
+    btns += '<button type="button" class="ma-btn" onclick="MuseProactive.dismiss(\'' + id + '\')">Dismiss</button>';
+    el.innerHTML = '<img class="ma-ava" src="assets/brand/muse-face.webp" alt="" width="28" height="28" draggable="false">' +
+      '<div class="ma-body"><div class="mp-card is-' + (item.level || 'warn') + '">' +
+        '<div class="mp-head"><span class="mp-tag"><i aria-hidden="true"></i>Muse noticed</span><span class="mp-time">' + nowLabel() + '</span></div>' +
+        '<div class="mp-text ma-md">' + md(item.text) + '</div>' +
+        (item.rec ? '<p class="mp-rec">I recommend: <b>' + esc(item.rec.label) + '</b>. Nothing changes until you confirm.</p>' : '') +
+        '<div class="ma-card-btns mp-btns">' + btns + '</div></div></div>';
+    m.appendChild(el);
+    if (ui()) ui().scrollDown();
+  }
+  function finish(id, html) {
+    var item = P.cards[id], el = $(id); if (!item) return;
+    item.open = false;
+    if (el) { var b = el.querySelector('.mp-btns, .mp-draft'); if (b) b.outerHTML = '<div class="mp-result">' + html + '</div>'; var c = el.querySelector('.mp-card'); if (c) c.classList.add('is-done'); }
+  }
+  function note(text) {
+    // Keep the conversation aware of what the user decided on a proactive card.
+    try { var A = root.MuseAgent; if (A && A.thread) { A.thread.push({ role: 'user', content: '[Proactive alert: ' + text + ']' }); A.thread.push({ role: 'assistant', content: 'Noted.' }); } } catch (e) {}
+  }
+
+  P.confirm = function (id) {
+    var item = P.cards[id]; if (!item || !item.rec) return;
+    var r = {};
+    try { r = root.MuseStreaming.apply(item.rec) || {}; } catch (e) { r = { ok: false, text: e.message }; }
+    finish(id, r.ok === false ? '<p>That did not go through: ' + esc(r.text || 'unknown error') + '</p>' : '<p>✓ ' + esc(r.text || 'Applied.') + '</p>');
+    note('user confirmed "' + item.rec.label + '" for ' + item.show + ' — ' + (r.text || 'applied'));
+  };
+  P.dismiss = function (id) { var item = P.cards[id]; finish(id, '<p class="mp-muted">Dismissed.</p>'); if (item) note('user dismissed "' + item.text + '"'); };
+  P.review = function (id) {
+    finish(id, '<p class="mp-muted">Opened the conflicts panel.</p>');
+    try { root.navGo('schedule'); setTimeout(function () { try { if (root.setSchedTab) root.setSchedTab('muse'); if (root.MuseSchedule && root.MuseSchedule.panel) root.MuseSchedule.panel('conflicts'); } catch (e) {} }, 150); } catch (e) {}
+    try { if (root.matchMedia && root.matchMedia('(max-width: 767px)').matches && root.museaiOpen) root.toggleMuseAi(); } catch (e) {}
+  };
+  P.draft = function (id) {
+    var item = P.cards[id], el = $(id); if (!item || !el) return;
+    var d = {};
+    try { d = root.MuseIncidents.draftFromTelemetry(item.key) || {}; } catch (e) { d = {}; }
+    d.production = d.production || item.key;
+    d.title = d.title || item.text.replace(/\*\*/g, '').slice(0, 120);
+    d.severity = d.severity || (item.level === 'crit' ? 'SEV-2' : 'SEV-3');
+    d.summary = d.summary || item.text.replace(/\*\*/g, '');
+    item.draft = d;
+    var sev = ['SEV-1', 'SEV-2', 'SEV-3', 'SEV-4'].map(function (s) { return '<option' + (s === d.severity ? ' selected' : '') + '>' + s + '</option>'; }).join('');
+    var b = el.querySelector('.mp-btns');
+    b.outerHTML = '<form class="mp-draft" onsubmit="event.preventDefault();MuseProactive.log(\'' + id + '\',this)">' +
+      '<label>Title<input name="title" required value="' + esc(d.title) + '"></label>' +
+      '<label>Severity<select name="severity">' + sev + '</select></label>' +
+      '<label>What is happening<textarea name="summary" rows="3" required>' + esc(d.summary) + '</textarea></label>' +
+      '<div class="ma-card-btns"><button type="submit" class="ma-btn ma-btn-primary">Log incident</button><button type="button" class="ma-btn" onclick="MuseProactive.dismiss(\'' + id + '\')">Cancel</button></div></form>';
+    var t = el.querySelector('input[name=title]'); if (t) t.focus();
+  };
+  P.log = function (id, form) {
+    var item = P.cards[id]; if (!item) return;
+    var rec = Object.assign({}, item.draft || {}, { title: form.title.value.trim(), severity: form.severity.value, summary: form.summary.value.trim() });
+    var r = null;
+    try { r = root.MuseIncidents.createRecord(rec); } catch (e) { finish(id, '<p>Could not log it: ' + esc(e.message) + '</p>'); return; }
+    var rid = r && r.id ? r.id : '';
+    finish(id, '<p>✓ Logged <b>' + esc(rid || 'the incident') + '</b>.</p>' + (rid ? '<div class="ma-card-btns"><button type="button" class="ma-btn" onclick="MuseIncidents.open(\'' + esc(rid) + '\')">Open report</button></div>' : ''));
+    note('user logged incident ' + rid + ' for ' + item.show);
+  };
+
+  /* ---------------- watcher ---------------- */
+  function raise(item) {
+    var s = seen(); if (s[item.id]) return; markSeen(item.id);
+    P.unread++; badge();
+    if (quiet()) return;
+    // Toasts only for critical items, at most one every 2 minutes; everything else waits quietly in the badge + drawer.
+    var crit = item.level === 'crit' || /crit|SEV-1|SEV-2/i.test(String(item.level || '') + ' ' + String(item.severity || ''));
+    if (crit && Date.now() - (P._lastToast || 0) > 120000) { P._lastToast = Date.now(); toast('Muse: ' + (item.short || clipText(item.text.replace(/\*\*/g, ''), 90)) + '. Open Muse to review.'); }
+    if (openCount() < MAX_OPEN) card(item);
+  }
+  // Debounce: telemetry blips (one sample at 59.6 fps) are not news. Critical anomalies or ones with a
+  // recommended fix must persist for 2 checks (~30 s); warnings without a fix for 3 (~45 s).
+  var streak = {};
+  function persistent(id, need) { var n = (streak[id] || 0) + 1; streak[id] = n; return n >= need; }
+  function check() {
+    var live = {};
+    try {
+      var MS = root.MuseStreaming;
+      if (MS && typeof MS.anomalies === 'function') {
+        (MS.anomalies() || []).forEach(function (a) {
+          var kind = a.recommendation ? a.recommendation.kind : 'none';
+          var aid = 'an|' + a.key + '|' + a.stage + '|' + kind; live[aid] = 1;
+          if (!persistent(aid, a.level === 'crit' || kind !== 'none' ? 2 : 3)) return;
+          raise({ id: 'an|' + a.key + '|' + a.stage + '|' + kind, kind: 'anomaly', key: a.key, show: a.show || prodName(a.key), level: a.level,
+            short: (a.show || prodName(a.key)) + ': ' + clipText(a.text, 70),
+            text: '**' + (a.show || prodName(a.key)) + '**: ' + a.text, rec: a.recommendation && a.recommendation.kind !== 'none' ? a.recommendation : null });
+        });
+      }
+    } catch (e) {}
+    Object.keys(streak).forEach(function (k) { if (k.indexOf('an|') === 0 && !live[k]) delete streak[k]; }); // cleared anomalies reset
+    try {
+      var S2 = root.MuseSchedule;
+      if (S2 && typeof S2.conflicts === 'function') {
+        var cs = S2.conflicts() || [];
+        if (cs.length) {
+          // One summary card per distinct set of conflicts, not one per conflict.
+          var sig = cs.map(function (c) { return c.kind + ':' + (c.ids || []).join(','); }).sort().join('|');
+          var by = {}; cs.forEach(function (c) { by[c.kind] = (by[c.kind] || 0) + 1; });
+          var LABEL = { 'double-booking': ['double-booking', 'double-bookings'], turnaround: ['crew turnaround under 10 h', 'crew turnarounds under 10 h'], overtime: ['day over 12 h', 'days over 12 h'] };
+          var parts = Object.keys(by).map(function (k) { var l = LABEL[k] || [k, k]; return by[k] + ' ' + (by[k] > 1 ? l[1] : l[0]); });
+          var top = cs.filter(function (c) { return c.kind === 'double-booking'; })[0] || cs[0];
+          raise({ id: 'cf|' + sig, kind: 'conflicts', show: 'Muse Schedule', level: by['double-booking'] ? 'crit' : 'warn',
+            short: cs.length + ' scheduling conflict' + (cs.length > 1 ? 's' : '') + ' in Muse Schedule',
+            text: '**' + cs.length + ' scheduling conflict' + (cs.length > 1 ? 's' : '') + '** in Muse Schedule: ' + parts.join(', ') + '.\n\nMost urgent: ' + clipText(top.text, 180) });
+        }
+      }
+    } catch (e) {}
+  }
+  // Opening the drawer clears the unread badge.
+  function hookToggle() {
+    var base = root.toggleMuseAi; if (!base || base.__mp) return;
+    var wrapped = function () { var r = base.apply(this, arguments); if (root.museaiOpen) { P.unread = 0; badge(); } return r; };
+    wrapped.__mp = true; root.toggleMuseAi = wrapped;
+  }
+  P.check = check;
+  function boot() { mountToggle(); hookToggle(); badge(); setTimeout(function () { check(); setInterval(check, EVERY_MS); }, FIRST_MS); }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 50); }); else setTimeout(boot, 50);
+})(typeof window !== 'undefined' ? window : globalThis);

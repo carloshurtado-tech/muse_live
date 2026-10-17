@@ -3,8 +3,8 @@
    MUSE LIVE v2 MODULES
    1. Live Asset Tracking — trackers, geofence arrival alerts, fleet map
    2. Broadcast Operations Grid — work orders, transmission bookings,
-      conflict/capacity engine, network visualizer  (Fabric / Xytech-inspired)
-   3. Muse — Muse Live rules + free real-world APIs + optional on-device model
+      conflict/capacity engine, network visualizer  (Fabric-inspired)
+   3. Muse — agent context builders (the live agent is js/muse-agent.js) + rules fallback
    ================================================================================ */
 
 /* ---------------- venue & origin presets ---------------- */
@@ -473,7 +473,7 @@ function trkEnsureLoop(){if(trkLoopOn)return;trkLoopOn=true;trkClock=Date.now();
 function trackInit(){trkInitModel();try{renderTracking();}catch(e){}trkEnsureLoop();}
 
 /* ================================================================================
-   2. OPERATIONS & FINANCE BACKBONE — per-production (Fabric / Xytech-inspired)
+   2. OPERATIONS & FINANCE BACKBONE — per-production (Fabric-inspired)
       Work Orders · Purchase Orders · Transmission costs · Invoices · Accounts Payable
       + clean Network Visualizer (satellite / fiber / LiveU / router lanes)
    ================================================================================ */
@@ -878,7 +878,7 @@ function financePaneHTML(key){var p=productions[key];var conf=txConflicts();
     '<div class="relative flex items-center justify-center flex-wrap gap-2">'+finViewStrip(key)+
       '<span class="text-[9px] mono text-gray-400 sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2">FY2025&ndash;26 · production cost control</span></div>'+
     finToolbarHTML(key)+
-    (_fv==='report'?finAnalyticsHTML(key)+costReportPaneHTML(key):(_fv==='labor'?laborPaneHTML(key):(_fv==='xytech'?xytechPaneHTML(key):apTablePaneHTML(key)+_ledger)))+'</div>';
+    (_fv==='report'?finAnalyticsHTML(key)+costReportPaneHTML(key):(_fv==='labor'?laborPaneHTML(key):(_fv==='timecards'?schedLaborPaneHTML(key):apTablePaneHTML(key)+_ledger)))+'</div>';
 }
 
 /* ---------------- DASHBOARD SUMMARY ---------------- */
@@ -920,373 +920,6 @@ function renderOps(){
    sources · [SAT / FIBER / LIVEU / RTR resource lanes] · destinations
    scopeKey limits the picture to one production's bookings              */
 function opsInit(){loadOps();renderOps();}
-
-/* ================================================================================
-   3. MUSEAI — on-device answers optional · cloud key off
-   UI never shows third-party AI product names; only “Muse”.
-   ================================================================================ */
-function museaiAiEnabled(){
-  if(typeof window==='undefined')return false;
-  /* On-device answers are optional; a paid key is not required. */
-  if(window.MUSEAI_LOCAL_ENABLED===false)return false;
-  return true;
-}
-function museaiMuseAiEnabled(){return museaiAiEnabled();} /* legacy alias */
-function assistantKey(){
-  /* Optional paid cloud fallback only — not required for Muse. */
-  if(window.MUSEAI_CLOUD_ENABLED!==true&&window.MUSEAI_AI_CLOUD!==true)return '';
-  var raw='';
-  try{
-    var lk=localStorage.getItem('muselive_museai_key');
-    if(lk&&String(lk).trim())raw=String(lk).trim();
-  }catch(e){}
-  if(!raw&&typeof museCfg==='function')raw=museCfg('MUSEAI_KEY')||museCfg('MUSEAI_KEY')||'';
-  raw=String(raw||'').trim();
-  return raw;
-}
-function museaiModelPick(){try{var m=localStorage.getItem('muselive_museai_model');if(m&&m.trim())return m.trim();}catch(e){}return 'museai-4';}
-function assistantExtractText(j){
-  if(!j)return '';
-  if(typeof j==='string')return j;
-  /* chat/completions */
-  if(j.choices&&j.choices.length){
-    var ch=j.choices[0];
-    if(ch.message){
-      var mc=ch.message.content;
-      if(typeof mc==='string'&&mc.trim())return mc;
-      if(Array.isArray(mc)){
-        var bits=[];mc.forEach(function(p){
-          if(typeof p==='string')bits.push(p);
-          else if(p&&(p.text||p.content))bits.push(p.text||p.content);
-        });
-        if(bits.join('').trim())return bits.join('\n');
-      }
-      if(ch.message.reasoning_content&&String(ch.message.reasoning_content).trim())
-        return String(ch.message.reasoning_content);
-    }
-    if(typeof ch.text==='string')return ch.text;
-  }
-  /* responses API */
-  if(j.output_text)return String(j.output_text);
-  if(j.output&&j.output.length){
-    var out=[];
-    j.output.forEach(function(item){
-      if(!item)return;
-      if(item.type==='message'&&item.content){
-        (item.content||[]).forEach(function(c){
-          if(!c)return;
-          if(c.type==='output_text'||c.type==='text'){if(c.text)out.push(c.text);}
-          else if(c.text)out.push(c.text);
-          else if(typeof c==='string')out.push(c);
-        });
-      }else if(item.content&&typeof item.content==='string')out.push(item.content);
-    });
-    if(out.join('').trim())return out.join('\n');
-  }
-  if(j.message&&j.message.content)return String(j.message.content);
-  if(j.content&&typeof j.content==='string')return j.content;
-  return '';
-}
-function assistantErrMsg(r,j){
-  var msg='';
-  if(j){
-    if(j.error)msg=(typeof j.error==='string')?j.error:(j.error.message||j.error.code||JSON.stringify(j.error));
-    else if(j.message)msg=j.message;
-  }
-  if(!msg)msg='HTTP '+(r?r.status:'?');
-  var raw=String(msg);
-  if(/Incorrect API key|invalid.*api.?key|api key provided/i.test(raw)||(r&&r.status===401))
-    msg='Muse key rejected — set a valid key in config/config.local.js (the server) or Muse Settings.';
-  else if(/credits or licenses|purchase those on/i.test(raw)||(r&&r.status===403&&/credit|license|billing/i.test(raw)))
-    msg='Muse account has no credits yet — add prepaid credits at the server, then retry.';
-  else if(r&&r.status===403)msg='Muse access refused (403).';
-  else if(r&&r.status===404)msg='Muse model not available (404).';
-  else if(r&&r.status===410||/live search is deprecated/i.test(raw))
-    msg='Muse search path outdated — refresh the page (deployed fix removes live search).';
-  else if(r&&r.status===429)msg='Muse is busy (rate limit). Wait a moment and retry.';
-  else if(r&&r.status>=500)msg='Muse service error ('+r.status+'). Retry shortly.';
-  return String(msg);
-}
-var museaiClient={
-  baseUrl:'https://the assistant service/v1',
-  enabled:function(){return !!assistantKey();},
-  disabledReason:function(){return 'Muse is offline — check network or deployment config.';},
-  /* Build chat messages for /v1/chat/completions */
-  _messages:function(opts){
-    var msgs=[];
-    if(opts.system)msgs.push({role:'system',content:String(opts.system)});
-    if(opts.jsonSchema){
-      msgs.push({role:'system',content:'Respond with valid JSON only matching this schema: '+JSON.stringify(opts.jsonSchema)});
-    }
-    if(opts.contents&&opts.contents.length){
-      opts.contents.forEach(function(c){
-        var role=c.role==='model'?'assistant':(c.role==='assistant'?'assistant':'user');
-        if(role==='system')return; /* system already handled */
-        var text=((c.parts||[]).map(function(p){return p&&p.text?p.text:'';}).join('\n'))||c.content||'';
-        if(text||role==='user')msgs.push({role:role,content:String(text||'')});
-      });
-    }else if(opts.imageDataUri){
-      msgs.push({role:'user',content:[
-        {type:'image_url',image_url:{url:String(opts.imageDataUri)}},
-        {type:'text',text:String(opts.prompt||'Describe this image.')}
-      ]});
-    }else{
-      msgs.push({role:'user',content:String(opts.prompt||'')});
-    }
-    /* ensure at least one user turn */
-    if(!msgs.some(function(m){return m.role==='user';}))
-      msgs.push({role:'user',content:String(opts.prompt||'Hello')});
-    return msgs;
-  },
-  generate:function(opts){
-    opts=opts||{};
-    var self=this;
-    var key=opts.key||assistantKey();
-    if(!key)return Promise.reject(new Error(this.disabledReason()));
-    key=String(key).trim();
-    var model=opts.model||museaiModelPick();
-    var messages=this._messages(opts);
-    /* Reasoning models burn tokens on thinking — do NOT cap at 1024 or answers come back empty. */
-    var maxTok=opts.maxTokens!=null?opts.maxTokens:8192;
-    if(maxTok<1024)maxTok=1024;
-    if(maxTok>32000)maxTok=32000;
-    var body={
-      model:model,
-      messages:messages,
-      max_completion_tokens:maxTok,
-      temperature:opts.temperature!=null?opts.temperature:0.4
-    };
-    /* Do NOT send search_parameters — Live Search is deprecated (410) and Muse
-       must ground on Muse Live context only. Omit entirely = no web/X search. */
-    return fetch(self.baseUrl+'/chat/completions',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify(body)
-    }).then(function(r){
-      return r.text().then(function(raw){
-        var j=null;
-        try{j=raw?JSON.parse(raw):{};}catch(pe){
-          if(!r.ok)throw new Error('Muse HTTP '+r.status+(raw?': '+String(raw).slice(0,180):''));
-          throw new Error('Muse returned non-JSON');
-        }
-        /* If chat/completions rejects (e.g. legacy search), try Responses API */
-        if(!r.ok){
-          var em=assistantErrMsg(r,j);
-          if(r.status===410||/live search|search_parameters|Agent Tools/i.test(em)){
-            return self._generateResponses(opts,key,model,maxTok).then(function(t2){
-              if(t2==null||t2==='')throw new Error(em);
-              return {_museaiText:t2};
-            });
-          }
-          throw new Error(em);
-        }
-        return j;
-      });
-    }).then(function(j){
-      if(j&&j._museaiText!=null){
-        var pre=j._museaiText;
-        if(opts.jsonSchema){
-          try{return JSON.parse(String(pre).replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim());}
-          catch(e){throw new Error('Muse returned invalid JSON');}
-        }
-        return pre;
-      }
-      var txt=assistantExtractText(j).trim();
-      if(!txt){
-        /* last resort: try /v1/responses once (some accounts prefer it) */
-        return self._generateResponses(opts,key,model,maxTok).then(function(t2){
-          if(!t2)throw new Error('Muse returned an empty answer. Retry in a moment.');
-          return t2;
-        });
-      }
-      if(opts.jsonSchema){
-        try{return JSON.parse(txt.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim());}
-        catch(e){throw new Error('Muse returned invalid JSON');}
-      }
-      return txt;
-    }).catch(function(err){
-      var m=err&&err.message?String(err.message):'network error';
-      if(/Failed to fetch|NetworkError|Load failed|CORS/i.test(m))
-        m='Network blocked — open Muse Live over HTTPS or http://localhost (./start-muse.sh), not file://.';
-      m=m.replace(/Live search is deprecated[^.]*\./gi,'Search tools unavailable; retry without search. ');
-      throw new Error(m);
-    });
-  },
-  /* Fallback path — Responses API (system via instructions). No search_parameters / tools. */
-  _generateResponses:function(opts,key,model,maxTok){
-    var input=[];
-    if(opts.contents&&opts.contents.length){
-      opts.contents.forEach(function(c){
-        var role=c.role==='model'?'assistant':(c.role||'user');
-        if(role==='system')return;
-        var text=((c.parts||[]).map(function(p){return p&&p.text?p.text:'';}).join('\n'))||c.content||'';
-        input.push({role:role,content:String(text||'')});
-      });
-    }else if(opts.imageDataUri){
-      input.push({role:'user',content:[
-        {type:'input_image',image_url:String(opts.imageDataUri)},
-        {type:'input_text',text:String(opts.prompt||'')}
-      ]});
-    }else{
-      input.push({role:'user',content:String(opts.prompt||'Hello')});
-    }
-    /* No tools, no search_parameters — pure model answer on provided context */
-    var body={model:model,input:input,store:false,max_output_tokens:maxTok,tools:[]};
-    if(opts.system)body.instructions=String(opts.system);
-    if(opts.temperature!=null)body.temperature=opts.temperature;
-    if(opts.jsonSchema)body.instructions=(body.instructions?body.instructions+'\n':'')+
-      'Respond with valid JSON only matching this schema: '+JSON.stringify(opts.jsonSchema);
-    return fetch(this.baseUrl+'/responses',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify(body)
-    }).then(function(r){
-      return r.text().then(function(raw){
-        var j={};try{j=raw?JSON.parse(raw):{};}catch(e){}
-        if(!r.ok)throw new Error(assistantErrMsg(r,j));
-        var txt=assistantExtractText(j).trim();
-        if(opts.jsonSchema&&txt){
-          try{return JSON.parse(txt.replace(/^```json\s*/i,'').replace(/```\s*$/,'').trim());}
-          catch(e2){throw new Error('Muse returned invalid JSON');}
-        }
-        return txt;
-      });
-    });
-  },
-  ocrReceipt:function(dataUri){
-    return this.generate({
-      prompt:'Extract the merchant/vendor name, transaction date (YYYY-MM-DD), grand total (number only), currency code, and the best expense category from this receipt image. Return JSON only.',
-      imageDataUri:dataUri,temperature:0,maxTokens:2048,
-      jsonSchema:{type:'object',properties:{vendor:{type:'string'},date:{type:'string'},total:{type:'number'},currency:{type:'string'},category:{type:'string',enum:['flight','hotel','perdiem','ground','misc']}},required:['vendor','total']}});
-  }
-};
-var geminiClient=museaiClient;
-function geminiKey(){return assistantKey();}
-function geminiModel(){return museaiModelPick();}
-function museaiEdgeEnabled(){
-  /* Remote assistant is off */
-  return false;
-}
-function museaiLocalEnabled(){
-  try{if(localStorage.getItem('muselive_local_force')==='1')return true;}catch(e){}
-  return !!(typeof window!=='undefined'&&window.MUSEAI_LOCAL_ENABLED===true);
-}
-function museEnsureLocal(thenFn){
-  thenFn=thenFn||function(){};
-  if(typeof MuseAiLocal!=='undefined'){thenFn();return;}
-  if(typeof MuseLazy!=='undefined'&&MuseLazy.ensureLocal){
-    MuseLazy.ensureLocal().then(function(){thenFn();}).catch(function(){thenFn();});
-    return;
-  }
-  thenFn();
-}
-function museaiAssistInit(){var dot=document.getElementById('museaiModeDot');var lbl=document.getElementById('museaiModeLabel');
-  var info=(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.status)?MuseAiLocal.status():null;
-  var st=info?info.status:'idle';
-  var localOn=museaiLocalEnabled()&&st==='ready';
-  var loading=museaiLocalEnabled()&&st==='loading';
-  if(dot)dot.className='w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0';
-  if(lbl){lbl.textContent='';lbl.style.display='none';lbl.hidden=true;}
-  try{museaiLocalSyncUI();}catch(e){}
-}
-function museaiLocalSyncUI(){
-  var st=document.getElementById('cs_status');
-  var bar=document.getElementById('cs_local_bar');
-  var info=(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.status)?MuseAiLocal.status():null;
-  if(st){
-    if(info&&info.status==='ready')st.textContent='● Free on-device model ready · '+info.shortModel;
-    else if(info&&info.status==='loading')st.textContent='● '+(info.progressText||('Downloading free model… '+Math.round((info.progress||0)*100)+'%'));
-    else if(info&&info.status==='unsupported')st.textContent='● Muse';
-    else if(info&&info.status==='error')st.textContent='● Local load failed: '+String(info.lastError||'unknown').slice(0,120);
-    else st.textContent='● Muse';
-  }
-  if(bar&&info){
-    var pct=Math.round((info.progress||0)*100);
-    bar.style.width=(info.status==='ready'?100:pct)+'%';
-    bar.parentElement.style.display=(info.status==='loading'||info.status==='ready')?'block':'none';
-  }
-  var sel=document.getElementById('cs_local_model');
-  if(sel&&info&&info.models&&!sel._filled){
-    sel.innerHTML=info.models.map(function(m){
-      return '<option value="'+m.id+'">'+m.label+' · '+m.size+'</option>';
-    }).join('');
-    sel.value=info.modelId||(typeof MuseAiLocal.preferredModel==='function'?MuseAiLocal.preferredModel():'');
-    sel._filled=true;
-  }else if(sel&&info&&info.modelId){try{sel.value=info.modelId;}catch(e){}}
-}
-function openMuseAiSettings(){var m=document.getElementById('museaiSettingsModal');if(!m)return;
-  var tpm=document.getElementById('cs_tpmarker');if(tpm)tpm.value=(tpMarker()==='YOUR_MARKER'?'':tpMarker());
-  var tps=document.getElementById('cs_tpsnippet');if(tps)tps.value=tpSnippet();
-  var force=document.getElementById('cs_local_force');
-  if(force){try{force.checked=localStorage.getItem('muselive_local_force')==='1';}catch(e){force.checked=false;}}
-  var gm=document.getElementById('cs_model');
-  if(gm){try{var mv=localStorage.getItem('muselive_museai_model');if(mv)gm.value=mv;}catch(eM){}}
-  museaiLocalSyncUI();
-  m.classList.remove('hidden');m.style.display='flex';
-}
-function closeMuseAiSettings(){var m=document.getElementById('museaiSettingsModal');if(m){m.style.display='none';m.classList.add('hidden');}}
-function saveMuseAiSettings(){try{
-  var tpm=document.getElementById('cs_tpmarker');if(tpm)setTpMarker(tpm.value);
-  var tps=document.getElementById('cs_tpsnippet');if(tps)setTpSnippet(tps.value);
-  var gm=document.getElementById('cs_model');
-  if(gm&&gm.value){try{localStorage.setItem('muselive_museai_model',gm.value);}catch(eM){}}
-  var force=document.getElementById('cs_local_force');
-  if(force){
-    try{localStorage.setItem('muselive_local_force',force.checked?'1':'0');}catch(e){}
-    if(force.checked){
-      toast('Free on-device model enabled — first visit may download once');
-      museEnsureLocal(function(){try{if(typeof MuseAiLocal!=='undefined')MuseAiLocal.ensureEngine(false).catch(function(){});}catch(e2){}});
-    }
-  }
-}catch(e){}
-  museaiAssistInit();closeMuseAiSettings();
-  try{cfgBannerInit();}catch(e1){}
-  toast('Muse settings saved');}
-function clearMuseAiKey(){/* optional */}
-function testMuseAi(){
-  var st=document.getElementById('cs_status');
-  if(museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'){
-    if(st)st.textContent='● Testing on-device Muse…';
-    MuseAiLocal.ensureEngine(false).then(function(){return MuseAiLocal.chat('Who are you?',[]);})
-      .then(function(ans){
-        if(st)st.textContent='● On-device Muse OK';
-        toast('On-device Muse OK');
-        try{if(typeof museaiPush==='function'){if(!museaiOpen&&typeof toggleMuseAi==='function')toggleMuseAi();museaiPush(ans,'bot');}}catch(e){}
-      })
-      .catch(function(){toast('Local model failed — Muse still answers from Muse Live');if(st)st.textContent='● On-device model failed';});
-    return;
-  }
-  if(st)st.textContent='● Testing Muse…';
-  var probe=(typeof museaiRealWorldTry==='function')
-    ?museaiRealWorldTry('When is the next Miami Dolphins preseason game?')
-    :Promise.resolve(null);
-  probe.then(function(ans){
-    if(ans){
-      if(st)st.textContent='● Muse';
-      toast('Muse ready');
-      try{if(typeof museaiPush==='function'){if(!museaiOpen&&typeof toggleMuseAi==='function')toggleMuseAi();museaiPush(ans,'bot');}}catch(e){}
-    }else{
-      if(st)st.textContent='● Muse';
-      toast('Muse ready');
-      try{
-        var r=(typeof museaiAnswer==='function')?museaiAnswer('What is Muse Live?'):'Muse ready.';
-        if(typeof museaiPush==='function'){if(!museaiOpen&&typeof toggleMuseAi==='function')toggleMuseAi();museaiPush(r,'bot');}
-      }catch(e2){}
-    }
-  }).catch(function(){
-    if(st)st.textContent='● Muse';
-    toast('Muse rules mode');
-  });
-}
-function museaiLoadModelNow(){
-  try{localStorage.setItem('muselive_local_force','1');}catch(e){}
-  toast('Loading free on-device model — first visit may download once');
-  museEnsureLocal(function(){
-    if(typeof MuseAiLocal==='undefined'){toast('On-device module not loaded');return;}
-    MuseAiLocal.ensureEngine(true).then(function(){toast('On-device Muse ready');museaiAssistInit();})
-      .catch(function(){toast('Local load failed — Muse still answers from Muse Live');museaiAssistInit();});
-  });
-}
 
 /* ================================================================================
    MUSEAI AGENT CONTEXT — full production documents for the ops agent
@@ -1638,14 +1271,14 @@ function museaiAppBlueprint(focusKey){
   }catch(e){}
   var views={
     dashboard:'Portfolio risk heatmap, world clocks (click → city conditions), progress snapshot, control-room board chips, ops summary, news feed',
-    schedule:'Master Schedule: broadcast air grid + Facilities Gantt + Xytech facility bridge + Portfolio Controls rollup',
+    schedule:'Master Schedule: Muse Schedule (resource timeline for rooms, circuits, edit/replay, mobile units, encoders and crew — drag to move, conflicts with one-click fixes, find a slot, .ics export) + broadcast air grid + Facilities Gantt + Portfolio Controls rollup',
     personnel:'Global people directory (Employee / Freelancer / Vendor / Talent) with account provisioning for admins',
     vendors:'Vendor directory with contacts, categories, docs; Excel import/export',
     equipment:'Barcode inventory library — check-in/out, serials, status (available/checked-out/maintenance), project assign',
     comms:'Omni-Channel: Email / Teams / TOC threads linked to productions & records; priority + unread',
     engrequests:"ENG multi-cam hit requests + lighting + LiveU LU800 + REM/TIFF + push gear to packlist",
     travel_portal_travel:'Travel Control Center / portal / broadcast manifest (booked = on manifest)',
-    project_tabs:'Per production tabs: Overview · Site Survey · Finance · Xytech · Schedule · Controls · Travel · Crew · Vendors · Tracking · Workflow · PackList · Omni',
+    project_tabs:'Per production tabs: Overview · Broadcast Ops · Streaming · Site Survey · Finance · Bookings · Schedule · Controls · Travel · Crew · Vendors · Tracking · Workflow · PackList · Omni',
     project_overview:'Department Status board (10 depts), schedule strip, bottleneck, IFB Signal Routing board, weather band, activity',
     project_survey:'Site Survey: findings, gallery, map, CAD, power, 360, security, Air-readiness Event Check List (not under GFX). Workflow mind-tree: Drawings + vendor meeting and venue schedule + site survey → Tasks → LBA',
     gfx_playback:'Graphics Playback 16:9 on Graphics (GFX). Tap video to play/pause. Frame step. No MIRA tally. Fill+matte filenames → Fill and Matte Tally. Per-show Open/Bumper/Wipe sims use clip soundtrack only.',
@@ -1662,7 +1295,7 @@ function museaiAppBlueprint(focusKey){
     cad_viewer:'js/cad-viewer-engine.js v1.0 — READ-ONLY 2D/3D viewer. Formats: DXF, DWG (LibreDWG WASM), OBJ, STL, images/PDF sheets. NOT supported in-browser: DWF/DWFX, STEP, Parasolid (.x_t), Vectorworks (.vwx). Tools: pan/zoom 2D, orbit 3D, colored collaborative note dots (author+message); Save notes → production plan.notes. No geometry edit. Requires HTTP (not file://) for WASM.',
     pano360:'js/pano-engine.js v4.0 — Broadcast 360 Shot Designer. Default MAP MODE: equirect as 2:1 map, pan L/R + limited U/D; markers & draw paths UV-locked so they never slide. Optional LOOK sphere mode. Packages/body/lens/mount from Department Status Cameras/Video (museBlockingGear); place tools: camera, jib, steadicam, cable, fiber, SMPTE, power, equipment, mic, RF, IFB, truck, talent, hazard, exit; freehand cable draw; Flip V/H; shot list; survey.pano persistence. Max texture ≤4096.',
     libredwg:'js/libredwg/ — @mlightcad/libredwg-web ESM+WASM; museDwgToDxf() for DWG open path',
-    museai_ai:'Muse is the native ops agent. Live path: /api/museai with Muse Live JSON + Wiki chunks + web search each turn. Fallback: Muse Live rules + live sports/weather, then optional on-device model. UI brand is Muse only.',
+    museai_ai:'Muse is the native live broadcast & streaming agent (Meta Muse Spark via /api/museai, key server-side). The browser runs its tools over live Muse Live data; writes always need a human Confirm. Offline fallback: Muse Live rules + public weather',
     weather:'Open-Meteo + Windy GFS point forecast; AQI; per-venue weather band; network clock city panels',
     maps:'MapLibre + OpenFreeMap / CARTO Voyager (light) + Dark Matter (dark). museStaticMap compositor for techbook PDF covers (always light Voyager JPEG — not WebGL canvas grabs).',
     ntp:'museClock multi-source network time for world clocks',
@@ -1685,7 +1318,6 @@ function museaiAppBlueprint(focusKey){
     app_title:(typeof document!=='undefined'&&document.title)||'Muse Live',
     productions_order:order.slice(),
     dept_field_catalog_keys:Object.keys(deptSchema),
-    museai_cloud:(function(){try{return !!(typeof assistantKey==='function'&&assistantKey());}catch(e){return false;}})(),
     checkin_radius_m:(typeof CHECKIN_RADIUS_M!=='undefined'?CHECKIN_RADIUS_M:250)
   };
   /* Deep equipment catalog sample so Muse knows what gear options exist in the product */
@@ -1746,9 +1378,9 @@ function museaiAppBlueprint(focusKey){
       tracking:'GPS asset tracking sim (trkDevices) on canvas maps with battery/motion; CARTO basemap.',
       travel:'SAP-style travel requests lifecycle Draft→…→Closed; WBS/cost center allocation; M&IE per diems; Duffel-ish booking UI; broadcast manifest = confirmed bookings; Travelpayouts Muse auto-fill for flights.',
       eng:"ENG request builder: multi-cam hits, lighting, LiveU LU800, REM/TIFF, status, push gear into production packlist.",
-      xytech:'Facility rooms (PCR/ACR/CRK…), labor, weekly board; dashboard chips mirror roomState.',
+      scheduling:'Muse Schedule — one source of truth for facility rooms (PCR/ACR/Studio), transmission circuits (CRK), REMI, edit/EVS, mobile units, encoders/bonded kits and crew. Real date/time bookings (Confirmed/Hold/Tentative/Released, on-air flag), conflict detection (double-bookings, <10 h crew turnaround, >12 h days) with one-click fixes, find-a-slot, utilization, .ics export, change log. Per show: Bookings tab with crew labor & timecards posting to the cost report (acct 20). Dashboard control-room board derives from it.',
       omni:'Teams/email/TOC drawer + Graph stubs; messages link to records; critical priority alerts.',
-      roles:'Header "Viewing as" role switcher; permCan gates finance/xytech/vendors; scopes for equipment/travel/comms; admins provision accounts from personnel cards.',
+      roles:'Header "Viewing as" role switcher; permCan gates finance/scheduling/vendors; scopes for equipment/travel/comms; admins provision accounts from personnel cards.',
       controls:'Project controls Primavera-style: CPM Gantt, float/slack, SPI/CPI EVM, EAC/VAC, resource histogram/leveling, stage gates, what-if scenarios (plan object / planMuseAiSummary).',
       inventory:'Global Equipment Library barcodes, serials, check-in/out, maintenance, value rollup.',
       ifb:"Unified IFB Signal Routing on Overview — REM (mix-minus) + TIFF (cam-op/producer) lines mapped to LiveU LU800/Fiber/Satellite paths.",
@@ -1778,45 +1410,6 @@ function museaiAppBlueprint(focusKey){
       'Never claim you can only help with Muse Live. Clear complete answers; plain text; end with a useful action when helpful.'
     ]
   };
-}
-function assistAsk(){
-  var live='';
-  try{live=buildMuseAiContext();}catch(e){live=JSON.stringify({error:'context build failed',detail:String(e&&e.message||e)});}
-  /* Full product + documents — large context for agentic use */
-  var CAP=120000; /* Wave A: keep CF + browser snappy */
-  if(live&&live.length>CAP)live=live.slice(0,CAP)+'…[truncated — ask about a specific module or production]';
-  var sys=[
-    'You are Muse — the assistant inside Muse Live (Meta Broadcast Operations).',
-    'Always call yourself Muse. Stay in character as Muse.',
-    '',
-    'DUAL MANDATE',
-    '1) Answer ANY and ALL questions about Muse Live — every module, screen, workflow, setting, import, role, production, troubleshooting. Never refuse.',
-    '2) Also answer real-world / general knowledge questions fully. You are not limited to Muse-only topics.',
-    '',
-    'WHAT MUSE LIVE IS',
-    'Single-page browser ops hub (not a switcher, NLE, or media plane). Plan-of-record for multi-venue live production: Department Status, techbook fields, packlist, fiber plant, crew + Call Matrix, venue geofence check-in, site survey, read-only CAD viewer with note dots, Broadcast 360 Shot Designer, TX bookings, finance (PO/WO/AP), project controls (CPM/EVM), travel + manifest, ENG requests, barcode inventory, Omni comms, Xytech rooms, roles, Broadcast Ops Go/No-Go.',
-    'Launch: local ./start-muse.sh (HTTP — required for DWG WASM).',
-    'Showcase production: Ray-Ban Meta Gen 3 Launch is always 100% complete. Demo personnel is synthetic.',
-    'WHAT\'S NEW: Site Survey → Air-readiness Event Check List (not GFX). Workflow: Drawings + vendor meeting and venue schedule + site survey → Tasks → LBA. Graphics Playback 16:9, tap to play/pause, frame step, Fill and Matte Tally on fill+matte uploads, per-show Open/Bumper/Wipe sims use clip soundtrack. Left rail hidden scrollbar, Search/+ fade (no rounded card).',
-    '',
-    'PRODUCT SURFACE (know perfectly — also in muse_live_product JSON)',
-    '• Dashboard, Master Schedule, Personnel, Vendors, Equipment, Omni, ENG, Travel portal.',
-    '• Per production: Overview, Broadcast Ops, Site Survey, Finance, Xytech, Schedule, Travel, Crew, Vendors, Tracking, Workflow, PackList, Omni.',
-    '• CAD READ-ONLY; 360 MAP MODE; maps layout rules; check-in GPS fence; fiber TIA; IFB REM/TIFF; Excel templates.',
-    '',
-    'LIVE OPS DOCUMENT JSON each turn: muse_live_product, production_documents[], ops_backbone.',
-    '',
-    'AGENT RULES',
-    '1) Muse Live how-to → modules_detail / engines / views. Show questions → production_documents; this/current = focus.',
-    '2) Live data: do not invent people/gear/money — say OPEN/missing; still teach the UI path.',
-    '3) Real-world questions: answer from general knowledge; do not force Muse Live unless asked.',
-    '4) Mixed questions: cover both. Clear complete answers. Plain text. One useful next action when helpful.',
-    '',
-    'LIVE OPS DOCUMENT (JSON):',
-    live
-  ].join('\n');
-  var contents=museaiHistory.map(function(m){return {role:(m.role==='assistant'?'assistant':'user'),parts:[{text:String(m.content)}]};});
-  return museaiClient.generate({system:sys,contents:contents,maxTokens:12288,temperature:0.3});
 }
 /* widen Muse quick chips — document-aware agent prompts */
 function buildMuseAiChips(){var box=document.getElementById('museaiChips');if(!box)return;
@@ -3918,27 +3511,6 @@ function trViewReceipt(key,id,lid){
   if(line.receipt.dataUri){var w=window.open('','_blank');if(w){w.document.write('<title>'+esc(line.receipt.name)+'</title><img src="'+line.receipt.dataUri+'" style="max-width:100%">');}}
   else toast(line.receipt.name+' — '+(line.receipt.tooBig?'file was too large to persist; re-attach if needed':'no stored image'));}
 /* v31 PHASE 5: Gemini OCR on an attached receipt — fills vendor/date/amount on editable lines */
-function trOcrReceipt(key,id,lid){
-  var r=trById(key,id);if(!r)return;var line=null;
-  (r.lines||[]).forEach(function(l){if(l.id===lid)line=l;});
-  if(!line)return;
-  if(!line.receipt||!line.receipt.dataUri){toast('Attach a receipt image first');return;}
-  if(!geminiClient.enabled()){toast(geminiClient.disabledReason());return;}
-  toast('✨ Reading receipt with Gemini…');
-  geminiClient.ocrReceipt(line.receipt.dataUri).then(function(o){
-    museAudit('expense.receipt.ocr',{req:id,line:lid,vendor:o.vendor});
-    if(trEditable(r)){
-      if(o.vendor)line.desc=o.vendor+(line.desc&&line.desc.indexOf(o.vendor)===-1?' — '+line.desc:'');
-      if(o.date&&/^\d{4}-\d{2}-\d{2}$/.test(o.date))line.date=o.date;
-      if(o.total>0)line.amount=o.total;
-      museVer(r);stampEdit(key);
-      var act=document.querySelector('.view-pane.active');
-      if(act&&act.id==='view-portal'&&typeof renderPortalView==='function')renderPortalView();else renderProjectView(key);
-      toast('✨ OCR: '+(o.vendor||'?')+' · '+trFmt(o.total)+(o.category&&o.category!==line.type?' · reads like a '+o.category+' expense':''));
-    }else{
-      toast('✨ OCR (request is '+trFlowMeta(r.status).label+' — line locked): '+(o.vendor||'?')+' · '+trFmt(o.total));
-    }
-  }).catch(function(e){toast('OCR failed — '+e.message);});}
 /* ---- travel-request UI (card list inside the Travel tab) ---- */
 var trOpen={}; // transient: which request cards are expanded
 function trToggle(key,id){trOpen[id]=!trOpen[id];renderProjectView(key);}
@@ -3954,7 +3526,7 @@ function trLineRowHTML(key,r,l){
   var needsRcpt=rule.receiptsRequired.indexOf(l.type)>-1&&(parseFloat(l.amount)||0)>=(rule.receiptMinAmount||0);
   var rcpt;
   if(l.receipt)rcpt='<button onclick="trViewReceipt(\''+key+'\',\''+r.id+'\',\''+l.id+'\')" title="'+esc(l.receipt.name).replace(/"/g,'&quot;')+'" class="text-[8px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded px-1 py-px">🧾 receipt</button>'+
-    (l.receipt.dataUri?'<button onclick="trOcrReceipt(\''+key+'\',\''+r.id+'\',\''+l.id+'\')" title="'+(geminiClient.enabled()?'Extract vendor / date / total with Muse OCR':esc(geminiClient.disabledReason()).replace(/"/g,'&quot;'))+'" class="text-[8px] font-bold '+(geminiClient.enabled()?'text-violet-700 bg-violet-50 border-violet-200':'text-gray-400 bg-gray-50 border-gray-200')+' border rounded px-1 py-px">✨ OCR</button>':'');
+    '';
   else rcpt='<label class="text-[8px] font-bold '+(needsRcpt?'text-amber-700 bg-amber-50 border-amber-200':'text-gray-500 bg-gray-100 border-gray-200')+' border rounded px-1 py-px cursor-pointer">'+(needsRcpt?'🧾 required':'+ receipt')+'<input type="file" accept="image/*,application/pdf" class="hidden" onchange="trReceiptPick(\''+key+'\',\''+r.id+'\',\''+l.id+'\',this)"></label>';
   var aerr=allocValidate(l.alloc,l.amount);
   return '<div class="flex flex-wrap items-center gap-1.5 py-1.5 border-b border-gray-50">'+
@@ -4567,7 +4139,7 @@ function openUserProfile(){var ov=document.getElementById('userProfileOverlay');
       '<div class="px-5 py-4"><p class="text-[12px] text-gray-600 leading-relaxed">'+esc(u.bio)+'</p></div>'+
       '<div class="px-5 pb-4"><p class="text-[9px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Preferences</p>'+
         '<div class="rounded-xl border border-gray-200 p-3"><div class="flex items-center justify-between gap-3 flex-wrap">'+
-          '<div class="min-w-0"><p class="text-[11px] font-bold text-gray-800">Appearance</p><p class="text-[9px] text-gray-500 mt-0.5">Muse Live opens in Light. Dark is a saved override. Follow OS tracks your device until you pick Light or Dark again.</p></div>'+
+          '<div class="min-w-0"><p class="text-[11px] font-bold text-gray-800">Appearance</p><p class="text-[9px] text-gray-500 mt-0.5">Muse Live opens in Dark (the Meta UI Toolkit palette). Light is a saved override. Follow OS tracks your device until you pick Light or Dark again.</p></div>'+
           '<div class="flex items-center gap-1.5 flex-shrink-0">'+themeChoiceBtn('light')+themeChoiceBtn('dark')+themeChoiceBtn('system')+'</div>'+
         '</div></div></div>'+
       '<div class="px-5 pb-3"><div class="grid grid-cols-2 gap-2">'+stat(totalProds,'Productions')+stat(assignedCrew,'Crew')+stat(booked,'Flights')+stat(openItems,'Open Items')+'</div></div>'+
@@ -4575,11 +4147,13 @@ function openUserProfile(){var ov=document.getElementById('userProfileOverlay');
         row('Email',u.email,true)+row('Phone',u.phone,true)+row('Organization',u.org)+row('Locations',u.location)+row('Time Zone',u.timezone,true)+
       '</div>'+
     '</div>'+
-    '<div class="px-5 py-3 border-t border-gray-100 flex-shrink-0 flex items-center gap-2">'+
+    '<div class="px-5 py-3 border-t border-gray-100 flex-shrink-0 flex flex-wrap items-center gap-2">'+
       '<button onclick="closeUserProfile();openCompose(\'production\',order[0],\'email\')" class="flex-1 bg-gray-900 text-white text-[12px] font-bold rounded-lg py-2 hover:bg-gray-800">New Message</button>'+
-      '<button onclick="closeUserProfile();openMuseAiSettings()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">AI Settings</button>'+
+      '<button onclick="closeUserProfile();if(window.MuseTour)MuseTour.start()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Take the tour</button>'+
+      '<button onclick="museResetDemo()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Reset demo</button>'+
       '<a href="/logout" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Sign out</a>'+
-    '</div>';
+    '</div>'+
+    '<p class="muse-disclaimer px-5 pb-3">Concept demo — not an official Meta product. Meta, Ray-Ban and Muse are trademarks of their owners.</p>';
   ov.style.display='flex';}
 function closeUserProfile(){var ov=document.getElementById('userProfileOverlay');if(ov)ov.style.display='none';}
 
@@ -5208,8 +4782,6 @@ function globalSearchOpen(){
   ov.style.display='flex';
   var ai=document.getElementById('gsAiPanel');if(ai){ai.classList.add('hidden');ai.innerHTML='';}
   var inp=document.getElementById('gsInput');if(inp){inp.value='';setTimeout(function(){inp.focus();},60);}
-  /* Warm the on-device helper so Search is ready */
-  try{if(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.ensureEngine)MuseAiLocal.ensureEngine(false).catch(function(){});}catch(e){}
   globalSearchRender('');
 }
 function globalSearchClose(){
@@ -5228,7 +4800,7 @@ function globalSearchRender(q){
     if(_gsAiTimer){clearTimeout(_gsAiTimer);_gsAiTimer=null;}
     var ai0=document.getElementById('gsAiPanel');if(ai0){ai0.classList.add('hidden');ai0.innerHTML='';}
     var byType={};_searchIdx.forEach(function(r){byType[r.type]=(byType[r.type]||0)+1;});
-    box.innerHTML='<div class="px-4 py-6 text-center"><p class="text-[11px] text-gray-500 mb-1 font-semibold">Search everything · typo-tolerant · AI on-device</p>'+
+    box.innerHTML='<div class="px-4 py-6 text-center"><p class="text-[11px] text-gray-500 mb-1 font-semibold">Search everything · typo-tolerant · Ask Muse</p>'+
       '<p class="text-[10px] text-gray-400 mb-3">Misspellings are corrected automatically. Jump to records or ask a natural question.</p>'+
       '<div class="flex flex-wrap gap-1.5 justify-center">'+Object.keys(byType).map(function(t){return '<span class="text-[9px] mono bg-gray-100 border border-gray-200 text-gray-600 rounded-lg px-2 py-1">'+t+' · '+byType[t]+'</span>';}).join('')+'</div>'+
       '<p class="text-[9px] text-gray-400 mt-4">Try: <button type="button" class="text-blue-700 font-bold hover:underline" onclick="globalSearchPreset(\'Muse AI World Tour go no go\')">Muse AI World Tour go no go</button> · '+
@@ -5325,7 +4897,7 @@ function globalSearchRender(q){
     }).join('');
   }
   if(typeof MuseWork!=='undefined')box.insertAdjacentHTML('beforeend',MuseWork.globalResultsHTML(raw));
-  /* On-device search — use spell-corrected query */
+  /* Muse search — use spell-corrected query */
   globalSearchScheduleAI(q||raw, hits);
 }
 function globalSearchPreset(q){
@@ -5427,10 +4999,6 @@ function globalSearchRunAI(q, hits){
     aiPromise=MuseAiMuseAi.ask(q).catch(function(){return composeLocalAnswer();});
   }else if(typeof museaiLooksRealWorld==='function'&&museaiLooksRealWorld(q)){
     aiPromise=composeLocalAnswer();
-  }else if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'&&MuseAiLocal.search){
-    aiPromise=MuseAiLocal.ensureEngine(false).then(function(){
-      return MuseAiLocal.search(q,{hitsText:hitsText,indexStats:idxStats});
-    }).catch(function(){return composeLocalAnswer();});
   }else{
     aiPromise=composeLocalAnswer();
   }
@@ -5539,9 +5107,10 @@ var _npcLoaded=false;function loadNPCOnce(){if(_npcLoaded)return;_npcLoaded=true
 function npcById(id){for(var i=0;i<npcEvents.length;i++)if(npcEvents[i].id===id)return npcEvents[i];return null;}
 
 /* facility bookings used by the master gantt — exported so conflict logic can read them */
-/* Facility / control-room schedule — THE single Xytech-bridged source of truth (v28 WI4):
-   the Master Schedule gantt renders it, xySchedPushFacilities posts it to Xytech as
-   RmBooking records, and the dashboard Active PCR/ACR board derives from it live.
+/* Facility / control-room week view. Muse Schedule (js/muse-schedule.js) is the source of
+   truth: it seeds from these rows once, then regenerates this array in place for the current
+   Mon–Sun week after every change, so the Facilities gantt, the dashboard Active PCR/ACR board
+   and the NPC conflict check all follow it.
    Row: [resource, [[startCol, spanDays, activity, bg, fg, timeWindow?, prodKey?], …]] */
 var FACILITY_ROWS=[["PCR 1",[[0,7,'Muse AI World Tour — Match Coverage','#f9db8e','#b24a00','12:00–18:00 ET','museaitour'],[1,2,'Muse AI World Tour Tech Rehearsal','#f9db8e','#b24a00','07:00–11:00 ET','museaitour'],[4,2,'Ray-Ban Meta Gen 3 Launch Setup','#a8dab5','#12301c','08:00–12:00 ET','raybangen3']]],
   ["PCR 4",[[0,3,'Ray-Ban Meta Gen 3 Launch Remote Test','#a8dab5','#12301c','06:00–09:00 ET','raybangen3'],[0,7,'Ray-Ban Meta Gen 3 Launch — Harbor Remote','#a8dab5','#12301c','06:00–10:00 ET','raybangen3'],[5,2,'Creator Week Cam Map','#fbc6a4','#b24a00','13:00–16:00 ET','igcreators']]],
@@ -5560,18 +5129,18 @@ var FACILITY_ROWS=[["PCR 1",[[0,7,'Muse AI World Tour — Match Coverage','#f9db
 function spanOverlap(a,aw,b,bw){return a < b+bw && b < a+aw;}
 
 /* ================================================================================
-   ACTIVE PCR/ACR BOARD ↔ XYTECH SCHEDULE  (v28 · Work Item 4)
-   The dashboard control-room board renders LIVE from FACILITY_ROWS — the same
-   facility schedule the Xytech bridge pushes as RmBooking records. One source of
-   truth: change the schedule and the chips, tooltips and routing chains follow.
+   ACTIVE PCR/ACR BOARD ↔ MUSE SCHEDULE
+   The dashboard control-room board renders LIVE from FACILITY_ROWS, which Muse Schedule
+   regenerates from its bookings. One source of truth: change a booking and the chips,
+   tooltips and routing chains follow.
    ================================================================================ */
-var XY_ROOMS={
+var SCHED_ROOMS={
  'Production Control (PCR)':['PCR 1','PCR 2','PCR 3','PCR 4','PCR 5','PCR 6','PCR 7','PCR 8'],
  'Audio Control (ACR)':['ACR 1','ACR 2','ACR 3','ACR 4','ACR 6','ACR 7','MIX 4'],
  'Transmission Circuits (CRK)':['CRK 1','CRK 2','CRK 3','CRK 4','CRK 5','CRK 6','CRK 7','CRK 8','CRK 9','CRK 10']};
-function xyTodayCol(){return (new Date().getDay()+6)%7;} /* Mon=0 … Sun=6 — the NPC_DAYS demo week */
+function schedTodayCol(){return (new Date().getDay()+6)%7;} /* Mon=0 … Sun=6 — the NPC_DAYS demo week */
 function roomBookings(room){var row=FACILITY_ROWS.filter(function(r){return r[0]===room;})[0];return row?row[1]:[];}
-function roomToday(room){var t=xyTodayCol();return roomBookings(room).filter(function(b){return t>=b[0]&&t<b[0]+b[1];});}
+function roomToday(room){var t=schedTodayCol();return roomBookings(room).filter(function(b){return t>=b[0]&&t<b[0]+b[1];});}
 function roomState(room){var tb=roomToday(room);
   if(!tb.length)return {s:'idle',all:[]};
   var onair=tb.filter(function(b){return /on air/i.test(b[5]||'');})[0];
@@ -5582,8 +5151,8 @@ function roomTip(room){var st=roomState(room);
   if(st.s==='idle')return room+' — idle today · click for this week’s schedule';
   return room+' — '+st.all.map(function(b){return b[2]+(b[5]?' · '+b[5]:'');}).join('  |  ');}
 function renderRoutingBoard(){var host=document.getElementById('routingBoard');if(!host)return;
-  var html=Object.keys(XY_ROOMS).map(function(grp){
-    var rooms=XY_ROOMS[grp];var cols=grp.indexOf('CRK')>=0?'grid-cols-5':(rooms.length>7?'grid-cols-4 sm:grid-cols-8':'grid-cols-4 sm:grid-cols-7');
+  var html=Object.keys(SCHED_ROOMS).map(function(grp){
+    var rooms=SCHED_ROOMS[grp];var cols=grp.indexOf('CRK')>=0?'grid-cols-5':(rooms.length>7?'grid-cols-4 sm:grid-cols-8':'grid-cols-4 sm:grid-cols-7');
     return '<div><span class="text-[9px] text-gray-500 uppercase font-bold tracking-wider block mb-1">'+grp+'</span>'+
       '<div class="grid '+cols+' gap-1 mono text-center text-[9px]">'+rooms.map(function(rm){
         var st=roomState(rm);var short=rm.replace(' ','');
@@ -5595,9 +5164,9 @@ function renderRoutingBoard(){var host=document.getElementById('routingBoard');i
           (st.s==='onair'?'<span class="onair w-1.5 h-1.5 rounded-full bg-red-500"></span>':'')+short+'</button>';
       }).join('')+'</div></div>';
   }).join('');
-  html+=xyChainsHTML();
+  html+=schedChainsHTML();
   host.innerHTML=html;}
-function xyChainsHTML(){var t=xyTodayCol();
+function schedChainsHTML(){var t=schedTodayCol();
   var byProd={};
   FACILITY_ROWS.forEach(function(r){r[1].forEach(function(b){if(!b[6])return;if(!(t>=b[0]&&t<b[0]+b[1]))return;
     var o=byProd[b[6]]=byProd[b[6]]||{};var rm=r[0];
@@ -5618,7 +5187,7 @@ function xyChainsHTML(){var t=xyTodayCol();
   return '<div><span class="text-[9px] text-gray-500 uppercase font-bold tracking-wider block mb-1">Active Routing · PCR → ACR → CRK · '+esc(NPC_DAYS[t]||'')+'</span>'+
     '<div class="space-y-1 text-[9px] mono">'+(rows||'<p class="text-[9px] text-gray-400 italic py-1">No routing chains scheduled today.</p>')+'</div></div>';}
 function openRoomDetail(room){var ov=document.getElementById('roomOverlay');var bx=document.getElementById('roomBox');if(!ov||!bx)return;
-  var t=xyTodayCol();var st=roomState(room);var bks=roomBookings(room);
+  var t=schedTodayCol();var st=roomState(room);var bks=roomBookings(room);
   var stChip=st.s==='onair'?'<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-50 border border-red-200 text-red-700">● On Air now</span>':
     st.s==='active'?'<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700">● Active today</span>':
     st.s==='setup'?'<span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">● Setup / prep</span>':
@@ -5631,12 +5200,12 @@ function openRoomDetail(room){var ov=document.getElementById('roomOverlay');var 
       '<p class="text-[9px] text-gray-500">'+esc(days)+(b[5]?' · '+esc(b[5]):'')+(name?' · '+esc(name):'')+(live?' · <b class="text-emerald-700">today</b>':'')+'</p></div>'+
       (b[6]&&productions[b[6]]?'<button onclick="closeRoomDetail();openProject(\''+b[6]+'\')" class="text-[9px] font-bold text-blue-700 hover:underline flex-shrink-0">Open →</button>':'')+'</div>';}
   bx.innerHTML='<div class="flex items-start justify-between mb-2"><div><h3 class="text-sm font-bold text-gray-900 leading-none mono">'+esc(room)+'</h3>'+
-    '<p class="text-[10px] text-gray-500 mt-1">Control-room schedule · Week of Jun 2–8 2026</p></div>'+
+    '<p class="text-[10px] text-gray-500 mt-1">Control-room schedule · Week of '+esc(typeof MuseSchedule!=='undefined'?MuseSchedule.weekLabel():'this week')+'</p></div>'+
     '<button onclick="closeRoomDetail()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button></div>'+
     '<div class="mb-3">'+stChip+'</div>'+
     (bks.length?bks.map(bkRow).join(''):'<p class="text-[10px] text-gray-400 italic py-3">Nothing scheduled in this room this week.</p>')+
-    '<div class="sim-note mt-3"><span>⇄</span><span>Derived live from the <b>Xytech facility schedule</b> — the same data the bridge posts as RmBooking records. Edit it in Master Schedule → Facilities and this board follows.</span></div>'+
-    '<button onclick="closeRoomDetail();switchView(\'schedule\');setSchedTab(\'facility\')" class="w-full text-[10px] font-bold text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-lg px-3 py-2 mt-2">Open Facilities Gantt →</button>';
+    '<div class="sim-note mt-3"><span>⇄</span><span>Live from <b>Muse Schedule</b>. Move, extend or book this room there and this board follows.</span></div>'+
+    '<button onclick="closeRoomDetail();MuseSchedule.focusRes(\''+room+'\')" class="w-full text-[11px] font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-full px-3 py-2 mt-2">Open '+esc(room)+' in Muse Schedule →</button>';
   ov.style.display='flex';}
 function closeRoomDetail(){var ov=document.getElementById('roomOverlay');if(ov)ov.style.display='none';}
 
@@ -6037,85 +5606,6 @@ function bcastPaneHTML(){
       '</div>'+
       '<span class="text-[11px] font-bold text-gray-800 mono">'+lbl+'</span></div></div>'+
     '<div class="overflow-x-auto">'+body+'</div>';
-}
-
-/* ================================================================================
-   11. XYTECH TAB (Master Schedule) — network-level MediaPulse REST console.
-       GET/POST against the simulated Xytech API; pushes the facility gantt as
-       rm_booking records and registers broadcast days as jm_job documents.
-   ================================================================================ */
-var xySchedLog=[];
-function xySchedLogPush(method,ep,resp){xySchedLog.unshift({t:new Date().toLocaleTimeString(),method:method,ep:ep,resp:resp});if(xySchedLog.length>6)xySchedLog.length=6;}
-function xySchedConsoleHTML(){
-  if(!xySchedLog.length)return '<p class="text-[10px] italic" style="color:#0866ff">No API traffic yet — run a request above. Every call and its JSON response will print here.</p>';
-  return xySchedLog.map(function(l){
-    return '<div class="mb-3"><p class="text-[9px] mono font-bold" style="color:#31a24c">'+l.t+' \u2192 '+l.method+' '+XYTECH_HOST+'/api/v2/'+esc(l.ep)+'</p>'+
-      '<pre class="text-[9px] mono leading-relaxed whitespace-pre-wrap mt-1" style="color:#b9d7ff;max-height:220px;overflow:auto">'+esc(JSON.stringify(l.resp,null,2))+'</pre></div>';}).join('');
-}
-function xySchedRefresh(){if(schedTab==='xytech')renderSchedule();}
-function xySchedGet(ep){
-  if(typeof XytechAPI==='undefined'){toast('Xytech API module not loaded');return;}
-  toast('GET /'+ep+' \u2026');
-  XytechAPI.get(ep).then(function(resp){xySchedLogPush('GET',ep,resp);xySchedRefresh();toast(resp.message||('HTTP '+resp.status));});
-}
-function xySchedPushFacilities(){
-  if(typeof XytechAPI==='undefined'){toast('Xytech API module not loaded');return;}
-  var jobNo=26206;
-  var bookings=[];
-  FACILITY_ROWS.forEach(function(r,ri){r[1].forEach(function(b,bi){
-    bookings.push({booking_id:'BKG_MS_'+r[0].replace(/[^A-Za-z0-9]+/g,'')+'_'+bi,job_no:jobNo,
-      resource_id:'RES_'+r[0].replace(/[^A-Za-z0-9]+/g,'_').toUpperCase(),resource_name:r[0],
-      role:'Facility / Control Room',activity:b[2],start_day:NPC_DAYS[b[0]]||'',span_days:b[1],
-      booking_status:'Scheduled'});});});
-  toast('POST /RmBooking \u2014 '+bookings.length+' facility bookings\u2026');
-  XytechAPI.post('JmJob',{job_no:jobNo,job_title:'Muse Live — Master Facility Schedule · Week of Jun 2-8 2026',client_id:'META_LIVE_NET',status:'In Progress',start_date:'2026-06-02T06:00:00Z',end_date:'2026-06-08T23:59:00Z',project_manager:'Lila Hart',billing_rate_code:'RATE_MUSE_FAC_2026',division:'Broadcast Operations'})
-    .then(function(r1){xySchedLogPush('POST','JmJob',r1);return XytechAPI.post('RmBooking',{job_no:jobNo,bookings:bookings});})
-    .then(function(r2){xySchedLogPush('POST','RmBooking',r2);xySchedRefresh();toast(r2.message||'Facility schedule pushed to Xytech');});
-}
-function xySchedPushBroadcastDay(){
-  if(typeof XytechAPI==='undefined'){toast('Xytech API module not loaded');return;}
-  var d=bcastDate;var phase=(typeof wcMatchday==='function')?wcMatchday(d):null;
-  var job={job_title:'Broadcast Day — '+d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' · Meta Live Channels'+(phase?' · Muse AI World Tour ('+phase+')':''),
-    client_id:'META_LIVE_NET',status:phase?'In Progress':'Scheduled',
-    start_date:d.toISOString().slice(0,10)+'T06:00:00Z',end_date:d.toISOString().slice(0,10)+'T23:59:00Z',
-    project_manager:'Lila Hart',billing_rate_code:'RATE_MUSE_AIR_2026',division:'Network Air Operations'};
-  toast('POST /JmJob \u2014 broadcast day\u2026');
-  XytechAPI.post('JmJob',job).then(function(r){xySchedLogPush('POST','JmJob',r);xySchedRefresh();toast(r.message||'Broadcast day registered in Xytech');});
-}
-function xySchedPaneHTML(){
-  var jobs=(typeof XYTECH_DB!=='undefined')?XYTECH_DB.jm_job:[];
-  var bkg=(typeof XYTECH_DB!=='undefined')?(XYTECH_DB.rm_booking||[]):[];
-  var banner='<div class="rounded-2xl p-4 border mb-4" style="background:linear-gradient(120deg,#0b2a52,#242526);border-color:#0a58ca">'+
-    '<div class="flex flex-wrap items-center justify-between gap-2">'+
-      '<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-white text-[10px] font-bold mono">XY</div>'+
-        '<div><p class="text-[11px] font-bold text-white leading-none">Xytech MediaPulse — Network Scheduling Bridge <span class="text-[8px] font-bold ml-1 px-1.5 py-0.5 rounded bg-amber-400 text-amber-950">SIMULATED · no live Xytech</span></p>'+
-        '<p class="text-[8px] mono mt-1" style="color:#b9d7ff">'+XYTECH_HOST+'/api/v2 · JmJob \u00b7 RmBooking \u00b7 LibMaster</p></div></div>'+
-      '<span class="flex items-center gap-1 text-[9px] mono text-emerald-300"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>'+jobs.length+' jobs · '+bkg.length+' bookings on server</span></div></div>';
-  function ab(lbl,fn,dark){return '<button onclick="'+fn+'" class="text-[9px] font-bold rounded-lg px-3 py-2 '+(dark?'text-white bg-gray-900 hover:bg-gray-800':'text-gray-700 border border-gray-200 hover:bg-gray-50')+'">'+lbl+'</button>';}
-  var actions='<div class="bg-white rounded-2xl p-4 border border-gray-200/60 mb-4" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
-    '<h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">API Actions</h3>'+
-    '<p class="text-[9px] text-gray-500 mb-2.5">Push this Master Schedule into Xytech, or pull what the server holds. Per-production crew &amp; payroll sync lives in each project\u2019s Xytech tab.</p>'+
-    '<div class="flex flex-wrap gap-1.5">'+
-      ab('\u2197 POST Facility Gantt \u2192 RmBooking','xySchedPushFacilities()',true)+
-      ab('\u2197 POST Broadcast Day \u2192 JmJob','xySchedPushBroadcastDay()',true)+
-      ab('GET /JmJob','xySchedGet(\'JmJob\')')+
-      ab('GET /RmBooking','xySchedGet(\'RmBooking\')')+
-      ab('GET /LibMaster','xySchedGet(\'LibMaster\')')+'</div></div>';
-  var jobRows=jobs.map(function(j){return '<tr class="border-b border-gray-100">'+
-    '<td class="py-1.5 pr-3 text-[9px] mono font-bold text-gray-800">#'+esc(''+j.job_no)+'</td>'+
-    '<td class="py-1.5 pr-3 text-[10px] font-semibold text-gray-800">'+esc(j.job_title||'')+'</td>'+
-    '<td class="py-1.5 pr-3 text-[9px] mono text-gray-600">'+esc(j.client_id||'')+'</td>'+
-    '<td class="py-1.5 pr-3"><span class="text-[8px] font-bold px-1.5 py-0.5 rounded '+((j.status||'').indexOf('Progress')>=0?'bg-emerald-50 text-emerald-700 border border-emerald-200':'bg-gray-100 text-gray-600 border border-gray-200')+'">'+esc(j.status||'')+'</span></td>'+
-    '<td class="py-1.5 text-[9px] mono text-gray-500">'+esc((j.start_date||'').slice(0,10))+' \u2192 '+esc((j.end_date||'').slice(0,10))+'</td></tr>';}).join('');
-  var jobsCard='<div class="bg-white rounded-2xl p-4 border border-gray-200/60 mb-4" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
-    '<h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">JmJob — Job Management Documents on Server</h3>'+
-    '<div class="overflow-x-auto"><table class="w-full" style="min-width:640px"><thead><tr class="border-b border-gray-200">'+
-    ['job_no','job_title','client_id','status','schedule'].map(function(h){return '<th class="text-left text-[8px] font-bold uppercase tracking-wider text-gray-400 py-1 pr-3">'+h+'</th>';}).join('')+'</tr></thead><tbody>'+
-    (jobRows||'<tr><td colspan="5" class="text-[10px] text-gray-400 italic py-3">No jobs on server</td></tr>')+'</tbody></table></div></div>';
-  var consoleCard='<div class="rounded-2xl p-4 border" style="background:#18191A;border-color:#3a3b3c">'+
-    '<div class="flex items-center justify-between mb-2"><h3 class="text-[10px] font-bold uppercase tracking-wider" style="color:#0866ff">API Console — Request / Response</h3>'+
-    '<span class="text-[8px] mono" style="color:#65676b">last '+xySchedLog.length+' call'+(xySchedLog.length===1?'':'s')+'</span></div>'+xySchedConsoleHTML()+'</div>';
-  return banner+actions+jobsCard+consoleCard;
 }
 
 /* ================================================================================
@@ -8400,6 +7890,8 @@ function commsLinkGo(t,id){closeCommsMsg();
 function commsFindFin(t,id){var arr=t==='po'?finPOs:(t==='wo'?workOrders:finInvoices);for(var i=0;i<arr.length;i++)if(arr[i].id===id)return arr[i];return null;}
 
 /* ---- counts / badges ---- */
+/* unread inbound messages flagged critical — the only Omni count that drives a badge */
+function commsUnreadCritical(){try{loadCommsOnce();var vis=(typeof permComms==='function')?permComms():comms;return vis.filter(function(m){return !m.read&&m.dir==='in'&&m.priority==='critical';}).length;}catch(e){return 0;}}
 function commsUnread(){loadCommsOnce();var vis=(typeof permComms==='function')?permComms():comms;return vis.filter(function(m){return !m.read&&m.dir==='in';}).length;}
 function commsForRecord(t,id){loadCommsOnce();var vis=(typeof permComms==='function')?permComms():comms;return vis.filter(function(m){return m.linkType===t&&m.linkId===id;}).sort(function(a,b){return (a.ts<b.ts?-1:1);});}
 function omniTabBadge(key){loadCommsOnce();var _oc=(typeof permComms==='function')?permComms():comms;var n=_oc.filter(function(m){return m.prod===key&&!m.read&&m.dir==='in';}).length;
@@ -10689,7 +10181,7 @@ function finBarRow(label,val,max,color,rightTxt){var w=max>0?Math.max(1,Math.min
 function finAgingStrip(b,payTerm){var mx=Math.max(1,b.cur,b.b30,b.b60,b.b90,b.b90p);
   var cell=function(l,v,c){return '<div class="flex-1 min-w-[84px] rounded-xl border border-gray-100 bg-gray-50/60 p-2 text-center"><p class="text-[8px] font-bold uppercase tracking-wider text-gray-400">'+l+'</p><p class="text-[13px] font-bold mono '+c+' mt-0.5">'+$fmt(v)+'</p></div>';};
   return '<div class="flex flex-wrap gap-2">'+cell('Current',b.cur,'text-emerald-700')+cell('1–30',b.b30,'text-gray-800')+cell('31–60',b.b60,'text-amber-600')+cell('61–90',b.b90,'text-orange-600')+cell('90+',b.b90p,'text-red-600')+
-    '<div class="flex-1 min-w-[100px] rounded-xl border border-gray-200 bg-gray-900 p-2 text-center"><p class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Total Open</p><p class="text-[13px] font-bold mono text-white mt-0.5">'+$fmt(b.total)+'</p></div></div>';}
+    '<div class="flex-1 min-w-[100px] rounded-xl border border-gray-200 p-2 text-center" style="background:#0866FF;border-color:transparent"><p class="text-[8px] font-bold uppercase tracking-wider" style="color:rgba(255,255,255,.85)">Total Open</p><p class="text-[13px] font-bold mono text-white mt-0.5">'+$fmt(b.total)+'</p></div></div>';}
 
 /* ---- COCKPIT ---------------------------------------------------------------- */
 function finCockpitHTML(scope){var isAll=(scope==='all');var t=finAgg(scope);var apA=finAPAging(scope),arA=finARAging(scope);var gl=finGLRollup(scope);
@@ -11240,203 +10732,105 @@ function laborPaneHTML(key){var p=productions[key];var L=ensureLabor(key);var cr
 }
 
 
-/* ===== Xytech MediaPulse integration (simulated) ===== */
+/* ===== Crew labor & timecards (Muse Schedule) ===== */
 /* ============================================================================
-   XYTECH MEDIAPULSE INTEGRATION  (SIMULATED — REST API v2, demo)
-   No live sandbox: this is a faithful MOCK of Xytech's contract & schema
-   conventions (jm_job, lib_master, plus a resource-booking schema for the
-   scheduling/pay side). It closes the finance↔schedule↔crew loop:
-     crew + labor estimate  →  push to Xytech (job + bookings)
-     Xytech schedules & pays →  pull actuals  →  reconcile vs estimate
-     apply actuals           →  Production Labor (acct 20) in the cost report → EFC
-   Everything is clearly labeled simulated; the data flow it demonstrates is real.
+   CREW LABOR & TIMECARDS — native, driven by Muse Schedule.
+     crew bookings in Muse Schedule × labor rates  →  estimate
+     approve timecards (actual hours, OT)           →  reconcile vs estimate
+     post labor                                     →  Production Labor (acct 20) in the cost report → EFC
    ========================================================================== */
-var XYTECH_HOST='https://xytech-mock-api.local';
-var XYTECH_DB={
-  // JmJob — Job Management documents (seed records from the integration spec)
-  jm_job:[
-    {job_no:10842,job_title:'Netflix Premium Content Ingest - Season 4',client_id:'NETFLIX_PROD_01',status:'In Progress',start_date:'2026-07-01T08:00:00Z',end_date:'2026-08-15T18:00:00Z',project_manager:'Sarah Jenkins',billing_rate_code:'RATE_NET_W_2026',division:'Media Services'},
-    {job_no:10843,job_title:'HBO Promo Campaign Master Edit',client_id:'WARNER_DISC_05',status:'Pending Review',start_date:'2026-06-28T09:00:00Z',end_date:'2026-07-05T17:00:00Z',project_manager:'David Miller',billing_rate_code:'RATE_HBO_P_2026',division:'Post Production'}
-  ],
-  // LibMaster — Media Asset Management documents
-  lib_master:[
-    {asset_id:'ASSET_99812_MX',title:'Feature_Film_Master_4K_HDR_Stereo',format:'ProRes 4444 XQ',frame_rate:'23.98 fps',file_size_gb:412.5,storage_location:'AWS_S3_GLACIER_US_EAST',checksum:'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',lifecycle_status:'Archived'},
-    {asset_id:'ASSET_99813_TL',title:'Episodic_Teaser_Trailer_HD_1080p',format:'H.264 / MP4',frame_rate:'29.97 fps',file_size_gb:4.2,storage_location:'ON_PREM_SAN_VOL_02',checksum:'7582c33218fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852c921',lifecycle_status:'Active_Distribution'}
-  ],
-  // RmBooking — resource-management bookings (scheduling & pay). Modeled for the demo.
-  rm_booking:[]
-};
-function xyDelay(ms){return new Promise(function(r){setTimeout(r,ms);});}
-
-/* Mock REST service — mirrors the provided xytechApi.get / .post contract. */
-var XytechAPI={
-  get:function(endpoint){return xyDelay(550).then(function(){
-    var ep=(endpoint||'').toLowerCase().split('?')[0];
-    if(ep==='jmjob'||ep==='jm_job')return {status:200,data:XYTECH_DB.jm_job,message:'Success retrieving Job Management list.'};
-    if(ep==='libmaster'||ep==='lib_master')return {status:200,data:XYTECH_DB.lib_master,message:'Success retrieving Media Asset Library.'};
-    if(ep==='rmbooking'||ep==='rm_booking')return {status:200,data:XYTECH_DB.rm_booking,message:'Success retrieving resource bookings.'};
-    return {status:404,message:'Endpoint '+XYTECH_HOST+'/'+endpoint+' not found.'};});},
-  post:function(endpoint,payload){return xyDelay(750).then(function(){
-    var ep=(endpoint||'').toLowerCase();
-    if(ep==='jmjob'||ep==='jm_job'){var jn=(payload&&payload.job_no)||Math.floor(10000+Math.random()*90000);
-      var rec=Object.assign({},payload,{job_no:jn});var ex=-1;XYTECH_DB.jm_job.forEach(function(j,i){if(j.job_no===jn)ex=i;});
-      if(ex>=0)XYTECH_DB.jm_job[ex]=rec;else XYTECH_DB.jm_job.push(rec);
-      return {status:201,success:true,data:rec,message:'Successfully generated Job Record #'+jn+' in Xytech.'};}
-    if(ep==='rmbooking'||ep==='rm_booking'){var n=(payload&&payload.bookings)?payload.bookings.length:0;
-      XYTECH_DB.rm_booking=(XYTECH_DB.rm_booking||[]).filter(function(b){return b.job_no!==(payload&&payload.job_no);}).concat((payload&&payload.bookings)||[]);
-      return {status:201,success:true,data:{job_no:payload&&payload.job_no,count:n},message:'Posted '+n+' resource booking(s) to Xytech.'};}
-    return {status:400,message:'Invalid payload or unsupported document endpoint.'};});}
-};
-
-/* ---- per-production sync state ---- */
-function ensureXytech(key){var p=productions[key];if(!p.xytech)p.xytech={status:'idle',jobNo:null,job:null,bookings:[],actuals:[],lastPush:null,lastPull:null,applied:false};
-  var X=p.xytech;if(!X.bookings)X.bookings=[];if(!X.actuals)X.actuals=[];if(!X.status)X.status='idle';return X;}
-function xyStatusToJob(s){s=(s||'').toUpperCase();if(s.indexOf('RISK')>=0||s.indexOf('HOLD')>=0)return 'On Hold';
-  if(s.indexOf('LIVE')>=0||s.indexOf('AIR')>=0||s.indexOf('PROGRESS')>=0)return 'In Progress';
-  if(s.indexOf('PREP')>=0||s.indexOf('BUILD')>=0)return 'Pre-Production';return 'Scheduled';}
-function xyJobDates(p){var sch=p.schedule;var s=p.date||'',e=p.date||'';
-  if(Array.isArray(sch)&&sch.length){s=sch[0][0]||s;e=sch[sch.length-1][0]||e;}return {start:s,end:e};}
-function xytechJobForProd(key){var p=productions[key];var X=ensureXytech(key);var d=xyJobDates(p);
-  return {job_no:X.jobNo||undefined,job_title:p.name,client_id:'MUSE_'+key.toUpperCase(),
-    status:xyStatusToJob(p.status),start_date:d.start,end_date:d.end,project_manager:p.editedBy||'Meta Production',
-    billing_rate_code:'RATE_MUSE_'+key.toUpperCase().slice(0,4)+'_2026',division:(p.customer||'Live Production')+' / Broadcast Operations'};}
+function ensureSchedLabor(key){var p=productions[key];if(!p.schedLabor)p.schedLabor={timecards:[],approvedAt:null,posted:false};
+  var S=p.schedLabor;if(!S.timecards)S.timecards=[];return S;}
 
 /* ---- wage calc shared with the labor engine's tier logic ---- */
-function xyWage(r,hpd,days){var dh=r.dayHrs||10,o2=r.ot2after||12;
+function schedWage(r,hpd,days){var dh=r.dayHrs||10,o2=r.ot2after||12;
   var stH=Math.min(hpd,dh),ot1H=Math.max(0,Math.min(hpd,o2)-dh),ot2H=Math.max(0,hpd-o2);
   var perDay=stH*r.baseHr+ot1H*r.baseHr*(r.ot1x||1.5)+ot2H*r.baseHr*(r.ot2x||2);
   return {wages:perDay*days,hours:hpd*days,otHours:(ot1H+ot2H)*days};}
 
-/* ---- build bookings from the crew labor build ---- */
-function xytechBuildBookings(key,jobNo){var L=ensureLabor(key);var crew=getProjectCrew(key);var out=[];
-  crew.forEach(function(s){var r=L.rates[s.pos]||laborDefaultRate(s.pos);var ln=L.lines[s.id]||{days:L.defDays,hoursPerDay:L.defHours,meals:0,turn:0,kit:false};
-    var c=laborSlotCost(key,s);
-    out.push({booking_id:'BKG_'+jobNo+'_'+s.id,job_no:jobNo,slot_id:s.id,
-      resource_id:(s.name?'RES_'+s.name.replace(/[^A-Za-z0-9]+/g,'_').toUpperCase():'OPEN_'+s.id),
-      resource_name:s.name||'(open position)',role:s.pos,union_code:r.union,
-      scheduled_days:ln.days,scheduled_hpd:ln.hoursPerDay,scheduled_hours:Math.round(c.hours),
-      pay_rate:r.baseHr,scheduled_wages:Math.round(c.gross),est_loaded:Math.round(c.total),
-      booking_status:'Scheduled'});});
-  return out;}
+/* ---- estimate per crew slot: Muse Schedule bookings first, labor plan as fallback ---- */
+function schedLaborEstimate(key){var L=ensureLabor(key);var crew=getProjectCrew(key);
+  var bks=(typeof MuseSchedule!=='undefined')?MuseSchedule.byProduction(key):[];
+  var resName={};try{MuseSchedule.resources('crew').forEach(function(r){resName[r.id]=r.name;});}catch(e){}
+  return crew.map(function(s){var r=L.rates[s.pos]||laborDefaultRate(s.pos);var nm=(s.name||'').trim();
+    var mine=nm?bks.filter(function(b){return resName[b.res]===nm&&b.status!=='Released';}):[];
+    var hours=0,days={};mine.forEach(function(b){var h=(new Date(b.end)-new Date(b.start))/3600000;hours+=h;days[new Date(b.start).toDateString()]=1;});
+    var nd=Object.keys(days).length;var est,hpd,src;
+    if(hours>0){hpd=hours/nd;var w=schedWage(r,hpd,nd);var kit=(L.lines[s.id]&&L.lines[s.id].kit?(r.kit||0):0)*nd;
+      est={hours:Math.round(hours),days:nd,hpd:Math.round(hpd*10)/10,loaded:Math.round(w.wages*(1+(r.fringePct||0))+kit)};src='Muse Schedule';}
+    else{var ln=L.lines[s.id]||{days:L.defDays,hoursPerDay:L.defHours};var c=laborSlotCost(key,s);
+      est={hours:Math.round(c.hours),days:ln.days,hpd:ln.hoursPerDay,loaded:Math.round(c.total)};src='Labor plan';}
+    return {slot_id:s.id,role:s.pos,name:nm||'(open position)',union:r.union,source:src,est:est,rate:r};});}
 
-/* ---- PUSH: production → Xytech job + resource bookings ---- */
-function xytechPushCrew(key){var X=ensureXytech(key);if(X.status!=='idle')return;
-  X.status='pushing';renderProjectView(key);
-  var job=xytechJobForProd(key);
-  XytechAPI.post('JmJob',job).then(function(resp){var jn=(resp.data&&resp.data.job_no)||job.job_no;
-    X.jobNo=jn;X.job=resp.data;X.bookings=xytechBuildBookings(key,jn);
-    return XytechAPI.post('RmBooking',{job_no:jn,bookings:X.bookings});
-  }).then(function(){X.lastPush=new Date().toISOString();X.status='idle';X.actuals=[];X.applied=false;
-    stampEdit(key);renderProjectView(key);toast&&toast('Pushed '+X.bookings.length+' bookings to Xytech job #'+X.jobNo);
-  }).catch(function(){X.status='idle';renderProjectView(key);toast&&toast('Xytech push error');});}
+/* ---- approve timecards: actual hours land with real-world drift vs the estimate ---- */
+function schedApproveTimecards(key){var S=ensureSchedLabor(key);var L=ensureLabor(key);
+  S.timecards=schedLaborEstimate(key).map(function(e){var factor=0.9+Math.random()*0.35;
+    var aHpd=Math.max(1,Math.round(e.est.hpd*factor*10)/10);var w=schedWage(e.rate,aHpd,e.est.days);
+    var kit=(L.lines[e.slot_id]&&L.lines[e.slot_id].kit?(e.rate.kit||0):0)*e.est.days;
+    return {slot_id:e.slot_id,role:e.role,name:e.name,union:e.union,source:e.source,
+      scheduled_hours:e.est.hours,actual_hours:Math.round(w.hours),ot_hours:Math.round(w.otHours),
+      est_loaded:e.est.loaded,loaded_cost:Math.round(w.wages*(1+(e.rate.fringePct||0))+kit)};});
+  S.approvedAt=new Date().toISOString();S.posted=false;
+  stampEdit(key);renderProjectView(key);toast&&toast('Approved '+S.timecards.length+' timecards');}
 
-/* ---- PULL: Xytech returns actual scheduled/paid hours per resource ---- */
-function xytechPullActuals(key){var X=ensureXytech(key);if(X.status!=='idle')return;
-  if(!X.bookings.length){toast&&toast('Push crew to Xytech first');return;}
-  X.status='pulling';renderProjectView(key);
-  XytechAPI.get('RmBooking?job='+X.jobNo).then(function(){var L=ensureLabor(key);
-    X.actuals=X.bookings.map(function(b){var r=L.rates[b.role]||laborDefaultRate(b.role);
-      var estHpd=b.scheduled_hpd||L.defHours,days=b.scheduled_days||L.defDays;
-      var factor=0.9+Math.random()*0.35;                       // shows real-world drift vs estimate
-      var aHpd=Math.max(1,Math.round(estHpd*factor*10)/10);
-      var w=xyWage(r,aHpd,days);var kit=(L.lines[b.slot_id]&&L.lines[b.slot_id].kit?(r.kit||0):0)*days;
-      var loaded=w.wages*(1+(r.fringePct||0))+kit;
-      return {booking_id:b.booking_id,slot_id:b.slot_id,role:b.role,resource_name:b.resource_name,union_code:b.union_code,
-        scheduled_hours:b.scheduled_hours,actual_hours:Math.round(w.hours),actual_hpd:aHpd,
-        ot_hours:Math.round(w.otHours),pay_amount:Math.round(w.wages),loaded_cost:Math.round(loaded),
-        est_loaded:b.est_loaded,booking_status:'Actualized'};});
-    X.lastPull=new Date().toISOString();X.status='idle';X.applied=false;
-    stampEdit(key);renderProjectView(key);toast&&toast('Pulled Xytech actuals for '+X.actuals.length+' resources');
-  }).catch(function(){X.status='idle';renderProjectView(key);toast&&toast('Xytech pull error');});}
-
-/* ---- APPLY: post Xytech labor actuals into the cost report (acct 20) ---- */
-function xytechApplyActuals(key){var X=ensureXytech(key);if(!X.actuals.length)return;
-  var total=X.actuals.reduce(function(s,a){return s+a.loaded_cost;},0);
-  var id='INV-XY-'+key.toUpperCase().slice(0,5);var ex=null;
+/* ---- post approved labor into the cost report (acct 20) ---- */
+function schedPostLabor(key){var S=ensureSchedLabor(key);if(!S.timecards.length)return;
+  var total=S.timecards.reduce(function(s,a){return s+a.loaded_cost;},0);
+  var id='INV-MS-'+key.toUpperCase().slice(0,5);var ex=null;
   for(var i=0;i<finInvoices.length;i++){if(finInvoices[i].id===id){ex=finInvoices[i];break;}}
   var today=(typeof finToday==='function')?finToday():new Date().toISOString().slice(0,10);
-  if(ex){ex.amount=Math.round(total);ex.acct='20';ex.ref='JMJOB-'+(X.jobNo||'');ex.status='Approved';}
-  else finInvoices.push({id:id,prod:key,vendor:'Xytech Payroll',ref:'JMJOB-'+(X.jobNo||''),amount:Math.round(total),
-    recd:today,due:today,status:'Approved',paidOn:'',acct:'20',docs:['Xytech_'+(X.jobNo||'job')+'_payroll_export.csv']});
-  X.applied=true;saveOps();stampEdit(key);renderProjectView(key);
-  toast&&toast('Applied '+$fmt(total)+' Xytech labor actuals to cost report (acct 20)');}
+  if(ex){ex.amount=Math.round(total);ex.acct='20';ex.ref='TIMECARDS-'+key.toUpperCase();ex.status='Approved';}
+  else finInvoices.push({id:id,prod:key,vendor:'Muse Schedule Payroll',ref:'TIMECARDS-'+key.toUpperCase(),amount:Math.round(total),
+    recd:today,due:today,status:'Approved',paidOn:'',acct:'20',docs:['MuseSchedule_'+key+'_timecards.csv']});
+  S.posted=true;saveOps();stampEdit(key);renderProjectView(key);
+  toast&&toast('Posted '+$fmt(total)+' crew labor to the cost report (acct 20)');}
 
-/* ---- reconciliation totals ---- */
-function xytechRecon(key){var X=ensureXytech(key);var est=0,act=0,estH=0,actH=0,otH=0;
-  X.actuals.forEach(function(a){est+=(a.est_loaded||0);act+=(a.loaded_cost||0);
+function schedLaborRecon(key){var S=ensureSchedLabor(key);var est=0,act=0,estH=0,actH=0,otH=0;
+  S.timecards.forEach(function(a){est+=(a.est_loaded||0);act+=(a.loaded_cost||0);
     estH+=(a.scheduled_hours||0);actH+=(a.actual_hours||0);otH+=(a.ot_hours||0);});
   return {est:est,act:act,delta:act-est,estH:estH,actH:actH,otH:otH};}
 
-/* ---- pane ---- */
-function xytechPaneHTML(key){var p=productions[key];var X=ensureXytech(key);var busy=X.status!=='idle';
-  var job=xytechJobForProd(key);var synced=!!X.jobNo;var hasAct=X.actuals.length>0;
-  var banner='<div class="rounded-2xl p-4 border" style="background:linear-gradient(120deg,#0b2a52,#242526);border-color:#0a58ca">'+
-    '<div class="flex flex-wrap items-center justify-between gap-2">'+
-      '<div class="flex items-center gap-2"><div class="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-white text-[10px] font-bold mono">XY</div>'+
-        '<div><p class="text-[11px] font-bold text-white leading-none">Xytech MediaPulse <span class="text-[8px] font-bold ml-1 px-1.5 py-0.5 rounded bg-amber-400 text-amber-950">SIMULATED · no live Xytech</span></p>'+
-        '<p class="text-[8px] mono text-blue-200/70 mt-1">'+XYTECH_HOST+' · scheduling &amp; payroll mock — read adapter later</p></div></div>'+
-      '<div class="flex items-center gap-2"><span class="flex items-center gap-1 text-[9px] mono '+(synced?'text-emerald-300':'text-blue-200/70')+'"><span class="w-1.5 h-1.5 rounded-full '+(synced?'bg-emerald-400':'bg-blue-400/50')+'"></span>'+(synced?'job #'+X.jobNo+' linked':'not yet synced')+'</span></div>'+
+/* ---- Bookings tab: Muse Schedule bookings + crew labor & timecards ---- */
+function bookingsTabBadge(key){try{var n=MuseSchedule.conflicts({prod:key}).length;return n?' <span class="text-red-500">●</span>':'';}catch(e){return '';}}
+function bookingsPaneHTML(key){
+  var sched=(typeof MuseSchedule!=='undefined')?MuseSchedule.projectPaneHTML(key):'<p class="text-xs text-red-600">Muse Schedule failed to load.</p>';
+  return '<div class="space-y-4">'+sched+schedLaborPaneHTML(key)+'</div>';}
+function schedLaborPaneHTML(key){var S=ensureSchedLabor(key);var hasTc=S.timecards.length>0;
+  var est=schedLaborEstimate(key);var fromSched=est.filter(function(e){return e.source==='Muse Schedule';}).length;
+  var estTotal=est.reduce(function(s,e){return s+e.est.loaded;},0),estHrs=est.reduce(function(s,e){return s+e.est.hours;},0);
+  var th=function(t,a){return '<th class="p-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-500 '+(a||'text-left')+'">'+t+'</th>';};
+  var head='<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Crew labor &amp; timecards</h3>'+
+    '<p class="text-[11px] text-gray-500 mt-0.5">'+est.length+' positions · '+estHrs+' scheduled hrs · estimate '+$fmt(estTotal)+' · '+fromSched+' from Muse Schedule bookings, the rest from the labor plan.</p></div>'+
+    '<div class="flex items-center gap-2">'+
+      '<button onclick="schedApproveTimecards(\''+key+'\')" class="text-[11px] font-bold rounded-full px-3.5 py-2 border text-blue-700 border-blue-200 hover:bg-blue-50">'+(hasTc?'Re-approve timecards':'Approve timecards')+'</button>'+
+      (hasTc?'<button onclick="schedPostLabor(\''+key+'\')" class="text-[11px] font-bold text-white rounded-full px-3.5 py-2 '+(S.posted?'bg-emerald-600':'bg-blue-600 hover:bg-blue-700')+'">'+(S.posted?'✓ Posted to cost report':'Post labor to cost report (acct 20)')+'</button>':'')+
     '</div></div>';
-
-  // jm_job mapping card
-  function kv(k2,v){return '<div><p class="text-[8px] font-bold uppercase tracking-wider text-gray-400">'+k2+'</p><p class="text-[10px] mono text-gray-800 truncate">'+esc(v||'—')+'</p></div>';}
-  var jobCard='<div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
-    '<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">JmJob Mapping</h3>'+
-      '<p class="text-[9px] text-gray-500 mt-0.5">This production mapped to a Xytech Job Management document.</p></div>'+
-      '<button onclick="xytechPushCrew(\''+key+'\')" '+(busy?'disabled':'')+' class="text-[9px] font-bold text-white rounded-lg px-3 py-2 '+(busy?'bg-gray-300':'bg-gray-900 hover:bg-gray-800')+'">'+(X.status==='pushing'?'⟳ Pushing…':(synced?'⟳ Re-sync crew → Xytech':'↗ Push crew → Xytech'))+'</button></div>'+
-    '<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">'+
-      kv('job_no',X.jobNo||'(assigned on push)')+kv('job_title',job.job_title)+kv('client_id',job.client_id)+kv('division',job.division)+
-      kv('status',job.status)+kv('project_manager',job.project_manager)+kv('billing_rate_code',job.billing_rate_code)+kv('schedule',job.start_date+' → '+job.end_date)+
-    '</div>'+(X.lastPush?'<p class="text-[8px] mono text-gray-400 mt-2">last push '+new Date(X.lastPush).toLocaleString()+' · '+X.bookings.length+' rm_booking records</p>':'')+'</div>';
-
-  // booking / reconciliation
-  var rc=xytechRecon(key);
-  var reconCard='';
-  if(synced){
-    var schedDays=X.bookings.reduce(function(s,b){return s+(b.scheduled_days||0);},0);
-    var schedHrs=X.bookings.reduce(function(s,b){return s+(b.scheduled_hours||0);},0);
-    var head='<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Resource Bookings &amp; Reconciliation</h3>'+
-      '<p class="text-[9px] text-gray-500 mt-0.5">'+X.bookings.length+' bookings · '+schedDays+' man-days · '+schedHrs+' scheduled hrs. Pull what Xytech actually scheduled &amp; paid.</p></div>'+
-      '<div class="flex items-center gap-2">'+
-        '<button onclick="xytechPullActuals(\''+key+'\')" '+(busy?'disabled':'')+' class="text-[9px] font-bold rounded-lg px-3 py-2 border '+(busy?'text-gray-300 border-gray-200':'text-blue-700 border-blue-200 hover:bg-blue-50')+'">'+(X.status==='pulling'?'⟳ Pulling…':'↙ Pull actuals')+'</button>'+
-        (hasAct?'<button onclick="xytechApplyActuals(\''+key+'\')" '+(busy?'disabled':'')+' class="text-[9px] font-bold text-white rounded-lg px-3 py-2 '+(X.applied?'bg-emerald-600':'bg-gray-900 hover:bg-gray-800')+'">'+(X.applied?'✓ Applied to cost report':'↳ Apply actuals → cost report')+'</button>':'')+
-      '</div></div>';
-    var body;
-    if(hasAct){
-      var th=function(t,a){return '<th class="p-1.5 text-[8px] font-bold uppercase tracking-wider text-gray-400 '+(a||'text-left')+'">'+t+'</th>';};
-      var rows=X.actuals.map(function(a){var d=a.loaded_cost-a.est_loaded;var hd=a.actual_hours-a.scheduled_hours;
-        return '<tr class="border-t border-gray-100 hover:bg-gray-50">'+
-          '<td class="p-1.5"><span class="text-[10px] font-semibold text-gray-800">'+esc(a.role)+'</span>'+(a.resource_name&&a.resource_name.indexOf('(open')<0?'<span class="text-[9px] text-gray-500"> · '+esc(a.resource_name)+'</span>':'<span class="text-[8px] text-amber-500"> · open</span>')+'</td>'+
-          '<td class="p-1.5 text-[8px] mono text-gray-400">'+esc(a.union_code||'')+'</td>'+
-          '<td class="p-1.5 text-right mono text-[10px] text-gray-500">'+a.scheduled_hours+'</td>'+
-          '<td class="p-1.5 text-right mono text-[10px] '+(hd>0?'text-amber-600 font-semibold':'text-gray-700')+'">'+a.actual_hours+(a.ot_hours>0?' ·'+a.ot_hours+'ot':'')+'</td>'+
-          '<td class="p-1.5 text-right mono text-[10px] text-gray-500">'+$fmt(a.est_loaded)+'</td>'+
-          '<td class="p-1.5 text-right mono text-[10px] text-gray-900">'+$fmt(a.loaded_cost)+'</td>'+
-          '<td class="p-1.5 text-right mono text-[10px] font-bold '+(d>0?'text-red-600':'text-emerald-600')+'">'+(d>0?'+'+$fmt(d):$fmt(d))+'</td></tr>';}).join('');
-      body='<div class="overflow-x-auto"><table class="w-full" style="min-width:620px"><thead><tr>'+th('Resource')+th('Union')+th('Sched hrs','text-right')+th('Actual hrs','text-right')+th('Est cost','text-right')+th('Xytech actual','text-right')+th('Δ','text-right')+'</tr></thead><tbody>'+rows+
-        '<tr class="border-t-2 border-gray-300 font-bold bg-gray-50/60"><td class="p-1.5 text-[10px] text-gray-800" colspan="2">TOTAL · '+X.actuals.length+' resources</td>'+
-        '<td class="p-1.5 text-right mono text-[10px]">'+rc.estH+'</td><td class="p-1.5 text-right mono text-[10px] '+(rc.actH>rc.estH?'text-amber-600':'')+'">'+rc.actH+'</td>'+
-        '<td class="p-1.5 text-right mono text-[10px]">'+$fmt(rc.est)+'</td><td class="p-1.5 text-right mono text-[10px]">'+$fmt(rc.act)+'</td>'+
-        '<td class="p-1.5 text-right mono text-[10px] '+(rc.delta>0?'text-red-600':'text-emerald-600')+'">'+(rc.delta>0?'+'+$fmt(rc.delta):$fmt(rc.delta))+'</td></tr></tbody></table></div>'+
-        '<div class="flex items-start gap-2 mt-2 rounded-lg px-3 py-2 '+(rc.delta>0?'bg-red-50 border border-red-200':'bg-emerald-50 border border-emerald-200')+'">'+
-          '<span class="text-[10px] font-semibold '+(rc.delta>0?'text-red-800':'text-emerald-800')+'">'+(rc.delta>0?'Xytech actuals are running '+$fmt(rc.delta)+' over the Muse Live estimate':'Xytech actuals came in '+$fmt(Math.abs(rc.delta))+' under estimate')+(rc.otH>0?' · '+rc.otH+' OT hrs absorbed':'')+'. '+(X.applied?'Posted to acct 20.':'Apply to flow into the cost report\'s labor actuals.')+'</span></div>'+
-        (X.lastPull?'<p class="text-[8px] mono text-gray-400 mt-1.5">actuals pulled '+new Date(X.lastPull).toLocaleString()+'</p>':'');
-    }else{
-      body='<p class="text-[10px] text-gray-400 text-center py-4">Bookings posted to Xytech. <b>Pull actuals</b> to reconcile scheduled &amp; paid hours against the Muse Live estimate.</p>';
-    }
-    reconCard='<div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+head+body+'</div>';
+  var body;
+  if(hasTc){var rc=schedLaborRecon(key);
+    var rows=S.timecards.map(function(a){var d=a.loaded_cost-a.est_loaded;var hd=a.actual_hours-a.scheduled_hours;
+      return '<tr class="border-t border-gray-100">'+
+        '<td class="p-1.5"><span class="text-[11px] font-semibold text-gray-800">'+esc(a.role)+'</span>'+(a.name.indexOf('(open')<0?'<span class="text-[10px] text-gray-500"> · '+esc(a.name)+'</span>':'<span class="text-[10px] text-amber-600"> · open</span>')+'</td>'+
+        '<td class="p-1.5 text-[10px] text-gray-500">'+esc(a.source)+'</td>'+
+        '<td class="p-1.5 text-right mono text-[11px] text-gray-500">'+a.scheduled_hours+'</td>'+
+        '<td class="p-1.5 text-right mono text-[11px] '+(hd>0?'text-amber-700 font-semibold':'text-gray-700')+'">'+a.actual_hours+(a.ot_hours>0?' · '+a.ot_hours+' OT':'')+'</td>'+
+        '<td class="p-1.5 text-right mono text-[11px] text-gray-500">'+$fmt(a.est_loaded)+'</td>'+
+        '<td class="p-1.5 text-right mono text-[11px] text-gray-900">'+$fmt(a.loaded_cost)+'</td>'+
+        '<td class="p-1.5 text-right mono text-[11px] font-bold '+(d>0?'text-red-600':'text-emerald-700')+'">'+(d>0?'+'+$fmt(d):$fmt(d))+'</td></tr>';}).join('');
+    body='<div class="overflow-x-auto"><table class="w-full" style="min-width:640px"><thead><tr>'+th('Position')+th('Source')+th('Sched hrs','text-right')+th('Timecard hrs','text-right')+th('Estimate','text-right')+th('Actual','text-right')+th('Δ','text-right')+'</tr></thead><tbody>'+rows+
+      '<tr class="border-t-2 border-gray-300 font-bold"><td class="p-1.5 text-[11px] text-gray-800" colspan="2">Total · '+S.timecards.length+' timecards</td>'+
+      '<td class="p-1.5 text-right mono text-[11px]">'+rc.estH+'</td><td class="p-1.5 text-right mono text-[11px]">'+rc.actH+'</td>'+
+      '<td class="p-1.5 text-right mono text-[11px]">'+$fmt(rc.est)+'</td><td class="p-1.5 text-right mono text-[11px]">'+$fmt(rc.act)+'</td>'+
+      '<td class="p-1.5 text-right mono text-[11px] '+(rc.delta>0?'text-red-600':'text-emerald-700')+'">'+(rc.delta>0?'+'+$fmt(rc.delta):$fmt(rc.delta))+'</td></tr></tbody></table></div>'+
+      '<div class="mt-2 rounded-xl px-3 py-2 '+(rc.delta>0?'bg-red-50 border border-red-200':'bg-emerald-50 border border-emerald-200')+'"><span class="text-[11px] font-semibold '+(rc.delta>0?'text-red-800':'text-emerald-800')+'">'+
+        (rc.delta>0?'Timecards are running '+$fmt(rc.delta)+' over the estimate':'Timecards came in '+$fmt(Math.abs(rc.delta))+' under the estimate')+(rc.otH>0?' · '+rc.otH+' OT hrs':'')+'. '+(S.posted?'Posted to acct 20.':'Post to flow into the cost report\'s labor actuals.')+'</span></div>'+
+      (S.approvedAt?'<p class="text-[10px] mono text-gray-400 mt-1.5">timecards approved '+new Date(S.approvedAt).toLocaleString()+'</p>':'');
+  }else{
+    var rows2=est.map(function(e){return '<tr class="border-t border-gray-100"><td class="p-1.5"><span class="text-[11px] font-semibold text-gray-800">'+esc(e.role)+'</span><span class="text-[10px] text-gray-500"> · '+esc(e.name)+'</span></td>'+
+      '<td class="p-1.5 text-[10px] text-gray-500">'+esc(e.source)+'</td><td class="p-1.5 text-right mono text-[11px]">'+e.est.days+' d × '+e.est.hpd+' h</td><td class="p-1.5 text-right mono text-[11px]">'+$fmt(e.est.loaded)+'</td></tr>';}).join('');
+    body='<div class="overflow-x-auto"><table class="w-full" style="min-width:520px"><thead><tr>'+th('Position')+th('Source')+th('Scheduled','text-right')+th('Estimate','text-right')+'</tr></thead><tbody>'+rows2+'</tbody></table></div>'+
+      '<p class="text-[11px] text-gray-500 mt-2">Approve timecards after the show to reconcile actual hours and overtime against this estimate.</p>';
   }
-
-  // lib_master readout
-  var assets=XYTECH_DB.lib_master.map(function(a){return '<div class="flex items-center justify-between gap-2 p-2 rounded-lg border border-gray-100">'+
-    '<div class="min-w-0"><p class="text-[10px] font-semibold text-gray-800 truncate">'+esc(a.title)+'</p><p class="text-[8px] mono text-gray-400">'+esc(a.asset_id)+' · '+esc(a.format)+' · '+esc(a.frame_rate)+'</p></div>'+
-    '<div class="text-right flex-shrink-0"><p class="text-[9px] mono text-gray-700">'+a.file_size_gb+' GB</p><span class="text-[7px] font-bold px-1.5 py-0.5 rounded '+(a.lifecycle_status==='Archived'?'bg-gray-100 text-gray-500':'bg-emerald-50 text-emerald-700')+'">'+esc(a.lifecycle_status)+'</span></div></div>';}).join('');
-  var libCard='<div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
-    '<h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-2">LibMaster — Linked Media Library</h3>'+
-    '<div class="space-y-1.5">'+assets+'</div>'+
-    '<p class="text-[8px] text-gray-400 mt-2">Asset catalog from the Xytech mock (lib_master). In production these link to the job\'s deliverables.</p></div>';
-
-  return '<div class="space-y-4">'+banner+jobCard+reconCard+libCard+'</div>';
+  return '<div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+head+body+'</div>';
 }
 
 
@@ -12642,13 +12036,13 @@ function planBuildControlsPDF(key,ganttPNG,evmPNG,histPNG){ var p=productions[ke
   doc.addPage(); var acts=r.activities.slice().sort(function(a,b){ if(a.es!==b.es)return a.es-b.es; return (''+a.wbs<''+b.wbs?-1:1); });
   var rn={}; acts.forEach(function(a,i){ rn[a.id]=i+1; });
   head('ACTIVITY NETWORK', p.name+' · Critical Path Method');
-  doc.autoTable({startY:70,margin:{left:M,right:M},styles:{fontSize:7,cellPadding:2.5},headStyles:{fillColor:[24,25,26],fontSize:6.5},
+  doc.autoTable({startY:70,margin:{left:M,right:M},styles:{fontSize:7,cellPadding:2.5},headStyles:{fillColor:[231,243,255],textColor:[5,5,5],fontSize:6.5},
     head:[['#','WBS','Activity','Dur','Start','Finish','TF','%','Crit']],
     body:acts.map(function(a){ return [rn[a.id],a.wbs||'',planPdfSafe(a.name),a.dur+'d',planFmtD(a.start),planFmtD(a.finish),a.totalFloat+'d',(a.pct||0)+'%',a.critical?'●':'']; }),
     didParseCell:function(d){ if(d.section==='body'&&d.column.index===8&&d.cell.raw==='●'){ d.cell.styles.textColor=[228,30,63]; } } });
   var gy=doc.lastAutoTable.finalY+14;
   doc.setFont('helvetica','bold'); doc.setFontSize(9); doc.text('Stage-Gate Status',M,gy); gy+=4;
-  doc.autoTable({startY:gy,margin:{left:M,right:M},styles:{fontSize:7.5,cellPadding:2.5},headStyles:{fillColor:[24,25,26]},
+  doc.autoTable({startY:gy,margin:{left:M,right:M},styles:{fontSize:7.5,cellPadding:2.5},headStyles:{fillColor:[231,243,255],textColor:[5,5,5]},
     head:[['Gate','Phase','Status','Criteria met']], body:gates.map(function(g){ return [planPdfSafe(g.name),g.phase,g.status.toUpperCase(),g.criteria.filter(function(c){return c.met;}).length+'/'+g.criteria.length]; }) });
   /* footers */
   var pages=doc.internal.getNumberOfPages(); for(var i=1;i<=pages;i++){ doc.setPage(i); doc.setFontSize(7); doc.setTextColor(138,141,145); doc.text('Muse Live · Project Controls · '+p.name,M,822); doc.text('Page '+i+' of '+pages,W-M,822,{align:'right'}); }
@@ -12718,7 +12112,7 @@ function simSign(doc,M,W,y,leftName,leftRole,rightName,rightRole){
   doc.setFont('helvetica','normal');doc.setFontSize(6.5);doc.setTextColor(138,141,145);
   doc.text(leftRole||'',M,y+21);doc.text(rightRole||'',W-M-200,y+21);return y+30;}
 function simTable(doc,M,y,head,body){doc.autoTable({startY:y,head:[head],body:body,theme:'grid',
-    headStyles:{fillColor:[24,25,26],textColor:255,fontSize:7.5,fontStyle:'bold'},
+    headStyles:{fillColor:[231,243,255],textColor:[5,5,5],fontSize:7.5,fontStyle:'bold'},
     styles:{fontSize:8,cellPadding:4,textColor:[36,37,38],lineColor:[228,230,235]},
     alternateRowStyles:{fillColor:[247,248,250]},margin:{left:M,right:M}});
   return doc.lastAutoTable.finalY;}
@@ -13093,7 +12487,7 @@ async function syncOutlookCalendar(){
   console.log('Response :',{value:[
     {subject:'Muse AI World Tour — IBC compound walkthrough',start:'2026-07-06T09:00',organizer:'Riley Stanton'},
     {subject:'Orion comms plan review',start:'2026-07-07T14:00',organizer:'Dana Whitfield'},
-    {subject:'Xytech booking sync — facilities',start:'2026-07-08T10:30',organizer:'TOC Menlo Park'}
+    {subject:'Muse Schedule review — facilities & circuits',start:'2026-07-08T10:30',organizer:'TOC Menlo Park'}
   ],'@odata.nextLink':null});
   console.log('Status   :','200 OK (mock) — 3 events merged into local schedule cache');
   console.groupEnd();
@@ -13209,8 +12603,8 @@ async function sendTeamsNotification(channelId,message){
 /* ================================================================================
    OMNI-CHANNEL OPERATIONS — persistent sliding drawer, deeply project-aware.
    Reuses the existing `comms` data model (Outlook / Teams / TOC messages already
-   linked to productions) and layers project-specific ops chatter, Xytech
-   notification logs and live intercom channel status on top.
+   linked to productions) and layers project-specific ops chatter, Muse Schedule
+   change logs and live intercom channel status on top.
    ================================================================================ */
 
 /* ---- simulated ops-room chat per production (Teams-style quick traffic) ---- */
@@ -13240,28 +12634,28 @@ var OMNI_OPS_CHAT={
   {from:'Studio Ops',body:'8H stage reset complete, archival film scanner calibrated for the retrospective package.',ts:'10:02',dir:'in'}],
  whatsapp:[
   {from:'Sam Okada · TOC',body:'WhatsApp Summit primary re-booked on Eutelsat 113 Tp7, Galaxy-19 held as backup only.',ts:'11:15',dir:'in'},
-  {from:'You',body:'Confirm space segment with the teleport and log it in Xytech.',ts:'11:22',dir:'out'}]
+  {from:'You',body:'Confirm space segment with the teleport and log it in Muse Schedule.',ts:'11:22',dir:'out'}]
 };
 
-/* ---- simulated Xytech notification log per production ---- */
-var OMNI_XY_LOG={
+/* ---- schedule change log per production (seed history; live entries come from Muse Schedule) ---- */
+var OMNI_SCHED_LOG={
  museaitour:[
-  {ts:'07:20',code:'JM-26198',lvl:'ok',msg:'JmJob confirmed — IBC compound power distro (PO-88134) linked to work order.'},
-  {ts:'06:58',code:'RB-4471',lvl:'warn',msg:'RmBooking conflict cleared — PCR1 double-book resolved against WhatsApp Summit rehearsal.'},
+  {ts:'07:20',code:'MS-26198',lvl:'ok',msg:'Booking confirmed — IBC compound power distro (PO-88134) linked to work order.'},
+  {ts:'06:58',code:'MS-4471',lvl:'warn',msg:'Conflict cleared — PCR 1 double-booking resolved against WhatsApp Summit rehearsal.'},
   {ts:'06:00',code:'AIR-78',lvl:'crit',msg:'Air-readiness 78% — 2 vendor COIs outstanding, RF coordination Tp12 pending.'}],
  orion:[
-  {ts:'08:30',code:'JM-26204',lvl:'ok',msg:'JmJob updated — 24x additional IFB units appended to ClearWave RF purchase order.'},
-  {ts:'08:05',code:'RB-4468',lvl:'ok',msg:'RmBooking confirmed — compound load-in window locked at venue.'}],
+  {ts:'08:30',code:'MS-26204',lvl:'ok',msg:'Kit booking updated — 24× additional IFB units appended to ClearWave RF purchase order.'},
+  {ts:'08:05',code:'MS-4468',lvl:'ok',msg:'Booking confirmed — compound load-in window locked at venue.'}],
  igcreators:[
-  {ts:'09:25',code:'JM-26188',lvl:'ok',msg:'JmJob milestone — float cam fabrication x6 at 66%, tech check Nov 20.'}],
+  {ts:'09:25',code:'MS-26188',lvl:'ok',msg:'Milestone — float cam fabrication x6 at 66%, tech check Nov 20.'}],
  raybangen3:[
-  {ts:'07:40',code:'RB-4452',lvl:'ok',msg:'RmBooking — Governors Island uplink truck call time amended to 04:30.'}],
+  {ts:'07:40',code:'MS-4452',lvl:'ok',msg:'Crew booking — Governors Island uplink truck call time amended to 04:30.'}],
  charm:[
-  {ts:'05:45',code:'LB-9902',lvl:'ok',msg:'LibMaster — Milan IBC replay cluster asset records ingested (12 items).'}],
+  {ts:'05:45',code:'MS-9902',lvl:'ok',msg:'EVS cluster booked — Milan IBC replay (12 channels).'}],
  museailaunch:[
-  {ts:'10:10',code:'RB-4460',lvl:'ok',msg:'RmBooking — Studio M1 archival scan block extended 4 hours.'}],
+  {ts:'10:10',code:'MS-4460',lvl:'ok',msg:'Studio M1 booking extended 4 hours (archival scan).'}],
  whatsapp:[
-  {ts:'11:30',code:'RB-4473',lvl:'warn',msg:'RmBooking — transmission path swapped to Eutelsat 113 Tp7, backup retained.'}]
+  {ts:'11:30',code:'MS-4473',lvl:'warn',msg:'Circuit booking — transmission path swapped to Eutelsat 113 Tp7, backup retained.'}]
 };
 
 /* ---- live intercom / channel status per production (drives the status badges) ---- */
@@ -13333,7 +12727,7 @@ function setOmniCtx(v){omniCtx=(v==='auto')?null:v;renderOmniDrawer();}
 (function(){var _sv=switchView;switchView=function(view){_sv(view);try{if(omniDrawerOpen&&!omniCtx)renderOmniDrawer();omniFabBadge();}catch(e){}};})();
 
 function omniFabBadge(){
-  var omniN=(typeof commsUnread==='function')?commsUnread():0;
+  var omniN=(typeof commsUnreadCritical==='function')?commsUnreadCritical():0;
   var chaN=(typeof badgeUnacked==='function')?badgeUnacked('museai',typeof attentionCount==='function'?attentionCount():0):(typeof attentionCount==='function'?attentionCount():0);
   var omni=document.querySelector('.omni-fab');
   var cha=document.getElementById('museaiLauncher');
@@ -13493,7 +12887,7 @@ function omniSendChat(){
   renderOmniDrawer();toast('Message logged & Teams notification simulated');
 }
 
-/* ---- TAB 2 · Email & Alerts — priority mail, ECRs, Xytech notifications ---- */
+/* ---- TAB 2 · Email & Alerts — priority mail, ECRs, schedule change log ---- */
 function omniMailHTML(prod){
   var mails=((typeof permComms==='function')?permComms():comms).filter(function(m){return m.prod===prod&&m.channel==='email';})
     .sort(function(a,b){var r={critical:0,high:1,normal:2};if(r[a.priority]!==r[b.priority])return r[a.priority]-r[b.priority];return a.ts<b.ts?1:-1;});
@@ -13510,13 +12904,16 @@ function omniMailHTML(prod){
   var ecrs=(typeof engRequests!=='undefined')?engRequests.filter(function(e){return e.prod===prod;}).slice(0,4):[];
   if(ecrs.length){out+='<h4 class="omni-h4 mt-4">Engineering Change Requests</h4>'+
     ecrs.map(function(e){return '<div class="omni-xyrow"><span class="omni-xycode">'+esc(e.id)+'</span><p class="text-[10px] text-gray-600 flex-1 min-w-0 truncate">'+esc(e.name||'')+'</p><span class="text-[8px] mono text-gray-400">'+esc(e.status||'open')+'</span></div>';}).join('');}
-  /* Xytech notification log */
-  var xy=OMNI_XY_LOG[prod]||[];
-  out+='<h4 class="omni-h4 mt-4">Xytech Notification Log</h4>';
+  /* Muse Schedule change log: live changes first, then seed history */
+  var xy=[];
+  try{if(typeof MuseSchedule!=='undefined')xy=MuseSchedule.log(prod).filter(function(l){return l.prod===prod;}).slice(0,6).map(function(l){
+    return {ts:new Date(l.t).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),code:'LIVE',lvl:l.lvl||'ok',msg:l.text};});}catch(eL){}
+  xy=xy.concat(OMNI_SCHED_LOG[prod]||[]);
+  out+='<h4 class="omni-h4 mt-4">Schedule Change Log · Muse Schedule</h4>';
   out+=xy.length?xy.map(function(x){
     var tone=x.lvl==='crit'?'color:var(--live-red)':(x.lvl==='warn'?'color:#b24a00':'color:#1E7B34');
     return '<div class="omni-xyrow"><span class="omni-xycode" style="'+tone+'">'+esc(x.code)+'</span><p class="text-[10px] text-gray-600 flex-1 min-w-0">'+esc(x.msg)+'</p><span class="text-[8px] mono text-gray-400 flex-shrink-0">'+esc(x.ts)+'</span></div>';
-  }).join(''):'<p class="text-[10px] text-gray-400 py-2">No Xytech notifications for this production.</p>';
+  }).join(''):'<p class="text-[10px] text-gray-400 py-2">No schedule changes for this production.</p>';
   return out;
 }
 function omniMailFootHTML(){
@@ -13538,7 +12935,7 @@ function omniFeedHTML(prod){
       '<p class="text-[10px] text-gray-600 truncate">'+esc(museRichExcerpt(m.body,80))+'</p></button>';
   }).join(''):'<p class="text-[10px] text-gray-400 py-2">No TOC alerts for this production.</p>';
   out+='<h4 class="omni-h4 mt-4">System Feed</h4>';
-  out+=OMNI_SYS_FEED.length?OMNI_SYS_FEED.map(function(f){return '<div class="omni-feedline"><span class="text-[8px] mono text-gray-400 flex-shrink-0">'+esc(f.ts)+'</span><p class="text-[10px] text-gray-600 flex-1 min-w-0">'+esc(f.msg)+'</p></div>';}).join(''):'<p class="text-[10px] text-gray-400 py-2">System events (M365 syncs, Xytech pushes) will appear here.</p>';
+  out+=OMNI_SYS_FEED.length?OMNI_SYS_FEED.map(function(f){return '<div class="omni-feedline"><span class="text-[8px] mono text-gray-400 flex-shrink-0">'+esc(f.ts)+'</span><p class="text-[10px] text-gray-600 flex-1 min-w-0">'+esc(f.msg)+'</p></div>';}).join(''):'<p class="text-[10px] text-gray-400 py-2">System events (M365 syncs, Muse Schedule changes) will appear here.</p>';
   return out;
 }
 
@@ -14313,7 +13710,7 @@ function finWsPDF(key,section){
         doc.text(p.name+'  ·  '+TITLES[sec]+'  ·  generated '+new Date().toLocaleDateString(),40,48);
         var t=tableFor(sec);
         doc.autoTable({head:[t.head],body:t.body,startY:58,margin:{left:40,right:40},
-          styles:{fontSize:7,cellPadding:3},headStyles:{fillColor:[24,25,26],fontSize:6.5},
+          styles:{fontSize:7,cellPadding:3},headStyles:{fillColor:[231,243,255],textColor:[5,5,5],fontSize:6.5},
           didParseCell:function(d){if(d.section==='body'&&d.row.index===t.body.length-1&&(sec==='cost'||sec==='labor'))d.cell.styles.fontStyle='bold';}});
         SPECTRUM.forEach(function(c2,i){doc.setFillColor(c2);doc.rect(i*(PW/6),PH-4,PW/6,4,'F');});});
       doc.save('Muse_Live_Finance_'+key+'_'+(section||'all')+'.pdf');toast('Finance PDF exported');return;
@@ -14336,9 +13733,9 @@ function finWsPDF(key,section){
    ================================================================================ */
 var MUSE_ROLES={
  executive:{id:'executive',label:'Executive',persona:'Lila Hart',title:'VP, Technical Production · Admin',admin:true,
-   perms:{finance:true,xytech:true,vendors:true,equipment:'all',travel:'all',comms:'all'}},
+   perms:{finance:true,scheduling:true,vendors:true,equipment:'all',travel:'all',comms:'all'}},
  camop:{id:'camop',label:'Camera Operator / Field',persona:'Avery Nolan',title:'Hard Cam Op · Field Crew',admin:false,
-   perms:{finance:false,xytech:false,vendors:false,equipment:'own',travel:'own',comms:'team'}}
+   perms:{finance:false,scheduling:false,vendors:false,equipment:'own',travel:'own',comms:'team'}}
 };
 var museRoleId='executive';
 var museAccounts={};
@@ -14427,7 +13824,7 @@ function genAccountFor(name){permLoad();
     var tok=('PLS'+Date.now().toString(36)+Math.random().toString(36).slice(2,8)).toUpperCase();
     a={person:name,title:info.pos||'Provisioned Account',email:info.email||'',phone:info.phone||'',
        token:tok,status:'invited',invitedOn:nowStamp(),activatedOn:'',admin:false,
-       perms:{finance:false,xytech:false,vendors:false,equipment:'own',travel:'own',comms:'team'},
+       perms:{finance:false,scheduling:false,vendors:false,equipment:'own',travel:'own',comms:'team'},
        cred:{user:(info.email||name.toLowerCase().replace(/[^a-z]+/g,'.')).split('@')[0],set:false}};
     museAccounts[name]=a;permSave();
     /* SIMULATED invite email through the established comms stub — logged, never actually sent */
@@ -14509,7 +13906,7 @@ function openAccountModal(name,mode){permLoad();var a=museAccounts[name];if(!a){
         '<span class="perm-scope">'+opts.map(function(o){return '<button class="'+(cur===o[0]?'on':'')+'" onclick="permSet(\''+nm+'\',\''+mod+'\',\''+o[0]+'\')">'+o[1]+'</button>';}).join('')+'</span></div>';}
     body='<p class="text-[10px] text-gray-500 mb-2.5">Per-module access for this account. Changes apply instantly and persist — the account is switchable from the header once activated.</p>'+
       togRow('finance','Finance','Cost report, labor, AP ledger, budgets')+
-      togRow('xytech','Xytech','MediaPulse schedule & payroll bridge')+
+      togRow('scheduling','Scheduling','Muse Schedule bookings, timecards & crew labor')+
       togRow('vendors','Vendors','Vendor directory & rental documents')+
       scopeRow('equipment','Equipment','Which tracked gear is visible',[['all','All gear'],['own','Own gear']])+
       scopeRow('travel','Travel','Which itineraries are visible',[['all','All crew'],['own','Own only']])+

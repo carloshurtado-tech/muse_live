@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="js/muse-observe.js?v=20261018-v4"></script>
 <meta charset="UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
@@ -10,12 +11,19 @@
 <meta name="theme-color" content="#FFFFFF">
 <meta name="color-scheme" content="light dark">
 <title>Muse Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap">
+<link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/brand/meta-mark-180.png" type="image/png" sizes="180x180">
+<link rel="apple-touch-icon" href="assets/brand/meta-mark-180.png">
+<link rel="manifest" href="manifest.webmanifest">
 <script>
 /* Data version: clear browser-saved show data from earlier builds so every visitor starts on the
    current Meta catalogue (theme preference is kept). Bump DATA_V when the seed catalogue changes. */
 (function(){
   try{
-    var ls=window.localStorage,DATA_V='meta-2026-10';
+    var ls=window.localStorage,DATA_V='rolling-2026-10';
     if(!ls||ls.getItem('muselive_data_v')===DATA_V)return;
     for(var i=ls.length-1;i>=0;i--){var k=ls.key(i);if(k&&k.indexOf('muselive')===0)ls.removeItem(k);}
     try{if(window.indexedDB)indexedDB.deleteDatabase('MuseRecords');}catch(e2){}
@@ -23,19 +31,20 @@
   }catch(e){}
 })();
 </script>
+<script src="js/muse-sync.js?v=20261018-v4"></script>
 <script>
 /* Gate before first paint unless this browser already holds a session. */
-(function(){try{var ok=document.cookie.indexOf('muse_authed=1')>=0;try{ok=ok||!!sessionStorage.getItem('muse_local_auth');}catch(e){}
+(function(){try{var ok=document.cookie.indexOf('muse_authed=1')>=0;
 if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
 </script>
 <script>
-/* First paint: Light unless the user stored dark or Follow OS. */
+/* First paint: dark unless the user stored light or Follow OS. */
 (function(){
   try{
     document.documentElement.classList.add('muse-theme-boot');
     var pref=null;
     try{pref=localStorage.getItem('museTheme');}catch(e0){}
-    if(pref!=='light'&&pref!=='dark'&&pref!=='system')pref='light';
+    if(pref!=='light'&&pref!=='dark'&&pref!=='system')pref='dark'; /* first visit: dark (Meta UI Toolkit palette) */
     var dark;
     if(pref==='system'){
       dark=!!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -103,33 +112,38 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
   }catch(e){}
 })();
 </script>
-<link rel="preload" href="css/muse.css?v=20261015-meta6" as="style">
+<link rel="preload" href="css/muse.css?v=20261018-v4" as="style">
 <link rel="preload" href="assets/brand/meta-mark-animated.svg" as="image">
-<link rel="stylesheet" href="css/muse.css?v=20261015-meta6" id="museDarkThemeLink">
-<script src="js/muse-sample-gear.js?v=20261015-meta6" defer></script>
-<script src="js/muse-planet-trucks.js?v=20261015-meta6" defer></script>
-<script src="js/muse-platform.js?v=20261015-meta6" defer></script>
-<script src="js/muse-lazy.js?v=20261015-meta6" defer></script>
-<script src="js/muse-kb-seed.js?v=20261015-meta6" defer></script>
-<script src="js/muse-records.js?v=20261015-meta6" defer></script>
-<script src="js/muse-wiki-schema.js?v=20261015-meta6" defer></script>
-<script src="js/muse-kb.js?v=20261015-meta6" defer></script>
-<script src="js/muse-thingsboard.js?v=20261015-meta6" defer></script>
-<script src="js/muse-broadcast-ops.js?v=20261015-meta6" defer></script>
-<script src="js/muse-recovery.js?v=20261015-meta6" defer></script>
-<script src="js/muse-app-a.min.js?v=20261015-meta6" defer></script>
-<script src="js/muse-app-b.min.js?v=20261015-meta6" defer></script>
-<script src="js/muse-export-gear.js?v=20261015-meta6" defer></script>
-<script src="js/muse-ops-os.js?v=20261015-meta6" defer></script>
-<script src="js/muse-live-core.js?v=20261015-meta6" defer></script>
-<script src="js/muse-live-ops.js?v=20261015-meta6" defer></script>
-<script src="js/muse-work-core.js?v=20261015-meta6" defer></script>
-<script src="js/muse-work-ui.js?v=20261015-meta6" defer></script>
-<script src="js/muse-mcp.js?v=20261015-meta6" defer></script>
-<script src="js/muse-generic-kit.js?v=20261015-meta6" defer></script>
-<script src="js/muse-ai.js?v=20261015-meta6" defer></script>
-<script src="js/muse-survey-media.js?v=20261015-meta6" defer></script>
-<script src="js/muse-a11y.js?v=20261015-meta6" defer></script>
+<link rel="stylesheet" href="css/muse.css?v=20261018-v4" id="museDarkThemeLink">
+<script src="js/muse-demo.js?v=20261018-v4" defer></script>
+<script src="js/muse-sample-gear.js?v=20261018-v4" defer></script>
+<script src="js/muse-planet-trucks.js?v=20261018-v4" defer></script>
+<script src="js/muse-platform.js?v=20261018-v4" defer></script>
+<script src="js/muse-lazy.js?v=20261018-v4" defer></script>
+<script src="js/muse-kb-seed.js?v=20261018-v4" defer></script>
+<script src="js/muse-records.js?v=20261018-v4" defer></script>
+<script src="js/muse-wiki-schema.js?v=20261018-v4" defer></script>
+<script src="js/muse-kb.js?v=20261018-v4" defer></script>
+<script src="js/muse-recovery.js?v=20261018-v4" defer></script>
+<script src="js/muse-app-a.min.js?v=20261018-v4" defer></script>
+<script src="js/muse-app-b.min.js?v=20261018-v4" defer></script>
+<script src="js/muse-schedule.js?v=20261018-v4" defer></script>
+<script src="js/muse-export-gear.js?v=20261018-v4" defer></script>
+<script src="js/muse-ops-os.js?v=20261018-v4" defer></script>
+<script src="js/muse-live-core.js?v=20261018-v4" defer></script>
+<script src="js/muse-live-ops.js?v=20261018-v4" defer></script>
+<script src="js/muse-work-core.js?v=20261018-v4" defer></script>
+<script src="js/muse-work-ui.js?v=20261018-v4" defer></script>
+<script src="js/muse-mcp.js?v=20261018-v4" defer></script>
+<script src="js/muse-generic-kit.js?v=20261018-v4" defer></script>
+<script src="js/muse-incidents.js?v=20261018-v4" defer></script>
+<script src="js/muse-streaming.js?v=20261018-v4" defer></script>
+<script src="js/muse-agent.js?v=20261018-v4" defer></script>
+<script src="js/muse-voice.js?v=20261018-v4" defer></script>
+<script src="js/muse-proactive.js?v=20261018-v4" defer></script>
+<script src="js/muse-survey-media.js?v=20261018-v4" defer></script>
+<script src="js/muse-tour.js?v=20261018-v4" defer></script>
+<script src="js/muse-a11y.js?v=20261018-v4" defer></script>
 <style id="museDashLayout">
 /* Classic dashboard + telemetry layout — desktop columns by default */
 .dash-row-main{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(0,2fr)!important;gap:1.5rem!important;align-items:start}
@@ -144,15 +158,7 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
   .dash-trk-map{min-height:240px!important;height:42vh!important;max-height:420px!important}
 }
 </style>
-<!-- Muse assistant flags (in-browser rules; no remote model). -->
 <script>window.MUSE_LIVE_CONFIG={OPEN_METEO_BASE:"https://api.open-meteo.com/v1/forecast",USE_VENDOR_CDN:false,_source:"none"};</script>
-<script>
-window.MUSEAI_EDGE_ENABLED=false;
-window.MUSEAI_LOCAL_ENABLED=false;
-window.MUSEAI_CLOUD_ENABLED=false;
-window.MUSEAI_AI_ENABLED=false;
-window.MUSEAI_UNDER_CONSTRUCTION=false;
-</script>
 <script src="config/config.example.js"></script>
 <script src="config/config.local.js"></script>
 <style>
@@ -225,7 +231,11 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
     </div>
     <form class="gate-card" id="museGateForm" autocomplete="on" novalidate>
       <h1 id="museGateTitle">Log in to Muse Live</h1>
-      <p class="gate-sub">Enter the access password to continue.</p>
+      <p class="gate-sub" id="museGateSub">Enter the access password to continue.</p>
+      <div class="gate-field" id="museGateEmailRow" hidden>
+        <label for="museGateEmail" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email</label>
+        <input id="museGateEmail" name="email" type="email" placeholder="Work email" autocomplete="username" aria-describedby="museGateErr">
+      </div>
       <div class="gate-field">
         <label for="museGatePassword" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Password</label>
         <input id="museGatePassword" name="password" type="password" placeholder="Password" autocomplete="current-password" aria-describedby="museGateErr" required>
@@ -235,17 +245,18 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
       </div>
       <p class="gate-msg" id="museGateErr" aria-live="polite"></p>
       <button type="submit" class="gate-btn">Log in</button>
+      <a class="gate-sso" id="museGateSso" href="/api/auth/oidc/start" hidden>Continue with SSO</a>
       <hr class="gate-rule">
       <div class="gate-from"><span>from</span><img src="assets/brand/meta-logo.svg" alt="Meta" width="70" height="14"></div>
+      <p class="gate-disclaimer">Concept demo — not an official Meta product. Meta, Ray-Ban and Muse are trademarks of their owners.</p>
     </form>
   </div>
 </div>
 <script>
-/* Access gate. Production: Pages middleware verifies the password and sets an HttpOnly session
-   (app scripts are withheld until then). Static/local hosting: verified in-browser against the hash. */
+/* Access gate. The Pages middleware (functions/_middleware.js) is the only authority: it checks the
+   password and sets an HttpOnly session, and withholds app scripts until then. Nothing secret lives
+   in this page. Local development runs the same middleware (see README), never a client-side check. */
 (function(){
-  var PW_HASH='b774222f71346737d53bc90fd0572e8b2f86d34b02b16b1c9704cc18a3f85db0'; /* sha256('muse-live:'+password) */
-  var LOCAL_KEY='muse_local_auth';
   var root=document.documentElement;
   function setGate(on){
     root.classList.toggle('muse-gated',!!on);
@@ -254,22 +265,18 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
     if(on){var art=g&&g.querySelector('img[data-src]');if(art&&!art.getAttribute('src'))art.setAttribute('src',art.getAttribute('data-src'));}
     if(on){setTimeout(function(){var i=document.getElementById('museGatePassword');if(i)try{i.focus();}catch(e){}},60);}
   }
-  function sha256hex(s){
-    if(!(window.crypto&&crypto.subtle))return Promise.reject(new Error('no-crypto'));
-    return crypto.subtle.digest('SHA-256',new TextEncoder().encode(s)).then(function(b){
-      return Array.prototype.map.call(new Uint8Array(b),function(x){return('0'+x.toString(16)).slice(-2);}).join('');});
-  }
-  function localAuthed(){try{return sessionStorage.getItem(LOCAL_KEY)===PW_HASH;}catch(e){return false;}}
-  var mode='unknown'; /* 'server' | 'local' */
   function check(){
     fetch('/api/ping',{credentials:'include',cache:'no-store'})
       .then(function(r){if(!r.ok)throw new Error('no-api');return r.json();})
       .then(function(j){
         if(!j||typeof j.authed!=='boolean')throw new Error('no-api');
-        mode='server';
         setGate(!j.authed);
       })
-      .catch(function(){mode='local';setGate(!localAuthed());});
+      .catch(function(){
+        setGate(true);
+        var err=document.getElementById('museGateErr');
+        if(err)err.textContent='Could not reach the Muse Live sign-in service. Check your connection and reload.';
+      });
   }
   function bind(){
     var form=document.getElementById('museGateForm');if(!form||form._bound)return;form._bound=true;
@@ -285,33 +292,35 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
       else if(err.classList.contains('is-hint'))say('');});
     form.addEventListener('submit',function(ev){
       ev.preventDefault();if(form._busy)return;
-      var pw=input.value||'';
-      if(!pw){say('Enter the access password.');input.focus();return;}
+      var pw=input.value||'',emailEl=document.getElementById('museGateEmail'),email=(emailEl&&!document.getElementById('museGateEmailRow').hidden)?emailEl.value.trim():'';
+      if(emailEl&&!document.getElementById('museGateEmailRow').hidden&&!email){say('Enter your work email.');emailEl.focus();return;}
+      if(!pw){say(email?'Enter your password.':'Enter the access password.');input.focus();return;}
       busy(true);say('');
       function fail(msg){busy(false);say(msg);input.select();}
-      function localLogin(){
-        sha256hex('muse-live:'+pw).then(function(h){
-          if(h!==PW_HASH)return fail('The password you entered is incorrect.');
-          try{sessionStorage.setItem(LOCAL_KEY,h);}catch(e){}
-          input.value='';busy(false);setGate(false);
-        }).catch(function(){fail('This browser cannot verify the password here. Use HTTPS or localhost.');});
-      }
-      if(mode==='local')return localLogin();
-      fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify({password:pw})})
+      var body=email?{email:email,password:pw}:{password:pw};
+      fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'include',body:JSON.stringify(body)})
         .then(function(r){
-          if(r.status===404||r.status===405||r.status===501){mode='local';return localLogin();}
+          if(r.status===404||r.status===405||r.status===501)return fail('The sign-in service is not running on this host.');
           return r.json().catch(function(){return{};}).then(function(j){
-            if(r.ok&&j.ok){input.value='';location.reload();return;}
+            if(r.ok&&j.ok){input.value='';var nx=gateNext();if(nx)location.href=nx;else location.reload();return;}
+            if(j.needEmail){showAccounts();}
             fail(j.error||'The password you entered is incorrect.');
           });
         })
         .catch(function(){fail('Could not reach the login service. Check your connection.');});
     });
   }
-  window.museLogout=function(){
-    try{sessionStorage.removeItem(LOCAL_KEY);}catch(e){}
-    if(mode==='server')location.href='/logout';else setGate(true);
-  };
+  /* Accounts / SSO: the server says which sign-in methods to offer. ?next= returns to the page that sent you here. */
+  function gateNext(){try{var n=new URLSearchParams(location.search).get('next');return n&&/^\/(?!\/)/.test(n)?n:'';}catch(e){return '';}}
+  function showAccounts(){var row=document.getElementById('museGateEmailRow'),sub=document.getElementById('museGateSub');
+    if(row&&row.hidden){row.hidden=false;if(sub)sub.textContent='Sign in with your work email and password.';}}
+  fetch('/api/auth/config',{credentials:'include',cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(c){
+    if(!c)return;
+    if(c.accounts&&!c.sharedPassword)showAccounts();
+    var a=document.getElementById('museGateSso');
+    if(a&&c.sso){a.hidden=false;a.textContent=c.ssoLabel||'Continue with SSO';var n=gateNext();a.href='/api/auth/oidc/start'+(n?'?next='+encodeURIComponent(n):'');}
+  }).catch(function(){});
+  window.museLogout=function(){location.href='/logout';};
   function start(){bind();check();}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();
@@ -394,11 +403,14 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
   <!-- WORLD CLOCK TILE -->
   <section class="bg-white rounded-2xl p-3 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">
     <div class="dash-clock-head flex items-center justify-between border-b border-gray-100 pb-2 mb-2 gap-2 flex-wrap">
-      <div class="flex items-center space-x-2 min-w-0"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 truncate">Network Clock · US Timezones &amp; Mexico</h3></div>
+      <div class="flex items-center space-x-2 min-w-0"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span><h3 class="text-[10px] font-bold uppercase tracking-wider text-gray-600 truncate">Meta offices · local time</h3></div>
       <span id="museClockBadge" title="Atomic network-time sync" class="text-[9px] mono font-bold bg-gray-100 text-gray-500 border border-gray-200 px-2 py-0.5 rounded inline-flex items-center justify-center flex-shrink-0" style="min-width:7.75rem;height:1.25rem">NTP · syncing…</span>
     </div>
     <div id="worldClocks" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"></div>
   </section>
+
+  <!-- LIVE STREAMS (executive + engineering view of every program feed on air) -->
+  <section id="dashStreams" class="ms-dash" aria-label="Live streams" hidden></section>
 
   <!-- ROW 1 -->
 
@@ -412,7 +424,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
       <div id="routingBoard" class="space-y-3">
         <div class="text-center py-6 text-[10px] text-gray-400">Loading room schedule…</div>
       </div>
-      <div class="text-[9px] text-gray-500 mono mt-3 pt-2 border-t border-gray-100 flex justify-between"><span>Routing Matrix · Xytech RmBooking</span><button onclick="switchView('schedule');setSchedTab('facility')" class="text-blue-700 font-bold hover:underline">Facilities Gantt →</button></div>
+      <div class="text-[9px] text-gray-500 mono mt-3 pt-2 border-t border-gray-100 flex justify-between"><span>Routing matrix · Muse Schedule</span><button onclick="switchView('schedule');setSchedTab('muse')" class="text-blue-700 font-bold hover:underline">Muse Schedule →</button></div>
     </div>
 
     <!-- Portfolio Infographic -->
@@ -564,8 +576,10 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 <!-- SCHEDULE -->
 <!-- v31 PHASE 4: PERSONNEL PORTAL (traveler-facing itinerary dashboard) -->
 <div id="view-portal" class="view-pane space-y-6"><div id="portalHost"></div></div>
+<div id="view-streams" class="view-pane space-y-6"><div id="streamsHost"></div></div>
+<div id="view-incidents" class="view-pane space-y-6"><div id="incidentsHost"></div></div>
 <div id="view-schedule" class="view-pane space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80"><div><h1 class="text-2xl font-semibold tracking-tight text-gray-900 inline-flex items-center gap-2.5">Master Production Schedule <span id="schedConflictBubble"></span></h1><p class="text-sm text-gray-600 mt-0.5">Broadcast air grid, facility &amp; control-room bookings, and Xytech scheduling bridge.</p></div><div class="flex items-center gap-3"><button onclick="downloadScheduleBook(order[0])" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Schedule Book PDF</button><button type="button" onclick="try{museSyncCalendar(order[0]);}catch(e){if(typeof toast==='function')toast(String(e));}" class="flex items-center gap-1.5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-100" title="Download schedule as .ics">Export .ics</button></div></div>
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80"><div><h1 class="text-2xl font-semibold tracking-tight text-gray-900 inline-flex items-center gap-2.5">Master Production Schedule <span id="schedConflictBubble"></span></h1><p class="text-sm text-gray-600 mt-0.5">Muse Schedule for rooms, circuits, kit and crew, plus the broadcast air grid and facility gantt.</p></div><div class="flex items-center gap-3"><button onclick="downloadScheduleBook(order[0])" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Schedule Book PDF</button><button type="button" onclick="try{museSyncCalendar(order[0]);}catch(e){if(typeof toast==='function')toast(String(e));}" class="flex items-center gap-1.5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-100" title="Download schedule as .ics">Export .ics</button></div></div>
   <div id="schedTabBar" class="flex justify-center"></div>
   <div class="bg-white rounded-2xl p-5 border border-gray-200/60 overflow-x-auto" style="box-shadow:0 4px 20px rgba(0,0,0,.03)" id="scheduleGantt"></div>
 </div>
@@ -1082,55 +1096,6 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
   </div>
 </div>
 
-<!-- MUSEAI SETTINGS -->
-<div id="museaiSettingsModal" class="hidden" style="position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(24,25,26,.45);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeMuseAiSettings()">
-  <div class="bg-white rounded-2xl shadow-2xl" style="width:460px;max-width:94vw">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-      <div><h3 class="text-sm font-bold text-gray-900 leading-none">Muse — Ops Assistant</h3><p class="text-[10px] text-gray-500 mt-1">Under construction.</p></div>
-      <button onclick="closeMuseAiSettings()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button>
-    </div>
-    <div class="p-6 space-y-3">
-      <div class="rounded-xl border border-emerald-200 bg-emerald-50/60 px-3 py-2.5">
-        <p class="text-[11px] font-bold text-emerald-900">Muse</p>
-        <p class="text-[10px] text-emerald-800/90 mt-0.5 leading-snug">Answers anything about Muse Live — every screen, show, and workflow — and any other question. Chat, listen, or ask for a picture.</p>
-      </div>
-      <div class="rounded-lg border border-amber-200 bg-amber-50/70 px-3 py-2">
-        <p class="text-[10px] font-bold text-amber-900">Optional on-device model (free)</p>
-        <p class="text-[10px] text-amber-900/90 mt-0.5 leading-snug">An optional on-device model can run in this browser. Skip it on weaker machines — Muse Live rules and live public data still work.</p>
-        <label class="flex items-center gap-2 text-[11px] text-amber-950 mt-2 cursor-pointer">
-          <input id="cs_local_force" type="checkbox" class="rounded border-amber-400">
-          <span>Enable free on-device model</span>
-        </label>
-        <select id="cs_local_model" class="hidden" aria-hidden="true"></select>
-        <div class="w-full h-1.5 bg-amber-100 rounded-full overflow-hidden mt-2" style="display:none">
-          <div id="cs_local_bar" class="h-full bg-emerald-500 rounded-full transition-all" style="width:0%"></div>
-        </div>
-      </div>
-      <div>
-        <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Muse model</label>
-        <select id="cs_model" class="w-full text-[11px] border border-gray-300 rounded-lg px-3 py-2 bg-white" style="outline:none">
-          <option value="museai">Muse</option>
-        </select>
-        <p class="text-[9px] text-gray-400 mt-1">Muse Live questions use the in-app rules and live public data.</p>
-      </div>
-      <div class="flex gap-2">
-        <button type="button" onclick="testMuseAi()" class="flex-1 text-[10px] font-bold text-white bg-emerald-700 rounded-lg py-2 hover:bg-emerald-800">Test Muse</button>
-        <button type="button" onclick="museaiLoadModelNow()" class="flex-1 text-[10px] font-bold text-emerald-900 border border-emerald-300 bg-emerald-50 rounded-lg py-2 hover:bg-emerald-100">Load free model</button>
-      </div>
-      <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Travelpayouts Marker (flight search)</label>
-        <input id="cs_tpmarker" class="w-full text-xs border border-gray-300 rounded-lg px-3 py-2 mono" placeholder="e.g. 123456">
-        <p class="text-[9px] text-gray-400 mt-1">Optional affiliate marker. Stored only in this browser.</p></div>
-      <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Travelpayouts Widget Snippet <span class="text-gray-400 font-normal">(optional)</span></label>
-        <textarea id="cs_tpsnippet" rows="3" class="w-full text-[10px] border border-gray-300 rounded-lg px-3 py-2 mono" style="resize:vertical" placeholder="Optional flight-search widget snippet"></textarea>
-        <p class="text-[9px] text-gray-400 mt-1">Without it, a default search form + Aviasales fallback is used.</p></div>
-      <input id="cs_key" type="hidden" value=""><input id="cs_model" type="hidden" value="">
-      <div id="cs_status" class="text-[10px] mono text-gray-500">● Muse</div>
-      <button onclick="saveMuseAiSettings()" class="w-full bg-gray-900 text-white text-xs font-bold rounded-lg py-2 hover:bg-gray-800">Save</button>
-    </div>
-  </div>
-</div>
-
-
 <!-- FINANCIAL DOCUMENT VIEWER -->
 <div id="finDocModal" class="hidden" style="position:fixed;inset:0;z-index:65;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(24,25,26,.5);backdrop-filter:blur(4px)" onclick="if(event.target===this)closeFinDoc()">
   <div class="bg-white rounded-2xl shadow-2xl flex flex-col" style="width:680px;max-width:96vw;max-height:92vh">
@@ -1498,35 +1463,47 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
   <div id="accountBox" class="bg-white rounded-2xl border border-gray-200 shadow-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-5"></div>
 </div>
 
-<button id="museaiLauncher" type="button" onclick="toggleMuseAi()" title="Ask Muse" aria-label="Open Muse assistant">
+<button id="museaiLauncher" type="button" onclick="toggleMuseAi()" title="Ask Muse" aria-label="Open Muse, the live broadcast agent">
   <span id="museaiFabBadge" class="omni-fab-badge"></span>
-  <img src="assets/brand/muse-ai-icon.svg" alt="" width="20" height="20" class="museai-icon" draggable="false">
+  <img src="assets/brand/muse-face.webp" alt="" width="20" height="20" class="museai-icon" draggable="false">
   <span class="museai-fab-label">Muse</span>
 </button>
 
 <!-- MUSE ASSISTANT DRAWER -->
-<div id="museaiDrawer" class="glass-drawer shadow-2xl flex flex-col border-l border-gray-200/40" role="dialog" aria-label="Muse assistant" style="position:fixed;top:0;right:0;height:100%;z-index:70;width:380px;max-width:92vw;transform:translateX(100%);transition:transform .25s ease">
+<div id="museaiDrawer" class="glass-drawer shadow-2xl flex flex-col border-l border-gray-200/40" role="dialog" aria-label="Muse, live broadcast and streaming agent" data-muse-state="idle" style="position:fixed;top:0;right:0;height:100%;z-index:70;width:420px;max-width:94vw;transform:translateX(100%);transition:transform .25s ease">
   <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
     <div class="flex items-center gap-2.5 min-w-0">
-      <img src="assets/brand/muse-ai-icon.svg" alt="" width="28" height="28" draggable="false">
+      <span class="ma-head-ava"><img src="assets/brand/muse-avatar.webp" alt="" width="40" height="40" draggable="false"></span>
       <div class="min-w-0">
         <p class="text-[15px] font-bold text-gray-900 leading-none">Muse</p>
-        <p class="text-[11px] text-gray-500 mt-1 leading-none flex items-center gap-1.5"><span id="museaiModeDot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></span>Muse AI · live show data</p>
+        <p class="ma-head-sub"><span id="museaiModeDot" class="ma-head-dot" aria-hidden="true"></span><span id="museaiStatusText">On comms · ready</span></p>
       </div>
       <span id="museaiModeLabel" class="hidden" hidden></span>
     </div>
-    <button type="button" onclick="toggleMuseAi()" aria-label="Close Muse" class="text-gray-500 hover:text-gray-800 hover:bg-gray-100 rounded-full text-lg leading-none w-9 h-9">✕</button>
+    <div class="flex items-center gap-1">
+      <button type="button" onclick="MuseAgent.reset()" aria-label="New conversation" title="New conversation" class="ma-icon-btn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      <button type="button" onclick="toggleMuseAi()" aria-label="Close Muse" class="ma-icon-btn text-lg leading-none">✕</button>
+    </div>
   </div>
   <div id="museaiMessages" class="flex-1 overflow-y-auto overflow-x-hidden p-4 min-w-0 flex flex-col gap-2" style="overflow-wrap:anywhere" aria-live="polite"></div>
   <div id="museaiChips" class="flex flex-wrap gap-1.5 px-4 pb-2"></div>
   <form class="p-3 border-t border-gray-200 flex items-center gap-2" onsubmit="event.preventDefault();museaiSend();">
     <label for="museaiInput" class="sr-only">Ask Muse</label>
-    <input id="museaiInput" type="text" autocomplete="off" placeholder="Ask Muse about any show, crew or gear…" class="flex-1 min-w-0 h-10 px-4 rounded-full border border-gray-200 bg-gray-50 text-[14px] text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white">
+    <input id="museaiInput" type="text" autocomplete="off" placeholder="Ask about weather, cameras, readiness, crew…" class="flex-1 min-w-0 h-10 px-4 rounded-full border border-gray-200 bg-gray-50 text-[14px] text-gray-900 focus:outline-none focus:border-blue-500 focus:bg-white">
     <button id="museaiMicBtn" type="button" hidden></button>
-    <button type="submit" aria-label="Send" class="w-10 h-10 rounded-full flex items-center justify-center text-white" style="background:#0866FF"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg></button>
+    <button id="museaiSendBtn" type="submit" aria-label="Send" class="ma-send"><svg class="ma-send-go" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12.6 2-12.6 2z"/></svg><svg class="ma-send-stop" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/></svg></button>
   </form>
 </div>
 
+<script>
+/* Signed-in account (per-user login / SSO): show the real person on the user chip. The shared demo login keeps the demo persona. */
+document.addEventListener('DOMContentLoaded',function(){
+  try{if(!window.MuseSync||!MuseSync.me)return;Promise.resolve(MuseSync.me()).then(function(r){
+    var u=r&&(r.user||r);if(!u||u.shared||!u.name)return;
+    var el=document.getElementById('userChipName');if(el)el.textContent=u.name;
+  }).catch(function(){});}catch(e){}
+});
+</script>
 </body>
 </html>
 

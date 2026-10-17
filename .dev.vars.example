@@ -1,0 +1,7 @@
+# Copy to .dev.vars (gitignored). Local secrets for tools/dev-server.mjs.
+# Meta Model API key (dev.meta.ai). Leave empty for Muse's offline rules mode.
+MODEL_API_KEY=
+# sha256("muse-live:" + local password)   e.g.  printf 'muse-live:%s' 'localtest' | shasum -a 256
+MUSE_PASSWORD_HASH=c92726301f796df6d1fea9aba7f42d28ecfe5b0fc0a1614e033ff996cf0b3722
+# Any long random string; signs session cookies.
+SESSION_SECRET=change-me-local-only

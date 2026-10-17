@@ -36,15 +36,7 @@
    Precedence: user-entered runtime key (localStorage) > config.local.js > config.example.js
    > inline keyless fallback. NO key value is ever hardcoded here. ---- */
 function museCfg(name){
-  try{
-    if(name==='MUSEAI_KEY'||name==='MUSEAI_KEY'){
-      var lk=localStorage.getItem('muselive_museai_key');
-      if(lk&&String(lk).trim())return String(lk).trim();
-    }
-  }catch(e){}
   var c=window.MUSE_LIVE_CONFIG||{};
-  if(name==='MUSEAI_KEY'&&!(c[name]&&String(c[name]).trim())&&c.MUSEAI_KEY)
-    return String(c.MUSEAI_KEY).trim();
   var v=c[name]!=null?c[name]:'';
   return (typeof v==='string')?v.trim():v;
 }
@@ -57,7 +49,6 @@ function cfgRefresh(){
   fetch('config/config.local.js',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('none');return r.text();})
   .then(function(t){
     try{(new Function(t))();}catch(e){return;}
-    try{if(typeof museaiAssistInit==='function')museaiAssistInit();}catch(e){}
     try{cfgBannerInit();}catch(e){}
   }).catch(function(){});}
 /* non-blocking banner — demo ship: no key nag */
@@ -94,7 +85,7 @@ function museAudit(evt,detail){
 /* ---- museRedact: THE serialization-layer redaction choke point. Every export
    (techbook, personnel JSON/CSV, xlsx) passes data through here. Strips secrets
    regardless of UI settings — independent of exportExempt. ---- */
-var REDACT_FIELDS=['portalAccessKey','apiKey','api_key','token','password','MUSEAI_KEY','cred','accessKey'];
+var REDACT_FIELDS=['portalAccessKey','apiKey','api_key','token','password','cred','accessKey'];
 function museRedact(obj){
   if(obj==null)return obj;
   if(Array.isArray(obj))return obj.map(museRedact);
@@ -331,7 +322,7 @@ function museBadgeCount(n){n=parseInt(n,10);if(!n||n<1)return 0;return n;}
 function museBadgeHTML(n){
   n=museBadgeCount(n);
   if(!n)return '';
-  return '<span class="muse-badge" aria-hidden="true">'+(n>99?'99+':n)+'</span>';
+  return '<span class="muse-badge" aria-hidden="true">'+(n>9?'9+':n)+'</span>';
 }
 function museMountBadge(parent,n,ariaBase){
   if(!parent)return;
@@ -349,8 +340,8 @@ function museMountBadge(parent,n,ariaBase){
     el.setAttribute('aria-hidden','true');
     parent.appendChild(el);
   }
-  el.textContent=n>99?'99+':String(n);
-  if(ariaBase)parent.setAttribute('aria-label',ariaBase+', '+n+' unread');
+  el.textContent=n>9?'9+':String(n);
+  if(ariaBase)parent.setAttribute('aria-label',ariaBase+', '+n+' need'+(n===1?'s':'')+' attention');
 }
 function notifBadge(n){return museBadgeHTML(n);}
 function badgeAckRead(){try{return JSON.parse(localStorage.getItem('muselive_badge_ack_v1')||'{}');}catch(e){return {};}}
@@ -1203,7 +1194,7 @@ function museExportStateBackup(){
   }catch(e){toast&&toast('Backup failed — storage may be full');}
 }
 function museBuildEdits(){
-  var edits={};order.forEach(function(k){edits[k]={dept:productions[k].dept,tbFields:productions[k].tbFields,tbEquip:productions[k].tbEquip,vendors:productions[k].vendors,crewMatrix:productions[k].crewMatrix,crew:productions[k].crew,invItems:productions[k].invItems,survey:productions[k].survey,labor:productions[k].labor,xytech:productions[k].xytech,sched:productions[k].sched,approvals:productions[k].approvals,activity:productions[k].activity,tasks:productions[k].tasks,signoff:productions[k].signoff,packStatus:productions[k].packStatus,deptLoc:productions[k].deptLoc,surveyLoc:productions[k].surveyLoc,vendorsLoc:productions[k].vendorsLoc,fiber:productions[k].fiber,fiberLoc:productions[k].fiberLoc,locations:productions[k].locations,ifbRoute:productions[k].ifbRoute,deptUI:productions[k].deptUI,audioAssets:productions[k].audioAssets,replay:productions[k].replay,gfxAssets:productions[k].gfxAssets,travelReqs:productions[k].travelReqs,plan:productions[k].plan,deptChecks:productions[k].deptChecks,siteCheckins:productions[k].siteCheckins,broadcastOps:productions[k].broadcastOps};});
+  var edits={};order.forEach(function(k){edits[k]={dept:productions[k].dept,tbFields:productions[k].tbFields,tbEquip:productions[k].tbEquip,vendors:productions[k].vendors,crewMatrix:productions[k].crewMatrix,crew:productions[k].crew,invItems:productions[k].invItems,survey:productions[k].survey,labor:productions[k].labor,schedLabor:productions[k].schedLabor,sched:productions[k].sched,approvals:productions[k].approvals,activity:productions[k].activity,tasks:productions[k].tasks,signoff:productions[k].signoff,packStatus:productions[k].packStatus,deptLoc:productions[k].deptLoc,surveyLoc:productions[k].surveyLoc,vendorsLoc:productions[k].vendorsLoc,fiber:productions[k].fiber,fiberLoc:productions[k].fiberLoc,locations:productions[k].locations,ifbRoute:productions[k].ifbRoute,deptUI:productions[k].deptUI,audioAssets:productions[k].audioAssets,replay:productions[k].replay,gfxAssets:productions[k].gfxAssets,travelReqs:productions[k].travelReqs,plan:productions[k].plan,deptChecks:productions[k].deptChecks,siteCheckins:productions[k].siteCheckins,broadcastOps:productions[k].broadcastOps};});
   return edits;
 }
 function museSerializeState(value,omitMedia){
@@ -1286,7 +1277,7 @@ function loadState(){try{
   var raw=localStorage.getItem('muselive_custom');if(raw){var o=JSON.parse(raw);if(o&&o.custom){for(var k in o.custom){if(!productions[k]){productions[k]=o.custom[k];}}if(o.order&&o.order.length){o.order.forEach(function(k){if(order.indexOf(k)<0&&productions[k])order.push(k);});}}}
   var er=localStorage.getItem('muselive_edits');if(er){var e=JSON.parse(er);for(var k2 in e){if(!productions[k2])continue;var ed=e[k2];
     if(Array.isArray(ed)){if(ed.length===productions[k2].dept.length)productions[k2].dept=ed;} // legacy format
-    else if(ed){if(Array.isArray(ed.dept)){ed.dept.forEach(function(sd){if(!Array.isArray(sd))return;var cur=null;for(var z=0;z<productions[k2].dept.length;z++){if(productions[k2].dept[z][0]===sd[0]){cur=productions[k2].dept[z];break;}}if(cur){cur[1]=sd[1];cur[2]=sd[2];if(sd.__customNote)cur.__customNote=sd.__customNote;}else{productions[k2].dept.push(sd.slice());}});}if(ed.tbFields)productions[k2].tbFields=ed.tbFields;if(ed.tbEquip)productions[k2].tbEquip=ed.tbEquip;if(ed.vendors)productions[k2].vendors=ed.vendors;if(ed.crewMatrix)productions[k2].crewMatrix=ed.crewMatrix;if(ed.crew)productions[k2].crew=ed.crew;if(ed.invItems)productions[k2].invItems=ed.invItems;if(ed.survey)productions[k2].survey=ed.survey;if(ed.labor)productions[k2].labor=ed.labor;if(ed.xytech)productions[k2].xytech=ed.xytech;if(ed.sched)productions[k2].sched=ed.sched;if(ed.approvals)productions[k2].approvals=ed.approvals;if(ed.activity)productions[k2].activity=ed.activity;if(ed.tasks)productions[k2].tasks=ed.tasks;if(ed.signoff)productions[k2].signoff=ed.signoff;if(ed.packStatus)productions[k2].packStatus=ed.packStatus;if(ed.deptLoc)productions[k2].deptLoc=ed.deptLoc;if(ed.surveyLoc)productions[k2].surveyLoc=ed.surveyLoc;if(ed.vendorsLoc)productions[k2].vendorsLoc=ed.vendorsLoc;if(ed.fiber)productions[k2].fiber=ed.fiber;if(ed.fiberLoc)productions[k2].fiberLoc=ed.fiberLoc;if(ed.locations)productions[k2].locations=ed.locations;if(ed.ifbRoute)productions[k2].ifbRoute=ed.ifbRoute;if(ed.deptUI)productions[k2].deptUI=ed.deptUI;if(ed.audioAssets)productions[k2].audioAssets=ed.audioAssets;if(ed.replay)productions[k2].replay=ed.replay;if(ed.gfxAssets)productions[k2].gfxAssets=ed.gfxAssets;if(ed.travelReqs)productions[k2].travelReqs=ed.travelReqs;if(ed.plan)productions[k2].plan=ed.plan;if(ed.deptChecks)productions[k2].deptChecks=ed.deptChecks;if(ed.siteCheckins)productions[k2].siteCheckins=ed.siteCheckins;if(ed.broadcastOps)productions[k2].broadcastOps=ed.broadcastOps;}}}
+    else if(ed){if(Array.isArray(ed.dept)){ed.dept.forEach(function(sd){if(!Array.isArray(sd))return;var cur=null;for(var z=0;z<productions[k2].dept.length;z++){if(productions[k2].dept[z][0]===sd[0]){cur=productions[k2].dept[z];break;}}if(cur){cur[1]=sd[1];cur[2]=sd[2];if(sd.__customNote)cur.__customNote=sd.__customNote;}else{productions[k2].dept.push(sd.slice());}});}if(ed.tbFields)productions[k2].tbFields=ed.tbFields;if(ed.tbEquip)productions[k2].tbEquip=ed.tbEquip;if(ed.vendors)productions[k2].vendors=ed.vendors;if(ed.crewMatrix)productions[k2].crewMatrix=ed.crewMatrix;if(ed.crew)productions[k2].crew=ed.crew;if(ed.invItems)productions[k2].invItems=ed.invItems;if(ed.survey)productions[k2].survey=ed.survey;if(ed.labor)productions[k2].labor=ed.labor;if(ed.schedLabor)productions[k2].schedLabor=ed.schedLabor;if(ed.sched)productions[k2].sched=ed.sched;if(ed.approvals)productions[k2].approvals=ed.approvals;if(ed.activity)productions[k2].activity=ed.activity;if(ed.tasks)productions[k2].tasks=ed.tasks;if(ed.signoff)productions[k2].signoff=ed.signoff;if(ed.packStatus)productions[k2].packStatus=ed.packStatus;if(ed.deptLoc)productions[k2].deptLoc=ed.deptLoc;if(ed.surveyLoc)productions[k2].surveyLoc=ed.surveyLoc;if(ed.vendorsLoc)productions[k2].vendorsLoc=ed.vendorsLoc;if(ed.fiber)productions[k2].fiber=ed.fiber;if(ed.fiberLoc)productions[k2].fiberLoc=ed.fiberLoc;if(ed.locations)productions[k2].locations=ed.locations;if(ed.ifbRoute)productions[k2].ifbRoute=ed.ifbRoute;if(ed.deptUI)productions[k2].deptUI=ed.deptUI;if(ed.audioAssets)productions[k2].audioAssets=ed.audioAssets;if(ed.replay)productions[k2].replay=ed.replay;if(ed.gfxAssets)productions[k2].gfxAssets=ed.gfxAssets;if(ed.travelReqs)productions[k2].travelReqs=ed.travelReqs;if(ed.plan)productions[k2].plan=ed.plan;if(ed.deptChecks)productions[k2].deptChecks=ed.deptChecks;if(ed.siteCheckins)productions[k2].siteCheckins=ed.siteCheckins;if(ed.broadcastOps)productions[k2].broadcastOps=ed.broadcastOps;}}}
   /* permanent showcase: Ray-Ban Meta Gen 3 Launch always fully approved / 100% */
   try{ensureSail250Complete();}catch(eS){}
   try{if(typeof MuseBOps!=='undefined'&&MuseBOps.seedShowcase)MuseBOps.seedShowcase();}catch(eB){}
@@ -1345,15 +1336,19 @@ function renderTabs(){var box=document.getElementById('projectTabs');if(box){
   renderMobileNav();
 }
 /* aggregate everything that needs the user's attention → drives the hamburger badge */
+/* Only things that need someone to act: shows still ahead with missing departments (one per
+   show), unread critical messages, schedule conflicts, overdue AP and open SEV-1/2 incidents. */
 function attentionCount(){var n=0;
-  try{order.forEach(function(k){n+=countStatus(productions[k]).missing;});}catch(e){}
-  try{if(typeof npcAlertConflicts==='function')n+=npcAlertConflicts().length;}catch(e){}
-  try{if(typeof commsUnread==='function')n+=commsUnread();}catch(e){}
+  try{order.forEach(function(k){var p=productions[k];if(!p||p.status==='Complete')return;if(countStatus(p).missing)n++;});}catch(e){}
+  try{if(typeof MuseSchedule!=='undefined'&&MuseSchedule.conflicts)n+=MuseSchedule.conflicts().length;else if(typeof npcAlertConflicts==='function')n+=npcAlertConflicts().length;}catch(e){}
+  try{if(typeof commsUnreadCritical==='function')n+=commsUnreadCritical();}catch(e){}
   try{if(typeof apExceptionCount==='function')n+=apExceptionCount();}catch(e){}
+  try{if(typeof MuseIncidents!=='undefined')n+=MuseIncidents.all().filter(function(i){return (i.severity==='SEV-1'||i.severity==='SEV-2')&&(i.status==='Open'||i.status==='Monitoring');}).length;}catch(e){}
   return n;}
 /* ---- LEFT NAV RAIL (icon sidebar) — always mounted, no slide animation ---- */
 function renderBurgerBadge(){
-  var n=museBadgeCount(attentionCount());
+  /* the menu items carry their own badges — the burger shows none (no duplicate totals) */
+  var n=0;
   var hb=document.getElementById('navRailHeaderToggle');
   var rb=document.getElementById('navRailToggle');
   museMountBadge(hb,n,'Open menu');
@@ -1378,6 +1373,8 @@ function _navSvg(name){
     finance:'<path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
     kb:'<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
     telemetry:'<path d="M12 20v-6"/><circle cx="12" cy="10" r="2.2"/><path d="M5.1 8.1a9 9 0 0 1 13.8 0"/><path d="M2.5 5.2a13 13 0 0 1 19 0"/><path d="M8.5 16.5 6 21h12l-2.5-4.5"/>',
+    streams:'<rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M10 9.5v5l4.5-2.5z"/><path d="M6 2.5l2 2.5M18 2.5l-2 2.5"/>',
+    incidents:'<path d="M12 3 2.5 19.5h19z"/><path d="M12 10v4.5M12 17.2v.01"/>',
     folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
     command:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
   }[name]||'';
@@ -1411,12 +1408,14 @@ function renderNavRail(){
     ['portal',((typeof permIsAdmin!=='function')||permIsAdmin())?'Travel Portal':'My Travel','portal'],
     ['comms','Omni','omni'],
     ['equipment','Equipment','equipment'],
-    ['telemetry','Telemetry','telemetry']
+    ['telemetry','Telemetry','telemetry'],
+    ['streams','Live Streams','streams'],
+    ['incidents','Incidents','incidents']
   );
   if(typeof permCan!=='function'||permCan('vendors'))primary.push(['vendors','Vendors','vendors']);
 
-  var engN=(typeof engRequests!=='undefined')?engRequests.filter(function(e){return e.status!=='Complete';}).length:0;
-  var omniN=(typeof commsUnread==='function')?commsUnread():0;
+  var engN=0; /* ENG requests in flight are informational, not a call to action */
+  var omniN=(typeof commsUnreadCritical==='function')?commsUnreadCritical():0;
   var apN=(typeof apExceptionCount==='function')?apExceptionCount():0;
   var schedConflicts=(typeof schedConflictTotal==='function')?schedConflictTotal():((typeof npcAlertConflicts==='function')?npcAlertConflicts().length:0);
   var npcN=0;try{npcN=(typeof npcAlertConflicts==='function')?npcAlertConflicts().length:0;}catch(e){}
@@ -1445,7 +1444,7 @@ function renderNavRail(){
     var c=countStatus(p);var on=(active===k);var pct=computePct(p);
     var name=p.tab||p.name||k;
     var tip=name+' · '+pct+'%'+(c.missing?' · '+c.missing+' open':'');
-    var miss=c.missing?_navRailBadge(c.missing,'red'):'';
+    var miss=(c.missing&&p.status!=='Complete')?_navRailBadge(c.missing,'red'):'';
     if(c.missing)missTotal+=c.missing;
     var letter=((name).charAt(0)||'?').toUpperCase();
     return '<button type="button" data-nav="'+k+'" class="nav-rail-btn nav-rail-prod'+(on?' is-active':'')+'" onclick="navGo(\''+k+'\')" title="'+tip.replace(/"/g,'&quot;')+'" aria-label="'+tip.replace(/"/g,'&quot;')+'" aria-current="'+(on?'page':'false')+'">'+
@@ -1454,7 +1453,9 @@ function renderNavRail(){
     '</button>';
   }).join('');
   var folderOn=!!productions[active];
-  var folderBadge=missTotal?_navRailBadge(missTotal,'red'):'';
+  /* collapsed only (open = children show their own): number of upcoming shows with missing departments */
+  var showsNeeding=0;try{order.forEach(function(k){var p=productions[k];if(p&&p.status!=='Complete'&&countStatus(p).missing)showsNeeding++;});}catch(eF){}
+  var folderBadge=(!prodOpen&&showsNeeding)?_navRailBadge(showsNeeding,'red'):'';
   prods.innerHTML=
     '<button type="button" data-nav="projects" class="nav-rail-btn'+(folderOn?' is-active':'')+(prodOpen?' is-open':'')+'" onclick="toggleNavProjects()" title="Projects" aria-label="Projects" aria-expanded="'+(prodOpen?'true':'false')+'">'+
       '<span class="nav-rail-ico">'+_navSvg('folder')+'</span><span class="nav-rail-label">Projects</span>'+folderBadge+
@@ -1934,12 +1935,13 @@ function renderMatrix(){
 }
 
 function openProjectCrew(key){projSubTab[key]='crew';museAfterPaint(function(){switchView(key);});}
-/* ===== MASTER SCHEDULE — tabbed: Broadcast Grid · Facilities · Xytech ===== */
-var schedTab='facility';
+/* ===== MASTER SCHEDULE — tabbed: Muse Schedule · Portfolio · Broadcast Grid · Facilities ===== */
+var schedTab='muse';
 function setSchedTab(t){schedTab=t;renderSchedule();}
 function schedConflictTotal(){var n=0;
   try{if(typeof npcAllConflicts==='function')n+=npcAllConflicts().length;}catch(e){}
   try{if(typeof bcastConflicts==='function')n+=bcastConflicts().length;}catch(e){}
+  try{if(typeof MuseSchedule!=='undefined')n+=MuseSchedule.conflicts().length;}catch(e){}
   return n;}
 function schedFacilityHTML(){
   // ---- Productions crew-scheduling list (click a project -> its Crew schedule) ----
@@ -1956,30 +1958,31 @@ function schedFacilityHTML(){
   var g='<div style="min-width:820px"><div class="grid grid-cols-8 gap-1 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-wider"><div></div>'+days.map(function(d){return '<div class="text-center">'+d+'</div>';}).join('')+'</div>';
   rows.forEach(function(r){g+='<div class="grid grid-cols-8 gap-1 mb-1 items-center"><div class="text-[10px] font-bold mono text-gray-600">'+r[0]+'</div><div class="col-span-7 relative bg-gray-50 rounded border border-gray-100" style="height:32px">';
     r[1].forEach(function(b){var left=(b[0]/7*100);var w=(b[1]/7*100);
-      g+='<div onclick="toast(\''+b[2]+' · '+r[0]+'\')" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:28px;left:'+left+'%;width:calc('+w+'% - 2px);background:#242526">'+b[2]+'</div>';});
+      g+='<div onclick="MuseSchedule.focusRes(\''+r[0]+'\')" title="'+esc(b[2]+' · '+r[0]+(b[5]?' · '+b[5]:''))+'" class="absolute rounded text-[9px] font-semibold flex items-center px-2 cursor-pointer truncate text-white" style="top:2px;height:28px;left:'+left+'%;width:calc('+w+'% - 2px);background:#242526">'+b[2]+'</div>';});
     g+='</div></div>';});
   g+='</div>';
-  return '<div class="mb-5"><div class="flex items-center justify-between mb-3"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Facility &amp; Control-Room Bookings</h3><span class="text-[10px] text-gray-500">Studio, PCR/ACR &amp; REMI room allocation · Week of June 2 — June 8, 2026</span></div><div class="overflow-x-auto">'+g+'</div></div>'+
+  return '<div class="mb-5"><div class="flex items-center justify-between mb-3"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Facility &amp; Control-Room Bookings</h3><span class="text-[10px] text-gray-500">Studio, PCR/ACR, circuits &amp; REMI from Muse Schedule · Week of '+esc(typeof MuseSchedule!=='undefined'?MuseSchedule.weekLabel():'this week')+'</span></div><div class="overflow-x-auto">'+g+'</div></div>'+
     '<div class="pt-4 mt-4 border-t border-gray-200"><div class="flex items-center justify-between mb-3"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">National Press Club — Planned Events Overlay</h3><span class="text-[10px] text-gray-500">Click any planned event to review &amp; crew it</span></div><div class="overflow-x-auto">'+npcGanttHTML()+'</div></div>'+
     '<div class="pt-4 mt-4 border-t border-gray-200"><div class="flex items-center justify-between mb-3"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Production Milestone Overview</h3><span class="text-[10px] text-gray-500">Click any production to open its crew schedule</span></div>'+prodHTML+'</div>';
 }
 function renderSchedule(){
   var el=document.getElementById('scheduleGantt');if(!el)return;
-  if(schedTab==='xytech'&&typeof permCan==='function'&&!permCan('xytech'))schedTab='facility';
+  if(schedTab==='muse'&&typeof permCan==='function'&&!permCan('scheduling'))schedTab='facility';
   // ---- conflict notification bubble on the page title (never auto-dismissed) ----
   var nConf=schedConflictTotal();
   var bub=document.getElementById('schedConflictBubble');
-  if(bub)bub.innerHTML=nConf?'<button onclick="setSchedTab(\'facility\')" title="Scheduling conflicts detected — click to review" class="inline-flex items-center gap-1 text-[10px] font-bold text-white rounded-full px-2.5 py-1 align-middle" style="background:var(--live-red);box-shadow:0 2px 8px rgba(179,18,46,.4)">⚠ '+nConf+' conflict'+(nConf>1?'s':'')+'</button>':'';
+  if(bub)bub.innerHTML=nConf?'<button onclick="(typeof MuseSchedule!==\'undefined\'&&MuseSchedule.conflicts().length)?MuseSchedule.openFor(\'\',\'conflicts\'):setSchedTab(\'facility\')" title="Scheduling conflicts detected — click to review" class="inline-flex items-center gap-1 text-[10px] font-bold text-white rounded-full px-2.5 py-1 align-middle" style="background:var(--live-red);box-shadow:0 2px 8px rgba(179,18,46,.4)">⚠ '+nConf+' conflict'+(nConf>1?'s':'')+'</button>':'';
   // ---- tab bar ----
   var bar=document.getElementById('schedTabBar');
   function tb(id,label,badge){var on=(schedTab===id);
     return '<button onclick="setSchedTab(\''+id+'\')" class="text-[11px] font-bold px-4 py-2 rounded-lg inline-flex items-center gap-1.5 '+(on?'bg-gray-900 text-white shadow-sm':'text-gray-600 hover:bg-gray-200')+'">'+label+(badge?'<span class="text-[8px] font-bold bg-red-500 text-white rounded-full min-w-[15px] h-[15px] px-1 flex items-center justify-center">'+badge+'</span>':'')+'</button>';}
   if(bar)bar.innerHTML='<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 flex-wrap justify-center">'+
-    tb('portfolio','Portfolio Controls','')+tb('broadcast','Broadcast Schedule','')+tb('facility','Facilities & Productions',nConf||'')+((typeof permCan!=='function'||permCan('xytech'))?tb('xytech','Xytech',''):'')+'</div>';
+    ((typeof permCan!=='function'||permCan('scheduling'))?tb('muse','Muse Schedule',(typeof MuseSchedule!=='undefined'?MuseSchedule.conflicts().length:0)||''):'')+
+    tb('portfolio','Portfolio Controls','')+tb('broadcast','Broadcast Schedule','')+tb('facility','Facilities & Productions',(nConf-(typeof MuseSchedule!=='undefined'?MuseSchedule.conflicts().length:0))||'')+'</div>';
   // ---- content ----
   if(schedTab==='portfolio'&&typeof portfolioControlsHTML==='function'){try{el.innerHTML=portfolioControlsHTML();}catch(e){el.innerHTML='<div class="text-sm text-gray-500 p-4">Portfolio controls unavailable.</div>';}}
   else if(schedTab==='broadcast'&&typeof bcastPaneHTML==='function'){el.innerHTML=bcastPaneHTML();}
-  else if(schedTab==='xytech'&&typeof xySchedPaneHTML==='function'){el.innerHTML=xySchedPaneHTML();}
+  else if(schedTab==='muse'&&typeof MuseSchedule!=='undefined'){MuseSchedule.renderInto(el);}
   else{el.innerHTML=schedFacilityHTML();}
 }
 
@@ -2617,7 +2620,7 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
   var sub=projSubTab[key]||'overview';
   /* v38: Replay moved from the tab bar into the Department Status board */
   if(sub==='replay')sub=projSubTab[key]='overview';
-  if(typeof permCan==='function'&&((sub==='finance'&&!permCan('finance'))||(sub==='xytech'&&!permCan('xytech'))||(sub==='vendors'&&!permCan('vendors')))){sub='overview';projSubTab[key]='overview';}
+  if(typeof permCan==='function'&&((sub==='finance'&&!permCan('finance'))||(sub==='bookings'&&!permCan('scheduling'))||(sub==='vendors'&&!permCan('vendors')))){sub='overview';projSubTab[key]='overview';}
   function subBtn(id,label){return '<button data-sub="'+id+'" onclick="setProjTab(\''+key+'\',\''+id+'\')" class="px-4 py-2 text-xs font-semibold rounded-lg '+(sub===id?'bg-gray-900 text-white shadow-sm':'text-gray-600 hover:bg-gray-100')+'">'+label+'</button>';}
   // ---- OVERVIEW pane ----
   // ---- PROJECT OVERVIEW: interactive Operational Matrix + selectable categories ----
@@ -2655,7 +2658,8 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
   if(sub==='controls'){sub='overview';projSubTab[key]='overview';}
   var opsPane='';
   try{if(typeof MuseBOps!=='undefined'&&MuseBOps.opsPaneHTML)opsPane=MuseBOps.opsPaneHTML(key);}catch(eOps){opsPane='<p class="text-xs text-red-600">Broadcast Ops module failed to load.</p>';}
-  var pane=sub==='ops'?opsPane:(sub==='schedule'?schedulePane:(sub==='crew'?crewPane:(sub==='vendors'?vendorsPane:(sub==='workflow'?workflowPane:(sub==='packlist'?packlistPane:(sub==='tracking'?trackingPaneHTML(key):(sub==='travel'?travelPaneHTML(key):(sub==='survey'?surveyPaneHTML(key):(sub==='omni'?omniPane:(sub==='xytech'?xytechPaneHTML(key):(sub==='finance'?financeWorkspaceHTML(key):overviewPane)))))))))));
+  if(sub==='streaming')opsPane=(typeof MuseStreaming!=='undefined')?MuseStreaming.paneHTML(key):'<p class="text-xs text-red-600">Streaming module failed to load.</p>';
+  var pane=(sub==='ops'||sub==='streaming')?opsPane:(sub==='schedule'?schedulePane:(sub==='crew'?crewPane:(sub==='vendors'?vendorsPane:(sub==='workflow'?workflowPane:(sub==='packlist'?packlistPane:(sub==='tracking'?trackingPaneHTML(key):(sub==='travel'?travelPaneHTML(key):(sub==='survey'?surveyPaneHTML(key):(sub==='omni'?omniPane:(sub==='bookings'?bookingsPaneHTML(key):(sub==='finance'?financeWorkspaceHTML(key):overviewPane)))))))))));
 
   if(typeof MuseLive!=='undefined')pane+=MuseLive.paneHTML(key,sub);
   if(typeof MuseWork!=='undefined')pane+=MuseWork.paneHTML(key,sub);
@@ -2672,10 +2676,10 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
       '<div><div class="flex items-center space-x-2 text-xs text-blue-700 font-semibold mb-1"><span class="cursor-pointer hover:underline" onclick="switchView(\'dashboard\')">Portfolio</span><span>/</span><span class="text-gray-900">'+esc(p.name)+'</span></div>'+
       '<h1 class="text-2xl font-semibold tracking-tight text-gray-900">'+esc(p.name)+'</h1><div class="flex items-center gap-2 mt-1.5">'+custChip(p.customer)+'<p class="text-sm text-gray-600">'+meta.join(' · ')+'</p></div>'+(p.desc?'<p class="text-xs text-gray-500 mt-1 max-w-xl">'+esc(p.desc)+'</p>':'')+'</div></div>'+
       '<div class="text-right flex-shrink-0"><span id="projPct-'+key+'" class="text-4xl font-bold '+pctColor(pct)+' mono">'+pct+'%</span><p class="text-[10px] text-gray-500 uppercase tracking-wider">Requirements Cleared</p>'+
-        '<div class="flex items-center justify-end gap-2 mt-2 flex-wrap"><button onclick="openOmniForProject(\''+key+'\')" class="text-[10px] font-bold text-white rounded-lg px-2.5 py-1.5 hover:opacity-90" style="background:#0866FF">💬 Omni</button><button onclick="openSchedule(\''+key+'\')" class="text-[10px] font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-2.5 py-1.5 hover:bg-blue-100">📅 Edit Schedule</button><button onclick="downloadTechbook(\''+key+'\')" title="Always exports current live production data — not a saved snapshot" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800">⬇ Techbook PDF · live</button></div>'+(delBtn?'<div class="mt-2">'+delBtn+'</div>':'')+'</div></div>';
+        '<div class="flex items-center justify-end gap-2 mt-2 flex-wrap"><button onclick="openOmniForProject(\''+key+'\')" class="text-[10px] font-bold text-white rounded-lg px-2.5 py-1.5 hover:opacity-90" style="background:#0866FF"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Omni</button><button onclick="openSchedule(\''+key+'\')" class="text-[10px] font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-2.5 py-1.5 hover:bg-blue-100"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Edit schedule</button><button onclick="downloadTechbook(\''+key+'\')" title="Always exports current live production data — not a saved snapshot" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1.5 hover:bg-gray-800"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-2px;margin-right:5px"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>Techbook PDF</button></div>'+(delBtn?'<div class="mt-2">'+delBtn+'</div>':'')+'</div></div>';
   var opsBadge='';
   try{if(typeof MuseBOps!=='undefined'&&MuseBOps.computeGoNoGo){var _gng=MuseBOps.computeGoNoGo(key);if(_gng.decision==='NO-GO')opsBadge=' <span class="text-red-500">●</span>';else if(_gng.decision==='CONDITIONAL')opsBadge=' <span class="text-amber-500">●</span>';else opsBadge=' <span class="text-emerald-500">●</span>';}}catch(eBg){}
-  var barHTML='<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 flex-wrap justify-center">'+subBtn('overview','Overview')+subBtn('ops','Broadcast Ops'+opsBadge)+subBtn('survey','Site Survey')+((typeof permCan!=='function'||permCan('finance'))?subBtn('finance','Finance'+finTabBadge(key)):'')+((typeof permCan!=='function'||permCan('xytech'))?subBtn('xytech','Xytech'):'')+subBtn('schedule','Schedule')+subBtn('travel','Travel'+travelTabBadge(key))+subBtn('crew','Crew')+((typeof permCan!=='function'||permCan('vendors'))?subBtn('vendors','Vendors'):'')+subBtn('tracking','Tracking'+trkTabBadge(key))+subBtn('workflow','Workflow')+subBtn('packlist','PackList')+subBtn('omni','Omni'+omniTabBadge(key))+'</div>';
+  var barHTML='<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 flex-wrap justify-center">'+subBtn('overview','Overview')+subBtn('ops','Broadcast Ops'+opsBadge)+subBtn('streaming','Streaming'+streamTabBadge(key))+subBtn('survey','Site Survey')+((typeof permCan!=='function'||permCan('finance'))?subBtn('finance','Finance'+finTabBadge(key)):'')+((typeof permCan!=='function'||permCan('scheduling'))?subBtn('bookings','Bookings'+bookingsTabBadge(key)):'')+subBtn('schedule','Schedule')+subBtn('travel','Travel'+travelTabBadge(key))+subBtn('crew','Crew')+((typeof permCan!=='function'||permCan('vendors'))?subBtn('vendors','Vendors'):'')+subBtn('tracking','Tracking'+trkTabBadge(key))+subBtn('workflow','Workflow')+subBtn('packlist','PackList')+subBtn('omni','Omni'+omniTabBadge(key))+'</div>';
   var barSig=barHTML.replace(/bg-gray-900 text-white shadow-sm|text-gray-600 hover:bg-gray-100/g,''); // bar content minus active-state
   var vf=venueFor(key);
   /* review fix: strip the live location clock from the signature — it changes every
@@ -2717,6 +2721,7 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
     document.getElementById('projPane-'+key).innerHTML=pane;
   }
   try{applyOverviewCat(key);}catch(e){}
+  try{if(sub==='streaming'&&typeof MuseStreaming!=='undefined')MuseStreaming.mount(el);}catch(e){}
   try{setTimeout(mountVisibleMaps,30);}catch(e){}
   try{if(typeof audioWaveformsMount==='function')setTimeout(function(){audioWaveformsMount(key);},50);}catch(e){}
   try{setTimeout(function(){wxEnsure(key);},40);}catch(e){}
@@ -2738,6 +2743,12 @@ function setProjTab(key,tab){
   try{window.scrollTo(x,y);}catch(e){}
   /* production sub-tabs also join the history stack (Back → previous tab) */
   try{if(navRailActiveView()===key||_museHistView===key)museHistoryPush(key,tab,false);}catch(e){}
+}
+/* Streaming tab dot: red when the program stream is live with alerts, green when live and healthy */
+function streamTabBadge(key){
+  try{if(typeof MuseStreaming==='undefined')return '';var h=MuseStreaming.health(key);
+    if(h.state!=='LIVE'&&h.state!=='REHEARSAL')return '';
+    return ' <span class="'+(h.alerts.length?'text-red-500':'text-emerald-500')+'">●</span>';}catch(e){return '';}
 }
 function workflowJump(key,tab,sv){
   projSubTab[key]=tab;
@@ -3070,7 +3081,7 @@ function schedListPaneHTML(key){var p=productions[key];var rows=p.schedule||[];
       '</tbody></table></div>':'<p class="text-[11px] text-gray-500 italic py-1">No entries in this category yet.</p>';
     return '<div class="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><div class="flex items-center gap-2 mb-3"><span class="w-2.5 h-2.5 rounded-full" style="background:'+dot+'"></span><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">'+bk[0]+'</h3><span class="text-[9px] text-gray-500 mono">'+br.length+'</span></div>'+body+'</div>';
   }).join('');
-  return '<div class="space-y-4"><div class="flex items-center justify-between"><p class="text-xs text-gray-600">Production schedule, organized by category. Set a Type on each row in the editor.</p><button onclick="openSchedule(\''+key+'\')" class="text-[10px] font-bold text-white bg-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-700">📅 Edit Schedule</button></div>'+sections+'</div>';
+  return '<div class="space-y-4"><div class="flex items-center justify-between"><p class="text-xs text-gray-600">Production schedule, organized by category. Set a Type on each row in the editor.</p><button onclick="openSchedule(\''+key+'\')" class="text-[10px] font-bold text-white bg-blue-600 rounded-lg px-3 py-1.5 hover:bg-blue-700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:inline-block;vertical-align:-2px;margin-right:5px"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>Edit schedule</button></div>'+sections+'</div>';
 }
 
 /* ---- full crew roster tab ---- */
@@ -3338,7 +3349,7 @@ function printCrewMatrix(key){var p=productions[key];var m=crewMilestones(p);
     var body=crew.map(function(mem,ri){return [mem.name,mem.pos].concat(CREW_PHASES.map(function(ph,ci){return onMap[ri][ci]?'\u2022':'';}));});
     doc.autoTable({startY:74,head:[head],body:body,theme:'grid',
       styles:{fontSize:8,cellPadding:4,halign:'center',valign:'middle',lineColor:[228,230,235],lineWidth:0.5,textColor:[36,37,38]},
-      headStyles:{fillColor:[24,25,26],textColor:255,fontSize:7,fontStyle:'bold',halign:'center'},
+      headStyles:{fillColor:[231,243,255],textColor:[5,5,5],fontSize:7,fontStyle:'bold',halign:'center'},
       columnStyles:{0:{halign:'left',fontStyle:'bold',cellWidth:130},1:{halign:'left',cellWidth:120,textColor:[101,103,107],fontSize:7.5}},
       margin:{left:M,right:M},
       didParseCell:function(d){var ci=d.column.index;if(ci<2)return;var pi=ci-2;
@@ -3462,7 +3473,7 @@ function assignSearchInput(v){renderAssignList(v);}
 function crewPaneHTML(key){var p=productions[key];
   var crew=getProjectCrew(key);
   var q=crewSearchQ;
-  /* v38 multi-venue: one flat roster (travel/labor/xytech consumers untouched) —
+  /* v38 multi-venue: one flat roster (travel/labor/scheduling consumers untouched) —
      each slot may be pinned to a venue via locId (''=production-wide). */
   var multi=(typeof hasLocs==='function')&&hasLocs(key);
   var locs=multi?locsOf(key):[];
@@ -3620,6 +3631,9 @@ function switchView(view,opts){
   else if(view==='vendors')_heavy=function(){try{renderVendorsView();}catch(eH){}};
   else if(view==='equipment')_heavy=function(){try{renderEquipView();}catch(eH){}};
   else if(view==='finance')_heavy=function(){try{renderFinanceView();}catch(eH){}};
+  else if(view==='streams')_heavy=function(){try{MuseStreaming.renderWall();}catch(eH){}};
+  else if(view==='incidents')_heavy=function(){try{MuseIncidents.render();}catch(eH){}};
+  else if(view==='dashboard')_heavy=function(){try{MuseStreaming.renderDash();}catch(eH){}};
 
   var panes=document.querySelectorAll('.view-pane');for(var i=0;i<panes.length;i++)panes[i].classList.remove('active');
   var t=document.getElementById('view-'+view);if(t)t.classList.add('active');
@@ -4002,11 +4016,12 @@ function renderPersonnelDir(){
   var cnt=document.getElementById('personnelCount');if(cnt)cnt.textContent=filtered.length+' '+(filtered.length===1?'person':'people')+(shiftSel==='on'?' on shift':'');
 }
 
-var tzZones=[["ET","New York","America/New_York"],["CT","Chicago","America/Chicago"],["MT","Denver","America/Denver"],["PT","Los Angeles","America/Los_Angeles"],["AST","San Juan","America/Puerto_Rico"],["MEX","Mexico City","America/Mexico_City"]];
+/* Meta offices · local time — [office code, office, IANA zone] (index-aligned with WXC_CITIES) */
+var tzZones=[["MPK","Menlo Park HQ","America/Los_Angeles","Meta HQ · 1 Hacker Way"],["NYC","New York","America/New_York","Hudson Yards"],["LON","London","Europe/London","King's Cross"],["TLV","Tel Aviv","Asia/Jerusalem","Tel Aviv office"],["SIN","Singapore","Asia/Singapore","APAC HQ · Marina One"],["TYO","Tokyo","Asia/Tokyo","Tokyo office"]];
 function buildClocks(){
   var c=document.getElementById('worldClocks');if(!c)return;
   c.innerHTML=tzZones.map(function(z,i){
-    return '<div onclick="openCityWx('+i+')" role="button" title="Live conditions — '+z[1]+'" class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-blue-300 hover:bg-blue-50/40 transition-colors">'+
+    return '<div onclick="openCityWx('+i+')" role="button" title="Meta '+z[1]+(z[3]?' · '+z[3]:'')+' — live conditions" class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg px-2.5 py-1.5 cursor-pointer hover:border-blue-300 hover:bg-blue-50/40 transition-colors">'+
       '<div class="flex flex-col leading-none min-w-0"><span class="text-[10px] font-bold uppercase tracking-wider text-gray-600">'+z[0]+'</span><span class="text-[10px] font-semibold text-gray-600 truncate">'+z[1]+'</span></div>'+
       '<div class="flex items-baseline gap-0.5 flex-shrink-0"><span id="dig'+i+'" class="mono font-semibold text-gray-900 tabular-nums leading-none" style="font-size:18px">--:--</span><span id="sec'+i+'" class="mono text-gray-500 tabular-nums leading-none" style="font-size:10px">--</span></div>'+
     '</div>';
@@ -6191,6 +6206,10 @@ function museInstallJsPdfInter(){
 try{window.museLoadInterVfs=museLoadInterVfs;window.musePdfBindInter=musePdfBindInter;}catch(eW){}
 
 function downloadTechbook(key,opts){
+  /* Broadcast Ops contributes techbook sections — make sure it has loaded (it is lazy) */
+  if(typeof MuseBOps==='undefined'&&typeof MuseLazy!=='undefined'&&MuseLazy.ensureBOps&&!(opts&&opts._bopsTried)){
+    var _o=Object.assign({},opts||{},{_bopsTried:true});
+    MuseLazy.ensureBOps().then(function(){downloadTechbook(key,_o);},function(){downloadTechbook(key,_o);});return;}
   key=key||schedKey;var p=productions[key];if(!p){toast('Open a production first');return;}
   opts=opts||{};if(opts.productionSnapshot)p=Object.assign({},p,opts.productionSnapshot);var TBLABEL=opts.titleLabel||'PRODUCTION TECHBOOK · LIVE DATA';var TBTAG=opts.fileTag||'Techbook';
   ensureFields(p);ensureTB(p,key);
@@ -6237,68 +6256,47 @@ function downloadTechbook(key,opts){
       var W=doc.internal.pageSize.getWidth();var H=doc.internal.pageSize.getHeight();var c=countStatus(p);var pct=computePct(p);
       var SEG=[[0,100,224],[0,102,226],[0,104,227],[0,106,229],[0,108,231],[0,110,233],[0,112,234],[0,114,236],[0,115,238],[0,117,240],[0,119,241],[0,121,243],[0,123,245],[0,125,247],[0,127,248],[0,129,250],[0,132,251],[0,136,251],[0,140,252],[0,144,252],[0,149,252],[0,153,252],[0,157,253],[0,161,253],[0,165,253],[0,169,253],[0,173,254],[0,177,254],[0,182,254],[0,186,254],[0,190,255],[0,194,255]];
 
-      // ---- TITLE PAGE (black) — spectrum from assets (true aspect) + manual-centered type ----
-      doc.setFillColor(24,25,26);doc.rect(0,0,W,H,'F');
-      var sw=W/SEG.length;for(var i=0;i<SEG.length;i++){doc.setFillColor(SEG[i][0],SEG[i][1],SEG[i][2]);doc.rect(i*sw,0,sw,7,'F');doc.rect(i*sw,H-7,sw,7,'F');}
-      var ty=68;
+      // ---- PAGE 1: light title block (no full-page cover); the first section follows on the same page ----
       var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(290/191);
-      var logoW=150, logoH=Math.round(logoW/ar); /* ~87 pt — natural wide spectrum */
-      if(logo){
-        try{doc.addImage(logo,'PNG',(W-logoW)/2,ty,logoW,logoH);}catch(eLogo){logo=null;}
-      }
-      if(logo)ty+=logoH+22;else ty+=28;
-      /* Manual horizontal center — more reliable than align:'center' after doc.text wrap */
-      function pdfCenter(str,y,size,style,rgb){
-        var s=pdfSafe(str==null?'':String(str));
-        doc.setFont('helvetica',style||'normal');doc.setFontSize(size||11);
-        if(rgb)doc.setTextColor(rgb[0],rgb[1],rgb[2]);
-        var tw=doc.getTextWidth(s);
-        doc.text(s,(W-tw)/2,y);
-        return size||11;
-      }
-      function pdfCenterLines(str,y,size,style,rgb,maxW){
-        doc.setFont('helvetica',style||'normal');doc.setFontSize(size||11);
-        if(rgb)doc.setTextColor(rgb[0],rgb[1],rgb[2]);
-        var lines=doc.splitTextToSize(pdfSafe(str==null?'':String(str)),maxW||(W-120));
-        var lh=(size||11)*1.25;
-        for(var li=0;li<lines.length;li++){
-          var tw=doc.getTextWidth(lines[li]);
-          doc.text(lines[li],(W-tw)/2,y+li*lh);
-        }
-        return lines.length*lh;
-      }
-      pdfCenter('MUSE LIVE',ty,14,'bold',[255,255,255]);
-      ty+=18;
-      pdfCenter('BROADCAST OPS CRM  ·  '+TBLABEL,ty,9,'normal',[150,150,155]);
-      ty+=16;
-      doc.setDrawColor(62,64,66);doc.setLineWidth(0.5);doc.line(W/2-90,ty,W/2+90,ty);
-      ty+=26;
-      ty+=pdfCenterLines(p.name||'Production',ty,26,'bold',[255,255,255],W-120);
-      ty+=8;
-      if(p.venue){ty+=pdfCenterLines(p.venue,ty,12,'normal',[195,195,200],W-120);ty+=10;}
-      else ty+=8;
-      ty+=8;
-      function metaBlock(lbl,val){
-        pdfCenter(String(lbl||'').toUpperCase(),ty,7.5,'bold',[120,120,128]);
-        ty+=13;
-        ty+=pdfCenterLines(val||'—',ty,12,'normal',[238,238,241],W-120);
-        ty+=14;
-      }
-      metaBlock('Client',p.customer||'Unassigned');
-      metaBlock('Event Date',p.date||'TBD');
-      metaBlock('Version Type',p.version||'Rev 1.0');
-      metaBlock('Last Edited',(p.lastEdited||nowStamp())+'   ·   '+(p.editedBy||'—'));
-      pdfCenter('COMPLETION',ty,7.5,'bold',[120,120,128]);
-      ty+=14;
-      var pcol=pct>=90?[110,231,183]:pct>=40?[252,211,77]:[252,165,165];
-      pdfCenter(pct+'%   ·   '+c.approved+' Approved · '+c.pending+' Pending · '+c.missing+' Missing',ty,12,'bold',pcol);
+      doc.setFillColor(255,255,255);doc.rect(0,0,W,H,'F');
+      var sw=W/SEG.length;for(var i=0;i<SEG.length;i++){doc.setFillColor(SEG[i][0],SEG[i][1],SEG[i][2]);doc.rect(i*sw,0,sw,4,'F');}
+      var ty=44,lx=40;
+      if(logo){try{var lw=46,lh=Math.round(46/ar);doc.addImage(logo,'PNG',lx,ty,lw,lh);lx+=lw+12;}catch(eLogo){logo=null;}}
+      doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(101,103,107);
+      doc.text(pdfSafe('Muse Live  ·  Technical book  ·  '+TBLABEL),lx,ty+12);
+      doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(138,141,145);
+      doc.text(pdfSafe('Generated '+nowStamp()),lx,ty+24);
+      ty+=70;
+      doc.setFont('helvetica','bold');doc.setFontSize(24);doc.setTextColor(5,5,5);
+      var nameLines=doc.splitTextToSize(pdfSafe(p.name||'Production'),W-80);doc.text(nameLines,40,ty);ty+=nameLines.length*27;
+      if(p.venue){doc.setFont('helvetica','normal');doc.setFontSize(11);doc.setTextColor(75,79,86);
+        var vLines=doc.splitTextToSize(pdfSafe(p.venue),W-80);doc.text(vLines,40,ty);ty+=vLines.length*14+6;}
+      var metas=[['Client',p.customer||'Unassigned'],['Event date',p.date||'TBD'],['Version',p.version||'Rev 1.0'],['Last edited',(p.lastEdited||nowStamp())+' · '+(p.editedBy||'—')]];
+      var colW=(W-80)/metas.length;ty+=10;
+      metas.forEach(function(m,mi){var x=40+mi*colW;
+        doc.setFont('helvetica','bold');doc.setFontSize(7.5);doc.setTextColor(101,103,107);doc.text(pdfSafe(m[0]),x,ty);
+        doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(5,5,5);doc.text(doc.splitTextToSize(pdfSafe(m[1]),colW-10),x,ty+13);});
+      ty+=40;
+      var pcol=pct>=90?[30,123,52]:pct>=40?[178,107,0]:[179,18,46];
+      doc.setFillColor(240,242,245);doc.roundedRect(40,ty-13,W-80,24,6,6,'F');
+      doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(pcol[0],pcol[1],pcol[2]);
+      doc.text(pdfSafe(pct+'% complete'),52,ty+3);
+      doc.setFont('helvetica','normal');doc.setTextColor(75,79,86);
+      doc.text(pdfSafe(c.approved+' approved  ·  '+c.pending+' pending  ·  '+c.missing+' missing'),140,ty+3);
+      ty+=34;
+      var firstSectionY=ty;
 
       // ---- SECTIONS ----
       var secs=(opts.sections)?opts.sections:techbookSections(p);
       if(!opts.sections){try{var wsec=tbWeatherSection(p,wx);if(wsec)secs.splice(Math.min(1,secs.length),0,wsec);}catch(e){}}
       for(var si=0;si<secs.length;si++){
-        var sec=secs[si];doc.addPage();sectionHeader(doc,W,sec.title,p,si+1,secs.length);
-        var y=92;
+        var sec=secs[si];var y=92;
+        if(si===0){ /* first section shares page 1 with the title block */
+          doc.setDrawColor(228,230,235);doc.setLineWidth(0.6);doc.line(40,firstSectionY-12,W-40,firstSectionY-12);
+          doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(5,5,5);doc.text(pdfSafe(sec.title),40,firstSectionY+8);
+          doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(138,141,145);doc.text('Section 1 / '+secs.length,W-40,firstSectionY+8,{align:'right'});
+          y=firstSectionY+28;
+        }else{doc.addPage();sectionHeader(doc,W,sec.title,p,si+1,secs.length);}
         if(sec.venueMap){
           // venue name
           doc.setFont('helvetica','bold');doc.setFontSize(16);doc.setTextColor(24,25,26);
@@ -6336,7 +6334,7 @@ function downloadTechbook(key,opts){
           var MPC=[[8,102,255],[247,185,40],[10,88,202],[245,131,42],[49,162,76],[228,30,63],[101,103,107]]; // phase RGB bubbles
           var mCols={0:{cellWidth:78,fontStyle:'bold'},1:{cellWidth:74,textColor:[101,103,107]},2:{cellWidth:44,halign:'center'},3:{cellWidth:44,halign:'center'},4:{cellWidth:48,halign:'center'},5:{cellWidth:44,halign:'center'},6:{cellWidth:46,halign:'center'},7:{cellWidth:46,halign:'center'},8:{cellWidth:44,halign:'center'}};
           doc.autoTable({startY:y,head:[blk.head],body:blk.rows,theme:'grid',
-            headStyles:{fillColor:[24,25,26],textColor:255,fontSize:isMatrix?6.5:7.5,halign:isMatrix?'center':'left',cellPadding:isMatrix?2:4},
+            headStyles:{fillColor:[231,243,255],textColor:[5,5,5],fontSize:isMatrix?6.5:7.5,halign:isMatrix?'center':'left',cellPadding:isMatrix?2:4},
             bodyStyles:{fontSize:isMatrix?6.5:7.5,textColor:[36,37,38],valign:'middle',cellPadding:isMatrix?2:4},
             alternateRowStyles:{fillColor:[247,248,250]},
             styles:{lineColor:[228,230,235],lineWidth:0.5,overflow:'linebreak'},
@@ -6481,13 +6479,14 @@ function printTechbook(p,opts){
   }catch(e){toast('Export error: '+e.message);}
 }
 function sectionHeader(doc,W,title,p,idx,total){
-  doc.setFillColor(24,25,26);doc.rect(0,0,W,58,'F');
+  /* light Meta header: white band, blue gradient rule, dark type */
+  doc.setFillColor(255,255,255);doc.rect(0,0,W,58,'F');
   var seg=[[0,100,224],[0,102,226],[0,104,227],[0,106,229],[0,108,231],[0,110,233],[0,112,234],[0,114,236],[0,115,238],[0,117,240],[0,119,241],[0,121,243],[0,123,245],[0,125,247],[0,127,248],[0,129,250],[0,132,251],[0,136,251],[0,140,252],[0,144,252],[0,149,252],[0,153,252],[0,157,253],[0,161,253],[0,165,253],[0,169,253],[0,173,254],[0,177,254],[0,182,254],[0,186,254],[0,190,255],[0,194,255]];var sw=W/seg.length;
   for(var i=0;i<seg.length;i++){doc.setFillColor(seg[i][0],seg[i][1],seg[i][2]);doc.rect(i*sw,58,sw,3,'F');}
-  doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text(title,40,30);
-  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(176,179,184);
+  doc.setTextColor(5,5,5);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text(title,40,30);
+  doc.setFont('helvetica','normal');doc.setFontSize(7.5);doc.setTextColor(101,103,107);
   doc.text((p.name||'')+'   ·   '+(p.customer||''),40,46);
-  if(idx){doc.setFontSize(7.5);doc.setTextColor(138,141,145);doc.text('SECTION '+idx+' / '+total,W-40,30,{align:'right',charSpace:1});}
+  if(idx){doc.setFontSize(7.5);doc.setTextColor(138,141,145);doc.text('Section '+idx+' / '+total,W-40,30,{align:'right'});}
 }
 
 /* ===== SPELL / TYPO TOLERANCE (Muse + global search) =====
@@ -6813,7 +6812,7 @@ function museaiAnswer(qRaw){
   }catch(eW){}
   // product overview / how Muse Live works
   if(/(what is (muse live )?muse|what does muse do|explain (muse live )?muse|how does (muse live )?muse work|product overview|whole (app|product)|know muse live)/.test(q)){
-    var overview="Muse Live is the Meta Broadcast Operations — the plan-of-record hub for multi-venue live shows (not a switcher or NLE). One browser app covers Department Status, Broadcast Ops (signal path · truck power · RF clash · satellite · go/no-go), techbook fields + live PDF + change diff, packlist, fiber plant, crew + Call Matrix with venue check-in, Site Survey (Event Check List air-readiness nested there — drawings + vendor meeting and venue schedule + site walk feed Tasks then LBA), Graphics Playback (16:9 player, tap the picture to play/pause, frame step; fill+matte uploads get a Fill and Matte Tally; each show has Open/Bumper/Wipe environment sims with the clip's own soundtrack), read-only CAD viewer with note dots, Broadcast 360 Shot Designer, TX bookings, finance (PO/WO/AP), CPM/EVM project controls, travel + manifest, ENG requests, barcode inventory, Omni comms, and Xytech rooms. Launch locally with ./start-muse.sh (HTTP required for DWG WASM). I'm Muse — ask how any module works or dig into a show.";
+    var overview="Muse Live is the Meta Broadcast Operations — the plan-of-record hub for multi-venue live shows (not a switcher or NLE). One browser app covers Department Status, Broadcast Ops (signal path · truck power · RF clash · satellite · go/no-go), techbook fields + live PDF + change diff, packlist, fiber plant, crew + Call Matrix with venue check-in, Site Survey (Event Check List air-readiness nested there — drawings + vendor meeting and venue schedule + site walk feed Tasks then LBA), Graphics Playback (16:9 player, tap the picture to play/pause, frame step; fill+matte uploads get a Fill and Matte Tally; each show has Open/Bumper/Wipe environment sims with the clip's own soundtrack), read-only CAD viewer with note dots, Broadcast 360 Shot Designer, TX bookings, finance (PO/WO/AP), CPM/EVM project controls, travel + manifest, ENG requests, barcode inventory, Omni comms, Live Streams, Incident Reports, and Muse Schedule (facilities, circuits, kit and crew bookings with conflict detection). I'm Muse — ask how any module works or dig into a show.";
     try{if(typeof MuseKB!=='undefined')overview+=' The Wiki holds procedures, specs, schematics, troubleshooting, and incidents — tagged by department for Muse and the truck.';}catch(eKb){}
     return overview;
   }
@@ -6863,7 +6862,7 @@ function museaiAnswer(qRaw){
   // roles & permissions (Work Item 1)
   if(/(role|permission|access|restricted|who am i|viewing as|what can i see|locked)/.test(q)&&typeof permRoleDef==='function'){
     var _rd=permRoleDef();var hid=[];
-    if(!permCan('finance'))hid.push('Finance');if(!permCan('xytech'))hid.push('Xytech');if(!permCan('vendors'))hid.push('Vendors');
+    if(!permCan('finance'))hid.push('Finance');if(!permCan('scheduling'))hid.push('Bookings');if(!permCan('vendors'))hid.push('Vendors');
     var scoped=[];if(permScope('equipment')==='own')scoped.push('Equipment (own gear only)');if(permScope('travel')==='own')scoped.push('Travel (own itinerary only)');if(permScope('comms')==='team')scoped.push('Omni-Channel (team groups only — exec threads hidden)');
     return "You're viewing Muse Live as "+_rd.label+" ("+_rd.persona+")"+(_rd.admin?" — an administrator with unrestricted access to every module, chat group, and email thread.":". Hidden modules: "+(hid.length?hid.join(', '):'none')+". Scoped: "+(scoped.length?scoped.join('; '):'none')+". Flip roles from the \"Viewing as\" switcher in the header.")+(permIsAdmin()?" You can provision accounts from any personnel card (🔑 Generate account).":"");}
   // equipment / inventory
@@ -6878,15 +6877,15 @@ function museaiAnswer(qRaw){
     if(/checked.?out|deployed|on (the )?(road|show|production)|in use/.test(q))return _out.length+" item(s) checked out: "+_out.map(function(it){return it.name+" \u2192 "+(it.project&&productions[it.project]?productions[it.project].name:"\u2014")+(it.assignedTo?" ("+it.assignedTo+")":"");}).join("; ");
     return _cinv.length+" assets tracked \u2014 "+_avail.length+" available, "+_out.length+" checked out, "+_maint.length+" in maintenance. Total value $"+(_cinv.reduce(function(a,it){return a+(it.value||0);},0)/1000000).toFixed(2)+"M. Ask about a category, a barcode, or what's available.";
   }
-  // control rooms ← Xytech schedule (Work Item 4)
+  // control rooms ← Muse Schedule
   if(/(pcr|acr\b|crk|control room|routing board|what.?s (on|live) (in|from)|which (room|show))/.test(q)&&typeof roomState==='function'){
     var liveRooms=[],prepRooms=[];
-    Object.keys(XY_ROOMS).forEach(function(g){XY_ROOMS[g].forEach(function(rm){var st=roomState(rm);
+    Object.keys(SCHED_ROOMS).forEach(function(g){SCHED_ROOMS[g].forEach(function(rm){var st=roomState(rm);
       if(st.s==='onair'||st.s==='active')liveRooms.push(rm+' — '+st.b[2]+(st.b[5]?' ('+st.b[5]+')':''));
       else if(st.s==='setup')prepRooms.push(rm+' — '+st.b[2]);});});
-    return (liveRooms.length?'Active control rooms today ('+NPC_DAYS[xyTodayCol()]+'): '+liveRooms.join(' · ')+'. ':'No rooms active today. ')+
+    return (liveRooms.length?'Active control rooms today ('+NPC_DAYS[schedTodayCol()]+'): '+liveRooms.join(' · ')+'. ':'No rooms active today. ')+
       (prepRooms.length?'In setup/prep: '+prepRooms.join(' · ')+'. ':'')+
-      'The board mirrors the Xytech facility schedule — hover any chip on the dashboard for its show and window, or click for the full week.';}
+      'The board is driven by Muse Schedule — hover any chip on the dashboard for its show and window, or click it to open that room in Muse Schedule.';}
   // unified IFB signal routing (Work Item 2)
   if(/(ifb|rem\b|tiff|mix.?minus|phone line|dialed line)/.test(q)&&typeof ifbGet==='function'){
     var ifbHits=[];order.forEach(function(k){var r=productions[k].ifbRoute;if(!r||!r.lines||!r.lines.length)return;
@@ -7125,7 +7124,7 @@ function museaiParseAction(qRaw){
     else if(/\bcrew\b|call matrix/.test(q))tab='crew';
     else if(/\btravel\b/.test(q))tab='travel';
     else if(/\bfinance\b/.test(q))tab='finance';
-    else if(/xytech/.test(q))tab='xytech';
+    else if(/booking|muse schedule|resource schedul/.test(q))tab='bookings';
     else if(/\bschedule\b/.test(q))tab='schedule';
     else if(/track(ing)?/.test(q))tab='tracking';
     else if(/workflow/.test(q))tab='workflow';
@@ -7410,7 +7409,7 @@ function museaiRealWorldTry(q){
   }).catch(function(){return museaiWeatherAnswer(q).catch(function(){return null;});});
 }
 
-/* ===== MUSEAI — rules + free real-world APIs · optional on-device model · no edge AI ===== */
+/* ===== MUSEAI — offline fallback: rules + free real-world APIs (the live agent is js/muse-agent.js) ===== */
 var museaiHistory=[];var museaiBusy=false;
 function museaiDeliver(q){
   var rawQ=q;
@@ -7440,26 +7439,6 @@ function museaiDeliver(q){
   function tryModelOrRules(){
     if(typeof MuseAiMuseAi!=='undefined'&&MuseAiMuseAi.ask){
       MuseAiMuseAi.ask(q).then(function(ans){finishBot(ans,null);})
-        .catch(function(){
-          if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'&&MuseAiLocal.chat){
-            MuseAiLocal.chat(q,museaiHistory.slice(0,-1)).then(function(ans){finishBot(ans,null);})
-              .catch(function(){finishBot(rulesAnswer(),null);});
-            return;
-          }
-          finishBot(rulesAnswer(),null);
-        });
-      return;
-    }
-    if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()&&typeof MuseAiLocal!=='undefined'&&MuseAiLocal.chat){
-      MuseAiLocal.chat(q,museaiHistory.slice(0,-1)).then(function(ans){finishBot(ans,null);})
-        .catch(function(err){
-          var em2=(err&&err.message)?String(err.message):'';
-          finishBot(rulesAnswer(), stateNote(em2));
-        });
-      return;
-    }
-    if(typeof assistantKey==='function'&&assistantKey()&&typeof assistAsk==='function'){
-      assistAsk().then(function(ans){finishBot((ans==null?'':String(ans)).trim()||rulesAnswer(),null);})
         .catch(function(){finishBot(rulesAnswer(),null);});
       return;
     }
@@ -7498,14 +7477,10 @@ function museaiDeliver(q){
     return;
   }
 
-  /* 2) Optional on-device model when enabled */
+  /* 2) Muse agent when connected, else rules */
   tryModelOrRules();
 
-  function stateNote(em){
-    var detail=(em||'').slice(0,100);
-    if(/WebGPU|adapter/i.test(em))return '⚠ Local model needs WebGPU. Muse still answers from Muse Live without it.';
-    return detail?('⚠ '+detail):'';
-  }
+
 }
 function museaiSend(){if(museaiBusy)return;var inp=document.getElementById('museaiInput');var q=inp.value.trim();if(!q)return;inp.value='';museaiPush(q,'user');museaiDeliver(q);}
 function museaiAsk(q){if(!museaiOpen)toggleMuseAi();if(museaiBusy)return;museaiPush(q,'user');museaiDeliver(q);}
@@ -7519,7 +7494,7 @@ function museaiChip(b){document.getElementById('museaiInput').value=b.textConten
 /* ---- THEME (light / dark) ---- */
 function museThemePref(){
   try{var p=localStorage.getItem('museTheme');if(p==='light'||p==='dark'||p==='system')return p;}catch(e){}
-  return 'light';
+  return 'dark'; /* first visit defaults to dark; a stored preference always wins */
 }
 function museOsDark(){try{return !!(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);}catch(e){return false;}}
 function museAppliedScheme(){return museThemePref()==='system'?(museOsDark()?'dark':'light'):museThemePref();}
@@ -7593,8 +7568,16 @@ function themeChoiceBtn(t){
   var lab=t==='dark'?'Dark':(t==='system'?'Follow OS':'Light');
   var ic=t==='dark'?themeMoonSVG(11):(t==='system'?'<span style="font-size:11px">◐</span>':themeSunSVG(12));
   return '<button onclick="setThemePref(\''+t+'\')" class="'+(cur?'border-blue-300 bg-blue-50/60 text-blue-700':'border-gray-200 text-gray-600 hover:border-gray-300 hover:bg-gray-50')+' border rounded-lg px-2.5 py-1.5 text-[10px] font-bold flex items-center gap-1.5 transition-colors">'+ic+'<span>'+lab+'</span>'+(cur?'<span>✓</span>':'')+'</button>';}
+/* Reset the demo: clear saved demo data (theme is kept), re-anchor dates, reload */
+function museResetDemo(){
+  if(!window.confirm('Reset the demo? This clears saved changes in this browser and reloads Muse Live with fresh demo data.'))return;
+  try{if(typeof MuseDemo!=='undefined'&&MuseDemo.reset){MuseDemo.reset();return;}}catch(e){}
+  location.reload();
+}
 function initApp(){
   try{musePaintTheme(museAppliedScheme(),museThemePref());}catch(eTh){}
+  /* rolling demo clock: move every show's seed dates relative to today before saved edits overlay */
+  try{if(typeof MuseDemo!=='undefined'&&MuseDemo.applySeed)MuseDemo.applySeed();}catch(eDemo){}
   try{loadState();}catch(e){}
   try{if(typeof MuseBOps!=='undefined'&&MuseBOps.seedShowcase)MuseBOps.seedShowcase();}catch(e){}
   try{if(typeof permInit==='function')permInit();}catch(e){}
@@ -7615,6 +7598,14 @@ function initApp(){
   tickClock();setInterval(tickClock,1000);tickAir();setInterval(tickAir,1000);setInterval(tickLat,2000);
   try{museHistoryInit();}catch(e){}
   try{museClockBadge();}catch(e){}
+  /* Broadcast Ops + truck telemetry load when the browser is idle (not on the critical path) */
+  function loadBOpsIdle(){
+    if(typeof MuseLazy==='undefined'||!MuseLazy.ensureBOps)return;
+    MuseLazy.ensureBOps().then(function(){
+      try{var a=document.querySelector('.view-pane.active');var k=a&&a.id.replace(/^view-/,'');if(productions[k])renderProjectView(k);}catch(e){}
+    }).catch(function(){});
+  }
+  try{(window.requestIdleCallback||function(f){return setTimeout(f,1200);})(loadBOpsIdle,{timeout:2500});}catch(eIdle){setTimeout(loadBOpsIdle,1500);}
   function afterPaint(){
     try{renderSnapFilters();}catch(e){}
     try{renderSnapshot();}catch(e){}
@@ -7627,15 +7618,6 @@ function initApp(){
     try{setInterval(function(){if(typeof portalTick==='function')portalTick();},1000);}catch(e){}
     try{trackInit();}catch(e){}
     try{opsInit();}catch(e){}
-    try{museaiAssistInit();}catch(e){}
-    try{
-      if(typeof museIsPhone==='function'&&museIsPhone()){ /* skip the local model on phones — it can run out of memory */ }
-      else if(typeof museaiLocalEnabled==='function'&&museaiLocalEnabled()){
-        var warm=function(){try{if(typeof MuseAiLocal!=='undefined'&&MuseAiLocal.warmOnIdle)MuseAiLocal.warmOnIdle();}catch(e0){}};
-        if(typeof MuseLazy!=='undefined'&&MuseLazy.ensureLocal)MuseLazy.ensureLocal().then(warm).catch(function(){});
-        else warm();
-      }
-    }catch(eW){}
     try{engInit();}catch(e){}
     try{travelInit();}catch(e){}
     try{npcInit();}catch(e){}
@@ -9149,12 +9131,12 @@ function wxRetry(key){WX_CACHE[key]=null;wxEnsure(key);}
    The Windy key ships inside this file by design — accepted for this demo.
    ================================================================================ */
 var WXC_CITIES=[
- {city:'New York',lat:40.7128,lon:-74.0060},
- {city:'Chicago',lat:41.8781,lon:-87.6298},
- {city:'Denver',lat:39.7392,lon:-104.9903},
- {city:'Los Angeles',lat:34.0522,lon:-118.2437},
- {city:'San Juan',lat:18.4655,lon:-66.1057},
- {city:'Mexico City',lat:19.4326,lon:-99.1332}];
+ {city:'Menlo Park',lat:37.4848,lon:-122.1484},
+ {city:'New York',lat:40.7536,lon:-74.0007},
+ {city:'London',lat:51.5347,lon:-0.1246},
+ {city:'Tel Aviv',lat:32.0853,lon:34.7818},
+ {city:'Singapore',lat:1.2803,lon:103.8500},
+ {city:'Tokyo',lat:35.6812,lon:139.7671}];
 var WXC_KEY=''; /* Windy point-forecast key (optional). Empty = keyless Open-Meteo. */
 var WXC_CACHE={}; /* idx -> {ts, source:'windy'|'openmeteo', cur, hours, aqi, error} */
 var WXC_TTL=10*60*1000;
@@ -9247,7 +9229,7 @@ function wxcRefresh(i){WXC_CACHE[i]=null;openCityWx(i);}
 function wxcRender(i){var bx=document.getElementById('wxCityBox');if(!bx)return;
   var z=tzZones[i]||[];var ct=WXC_CITIES[i]||{};var d=WXC_CACHE[i];
   var head='<div class="flex items-start justify-between mb-1"><div><h3 class="text-sm font-bold text-gray-900 leading-none">'+esc(ct.city||'')+' — Live Conditions</h3>'+
-    '<p class="text-[10px] text-gray-500 mt-1">'+esc(z[1]||'')+' ('+esc(z[0]||'')+') · <span class="mono">'+ct.lat.toFixed(4)+', '+ct.lon.toFixed(4)+'</span></p></div>'+
+    '<p class="text-[10px] text-gray-500 mt-1">Meta '+esc(z[1]||'')+(z[3]?' · '+esc(z[3]):'')+' ('+esc(z[0]||'')+') · <span class="mono">'+ct.lat.toFixed(4)+', '+ct.lon.toFixed(4)+'</span></p></div>'+
     '<button onclick="closeCityWx()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button></div>';
   if(!d||d.error){
     bx.innerHTML=head+'<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center mt-3"><p class="text-[12px] font-bold text-amber-800 mb-1">Conditions unavailable</p>'+

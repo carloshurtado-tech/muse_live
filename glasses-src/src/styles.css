@@ -1,0 +1,12 @@
+/* Layout only — colors, type and shapes come from the toolkit's semantic tokens. */
+.g-pad { display: block; padding: var(--uit-spacing-small) var(--uit-spacing-large); }
+.g-demo { display: block; padding: var(--uit-spacing-medium) var(--uit-spacing-large) 0; }
+.g-answer { display: flex; flex-direction: column; gap: var(--uit-spacing-small); padding: var(--uit-spacing-small) var(--uit-spacing-large) var(--uit-spacing-medium); }
+.g-next { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: var(--uit-spacing-small); height: 100%; padding: 0 var(--uit-spacing-large) var(--uit-spacing-3xl); box-sizing: border-box; }
+.g-count { font-variant-numeric: tabular-nums; margin: var(--uit-spacing-small) 0; }
+/* clears the floating SubNavigation bar (its 20px top margin + ~44px pill + breathing room) */
+.g-list { padding-top: 76px; padding-bottom: var(--uit-spacing-large); }
+.g-head { display: flex; flex-direction: column; gap: var(--uit-spacing-2xs); padding: 0 var(--uit-spacing-large) var(--uit-spacing-small); }
+.g-head h1 { margin: 0; }
+.g-fill { display: flex; flex-direction: column; height: 100%; padding-top: 76px; box-sizing: border-box; }
+.g-fill .g-next { flex: 1; }

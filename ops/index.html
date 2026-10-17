@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Muse Live Ops</title>
+<link rel="icon" href="/assets/brand/favicon.svg"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap"><link rel="stylesheet" href="ops.css"></head>
+<body><script src="ops.js"></script><script>header('index.html')</script>
+<main><div><h1>Operations</h1><p class="sub">Product health, the audit trail and account management for Muse Live.</p></div>
+<div class="kpis" id="k"></div>
+<div class="card"><h2>Signed in as</h2><div id="me" class="empty">Loading…</div></div>
+<div class="card"><h2>Deployment</h2><div id="cfg" class="empty">Loading…</div></div></main>
+<script>
+api('/api/auth/me').then(function (j) { document.getElementById('me').innerHTML = j.ok ? esc(j.user.name) + (j.user.email ? ' · ' + esc(j.user.email) : '') + ' · <span class="pill">' + esc(j.user.role) + '</span>' : '<div class="msg neg">Sign in required.</div>'; });
+api('/api/auth/config').then(function (c) {
+  document.getElementById('cfg').innerHTML = '<table><tbody>' +
+    [['Shared storage (MUSE_KV)', c.storage], ['Per-user accounts', c.accounts], ['Single sign-on (OIDC)', c.sso], ['Shared access password accepted', c.sharedPassword]]
+      .map(function (r) { return '<tr><td>' + r[0] + '</td><td><span class="pill ' + (r[1] ? 'pos' : '') + '">' + (r[1] ? 'On' : 'Off') + '</span></td></tr>'; }).join('') + '</tbody></table>';
+});
+api('/api/observe?date=' + today()).then(function (j) {
+  var d = (j && j.data) || { errors: {}, views: {}, muse: {}, sessions: 0 };
+  var errs = Object.values(d.errors || {}).reduce(function (s, e) { return s + e.count; }, 0);
+  document.getElementById('k').innerHTML = [['Sessions today', d.sessions || 0], ['Muse questions today', (d.muse && d.muse.asked) || 0], ['Errors today', errs], ['Screens viewed', Object.values(d.views || {}).reduce(function (a, b) { return a + b; }, 0)]]
+    .map(function (k) { return '<div class="kpi"><span>' + k[0] + '</span><b>' + k[1] + '</b></div>'; }).join('');
+});
+</script></body></html>

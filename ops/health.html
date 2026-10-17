@@ -1,0 +1,30 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Muse Live Health</title>
+<link rel="icon" href="/assets/brand/favicon.svg"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap"><link rel="stylesheet" href="ops.css"></head>
+<body><script src="ops.js"></script><script>header('health.html')</script>
+<main><div class="row" style="justify-content:space-between"><div><h1>Health</h1><p class="sub">Errors, usage and Muse activity, aggregated per day. No question text or page content is collected.</p></div>
+<label class="row"><span class="sub">Day</span><input type="date" id="d"></label></div>
+<div id="out"></div></main>
+<script>
+var d = document.getElementById('d'); d.value = today(); d.onchange = load;
+function bars(obj) {
+  var rows = Object.entries(obj || {}).sort(function (a, b) { return b[1] - a[1]; }).slice(0, 25), max = rows.length ? rows[0][1] : 1;
+  return rows.length ? '<table><tbody>' + rows.map(function (r) { return '<tr><td>' + esc(r[0]) + '</td><td style="width:45%"><div class="bar" style="width:' + Math.round(r[1] / max * 100) + '%"></div></td><td class="mono">' + r[1] + '</td></tr>'; }).join('') + '</tbody></table>' : '<p class="empty">Nothing recorded.</p>';
+}
+function load() {
+  var out = document.getElementById('out');
+  api('/api/observe?date=' + d.value).then(function (j) {
+    if (!gate(j, out)) return;
+    var x = j.data || { errors: {}, views: {}, features: {}, muse: {}, sessions: 0, users: {} };
+    var errs = Object.values(x.errors || {}).sort(function (a, b) { return b.count - a.count; });
+    var sync = window.opener || null;
+    out.innerHTML = '<div class="kpis"><div class="kpi"><span>Sessions</span><b>' + (x.sessions || 0) + '</b></div><div class="kpi"><span>People</span><b>' + Object.keys(x.users || {}).length + '</b></div>' +
+      '<div class="kpi"><span>Muse questions</span><b>' + ((x.muse && x.muse.asked) || 0) + '</b></div><div class="kpi"><span>Error groups</span><b>' + errs.length + '</b></div></div>' +
+      '<div class="card"><h2>Errors</h2>' + (errs.length ? '<div class="wrap"><table><thead><tr><th>Count</th><th>Error</th><th>Where</th><th>Last seen</th></tr></thead><tbody>' + errs.map(function (e) {
+        return '<tr><td class="mono"><span class="pill neg">' + e.count + '</span></td><td>' + esc(e.msg) + (e.stack ? '<pre>' + esc(e.stack.split('\n').slice(0, 4).join('\n')) + '</pre>' : '') + '</td><td>' + esc(e.src) + '</td><td class="mono">' + esc((e.last || e.first || '').replace('T', ' ').slice(0, 19)) + '</td></tr>';
+      }).join('') + '</tbody></table></div>' : '<p class="empty">No errors from Muse Live code.</p>') + '</div>' +
+      '<div class="card"><h2>Screens</h2>' + bars(x.views) + '</div><div class="card"><h2>Features used</h2>' + bars(x.features) + '</div>' +
+      '<div class="card"><h2>Shared storage</h2><p class="sub">Last aggregate update ' + esc((x.updated || '—').replace('T', ' ').slice(0, 19)) + ' UTC.</p></div>';
+  });
+}
+load();
+</script></body></html>

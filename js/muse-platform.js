@@ -117,8 +117,8 @@
         Object.assign({ slug: slug }, body || {})
       );
     },
-    xytechPush: function (body) {
-      return req('POST', '/api/v1/integrations/xytech/push', body || {});
+    schedulePush: function (body) {
+      return req('POST', '/api/v1/integrations/schedule/push', body || {});
     },
     /** Ensure session when DEV_AUTH_BYPASS is on */
     ensureSession: function () {

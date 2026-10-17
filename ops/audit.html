@@ -1,0 +1,18 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Muse Live Audit log</title>
+<link rel="icon" href="/assets/brand/favicon.svg"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap"><link rel="stylesheet" href="ops.css"></head>
+<body><script src="ops.js"></script><script>header('audit.html')</script>
+<main><div class="row" style="justify-content:space-between"><div><h1>Audit log</h1><p class="sub">Every sign-in, account change and shared-data write, newest first. Append-only.</p></div>
+<div class="row"><input type="search" id="q" placeholder="Filter: person, action, key" aria-label="Filter"><input type="date" id="d" aria-label="Day"></div></div>
+<div class="card"><div id="out" class="empty">Loading…</div></div></main>
+<script>
+var d = document.getElementById('d'), q = document.getElementById('q'), rows = [];
+d.value = today(); d.onchange = load; q.oninput = render;
+function render() {
+  var f = q.value.trim().toLowerCase(), list = rows.filter(function (e) { return !f || JSON.stringify(e).toLowerCase().indexOf(f) >= 0; });
+  document.getElementById('out').innerHTML = list.length ? '<div class="wrap"><table><thead><tr><th>Time (UTC)</th><th>Who</th><th>Role</th><th>Action</th><th>Key</th><th>Detail</th></tr></thead><tbody>' +
+    list.map(function (e) { return '<tr><td class="mono">' + esc(e.t.slice(11, 19)) + '</td><td>' + esc(e.who) + '</td><td>' + esc(e.role) + '</td><td><span class="pill ' + (/failed/.test(e.action) ? 'neg' : '') + '">' + esc(e.action) + '</span></td><td>' + esc(e.key) + '</td><td>' + esc(typeof e.detail === 'object' ? JSON.stringify(e.detail) : e.detail) + '</td></tr>'; }).join('') +
+    '</tbody></table></div>' : '<p class="empty">No entries for this day.</p>';
+}
+function load() { api('/api/audit?date=' + d.value).then(function (j) { var el = document.getElementById('out'); if (!gate(j, el)) return; rows = (j.entries || []).slice().reverse(); render(); }); }
+load();
+</script></body></html>

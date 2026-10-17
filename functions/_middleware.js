@@ -1,64 +1,79 @@
+// @ts-check
 // Access gate for every request (see _routes.json).
-// The password is never stored: PW_HASH = sha256('muse-live:' + password).
-// Override per environment with the MUSE_PASSWORD_HASH secret.
-const PW_HASH = 'b774222f71346737d53bc90fd0572e8b2f86d34b02b16b1c9704cc18a3f85db0';
-const SESSION = 'muse_session';
-const HINT = 'muse_authed';
-const MAX_AGE = 60 * 60 * 24 * 7;
+//
+// Sessions are signed tokens carrying the user and role (functions/_lib/session.js).
+// Sign-in options, in order of preference:
+//   1. SSO (OIDC) when OIDC_ISSUER / OIDC_CLIENT_ID / OIDC_CLIENT_SECRET are set — /api/auth/oidc/start
+//   2. Per-user email + password, when accounts exist in KV (functions/api/auth/users.js)
+//   3. The shared access password — only while no per-user accounts exist
+//      (or ALLOW_SHARED_PASSWORD=true). The password is never stored: PW_HASH = sha256('muse-live:' + password).
+import { json, pwHash, readSession, sha256hex, signSession, sessionCookies, clearCookies, sameOrigin } from './_lib/session.js';
+import { getUser, hasUsers, normEmail, verifyPassword } from './_lib/users.js';
+import { audit } from './_lib/audit.js';
 
 // Served to signed-out visitors: the login page and what it needs to render.
-const PUBLIC_PATHS = new Set(['/', '/index.html', '/manifest.webmanifest', '/robots.txt', '/sitemap.xml', '/favicon.ico']);
-const PUBLIC_PREFIXES = ['/assets/brand/', '/css/'];
+const PUBLIC_PATHS = new Set(['/', '/index.html', '/manifest.webmanifest', '/robots.txt', '/sitemap.xml', '/favicon.ico',
+  '/api/auth/config', '/api/auth/oidc/start', '/api/auth/oidc/callback',
+  // Calendar subscriptions (Google / Outlook) can't send cookies; the handler checks its own token.
+  '/api/calendar', '/api/calendar.ics']);
+const PUBLIC_PREFIXES = ['/assets/brand/', '/css/', '/api/calendar/'];
+// Pages a signed-out visitor should be sent to the sign-in screen for (instead of a bare 401).
+const REDIRECT_PREFIXES = ['/glasses', '/ops'];
 
-async function sha256hex(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
+async function login(request, env, secure) {
+  if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
+  if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
+  let body = {};
+  try { body = await request.json(); } catch (e) { /* empty body */ }
+  const password = typeof body.password === 'string' ? body.password : '';
+  const email = normEmail(body.email);
+  if (!password || password.length > 256) return json({ ok: false, error: 'Enter the access password.' }, 400);
 
-function readCookie(request, name) {
-  const header = request.headers.get('Cookie') || '';
-  for (const part of header.split(';')) {
-    const i = part.indexOf('=');
-    if (i > 0 && part.slice(0, i).trim() === name) return part.slice(i + 1).trim();
-  }
-  return null;
-}
-
-function json(body, status = 200, extra) {
-  const headers = new Headers({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
-  if (extra) for (const [k, v] of extra) headers.append(k, v);
-  return new Response(JSON.stringify(body), { status, headers });
-}
-
-export async function onRequest({ request, next, env }) {
-  const url = new URL(request.url);
-  const path = url.pathname;
-  const pwHash = (env && env.MUSE_PASSWORD_HASH) || PW_HASH;
-  const token = await sha256hex('muse-session-v1:' + pwHash);
-  const authed = readCookie(request, SESSION) === token;
-  const secure = url.protocol === 'https:' ? '; Secure' : '';
-
-  if (path === '/api/ping') return json({ ok: true, authed });
-
-  if (path === '/api/login') {
-    if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
-    let body = {};
-    try { body = await request.json(); } catch (e) { /* empty body */ }
-    const password = typeof body.password === 'string' ? body.password : '';
-    if (!password || password.length > 256) return json({ ok: false, error: 'Enter the access password.' }, 400);
-    if ((await sha256hex('muse-live:' + password)) !== pwHash) {
+  let who = null;
+  if (email) {
+    const user = await getUser(env, email);
+    if (user && !user.disabled && (await verifyPassword(user, password))) who = { u: user.email, n: user.name || user.email, r: user.role };
+    if (!who) {
+      await audit(env, { who: email, action: 'login.failed', detail: 'password' });
+      return json({ ok: false, error: 'That email and password don’t match an active account.' }, 401);
+    }
+  } else {
+    if ((await hasUsers(env)) && env.ALLOW_SHARED_PASSWORD !== 'true') {
+      return json({ ok: false, error: 'Sign in with your email and password.', needEmail: true }, 401);
+    }
+    if ((await sha256hex('muse-live:' + password)) !== pwHash(env)) {
+      await audit(env, { who: 'team', action: 'login.failed', detail: 'shared password' });
       return json({ ok: false, error: 'The password you entered is incorrect.' }, 401);
     }
-    return json({ ok: true }, 200, [
-      ['Set-Cookie', `${SESSION}=${token}; Path=/; Max-Age=${MAX_AGE}; HttpOnly; SameSite=Lax${secure}`],
-      ['Set-Cookie', `${HINT}=1; Path=/; Max-Age=${MAX_AGE}; SameSite=Lax${secure}`],
-    ]);
+    who = { u: 'team', n: 'Muse Live team', r: 'admin' };
   }
+  await audit(env, { who: who.u, role: who.r, action: 'login', detail: email ? 'password' : 'shared password' });
+  return json({ ok: true, user: { email: who.u === 'team' ? null : who.u, name: who.n, role: who.r } }, 200, sessionCookies(await signSession(env, who), secure).map((c) => ['Set-Cookie', c]));
+}
 
-  if (path === '/logout') {
+export async function onRequest(context) {
+  const { request, next, env } = context;
+  const url = new URL(request.url);
+  const path = url.pathname;
+  const secure = url.protocol === 'https:';
+  const session = await readSession(request, env);
+  let authed = !!session;
+
+  // Accounts disabled after sign-in lose API access immediately (checked on API calls only,
+  // so static assets don't cost a KV read each).
+  if (authed && session.u !== 'team' && path.startsWith('/api/') && env.MUSE_KV) {
+    const user = await getUser(env, session.u);
+    if (!user || user.disabled) authed = false;
+    else if (user.role !== session.r) session.r = user.role; // role changes apply immediately
+  }
+  if (context.data) context.data.user = authed ? session : null;
+
+  if (path === '/api/ping') return json({ ok: true, authed });
+  if (path === '/api/login' || path === '/api/auth/login') return login(request, env, secure);
+  if (path === '/logout' || path === '/api/auth/logout') {
+    if (authed) await audit(env, { who: session.u, role: session.r, action: 'logout' });
     const headers = new Headers({ Location: '/', 'Cache-Control': 'no-store' });
-    headers.append('Set-Cookie', `${SESSION}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${secure}`);
-    headers.append('Set-Cookie', `${HINT}=; Path=/; Max-Age=0; SameSite=Lax${secure}`);
+    for (const c of clearCookies(secure)) headers.append('Set-Cookie', c);
     return new Response(null, { status: 302, headers });
   }
 
@@ -66,6 +81,9 @@ export async function onRequest({ request, next, env }) {
 
   if (PUBLIC_PATHS.has(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p)) || path.endsWith('.css')) return next();
   if (path.startsWith('/api/')) return json({ ok: false, error: 'Sign in required' }, 401);
+  if (REDIRECT_PREFIXES.some((p) => path === p || path.startsWith(p + '/')) && !/\.(m?js|css|json|map)$/.test(path)) {
+    return new Response(null, { status: 302, headers: { Location: '/?next=' + encodeURIComponent(path + url.search), 'Cache-Control': 'no-store' } });
+  }
   // App scripts are withheld until sign-in; an empty module keeps the login page error-free.
   if (path.endsWith('.js') || path.endsWith('.mjs')) {
     return new Response('/* sign in required */\n', {
@@ -75,3 +93,4 @@ export async function onRequest({ request, next, env }) {
   }
   return new Response('Sign in required', { status: 401, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
 }
+

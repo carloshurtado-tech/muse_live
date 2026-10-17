@@ -1,0 +1,30 @@
+{
+  "name": "muse-live",
+  "version": "4.8.0",
+  "private": true,
+  "description": "Muse Live \u2014 broadcast & live-streaming operations platform with the Muse AI agent (Cloudflare Pages + Functions).",
+  "type": "module",
+  "engines": {
+    "node": ">=18.18"
+  },
+  "scripts": {
+    "dev": "node tools/dev-server.mjs",
+    "build": "node scripts/build.mjs",
+    "bump": "node scripts/build.mjs --bump-only",
+    "stage": "node scripts/stage.mjs",
+    "test": "node --test tests/unit/*.test.mjs",
+    "test:e2e": "playwright test -c tests/e2e/playwright.config.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json",
+    "check": "npm run lint && npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.5",
+    "@playwright/test": "1.56.1",
+    "@types/node": "22.10.2",
+    "esbuild": "0.25.5",
+    "eslint": "9.39.5",
+    "globals": "15.14.0",
+    "typescript": "5.7.2"
+  }
+}

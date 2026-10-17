@@ -1,0 +1,29 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Muse Live Users</title>
+<link rel="icon" href="/assets/brand/favicon.svg"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&display=swap"><link rel="stylesheet" href="ops.css"></head>
+<body><script src="ops.js"></script><script>header('users.html')</script>
+<main><div><h1>Users</h1><p class="sub">Per-person accounts and roles. Once the first account exists, the shared access password stops working (unless ALLOW_SHARED_PASSWORD=true), so create your own admin account first.</p></div>
+<div class="card"><h2>Add a person</h2>
+<form id="add" class="row"><input name="fullname" placeholder="Name" aria-label="Name" required><input name="email" type="email" placeholder="email@meta.com" aria-label="Email" required>
+<select name="role" aria-label="Role"><option value="viewer">Viewer — read only</option><option value="engineer">Engineer</option><option value="producer">Producer</option><option value="admin">Admin</option></select>
+<input name="password" type="password" minlength="10" placeholder="Temporary password (10+ chars)" aria-label="Temporary password" required><button class="primary">Add</button></form>
+<p id="msg" class="sub"></p></div>
+<div class="card"><h2>Accounts</h2><div id="out" class="empty">Loading…</div></div></main>
+<script>
+var roles = ['viewer', 'engineer', 'producer', 'admin'];
+function load() {
+  api('/api/auth/users').then(function (j) {
+    var el = document.getElementById('out'); if (!gate(j, el)) return;
+    el.innerHTML = j.users.length ? '<div class="wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>' + j.users.map(function (u) {
+      return '<tr><td>' + esc(u.name) + '</td><td>' + esc(u.email) + '</td><td><select aria-label="Role for ' + esc(u.email) + '" onchange="patch(\'' + esc(u.email) + '\',{role:this.value})">' + roles.map(function (r) { return '<option' + (r === u.role ? ' selected' : '') + '>' + r + '</option>'; }).join('') + '</select></td>' +
+        '<td><span class="pill ' + (u.disabled ? 'neg' : 'pos') + '">' + (u.disabled ? 'Disabled' : 'Active') + '</span></td><td><button onclick="patch(\'' + esc(u.email) + '\',{disabled:' + !u.disabled + '})">' + (u.disabled ? 'Enable' : 'Disable') + '</button></td></tr>';
+    }).join('') + '</tbody></table></div>' : '<p class="empty">No accounts yet — everyone signs in with the shared access password.</p>';
+  });
+}
+function patch(email, body) { api('/api/auth/users', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(Object.assign({ email: email }, body)) }).then(function (j) { document.getElementById('msg').textContent = j.ok ? 'Saved.' : (j.error || 'Failed'); load(); }); }
+document.getElementById('add').onsubmit = function (ev) {
+  ev.preventDefault(); var f = ev.target;
+  api('/api/auth/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: f.fullname.value, email: f.email.value, role: f.role.value, password: f.password.value }) })
+    .then(function (j) { document.getElementById('msg').textContent = j.ok ? 'Added ' + j.user.email + '.' : (j.error || 'Failed'); if (j.ok) f.reset(); load(); });
+};
+load();
+</script></body></html>

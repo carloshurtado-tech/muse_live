@@ -1,1 +1,32 @@
 .DS_Store
+node_modules/
+# local secrets and emulator state
+.dev.vars
+.dev.*.vars
+.dev-kv.json
+# build / test output
+dist/
+.stage/
+test-results/
+playwright-report/
+*.min.js.map
+
+# iCloud sync files
+.DocumentRevisions-V100/
+.TemporaryItems/
+.Spotlight-V100/
+.Trashes
+
+# node (never commit it; glasses-src builds in scratchpad)
+glasses-src/node_modules/
+glasses-src/dist/
+glasses/.vite/
+
+# scratchpad / local artefacts
+*.pyc
+__pycache__/
+
+# wrangler state
+.wrangler/
+kv-*.json
+dev*.log

@@ -12,7 +12,7 @@
 
   var loading = {};
   var loaded = {};
-  var CACHE_V = '0501';
+  var CACHE_V = '20261017-sched1';
 
   function scriptBase() {
     try {
@@ -267,26 +267,21 @@
     });
   }
 
+  // Truck telemetry (ThingsBoard) is only used by Broadcast Ops; load it first, never on the critical path.
+  function ensureTB() {
+    if (typeof global.MuseThingsBoard !== 'undefined') return Promise.resolve(global.MuseThingsBoard);
+    return loadScript('js/muse-thingsboard.js', 'muse-thingsboard').then(function () { return global.MuseThingsBoard; }).catch(function () { return null; });
+  }
   function ensureBOps() {
     if (typeof global.MuseBOps !== 'undefined' && global.MuseBOps.opsPaneHTML) {
       return Promise.resolve(global.MuseBOps);
     }
-    return loadScript('js/muse-broadcast-ops.js', 'muse-broadcast-ops').then(function () {
+    return ensureTB().then(function () { return loadScript('js/muse-broadcast-ops.js', 'muse-broadcast-ops'); }).then(function () {
       if (typeof global.MuseBOps === 'undefined') throw new Error('MuseBOps missing after load');
       try {
         if (global.MuseBOps.seedShowcase) global.MuseBOps.seedShowcase();
       } catch (e) {}
       return global.MuseBOps;
-    });
-  }
-
-  function ensureLocal() {
-    if (typeof global.MuseAiLocal !== 'undefined') {
-      return Promise.resolve(global.MuseAiLocal);
-    }
-    return loadScript('js/muse-ai-local.js?v=20261015-meta6', 'muse-ai-local').then(function () {
-      if (typeof global.MuseAiLocal === 'undefined') throw new Error('MuseAiLocal missing after load');
-      return global.MuseAiLocal;
     });
   }
 
@@ -297,7 +292,7 @@
     ensurePdf: ensurePdf,
     ensureFuse: ensureFuse,
     ensureBOps: ensureBOps,
-    ensureLocal: ensureLocal,
+    ensureTB: ensureTB,
     loadScript: loadScript,
     candidateUrls: candidateUrls,
     abs: abs

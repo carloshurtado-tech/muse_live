@@ -15,17 +15,12 @@
 // middleware's default hash. The login middleware must let /api/calendar* through: this
 // function checks the session itself for sign and POST, and the token for feeds.
 
-const DEFAULT_PW_HASH = 'b774222f71346737d53bc90fd0572e8b2f86d34b02b16b1c9704cc18a3f85db0';
-const SESSION = 'muse_session';
+import { DEFAULT_PW_HASH } from '../_lib/session.js';
 const KV_KEY = 'calendar:schedule';
 const MAX_SNAPSHOT = 2_000_000;
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
-}
-async function sha256hex(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 async function hmac(secret, msg) {
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
@@ -38,22 +33,9 @@ function safeEqual(a, b) {
   let r = 0; for (let i = 0; i < a.length; i++) r |= a.charCodeAt(i) ^ b.charCodeAt(i);
   return r === 0;
 }
-function readCookie(request, name) {
-  for (const part of (request.headers.get('Cookie') || '').split(';')) {
-    const i = part.indexOf('=');
-    if (i > 0 && part.slice(0, i).trim() === name) return part.slice(i + 1).trim();
-  }
-  return null;
-}
 function secretOf(env) { return (env && (env.MUSE_FEED_SECRET || env.MUSE_PASSWORD_HASH)) || DEFAULT_PW_HASH; }
-// Signed in? Accept a user set by the middleware (context.data.user / authed), else check the
-// session cookie the same way functions/_middleware.js issues it.
-async function signedIn(request, env, data) {
-  if (data && (data.user || data.authed === true)) return true;
-  const pw = (env && env.MUSE_PASSWORD_HASH) || DEFAULT_PW_HASH;
-  const token = await sha256hex('muse-session-v1:' + pw);
-  return safeEqual(readCookie(request, SESSION) || '', token);
-}
+// Signed in? Middleware runs for every request (even public paths) and sets context.data.user.
+function signedIn(_request, _env, data) { return !!(data && (data.user || data.authed === true)); }
 function scopeOf(url) {
   for (const k of ['prod', 'res', 'crew']) { const v = url.searchParams.get(k); if (v) return { kind: k, value: v.slice(0, 120), key: k + ':' + v.slice(0, 120) }; }
   return { kind: 'all', value: '', key: 'all' };
@@ -128,7 +110,7 @@ export async function onRequest(context) {
   const scope = scopeOf(url);
 
   if (request.method === 'POST') {
-    if (!(await signedIn(request, env, data))) return json({ ok: false, error: 'Sign in required' }, 401);
+    if (!signedIn(request, env, data)) return json({ ok: false, error: 'Sign in required' }, 401);
     const raw = await request.text();
     if (raw.length > MAX_SNAPSHOT) return json({ ok: false, error: 'Snapshot too large' }, 413);
     let snap; try { snap = JSON.parse(raw); } catch (e) { return json({ ok: false, error: 'Bad JSON' }, 400); }
@@ -140,7 +122,7 @@ export async function onRequest(context) {
 
   const secret = secretOf(env);
   if (url.searchParams.get('sign')) {
-    if (!(await signedIn(request, env, data))) return json({ ok: false, error: 'Sign in required' }, 401);
+    if (!signedIn(request, env, data)) return json({ ok: false, error: 'Sign in required' }, 401);
     const token = await hmac(secret, scope.key);
     const qs = scope.kind === 'all' ? '' : scope.kind + '=' + encodeURIComponent(scope.value) + '&';
     const feed = url.origin + '/api/calendar?' + qs + 'token=' + token; // also served at /api/calendar.ics

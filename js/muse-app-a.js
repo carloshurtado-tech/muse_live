@@ -828,128 +828,7 @@ function ensureFields(p){if(!p.schedule)p.schedule=[];if(!p.version)p.version="R
       delete p.tbFields["Engineering"].evs;}
     p.dept=DEPT_NAMES.map(function(nm){return byName[nm]||[nm,p.completeShowcase?"approved":"pending",p.completeShowcase?"Showcase · locked":"—"];});if(p.deptLoc&&p.__locBound&&p.deptLoc[p.__locBound])p.deptLoc[p.__locBound].dept=p.dept;}
   return p;}
-function stampEdit(key){var p=productions[key];if(!p)return;p.lastEdited=nowStamp();try{saveState();}catch(e){}try{museCloudPush(key);}catch(e2){}}
-/* muse platform cloud sync hook */
-var _cloudEtags={};
-function museCloudPush(key){
-  if(typeof musePlatform==='undefined'||!productions[key])return;
-  try{if(!musePlatform.token||!musePlatform.token())return;}catch(e){return;}
-  var blob=productions[key];
-  musePlatform.pushProduction(key,blob,{etag:_cloudEtags[key],schemaVersion:typeof MUSE_SCHEMA_VERSION!=='undefined'?MUSE_SCHEMA_VERSION:31})
-    .then(function(r){if(r&&r.etag)_cloudEtags[key]=r.etag;else if(r&&r._v)_cloudEtags[key]='v'+r._v;})
-    .catch(function(){});
-}
-function museCloudPull(key){
-  if(typeof musePlatform==='undefined')return Promise.resolve(null);
-  return musePlatform.ensureSession().then(function(){return musePlatform.pullProduction(key);})
-    .then(function(r){if(r&&r.blob){productions[key]=Object.assign(productions[key]||{},r.blob);if(r.etag)_cloudEtags[key]=r.etag;try{saveState();}catch(e){}return r;}return null;})
-    .catch(function(){return null;});
-}
-/* ---- Convex plan-of-record (one-way classic → web). Off unless CONVEX_SITE_URL is set. ---- */
-var _porTimer=null;
-var _porStatus='off';
-function musePorSiteUrl(){
-  var u='';
-  try{u=museCfg('CONVEX_SITE_URL')||museCfg('PULSE_CONVEX_SITE_URL')||'';}catch(e){}
-  return (u||museCfg('MUSE_SHARED_SYNC'))?location.origin+'/api':'';
-}
-function musePorSlimTb(tb){
-  if(!tb||typeof tb!=='object')return undefined;
-  var out={},n=0;
-  Object.keys(tb).forEach(function(dep){
-    var f=tb[dep];if(!f||typeof f!=='object')return;
-    var row={};
-    Object.keys(f).forEach(function(k){
-      var v=f[k];
-      if(v==null||v===''||v==='—')return;
-      if(typeof v==='string'&&v.indexOf('data:')===0)return;
-      if(typeof v==='string'||typeof v==='number'||typeof v==='boolean')row[k]=v;
-      else if(Array.isArray(v)&&v.length&&(typeof v[0]==='string'||typeof v[0]==='number'))row[k]=v.slice(0,40);
-    });
-    if(Object.keys(row).length){out[dep]=row;n++;}
-  });
-  return n?out:undefined;
-}
-function musePorSlim(key){
-  var p=productions[key];if(!p)return null;
-  var depts=(p.dept||[]).map(function(d){
-    var note=(d[2]&&d[2]!=='—')?String(d[2]).slice(0,200):undefined;
-    return {name:d[0],status:d[1],note:note};
-  });
-  var bops=p.broadcastOps||null;
-  var slimBops=undefined;
-  if(bops&&typeof bops==='object'){
-    var hops=bops.signalPath||bops.hops;
-    slimBops={
-      readiness:typeof MuseBOps!=='undefined'?Object.assign({},MuseBOps.computeGoNoGo(key),{engine:'classic-v1',capturedAt:Math.floor(Date.now()/60000)*60000,venueId:p.__locBound||null}):undefined,
-      remi:bops.remi||undefined,
-      weatherHold:!!bops.weatherHold,
-      liveOps:bops.liveOps||undefined,
-      signalPath:Array.isArray(hops)?hops.slice(0,24).map(function(h){
-        return {name:h.name||h.id||'hop',status:h.status||h.state||'amber',type:h.type||h.kind};
-      }):undefined
-    };
-  }
-  var pct=typeof p.pct==='number'?p.pct:(typeof computePct==='function'?computePct(p):0);
-  return {slug:key,name:p.name,customer:p.customer,venue:p.venue,date:p.date,status:p.status,tagColor:p.tagColor,pct:pct,depts:depts,broadcastOps:slimBops,tbFields:musePorSlimTb(p.tbFields)};
-}
-function musePorRefreshChip(){
-  try{
-    if(typeof MuseOS!=='undefined'&&MuseOS.render){try{MuseOS.render();}catch(eOs){}return;}
-    var el=document.getElementById('musePorChip');if(!el)return;
-    if(!musePorSiteUrl()){
-      el.textContent='PoR · local';
-      el.title='Plan of record is this browser only. Set CONVEX_SITE_URL in config.local.js to sync the web portfolio.';
-      el.className='text-[9px] mono font-bold px-1.5 py-0.5 rounded border bg-gray-50 text-gray-500 border-gray-200 hidden sm:inline';
-      return;
-    }
-    if(_porStatus==='pending'){el.textContent='PoR · syncing';el.className='text-[9px] mono font-bold px-1.5 py-0.5 rounded border bg-amber-50 text-amber-800 border-amber-200 hidden sm:inline';}
-    else if(_porStatus==='ok'){el.textContent='PoR · shared';el.className='text-[9px] mono font-bold px-1.5 py-0.5 rounded border bg-emerald-50 text-emerald-800 border-emerald-200 hidden sm:inline';}
-    else if(_porStatus==='err'){el.textContent='PoR · retry';el.className='text-[9px] mono font-bold px-1.5 py-0.5 rounded border bg-red-50 text-red-700 border-red-200 hidden sm:inline';}
-    else {el.textContent='PoR · ready';el.className='text-[9px] mono font-bold px-1.5 py-0.5 rounded border bg-blue-50 text-blue-800 border-blue-200 hidden sm:inline';}
-    el.title='Shared plan-of-record snapshot (dept status, Broadcast Ops, techbook) → Convex. Click to sync now.';
-  }catch(e){}
-}
-function musePorSchedule(){
-  if(!musePorSiteUrl()){musePorRefreshChip();return;}
-  _porStatus='pending';musePorRefreshChip();
-  if(_porTimer)clearTimeout(_porTimer);
-  _porTimer=setTimeout(function(){try{musePorFlush();}catch(e){}},900);
-}
-var _porInFlight=false;
-function musePorFlush(){
-  _porTimer=null;
-  var url=musePorSiteUrl();if(!url||_porInFlight)return;
-  var saved={};try{saved=JSON.parse(localStorage.getItem('muselive_shared_revisions')||'{}');}catch(e){}
-  var pending=null;try{pending=JSON.parse(localStorage.getItem('muselive_shared_pending')||'null');}catch(e){}
-  var rows=[];
-  if(!pending){
-    (order||[]).forEach(function(k){var row=musePorSlim(k);if(!row)return;
-      var fingerprint=JSON.stringify(row),previous=saved[k];
-      if(previous&&previous.fingerprint===fingerprint)return;
-      row.expectedRevision=previous?previous.revision:0;rows.push(row);
-    });
-    if(!rows.length)return;
-    pending={productions:rows,mutationId:crypto.randomUUID()};
-    try{localStorage.setItem('muselive_shared_pending',JSON.stringify(pending));}catch(e){
-      if(typeof toast==='function')toast('Shared sync paused: save a recovery backup before freeing browser storage.');return;
-    }
-  }
-  _porInFlight=true;
-  return fetch(url+'/snapshot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(pending),credentials:'same-origin'})
-    .then(function(r){if(r.status===409)throw new Error('CONFLICT');if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(function(result){
-      if(!result.ok||!result.revisions)throw new Error('Invalid sync response');
-      pending.productions.forEach(function(row){var copy=Object.assign({},row);delete copy.expectedRevision;
-        saved[row.slug]={revision:result.revisions[row.slug],fingerprint:JSON.stringify(copy)};
-      });
-      localStorage.setItem('muselive_shared_revisions',JSON.stringify(saved));
-      localStorage.removeItem('muselive_shared_pending');_porStatus='ok';
-      try{museBus.emit('por.synced',{n:pending.productions.length});}catch(e){}
-    })
-    .catch(function(e){_porStatus='err';if(typeof toast==='function')toast(e.message==='CONFLICT'?'Shared records changed. Your work is retained; reconcile the conflicting records before syncing.':'Shared sync failed. Your changes are retained for retry.');})
-    .finally(function(){_porInFlight=false;musePorRefreshChip();});
-}
+function stampEdit(key){var p=productions[key];if(!p)return;p.lastEdited=nowStamp();try{saveState();}catch(e){}}
 function museSyncCalendar(key){
   var p=productions[key];if(!p){toast&&toast('Open a production first');return;}
   var rows=p.schedule||[];if(!rows.length){toast&&toast('No schedule rows to export');return;}
@@ -1168,7 +1047,6 @@ function museRefreshStorageChip(){
     el.textContent=mb+' MB';
     el.title='Browser storage used by Muse Live (~'+pct+'% of typical 5 MB quota). Export backup if high.';
     el.className='text-[9px] mono font-bold px-1.5 py-0.5 rounded border '+(pct>=85?'bg-red-50 text-red-700 border-red-200':(pct>=65?'bg-amber-50 text-amber-700 border-amber-200':'bg-gray-50 text-gray-500 border-gray-200'));
-    try{musePorRefreshChip();}catch(ePor){}
   }catch(e){}
 }
 function museExportStateBackup(){
@@ -1245,7 +1123,7 @@ function museSaveStateNow(){
     if(typeof toast==='function')toast('Custom productions could not be saved. Export a backup before closing.');
   }
   try{museRefreshStorageChip();}catch(e4){}
-  try{musePorSchedule();}catch(ePor){}
+  
   return ok;
 }
 function saveGear(){try{localStorage.setItem('muselive_gear',JSON.stringify(deptFields));}catch(e){}}
@@ -7653,7 +7531,7 @@ function initApp(){
       if(typeof requestIdleCallback==='function')requestIdleCallback(warmBOps,{timeout:2500});
       else setTimeout(warmBOps,1200);
     }catch(eW2){}
-    try{museRefreshStorageChip();musePorRefreshChip();}catch(ePor){}
+    try{museRefreshStorageChip();}catch(ePor){}
   }
   if(typeof requestAnimationFrame==='function')requestAnimationFrame(function(){setTimeout(afterPaint,0);});
   else setTimeout(afterPaint,0);

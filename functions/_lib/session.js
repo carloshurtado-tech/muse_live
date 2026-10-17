@@ -68,8 +68,6 @@ export function readCookie(request, name) {
  */
 export async function verifyToken(env, token) {
   if (!token) return null;
-  // Sessions issued before per-user accounts existed: a static hash of the password hash.
-  if (token === (await sha256hex('muse-session-v1:' + pwHash(env)))) return { u: 'team', n: 'Muse Live team', r: 'admin', exp: 0, legacy: true };
   const dot = token.indexOf('.');
   if (dot < 1) return null;
   const payload = token.slice(0, dot);

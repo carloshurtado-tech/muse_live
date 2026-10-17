@@ -20,9 +20,30 @@ const PUBLIC_PREFIXES = ['/assets/brand/', '/css/', '/api/calendar/'];
 // Pages a signed-out visitor should be sent to the sign-in screen for (instead of a bare 401).
 const REDIRECT_PREFIXES = ['/glasses', '/ops'];
 
+// Constant-time dummy: 16 zero-byte salt, 32 zero-byte hash (b64u-encoded). verifyPassword still
+// runs PBKDF2 against it so response time doesn't leak whether an email exists.
+const DUMMY_USER = { salt: 'AAAAAAAAAAAAAAAAAAAAAA', hash: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', iter: 100000 };
+
+// Per-IP+session login throttle. shortcut: in-memory per isolate — fine for the demo team; move to MUSE_KV when it bottlenecks.
+const LOGIN_RATE = 10, LOGIN_WINDOW_MS = 60_000;
+const loginBuckets = globalThis.__museLoginBuckets || (globalThis.__museLoginBuckets = new Map());
+function loginKey(request) {
+  const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local';
+  const c = (request.headers.get('Cookie') || '').match(/(?:^|;\s*)muse_session=([^;]+)/);
+  return ip + '|' + (c ? c[1].slice(-16) : '-');
+}
+function loginTake(key) {
+  const now = Date.now(), b = loginBuckets.get(key) || { t: LOGIN_RATE, at: now };
+  b.t = Math.min(LOGIN_RATE, b.t + (now - b.at) * (LOGIN_RATE / LOGIN_WINDOW_MS)); b.at = now;
+  if (b.t < 1) { loginBuckets.set(key, b); return Math.ceil((1 - b.t) * LOGIN_WINDOW_MS / LOGIN_RATE / 1000); }
+  b.t -= 1; loginBuckets.set(key, b); return 0;
+}
+
 async function login(request, env, secure) {
   if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
   if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
+  const retry = loginTake(loginKey(request));
+  if (retry) return json({ ok: false, error: 'Too many sign-in attempts. Try again in ' + retry + ' s.' }, 429);
   let body = {};
   try { body = await request.json(); } catch (e) { /* empty body */ }
   const password = typeof body.password === 'string' ? body.password : '';
@@ -32,9 +53,12 @@ async function login(request, env, secure) {
   let who = null;
   if (email) {
     const user = await getUser(env, email);
-    if (user && !user.disabled && (await verifyPassword(user, password))) who = { u: user.email, n: user.name || user.email, r: user.role };
+    const active = user && !user.disabled;
+    // Always run PBKDF2 so timing doesn't reveal whether the email exists.
+    const ok = await verifyPassword(active ? user : DUMMY_USER, password);
+    if (active && ok) who = { u: user.email, n: user.name || user.email, r: user.role };
     if (!who) {
-      await audit(env, { who: email, action: 'login.failed', detail: 'password' });
+      await audit(env, { who: 'anonymous', action: 'login.failed', detail: 'password · ' + (await sha256hex(email)).slice(0, 10) });
       return json({ ok: false, error: 'That email and password don’t match an active account.' }, 401);
     }
   } else {
@@ -42,7 +66,7 @@ async function login(request, env, secure) {
       return json({ ok: false, error: 'Sign in with your email and password.', needEmail: true }, 401);
     }
     if ((await sha256hex('muse-live:' + password)) !== pwHash(env)) {
-      await audit(env, { who: 'team', action: 'login.failed', detail: 'shared password' });
+      await audit(env, { who: 'anonymous', action: 'login.failed', detail: 'shared password' });
       return json({ ok: false, error: 'The password you entered is incorrect.' }, 401);
     }
     who = { u: 'team', n: 'Muse Live team', r: 'admin' };

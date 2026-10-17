@@ -1514,12 +1514,8 @@
     };
     input.click();
   }
-  async function pdfLibrary() {
-    var lib = await import("./vendor/pdfjs/pdf.mjs?v=6.3.289");
-    lib.GlobalWorkerOptions.workerSrc =
-      "js/vendor/pdfjs/pdf.worker.mjs?v=6.3.289";
-    return lib;
-  }
+  // Share the pdfjs loader defined in muse-app-b.js (CDN, worker configured there) — one copy, one API.
+  function pdfLibrary() { return root.loadPdfJs(); }
   function attach(id) {
     var version = R.read("operations", C.empty()).version;
     chooseFile(

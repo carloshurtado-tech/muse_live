@@ -25,9 +25,8 @@ test('unknown roles are rejected', async () => {
   const t = await signSession(env, { u: 'a@b.co', r: 'superuser' });
   assert.equal(await verifyToken(env, t), null);
 });
-test('pre-account (legacy) sessions still sign in as the shared team admin', async () => {
+test('legacy pre-account session cookies are rejected (every session needs a signed token now)', async () => {
   const legacy = await sha256hex('muse-session-v1:' + pwHash({}));
-  const s = await verifyToken({}, legacy);
-  assert.equal(s.u, 'team'); assert.equal(s.r, 'admin'); assert.ok(s.legacy);
+  assert.equal(await verifyToken({}, legacy), null);
   assert.equal(pwHash({}), DEFAULT_PW_HASH);
 });

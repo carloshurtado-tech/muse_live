@@ -141,11 +141,15 @@
   /* Track the target every frame while the tour is on. One-shot placement goes stale whenever layout
      moves after the measurement (late iframes and fonts, slow machines, ultrawide re-layout) or a view
      re-render replaces the node, so re-resolve and re-place the moment anything shifts. */
-  var curEl = null, posKey = '', track = 0;
+  var curEl = null, posKey = '', track = 0, vpKey = '';
   function resolveEl() { if (i >= 0 && !(curEl && curEl.isConnected)) curEl = targetEl(STEPS[i]); return curEl; }
   function tick() {
     track = requestAnimationFrame(tick);
     if (!ui || i < 0) return;
+    // A resize reflows the page but keeps the old scroll offset, carrying the target (and the
+    // spotlight tracking it) out of view — re-run the step's own scroll whenever the window changes.
+    var vp = innerWidth + ',' + innerHeight;
+    if (vp !== vpKey) { vpKey = vp; jump(STEPS[i]); }
     var el = resolveEl(), r = el && el.getBoundingClientRect();
     var k = (r ? [r.left, r.top, r.width, r.height].join() : 'none') + '|' + innerWidth + ',' + innerHeight + ',' + ui.card.offsetWidth + ',' + ui.card.offsetHeight;
     if (k !== posKey) { posKey = k; place(); }

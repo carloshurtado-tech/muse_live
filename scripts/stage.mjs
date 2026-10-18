@@ -23,6 +23,7 @@ export const EXCLUDE = [
   /^scripts(\/|$)/, /^docs(\/|$)/, /^dist(\/|$)/, /^test-results(\/|$)/, /^playwright-report(\/|$)/, /^glasses\/src(\/|$)/, /^glasses-src(\/|$)/, /^eval(\/|$)/, /(^|\/)README\.md$/,
   /^package(-lock)?\.json$/, /^tsconfig\.json$/, /^eslint\.config\.mjs$/, /^README\.md$/, /(^|\/)\.DS_Store$/,
   /(^|\/)\.dev[^/]*$/, /^js\/muse-app-[ab]\.js$/, /\.d\.ts$/, /^\.gitignore$/,
+  / \d+\.[^/]+$/, /* iCloud conflict dupes: "index 2.html", "muse-app-b 2.js" */
 ];
 export function excluded(rel, withMaps = false) {
   if (!withMaps && /\.map$/.test(rel)) return true;

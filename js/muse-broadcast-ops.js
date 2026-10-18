@@ -133,7 +133,7 @@
       { id: 'sp2', order: 2, name: 'Stagebox A → Flypack', type: 'Embed / Stagebox', from: 'Stagebox A', to: 'Meta Field Ops', status: 'green', lastGood: nowISO(), notes: 'SMPTE hybrid' },
       { id: 'sp3', order: 3, name: "Harmonic XOS–6", type: 'Encoder / TX', from: "Jupiter", to: 'NYNJ FO hand-off', status: 'green', lastGood: nowISO(), notes: '12 enc / 6 dec · 1GB×2' },
       { id: 'sp4', order: 4, name: 'NYNJ → Miami FO', type: 'Contribution Fiber', from: 'HBS Port 1/2', to: 'TC Miami', status: 'green', lastGood: nowISO(), notes: "Harmonic XOS path" },
-      { id: 'sp5', order: 5, name: "LiveU LU800/U", type: 'Contribution Cellular', from: 'Harbor compound', to: 'TC Miami', status: 'amber', lastGood: '', notes: 'Serial validation on spare LU800' },
+      { id: 'sp5', order: 5, name: "LiveU LU800/U", type: 'Contribution Cellular', from: 'Stadium compound', to: 'TC Miami', status: 'amber', lastGood: '', notes: 'Serial validation on spare LU800' },
       { id: 'sp6', order: 6, name: "Harmonic XOS returns", type: 'Return / IFB', from: 'TC Miami', to: "Saturn", status: 'green', lastGood: nowISO(), notes: 'PGM + multiview' },
       { id: 'sp7', order: 7, name: "Evertz EQX 32×32 plant", type: 'Plant Router / Matrix', from: 'Flypack router', to: 'ISO / EVS / GFX', status: 'green', lastGood: nowISO(), notes: '128² class matrix' },
       { id: 'sp8', order: 8, name: 'TOC distribution', type: 'Distribution / TOC', from: 'TC Miami', to: 'Network / affiliates', status: 'green', lastGood: nowISO(), notes: 'Final air path' }
@@ -196,11 +196,11 @@
     var o = ensure(p);
     if (o.signalPath.length) {
       if (!o.remi || !(parseFloat(o.remi.budgetMs) > 0))
-        o.remi = { contribMs: 180, returnMs: 40, budgetMs: 350, path: "LiveU LU800 bonded → PCR 4", notes: 'Harbor cellular; raise budget if rain fade' };
+        o.remi = { contribMs: 180, returnMs: 40, budgetMs: 350, path: "LiveU LU800 bonded → PCR 4", notes: 'Campus cellular; raise budget if ladder path adds latency' };
       return o;
     }
     o.signalPath = [
-      { id: 'sp1', order: 1, name: 'Dockside Cam package', type: 'Camera / Source', from: 'Harbor set', to: "Venus", status: 'green', lastGood: nowISO(), notes: '4× HDC-3500' },
+      { id: 'sp1', order: 1, name: 'Classroom Cam package', type: 'Camera / Source', from: 'Classroom set', to: "Venus", status: 'green', lastGood: nowISO(), notes: '4× HDC-3500' },
       { id: 'sp2', order: 2, name: "LiveU LU800 primary", type: 'Contribution Cellular', from: "Venus", to: 'PCR 4', status: 'green', lastGood: nowISO(), notes: 'Bonded 5-band' },
       { id: 'sp3', order: 3, name: 'PCR 4 plant', type: 'Plant Router / Matrix', from: 'PCR 4', to: 'Network', status: 'green', lastGood: nowISO(), notes: '16× HD-SDI' },
       { id: 'sp4', order: 4, name: 'TOC final', type: 'Distribution / TOC', from: 'PCR 4', to: 'Air', status: 'green', lastGood: nowISO(), notes: 'Confirmed' }
@@ -214,7 +214,7 @@
       hvac: 'Portable',
       weightLbs: 4200,
       bayMap: "Single bay · LiveU LU800 · audio rack",
-      notes: '200A shore dockside'
+      notes: '200A campus tie-in'
     };
     o.power = {
       shoreA: 200,
@@ -227,15 +227,15 @@
         { id: 'pl3', name: 'Audio CL5', amps: 14, bus: 'A' },
         { id: 'pl4', name: "EVS XT-VIA", amps: 12, bus: 'A' }
       ],
-      notes: 'Shore only · gen not staged'
+      notes: 'Campus mains only · gen not staged'
     };
     o.rf = [
-      { id: 'rf1', service: 'Talent lav', txFreq: '524.000', rxFreq: '524.000', band: 'UHF', license: 'SAIL-RF-1', status: 'coordinated', venue: 'Battery Park', notes: "DPA 4066" },
-      { id: 'rf2', service: 'IFB Telex', txFreq: '470.500', rxFreq: '470.500', band: 'UHF', license: 'SAIL-RF-2', status: 'cleared', venue: 'Dock', notes: 'BTR-800' }
+      { id: 'rf1', service: 'Talent lav', txFreq: '524.000', rxFreq: '524.000', band: 'UHF', license: 'MPK-RF-1', status: 'coordinated', venue: 'MPK Classroom', notes: "DPA 4066" },
+      { id: 'rf2', service: 'IFB Telex', txFreq: '470.500', rxFreq: '470.500', band: 'UHF', license: 'MPK-RF-2', status: 'cleared', venue: 'Classroom loading', notes: 'BTR-800' }
     ];
     o.sat = [];
     o.goNoGoNotes = 'Cellular primary — weather hold if bond <15 Mbps.';
-    o.remi = { contribMs: 180, returnMs: 40, budgetMs: 350, path: "LiveU LU800 bonded → PCR 4", notes: 'Harbor cellular; raise budget if rain fade' };
+    o.remi = { contribMs: 180, returnMs: 40, budgetMs: 350, path: "LiveU LU800 bonded → PCR 4", notes: 'Campus cellular; raise budget if ladder path adds latency' };
     o.weatherHold = false;
     return o;
   }
@@ -1567,6 +1567,10 @@
 
   function opsPaneHTML(key) {
     ensure(getP(key));
+    /* Fold the deeper panels so the hero (Go/No-Go + Signal Path) owns the fold line. */
+    function fold(label, body) {
+      return '<details class="bops-fold"><summary><span>' + label + '</span></summary><div class="bops-fold-body">' + body + '</div></details>';
+    }
     return (
       '<div class="space-y-5">' +
       '<div class="flex flex-wrap items-center justify-between gap-2">' +
@@ -1582,11 +1586,11 @@
         return '';
       })() +
       signalPathHTML(key) +
-      truckPowerHTML(key) +
-      remiHTML(key) +
-      rfHTML(key) +
-      satHTML(key) +
-      techbookDiffHTML(key) +
+      fold('Truck power & distribution', truckPowerHTML(key)) +
+      fold('REMI handoff', remiHTML(key)) +
+      fold('RF coordination', rfHTML(key)) +
+      fold('Satellite path', satHTML(key)) +
+      fold('Techbook diff', techbookDiffHTML(key)) +
       '</div>'
     );
   }

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-label="Meta HQ · Classroom Stage lighting plot">
+  <rect width="1600" height="1000" fill="#1C1E21"/>
+  <g stroke="#0A58CA" stroke-width=".4" opacity=".45">
+    <g><line x1="0" y1="100" x2="1600" y2="100"/><line x1="0" y1="200" x2="1600" y2="200"/><line x1="0" y1="300" x2="1600" y2="300"/><line x1="0" y1="400" x2="1600" y2="400"/><line x1="0" y1="500" x2="1600" y2="500"/><line x1="0" y1="600" x2="1600" y2="600"/><line x1="0" y1="700" x2="1600" y2="700"/><line x1="0" y1="800" x2="1600" y2="800"/><line x1="0" y1="900" x2="1600" y2="900"/></g>
+    <g><line x1="200" y1="0" x2="200" y2="1000"/><line x1="400" y1="0" x2="400" y2="1000"/><line x1="600" y1="0" x2="600" y2="1000"/><line x1="800" y1="0" x2="800" y2="1000"/><line x1="1000" y1="0" x2="1000" y2="1000"/><line x1="1200" y1="0" x2="1200" y2="1000"/><line x1="1400" y1="0" x2="1400" y2="1000"/></g>
+  </g>
+  <!-- building outline -->
+  <rect x="200" y="130" width="1200" height="760" fill="none" stroke="#0866FF" stroke-width="3"/>
+  <!-- stage -->
+  <rect x="500" y="340" width="600" height="240" fill="none" stroke="#4B4F56" stroke-dasharray="4 4"/>
+  <text x="800" y="360" text-anchor="middle" fill="#4B4F56" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">STAGE</text>
+  <!-- truss ring -->
+  <rect x="480" y="320" width="640" height="280" fill="none" stroke="#F7B928" stroke-width="2"/>
+  <text x="800" y="312" text-anchor="middle" fill="#F7B928" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12" letter-spacing=".1em">PRE-RIG TRUSS · 32' TRIM</text>
+  <!-- truss cross members -->
+  <g stroke="#F7B928" stroke-width="0.6" opacity=".7">
+    <line x1="480" y1="460" x2="1120" y2="460"/>
+    <line x1="700" y1="320" x2="700" y2="600"/>
+    <line x1="900" y1="320" x2="900" y2="600"/>
+  </g>
+  <!-- key light arrays (big circles for ARRI SkyPanel S60) -->
+  <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="#1C1E21" text-anchor="middle">
+    <g fill="#F7B928" stroke="#242526" stroke-width="1">
+      <circle cx="560" cy="400" r="14"/><circle cx="660" cy="400" r="14"/>
+      <circle cx="760" cy="400" r="14"/><circle cx="860" cy="400" r="14"/>
+      <circle cx="960" cy="400" r="14"/><circle cx="1060" cy="400" r="14"/>
+      <circle cx="560" cy="540" r="14"/><circle cx="660" cy="540" r="14"/>
+      <circle cx="760" cy="540" r="14"/><circle cx="860" cy="540" r="14"/>
+      <circle cx="960" cy="540" r="14"/><circle cx="1060" cy="540" r="14"/>
+    </g>
+    <text x="560" y="403">K</text><text x="660" y="403">K</text><text x="760" y="403">K</text><text x="860" y="403">K</text><text x="960" y="403">K</text><text x="1060" y="403">K</text>
+    <text x="560" y="543">B</text><text x="660" y="543">B</text><text x="760" y="543">B</text><text x="860" y="543">B</text><text x="960" y="543">B</text><text x="1060" y="543">B</text>
+  </g>
+  <!-- Source Four Series 3 as triangles (ellipsoidals) -->
+  <g fill="#88a8ff" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="9" text-anchor="middle">
+    <polygon points="520,470 540,490 500,490"/><polygon points="620,470 640,490 600,490"/>
+    <polygon points="720,470 740,490 700,490"/><polygon points="820,470 840,490 800,490"/>
+    <polygon points="920,470 940,490 900,490"/><polygon points="1020,470 1040,490 1000,490"/>
+    <polygon points="1100,470 1120,490 1080,490"/>
+  </g>
+  <!-- front truss moving heads (rectangles with M label) -->
+  <g fill="#E41E3F" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="9" fill="#1C1E21" text-anchor="middle">
+    <rect x="490" y="330" width="22" height="22" rx="3" fill="#E41E3F"/>
+    <rect x="590" y="330" width="22" height="22" rx="3" fill="#E41E3F"/>
+    <rect x="990" y="330" width="22" height="22" rx="3" fill="#E41E3F"/>
+    <rect x="1090" y="330" width="22" height="22" rx="3" fill="#E41E3F"/>
+  </g>
+  <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="9" fill="#FFFFFF" text-anchor="middle">
+    <text x="501" y="346">M</text><text x="601" y="346">M</text><text x="1001" y="346">M</text><text x="1101" y="346">M</text>
+  </g>
+  <!-- audience spill wash -->
+  <g fill="#242526" stroke="#1E7B34" stroke-width="1">
+    <polygon points="340,640 460,620 460,660 340,680"/>
+    <polygon points="1140,620 1260,640 1260,680 1140,660"/>
+  </g>
+  <text x="400" y="634" text-anchor="middle" fill="#A8DAB5" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10">FRONT WASH</text>
+  <text x="1200" y="634" text-anchor="middle" fill="#A8DAB5" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10">FRONT WASH</text>
+  <!-- audience seating -->
+  <path d="M240 660 L1360 660 L1360 870 L240 870 Z" fill="none" stroke="#4B4F56" stroke-dasharray="4 4"/>
+  <text x="800" y="800" text-anchor="middle" fill="#65676B" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">AUDIENCE · 320 CAP</text>
+  <!-- legend -->
+  <g transform="translate(60,900)" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11" fill="#F0F2F5">
+    <g><circle cx="7" cy="7" r="7" fill="#F7B928"/><text x="22" y="12">ARRI SKYPANEL S60-C · KEY/BACK</text></g>
+    <g transform="translate(300,0)"><polygon points="7,0 14,14 0,14" fill="#88a8ff"/><text x="22" y="12">ETC SOURCE 4 LED S3</text></g>
+    <g transform="translate(540,0)"><rect width="14" height="14" fill="#E41E3F" rx="3"/><text x="22" y="12">MAC AURA · MOVER</text></g>
+  </g>
+  <!-- title block -->
+  <g transform="translate(1140,920)">
+    <rect width="340" height="60" fill="#242526" stroke="#88a8ff"/>
+    <text x="12" y="22" fill="#F5F7FA" font-family="system-ui,sans-serif" font-size="14" font-weight="700">META HQ · CLASSROOM STAGE</text>
+    <text x="12" y="42" fill="#88a8ff" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11">LIGHTING PLOT · REV 2.0 · grandMA3</text>
+  </g>
+</svg>

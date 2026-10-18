@@ -137,27 +137,27 @@ var productions={
    ["RF / Wireless Mics","approved","Shure Axient Digital AD4Q + AD1 kit + Sennheiser MD 46 · Elite IFB cord 1–6"],
    ["Talent / Production","approved","Presentation Studio + Outside Announce Platform hosts"],
    ["Legal / Rights","pending","3 music sync clearances in final review"]]},
- raybangen3:{name:"Ray-Ban Meta Gen 3 Launch",customer:"Reality Labs",venue:"NYC Harbor Remote · Pier 26",pct:100,status:"Complete",date:"Jun 2026",tag:"NYC Harbor Remote",tagColor:"blue",risk:false,notif:"",
+ raybangen3:{name:"Ray-Ban Meta Gen 3 Launch",customer:"Reality Labs",venue:"Meta HQ · Classroom Stage · Menlo Park, CA",pct:100,status:"Complete",date:"Jun 2026",tag:"Meta HQ · MPK",tagColor:"blue",risk:false,notif:"",
   bottleneck:{label:"Showcase · 100% complete",text:"All departments approved · ready for air"},foot:"EVS XT-VIA · Sony HDC-5500",
   version:"Rev 2.0 · Final",editedBy:"Lila Hart",lastEdited:"",
   completeShowcase:true,
   schedule:[
-   ["Jun 24, 2026","06:00","Flypack Load-In · Dockside","04:30","—","NYC Harbor · Battery Park"],
-   ["Jun 25, 2026","07:00","LiveU LU800 test & Signal Path","05:30","—","Harbor Remote → PCR 4"],
+   ["Jun 24, 2026","06:00","Flypack Load-In · Classroom Stage","04:30","—","Meta HQ · 1 Hacker Way, MPK"],
+   ["Jun 25, 2026","07:00","LiveU LU800 test & Signal Path","05:30","—","MPK Stage → PCR 4"],
    ["Jun 25, 2026","13:00","TOC Final Signal Confirmation","—","—","PCR 4 / TOC"],
-   ["Jun 26, 2026","05:30","Crew Call · In Position","05:30","—","Dockside Set"],
-   ["Jun 26, 2026","09:00","Ray-Ban Meta Gen 3 Harbor Reveal — LIVE","06:30","Jun 26, 2026 · 09:00 ET","NYC Harbor"]],
+   ["Jun 26, 2026","05:30","Crew Call · In Position","05:30","—","Classroom Stage"],
+   ["Jun 26, 2026","09:00","Ray-Ban Meta Gen 3 Reveal — LIVE","06:30","Jun 26, 2026 · 09:00 PT","Meta HQ · Classroom Stage"]],
   dept:[
    ["Audio","approved","16ch MADI / Calrec Apollo — mapped"],
    ["Cameras / Video","approved","Sony HDC-5500 · verified"],
    ["Transmission / Signal","approved","16× HD-SDI verified · 4× LU600 deployed"],
    ["Power / Electrical","approved","Motion Laboratories 400A distro · confirmed"],
-   ["Engineering / CAD","approved","EVS XT-VIA · harbor site plan filed"],
-   ["Replay / EVS","approved","EVS XT-VIA · 4ch — harbor compound, local storage"],
+   ["Engineering / CAD","approved","EVS XT-VIA · MPK Classroom Stage CAD filed"],
+   ["Replay / EVS","approved","EVS XT-VIA · 4ch — stage compound, local storage"],
    ["Graphics (GFX)","approved","Lower-third package loaded"],
    ["Comms & IFB","approved","Remotes 1–4 · RTS IFB-325"],
    ["RF / Wireless Mics","approved","DPA 4066 + Shure Axient Digital AD4Q coordinated"],
-   ["Talent / Production","approved","Host confirmed · dockside"],
+   ["Talent / Production","approved","Keynote host confirmed · Classroom Stage"],
    ["Legal / Rights","approved","TOC final signal confirmed · rights cleared"]]},
  orion:{name:"Orion AR Glasses Reveal",customer:"Reality Labs",venue:"Levi's Stadium · Santa Clara, CA",pct:38,status:"AT RISK",date:"Feb 2027",tag:"Levi's Stadium",tagColor:"blue",risk:true,notif:"!",
   bottleneck:{label:"Immediate Follow-Up Required",text:"Venue Power Confirmation Outstanding"},foot:"Engineering Kick-Off: TBD",
@@ -359,14 +359,13 @@ function phaseFor(p){
 var tagColorList=["amber","emerald","red","purple","blue","orange","teal","indigo","rose","cyan"];
 var barGrad={amber:"#F7B928",emerald:"#1E7B34",red:"#E41E3F",purple:"#0866FF",blue:"#0866FF",orange:"#F5832A",teal:"#1E7B34",indigo:"#0866FF",rose:"#E41E3F",cyan:"#0866FF",gray:"linear-gradient(90deg,#B0B3B8,#B0B3B8)"};
 var dotBg={amber:"#F7B928",emerald:"#1E7B34",red:"#E41E3F",purple:"#0866FF",blue:"#0866FF",orange:"#F5832A",teal:"#1E7B34",indigo:"#0866FF",rose:"#E41E3F",cyan:"#0866FF",gray:"#b0b3b8"};
-var customerList=["News","Entertainment","Sports","Muse Live","Meta Horizon","Digital","External Productions"];
+var customerList=["Reality Labs","Meta AI","WhatsApp","Facebook","Instagram","External Productions"];
 var customerStyle={
- "News":{bg:"#e7f3ff",tx:"#0866FF",bd:"#b9d7ff"},
- "Entertainment":{bg:"#e7f3ff",tx:"#0866ff",bd:"#e7f3ff"},
- "Sports":{bg:"#e6f4ea",tx:"#1E7B34",bd:"#a8dab5"},
- "Muse Live":{bg:"#e7f3ff",tx:"#0866ff",bd:"#e7f3ff"},
- "Spectrum":{bg:"#e7f3ff",tx:"#0a58ca",bd:"#b9d7ff"},
- "Digital":{bg:"#fff0e5",tx:"#b24a00",bd:"#fbc6a4"},
+ "Reality Labs":{bg:"#e7f3ff",tx:"#0866FF",bd:"#b9d7ff"},
+ "Meta AI":{bg:"#f5edff",tx:"#7A3EFE",bd:"#d9c7ff"},
+ "WhatsApp":{bg:"#e6f4ea",tx:"#1E7B34",bd:"#a8dab5"},
+ "Facebook":{bg:"#e7f3ff",tx:"#0866ff",bd:"#b9d7ff"},
+ "Instagram":{bg:"#ffe6ef",tx:"#D1005C",bd:"#ffb3cd"},
  "External Productions":{bg:"#f7f8fa",tx:"#4b4f56",bd:"#e4e6eb"}
 };
 function custChip(c){
@@ -422,7 +421,7 @@ var inventory=[
  {id:'inv_0006',barcode:"MUSE-EQ-497365",name:"Calrec Artemis",category:'Audio',serial:"",status:'available',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:340000,condition:'Excellent',notes:'96ch Dante console'},
  {id:'inv_0007',barcode:"MUSE-EQ-633334",name:"Shure Axient Digital AD4Q + AD1",category:'RF & Comms',serial:"",status:'checked-out',location:'In Transit',project:'museaitour',assignedTo:'Jordan Reyes',value:4200,condition:'Good',notes:'Quad digital receiver'},
  {id:'inv_0008',barcode:"MUSE-EQ-725025",name:"RTS ADAM",category:'RF & Comms',serial:"",status:'available',location:'Meta Miami',project:'',assignedTo:'',value:28000,condition:'Excellent',notes:'48ch trunked'},
- {id:'inv_0009',barcode:"MUSE-EQ-248969",name:"LiveU LU800",category:'Transmission',serial:"",status:'checked-out',location:'In Transit',project:'raybangen3',assignedTo:'Harbor Flypack A',value:24000,condition:'Excellent',notes:'5-band bonded cellular'},
+ {id:'inv_0009',barcode:"MUSE-EQ-248969",name:"LiveU LU800",category:'Transmission',serial:"",status:'checked-out',location:'In Transit',project:'raybangen3',assignedTo:'MPK Classroom Stage A',value:24000,condition:'Excellent',notes:'5-band bonded cellular'},
  {id:'inv_0010',barcode:"MUSE-EQ-255338",name:"LiveU LU800",category:'Transmission',serial:"",status:'maintenance',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:18000,condition:'Needs repair',notes:'Modem 3 intermittent — bench repair'},
  {id:'inv_0011',barcode:"MUSE-EQ-244274",name:"EVS XT-VIA",category:'Replay & Servers',serial:"",status:'checked-out',location:'In Transit',project:'charm',assignedTo:'Shay Donovan',value:165000,condition:'Excellent',notes:'6-channel replay server · Milan IBC'},
  {id:'inv_0012',barcode:"MUSE-EQ-589622",name:"Cisco Catalyst 9300",category:'IT / Network',serial:"",status:'available',location:'Meta Live Events — Menlo Park MPK',project:'',assignedTo:'',value:42000,condition:'Excellent',notes:'100G spine switch · SMPTE 2110'},
@@ -517,13 +516,13 @@ function renderEquipView(){loadInvOnce();
   host.innerHTML='<div class="overflow-x-auto"><table class="w-full text-left text-xs" style="min-width:920px"><thead><tr class="text-gray-500 uppercase tracking-wider text-[9px] border-b border-gray-200"><th class="pb-2 pr-3">Item</th><th class="pb-2 pr-3">Barcode</th><th class="pb-2 pr-3">Serial</th><th class="pb-2 pr-3">Category</th><th class="pb-2 pr-3">Status</th><th class="pb-2 pr-3">Location / Assignment</th><th class="pb-2"></th></tr></thead><tbody class="divide-y divide-gray-100">'+
     list.map(function(it){var s=INV_STATUSES[it.status]||INV_STATUSES.available;
       var assignTxt=it.status==='checked-out'?((it.project&&productions[it.project]?productions[it.project].name:'—')+(it.assignedTo?' · '+esc(it.assignedTo):'')):esc(it.location||'—');
-      return '<tr class="hover:bg-gray-50/60">'+
+      return '<tr class="hover:bg-gray-50/60 align-middle">'+
         '<td class="py-2.5 pr-3"><button onclick="openInvDetail(\''+it.id+'\')" class="font-semibold text-gray-900 hover:text-blue-700 hover:underline text-left">'+esc(it.name)+'</button></td>'+
-        '<td class="py-2.5 pr-3 mono text-[10px] text-gray-600">'+esc(it.barcode)+'</td>'+
-        '<td class="py-2.5 pr-3 mono text-[10px] '+(invNeedsSerial(it)&&!(it.serial||'').trim()?'text-red-600 font-bold':'text-gray-500')+'">'+(invNeedsSerial(it)&&!(it.serial||'').trim()?'⚠ Serial required':esc(it.serial||'—'))+'</td>'+
-        '<td class="py-2.5 pr-3 text-gray-600">'+esc(it.category)+'</td>'+
-        '<td class="py-2.5 pr-3"><span class="inline-flex items-center gap-1 px-2 py-0.5 rounded border text-[9px] mono '+s.cls+'"><span class="w-1.5 h-1.5 rounded-full" style="background:'+s.dot+'"></span>'+s.label+'</span></td>'+
-        '<td class="py-2.5 pr-3 text-[10px] text-gray-600">'+assignTxt+'</td>'+
+        '<td class="py-2.5 pr-3 mono text-[11px] text-gray-600 tabular-nums whitespace-nowrap">'+esc(it.barcode)+'</td>'+
+        '<td class="py-2.5 pr-3 mono text-[11px] tabular-nums whitespace-nowrap '+(invNeedsSerial(it)&&!(it.serial||'').trim()?'text-red-600 font-bold':'text-gray-500')+'">'+(invNeedsSerial(it)&&!(it.serial||'').trim()?'⚠ Serial required':esc(it.serial||'—'))+'</td>'+
+        '<td class="py-2.5 pr-3 text-[11px] text-gray-600">'+esc(it.category)+'</td>'+
+        '<td class="py-2.5 pr-3"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] font-semibold whitespace-nowrap '+s.cls+'" style="letter-spacing:.01em"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:'+s.dot+'"></span>'+s.label+'</span></td>'+
+        '<td class="py-2.5 pr-3 text-[11px] text-gray-600">'+assignTxt+'</td>'+
         '<td class="py-2.5 text-right whitespace-nowrap">'+
           (it.status==='available'?'<button onclick="openCheckout(\''+it.id+'\')" class="text-[10px] font-bold text-blue-700 hover:underline">Check Out →</button>':
            it.status==='checked-out'?'<button onclick="invCheckin(\''+it.id+'\')" class="text-[10px] font-bold text-emerald-700 hover:underline">Check In ↩</button>':
@@ -721,8 +720,16 @@ function deptSummary(p,deptName){var f=(p.tbFields&&p.tbFields[deptName])||{};va
 /* ===== VENDOR DIRECTORY (third-party rental vendors) ===== */
 var vendors=[
  {id:"v_lenses",name:"Lenses & Friends",category:"Cameras / Lenses",address:"4820 Production Way, Burbank, CA 91505",pobox:"P.O. Box 5521, Burbank, CA 91508",geo:[34.1808,-118.3290],contact:"Dana Reyes",contactTitle:"Account Manager",phone:"(818) 555-0142",email:"dana@lensesandfriends.com",sales:"Marcus Lee · sales@lensesandfriends.com · (818) 555-0188",notes:"Cameras, cine lenses, pedestals. 24/7 on-rental support line.",afterHours:"(818) 555-0911"},
- {id:"v_clearwave",name:"ClearWave RF Rentals",category:"RF / Comms",address:"77 Signal Park Dr, Secaucus, NJ 07094",pobox:"P.O. Box 990, Secaucus, NJ 07096",geo:[40.7895,-74.0565],contact:"Priya Anand",contactTitle:"Rentals Lead",phone:"(201) 555-077",email:"priya@clearwaverf.com",sales:"sales@clearwaverf.com · (212) 558-0780",notes:"RF mics, IFB, intercom, frequency coordination.",afterHours:"(212) 558-0700"},
- {id:"v_brightline",name:"BrightLine Grip & Lighting",category:"Lighting / Grip",address:"2200 Lumen Ave, Chicago, IL 60616",pobox:"—",geo:[41.8480,-87.6260],contact:"Paul Lohr",contactTitle:"Lighting Director",phone:"(212) 559-9589",email:"lohr@brightline.com",sales:"rentals@brightline.com",notes:"LDG lighting package, grip, generators.",afterHours:"(212) 560-0033"}
+ {id:"v_clearwave",name:"ClearWave RF Rentals",category:"RF / Comms",address:"77 Signal Park Dr, Secaucus, NJ 07094",pobox:"P.O. Box 990, Secaucus, NJ 07096",geo:[40.7895,-74.0565],contact:"Priya Anand",contactTitle:"Rentals Lead",phone:"(201) 555-0771",email:"priya@clearwaverf.com",sales:"sales@clearwaverf.com · (212) 558-0780",notes:"RF mics, IFB, intercom, frequency coordination.",afterHours:"(212) 558-0700"},
+ {id:"v_brightline",name:"BrightLine Grip & Lighting",category:"Lighting / Grip",address:"2200 Lumen Ave, Chicago, IL 60616",pobox:"—",geo:[41.8480,-87.6260],contact:"Paul Lohr",contactTitle:"Lighting Director",phone:"(312) 555-9589",email:"lohr@brightline.com",sales:"rentals@brightline.com",notes:"LDG lighting package, grip, generators.",afterHours:"(312) 555-0033"},
+ {id:"v_northstar",name:"North Star Transmission",category:"Transmission / Satellite",address:"1500 Uplink Rd, Englewood Cliffs, NJ 07632",pobox:"P.O. Box 414, Englewood Cliffs, NJ 07632",geo:[40.8859,-73.9465],contact:"Marisol Ortega",contactTitle:"Operations Manager",phone:"(201) 555-2104",email:"marisol@northstar-tx.com",sales:"booking@northstar-tx.com · (201) 555-2100",notes:"Ku-band + Ka-band uplinks, SRT/RIST paths, MediaConnect peering.",afterHours:"(201) 555-9100"},
+ {id:"v_atlas_fiber",name:"Atlas Fiber Services",category:"Fiber / Networking",address:"88 Trunk Line Way, Jersey City, NJ 07305",pobox:"—",geo:[40.7055,-74.0760],contact:"Noah Pelletier",contactTitle:"Fiber Lead",phone:"(201) 555-6611",email:"noah@atlasfiber.net",sales:"orders@atlasfiber.net · (201) 555-6600",notes:"TAC-12, SMPTE hybrid cam fiber, OTDR traces, strand maps.",afterHours:"(201) 555-9000"},
+ {id:"v_portersound",name:"Porter Sound Co.",category:"Audio / Mix",address:"312 Mixdown Blvd, Nashville, TN 37203",pobox:"P.O. Box 221, Nashville, TN 37203",geo:[36.1532,-86.7905],contact:"Hannah Porter",contactTitle:"Owner / A1",phone:"(615) 555-0812",email:"hannah@portersound.com",sales:"book@portersound.com",notes:"Yamaha Rivage / DiGiCo consoles, Dante, broadcast loudness tuning.",afterHours:"(615) 555-9988"},
+ {id:"v_signalchain",name:"Signal Chain Engineering",category:"Engineering / Integration",address:"4040 Patchbay Pl, Hoboken, NJ 07030",pobox:"—",geo:[40.7439,-74.0323],contact:"Jules Okafor",contactTitle:"Director of Engineering",phone:"(201) 555-3312",email:"jules@signalchain.io",sales:"ops@signalchain.io",notes:"ST 2110 commissioning, PTP, Nevion/Riedel routing. T&M kit on standby.",afterHours:"(201) 555-9312"},
+ {id:"v_meridian_power",name:"Meridian Power Services",category:"Power / Generators",address:"7 Breaker Rd, Linden, NJ 07036",pobox:"—",geo:[40.6220,-74.2446],contact:"Carla DeLuca",contactTitle:"Power Supervisor",phone:"(908) 555-2277",email:"carla@meridianpower.com",sales:"dispatch@meridianpower.com · (908) 555-2200",notes:"400A tie-ins, 100-500 kW gensets, UPS packages, isolated-ground distros.",afterHours:"(908) 555-9000"},
+ {id:"v_skybridge_eng",name:"Skybridge ENG",category:"ENG / Backpacks",address:"920 Field Dr, Astoria, NY 11106",pobox:"P.O. Box 76, Astoria, NY 11106",geo:[40.7637,-73.9230],contact:"Theo Nakamura",contactTitle:"ENG Coordinator",phone:"(718) 555-0177",email:"theo@skybridge-eng.com",sales:"dispatch@skybridge-eng.com",notes:"LiveU LU800, TVU One, bonded 5G, 4G modems, local uplink van.",afterHours:"(718) 555-9177"},
+ {id:"v_canvas_gfx",name:"Canvas Graphics Workshop",category:"Graphics / Playback",address:"55 Pixel Ave, Brooklyn, NY 11201",pobox:"—",geo:[40.6965,-73.9875],contact:"Lena Hoang",contactTitle:"Executive Producer",phone:"(347) 555-4433",email:"lena@canvasgfx.studio",sales:"book@canvasgfx.studio",notes:"Vizrt / Pixotope / Unreal real-time GFX, AR insertion, playback ops.",afterHours:"(347) 555-9433"},
+ {id:"v_truenorth_captions",name:"TrueNorth Captions",category:"Captions / Accessibility",address:"120 Transcript Row, Toronto, ON M5V 3M2",pobox:"—",geo:[43.6450,-79.3920],contact:"Omar Haddad",contactTitle:"Access Services Lead",phone:"(416) 555-2200",email:"omar@truenorthcaps.ca",sales:"booking@truenorthcaps.ca",notes:"Live stenocaptions (EN/ES), AD narration, 608/708 encoding, SRT-ingest.",afterHours:"(416) 555-9200"}
 ];
 var vmSel=null;
 function vendorById(id){for(var i=0;i<vendors.length;i++)if(vendors[i].id===id)return vendors[i];return null;}
@@ -861,7 +868,7 @@ function museSyncCalendar(key){
 /* ---- per-production technical specs that drive the Techbook ---- */
 /* venue GPS coordinates [lat,lng] for the Locations page maps & links */
 var venueGeo={
- museaitour:[40.8135,-74.0745], raybangen3:[40.7033,-74.0170], orion:[37.4030,-121.9698],
+ museaitour:[40.8135,-74.0745], raybangen3:[37.4848,-122.1484], orion:[37.4030,-121.9698],
  museailaunch:[40.7536,-74.0007], whatsapp:[25.7617,-80.1918], igcreators:[40.7505,-73.9878], charm:[45.4642,9.1900]
 };
 function projGeo(p,key){if(p.geo&&p.geo.length===2)return p.geo;return venueGeo[key]||null;}
@@ -871,7 +878,7 @@ function mapUrls(venue,geo){var q=encodeURIComponent(venue||'');var g,a;
   return {google:g,apple:a};}
 var tbSpecs={
  museaitour:{cams:7,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Apollo",audioCh:32,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"Riedel Bolero",fiberType:"TAC-12 ST single-mode (Fiber 100–102)",fiberLen:"1,500 ft TAC-12 reels · 50–1000 ft runs",transport:"Harmonic XOS",evs:"EVS XS-VIA",venueAddr:"1 MetLife Stadium Dr, East Rutherford, NJ 07073",truck:"Grass Valley Kayenne"},
- raybangen3:{cams:4,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Apollo",audioCh:16,micModel:"DPA 4066",rfMic:"Shure Axient Digital AD4Q",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Tactical single-mode",fiberLen:"800 ft",transport:"LiveU LU800",evs:"EVS XT-VIA",venueAddr:"NYC Harbor · Battery Park, New York, NY",truck:"Grass Valley Kayenne"},
+ raybangen3:{cams:4,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Apollo",audioCh:16,micModel:"DPA 4066",rfMic:"Shure Axient Digital AD4Q",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Tactical single-mode",fiberLen:"800 ft",transport:"LiveU LU800",evs:"EVS XT-VIA",venueAddr:"Meta HQ · 1 Hacker Way, Menlo Park, CA 94025",truck:"Grass Valley Kayenne"},
  orion:{cams:24,camModel:"Sony HDC-5500",lens:"Fujinon UA80x9",console:"64ch MADI (routing TBD)",audioCh:64,micModel:"Sennheiser MKH 416",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"SMPTE 2110 (design)",fiberLen:"6,000 ft (survey pending)",transport:"SMPTE 2110 contribution",evs:"EVS XT-VIA",venueAddr:"4900 Marie P DeBartolo Way, Santa Clara, CA 95054",truck:"TBD — Engineering Kick-Off Pending"},
  museailaunch:{cams:8,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Calrec Artemis",audioCh:96,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"Riedel Bolero",intercom:"RTS ADAM",fiberType:"SMPTE 2110 internal plant",fiberLen:"House Plant",transport:"SMPTE 2110 internal",evs:"EVS XT-VIA",venueAddr:"50 Hudson Yards, New York, NY 10001 · Studio M1",truck:"Meta NYC Central Plant"},
  whatsapp:{cams:12,camModel:"Sony HDC-5500",lens:"Canon CJ45ex9.7B",console:"Per-market design pending",audioCh:24,micModel:"Sennheiser MD 46",rfMic:"Shure Axient Digital AD4Q + AD1",ifb:"RTS IFB-325",intercom:"RTS ADAM",fiberType:"Per-market (quoting)",fiberLen:"8× markets",transport:"Mixed SDI/IP",evs:"Live Q&A Desk · AP feed",venueAddr:"Multi-Market Remote · Live Q&A Desk @ TC",truck:"Grass Valley Kayenne"},
@@ -1173,12 +1180,12 @@ function ensureSail250Complete(){
     else p.dept.push([name,status||'approved',note||'—']);
   }
   var engCad=take('Engineering / CAD');
-  put('Engineering','approved',(engCad&&engCad[2])||"EVS XT-VIA · harbor plant confirmed");
-  put('CAD','approved','Harbor site plan filed · flypack layout locked');
-  put('Lighting','approved','Dockside LED + practicals · shore power');
+  put('Engineering','approved',(engCad&&engCad[2])||"EVS XT-VIA · MPK plant confirmed");
+  put('CAD','approved','MPK Classroom Stage site plan filed · flypack layout locked');
+  put('Lighting','approved','Classroom Stage LED grid + practicals · house power');
   put('Monitors','approved','Director + talent returns at HB-2');
   put('Networking / IT','approved',"LiveU LU800 + PCR 4 plant VLAN");
-  put('Miscellaneous / Consumables','approved','Dockside pack closed');
+  put('Miscellaneous / Consumables','approved','MPK Classroom Stage pack closed');
   try{ensureAllDepts(p);}catch(eA){}
   try{ensureFields(p);}catch(eF){}
   (p.dept||[]).forEach(function(d){
@@ -1194,10 +1201,10 @@ function ensureSail250Complete(){
   if(!tx.bandwidth)tx.bandwidth='25 Mbps bonded';
   if(!p.tbFields['Cameras / Video'])p.tbFields['Cameras / Video']={};
   var cam=p.tbFields['Cameras / Video'];
-  if(!cam.transport)cam.transport='SMPTE fiber · harbor run';
+  if(!cam.transport)cam.transport='SMPTE fiber · stage run';
   if(!cam.cable)cam.cable='SMPTE 311m';
   if(!cam.lens)cam.lens="Canon CJ45ex9.7B";
-  if(!cam.config)cam.config='Harbor sticks · 4× HDC-3500';
+  if(!cam.config)cam.config='Classroom Stage sticks · 4× HDC-3500';
   p.completeShowcase=true;p.tagColor='emerald';
   applyReadiness(p);
 }
@@ -1274,23 +1281,22 @@ function renderNavRail(){
   var prods=document.getElementById('navRailProds');
   if(!prim||!prods)return;
   var active=navRailActiveView();
+  /* Priority order: live ops → active work → reference. Daily-use ranking, not alphabetical. */
   var primary=[
     ['dashboard','Dashboard','dashboard'],
-    ['kb','Wiki','kb'],
     ['schedule','Master Schedule','schedule'],
+    ['streams','Live Streams','streams'],
+    ['comms','Omni','omni'],
     ['engrequests','ENG Requests','eng'],
-    ['personnel','Personnel','personnel']
+    ['incidents','Incidents','incidents'],
+    ['telemetry','Telemetry','telemetry'],
+    ['personnel','Personnel','personnel'],
+    ['equipment','Equipment','equipment'],
+    ['portal',((typeof permIsAdmin!=='function')||permIsAdmin())?'Travel Portal':'My Travel','portal']
   ];
   if(typeof permCan!=='function'||permCan('finance'))primary.push(['finance','Finance','finance']);
-  primary.push(
-    ['portal',((typeof permIsAdmin!=='function')||permIsAdmin())?'Travel Portal':'My Travel','portal'],
-    ['comms','Omni','omni'],
-    ['equipment','Equipment','equipment'],
-    ['telemetry','Telemetry','telemetry'],
-    ['streams','Live Streams','streams'],
-    ['incidents','Incidents','incidents']
-  );
   if(typeof permCan!=='function'||permCan('vendors'))primary.push(['vendors','Vendors','vendors']);
+  primary.push(['kb','Wiki','kb']);
 
   var engN=0; /* ENG requests in flight are informational, not a call to action */
   var omniN=(typeof commsUnreadCritical==='function')?commsUnreadCritical():0;
@@ -1372,17 +1378,6 @@ function navGo(view){
   window._museTeleFocus=false;
   /* collapse expanded rail on mobile after pick so content regains width */
   try{if(window.matchMedia&&window.matchMedia('(max-width:767px)').matches)toggleNavRail(false);}catch(e){}
-  if(view==='telemetry'){
-    window._museTeleFocus=true;
-    switchView('dashboard');
-    setTimeout(function(){
-      var el=document.getElementById('trkMapBox');
-      var sec=el&&el.closest?el.closest('section'):el;
-      if(sec&&sec.scrollIntoView)sec.scrollIntoView({behavior:'smooth',block:'start'});
-      try{navRailSetActive('telemetry');}catch(eN){}
-    },80);
-    return;
-  }
   switchView(view);
 }
 function navRailExpanded(){return document.body.classList.contains('nav-rail-expanded');}
@@ -1398,11 +1393,9 @@ function syncNavRailExpandUI(){
 }
 function toggleNavRail(force){
   var on=(force===true||force===false)?force:!navRailExpanded();
-  museAfterPaint(function(){
-    document.body.classList.toggle('nav-rail-expanded',on);
-    try{if(!museIsPhone())localStorage.setItem('muselive_navrail',on?'1':'0');}catch(e){}
-    syncNavRailExpandUI();
-  });
+  document.body.classList.toggle('nav-rail-expanded',on);
+  try{if(!museIsPhone())localStorage.setItem('muselive_navrail',on?'1':'0');}catch(e){}
+  syncNavRailExpandUI();
 }
 function navRailInit(){
   try{
@@ -1440,7 +1433,7 @@ function renderPortfolio(){
     return '<div onclick="openProject(\''+k+'\')" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 rounded-lg -mx-1 px-1 py-0.5 transition-colors">'+
       '<div class="w-2 h-2 rounded-full flex-shrink-0" title="'+pct+'% ready" style="background:'+(pct>=90?'#31A24C':pct>=60?'#F7B928':pct>=40?'#F5832A':'#E41E3F')+'"></div>'+
       '<span class="text-[11px] font-semibold text-gray-800 flex-shrink-0 truncate" style="width:13rem">'+(p.tab||p.name)+'</span>'+
-      '<div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:'+pct+'%;background:#0866FF"></div></div>'+
+      '<div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:'+pct+'%;background:linear-gradient(90deg,#E4E6EB 0%,#0866FF 65%,#0064E0 100%)"></div></div>'+
       '<span class="text-[11px] font-semibold text-gray-600 flex-shrink-0" style="width:9.5rem">'+pct+'% · '+ph.label+'</span>'+
       '<span class="text-[11px] text-right text-gray-500 flex-shrink-0" style="width:4.5rem">'+(p.date||'TBD')+'</span></div>';
   }).join('');
@@ -1494,18 +1487,36 @@ function renderSnapFilters(){var box=document.getElementById('snapFilterPills');
       var allSt=active
         ?'background:#18191A;color:#ffffff;border:1px solid #18191A'
         :'background:#ffffff;color:#3E4042;border:1px solid #ced0d4';
-      return '<button type="button" onclick="setSnapFilter(\'All\')" class="text-xs font-bold px-3.5 py-1.5 rounded-full" style="'+allSt+'">All <span style="font-weight:800;margin-left:4px;color:'+(active?'#ffffff':'#18191A')+'">'+n+'</span></button>';
+      return '<button type="button" onclick="setSnapFilter(\'All\')" class="text-xs font-semibold px-3.5 py-1.5 rounded-full whitespace-nowrap" style="'+allSt+'">All <span style="font-weight:800;margin-left:4px;color:'+(active?'#ffffff':'#18191A')+'">'+n+'</span></button>';
     }
     var s=customerStyle[c]||customerStyle["External Productions"];
     var st=active?('background:'+s.tx+';color:#ffffff;border:1px solid '+s.tx):('background:'+s.bg+';color:'+s.tx+';border:1px solid '+s.bd);
-    return '<button onclick="setSnapFilter(\''+c.replace(/'/g,"\\'")+'\')" class="text-xs font-bold px-3.5 py-1.5 rounded-full mono" style="'+st+'">'+c+' <span style="opacity:.6">'+n+'</span></button>';
+    return '<button onclick="setSnapFilter(\''+c.replace(/'/g,"\\'")+'\')" class="text-xs font-semibold px-3.5 py-1.5 rounded-full whitespace-nowrap" style="'+st+'">'+c+' <span style="opacity:.6;margin-left:4px">'+n+'</span></button>';
   }).join('');
 }
 function renderSnapshot(){
   var g=document.getElementById('snapshotGrid');if(!g)return;
   var keys=order.filter(function(k){return snapFilter==="All"||productions[k].customer===snapFilter;});
   if(!keys.length){g.innerHTML='<div class="col-span-full text-center text-sm text-gray-500 py-10">No productions under “'+snapFilter+'”.</div>';return;}
-  g.innerHTML=keys.map(function(k){var p=productions[k];var c=countStatus(p);var pct=computePct(p);var ph=phaseFor(p);
+  /* subsections by customer when unfiltered — single column grouping, cards still responsive inside */
+  if(snapFilter==='All'){
+    var present=customerList.filter(function(c){return keys.some(function(k){return productions[k].customer===c;});});
+    /* trailing group for anything with an unknown customer, so no card is dropped */
+    var known={};present.forEach(function(c){known[c]=1;});
+    var others=keys.filter(function(k){return !known[productions[k].customer];});
+    if(others.length)present.push('Other');
+    g.className='grid grid-cols-1 gap-6';
+    g.innerHTML=present.map(function(c){
+      var ks=(c==='Other')?others:keys.filter(function(k){return productions[k].customer===c;});
+      return '<section><div class="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200"><h2 class="text-sm font-bold tracking-tight text-gray-900">'+c+'</h2><span class="text-[10px] mono font-bold text-gray-500">'+ks.length+'</span></div>'+
+        '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">'+ks.map(_snapshotCard).join('')+'</div></section>';
+    }).join('');
+    return;
+  }
+  g.className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4';
+  g.innerHTML=keys.map(_snapshotCard).join('');
+}
+function _snapshotCard(k){var p=productions[k];var c=countStatus(p);var pct=computePct(p);var ph=phaseFor(p);
     var risky=ph.risk;var border=risky?'border-red-100':'border-gray-200/60';
     var badge=museBadgeHTML(c.missing);
     var pillCls=risky?'bg-red-50 text-red-800 border-red-200':'bg-emerald-50 text-emerald-800 border-emerald-200';
@@ -1516,11 +1527,10 @@ function renderSnapshot(){
     var bt={red:'bg-red-50 border-red-100',amber:'bg-amber-50 border-amber-100',emerald:'bg-emerald-50 border-emerald-100'}[bottleneck.tone];
     var btl={red:'text-red-600',amber:'text-amber-600',emerald:'text-emerald-600'}[bottleneck.tone];
     return '<div onclick="openProject(\''+k+'\')" class="project-card bg-white rounded-2xl p-5 border '+border+' flex flex-col justify-between cursor-pointer relative" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+badge+
-      '<div><div class="flex justify-between items-start mb-4"><div><h3 class="text-lg font-semibold '+(risky?'text-red-900':'text-gray-950')+'">'+p.name+'</h3><p class="text-[10px] text-gray-500">'+p.venue+'</p></div><div class="flex flex-col items-end gap-1">'+custChip(p.customer)+'<span class="text-[9px] font-bold mono '+pillCls+' px-2 py-1 rounded-full border">'+ph.label+'</span></div></div>'+
+      '<div><div class="flex justify-between items-start mb-4"><div><h3 class="text-lg font-semibold '+(risky?'text-red-900':'text-gray-950')+'">'+p.name+'</h3><p class="text-[10px] text-gray-500">'+p.venue+'</p></div><div class="flex flex-col items-end gap-1">'+custChip(p.customer)+'<span class="text-[9px] font-bold '+pillCls+' px-2.5 py-1 rounded-full border whitespace-nowrap tracking-wide">'+ph.label+'</span></div></div>'+
       '<div class="space-y-1.5 mb-4"><div class="flex justify-between items-end mono"><span class="text-xs font-semibold '+(risky?'text-red-800':'text-gray-700')+'">Requirements Cleared</span><span class="text-3xl font-bold '+pctColor(pct)+'">'+pct+'<span class="text-xl">%</span></span></div><progress class="w-full '+progClass(pct)+'" style="height:10px" value="'+pct+'" max="100"></progress></div></div>'+
       '<div class="'+bt+' rounded-xl p-3 border mt-auto"><p class="text-[9px] font-bold '+btl+' uppercase tracking-wider mb-1">'+bottleneck.lab+'</p><div class="flex items-center justify-between"><p class="text-xs font-semibold '+(risky?'text-red-900':'text-gray-800')+'">'+bottleneck.txt+'</p><span class="text-[10px] font-bold '+(risky?'text-red-700':'text-blue-700')+' mono whitespace-nowrap ml-2">Drill Down →</span></div>'+
       '<div class="snap-counts flex items-center gap-3 mt-2 pt-2 border-t border-gray-100 text-[10px] mono font-bold"><span class="text-emerald-600">'+c.approved+' Approved</span><span class="text-amber-600">'+c.pending+' Pending</span><span class="text-red-600">'+c.missing+' Missing</span></div></div></div>';
-  }).join('');
 }
 
 /* ---- master re-render after any data change ---- */
@@ -1846,10 +1856,8 @@ function schedFacilityHTML(){
 function renderSchedule(){
   var el=document.getElementById('scheduleGantt');if(!el)return;
   if(schedTab==='muse'&&typeof permCan==='function'&&!permCan('scheduling'))schedTab='facility';
-  // ---- conflict notification bubble on the page title (never auto-dismissed) ----
+  /* conflict count still drives the tab-bar badges below; the title pill was removed per request */
   var nConf=schedConflictTotal();
-  var bub=document.getElementById('schedConflictBubble');
-  if(bub)bub.innerHTML=nConf?'<button onclick="(typeof MuseSchedule!==\'undefined\'&&MuseSchedule.conflicts().length)?MuseSchedule.openFor(\'\',\'conflicts\'):setSchedTab(\'facility\')" title="Scheduling conflicts detected — click to review" class="inline-flex items-center gap-1 text-[10px] font-bold text-white rounded-full px-2.5 py-1 align-middle" style="background:var(--live-red);box-shadow:0 2px 8px rgba(179,18,46,.4)">⚠ '+nConf+' conflict'+(nConf>1?'s':'')+'</button>':'';
   // ---- tab bar ----
   var bar=document.getElementById('schedTabBar');
   function tb(id,label,badge){var on=(schedTab===id);
@@ -2260,9 +2268,9 @@ var CREW_EXEC=[
 /* ---- Project Overview: interactive Operational Matrix (at-a-glance dept status, click to anchor) ---- */
 function projectMatrixHTML(key,p){
   var cells=p.dept.map(function(d){var s=statusMap[d[1]];var anchor='dept-'+key+'-'+d[0].replace(/[^a-z0-9]/gi,'');
-    return '<button onclick="overviewGoCat(\''+key+'\',\''+esc(d[0]).replace(/'/g,"\\'")+'\')" class="group flex flex-col items-start gap-1 rounded-xl border p-2.5 text-left transition-all hover:shadow-sm hover:-translate-y-0.5" style="border-color:#e4e6eb;background:#ffffff">'+
-      '<div class="flex items-center justify-between w-full"><span class="w-1.5 h-1.5 rounded-full bg-'+s.dot+'-500 flex-shrink-0"></span><span class="text-[7px] font-bold uppercase tracking-wider mono '+s.text+'">'+s.label+'</span></div>'+
-      '<span class="text-[10px] font-semibold text-gray-700 leading-tight group-hover:text-blue-700">'+esc(d[0])+'</span></button>';
+    return '<button onclick="overviewGoCat(\''+key+'\',\''+esc(d[0]).replace(/'/g,"\\'")+'\')" class="group flex flex-col items-start gap-2 rounded-xl border p-3 text-left transition-all hover:shadow-sm hover:-translate-y-0.5 min-h-[72px]" style="border-color:#e4e6eb;background:#ffffff">'+
+      '<div class="flex items-center justify-between w-full gap-2"><span class="w-2 h-2 rounded-full bg-'+s.dot+'-500 flex-shrink-0"></span><span class="text-[8.5px] font-bold uppercase '+s.text+'" style="letter-spacing:.08em">'+s.label+'</span></div>'+
+      '<span class="text-[11px] font-semibold text-gray-800 leading-snug group-hover:text-blue-700" style="letter-spacing:-.005em">'+esc(d[0])+'</span></button>';
   }).join('');
   return '<div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Operational Matrix</h3><p class="text-[10px] text-gray-500 mt-0.5">Every department at a glance — tap a tile to jump to its section.</p></div>'+
@@ -2430,7 +2438,6 @@ function deptTileHTML(key,p,d,idx,alertCounts){
     secHTML+=(collapsible?'<details':'<section')+' class="dept-config-group" data-layout-group="'+sec.hkey+'">'+(collapsible?'<summary>':'<div class="dept-config-heading">')+heading+(collapsible?'</summary>':'</div>')+'<div class="dept-fields-cols">'+ctrls+'</div>'+(collapsible?'</details>':'</section>');
   });
   panes.config='<div class="dept-config-grid">'+(secHTML||'<p>No configuration fields for this department.</p>')+'</div>';
-  if(typeof MuseWork!=='undefined')panes.config+=MuseWork.departmentHTML(key,dept);
   panes.equipment=equipLinesHTML(key,dept);
   var customs=(typeof deptCustomSections==='function')?deptCustomSections(key,dept):[];
   customs.forEach(function(sec){var label=sec.label||sec.title||'Department workflow';
@@ -2540,7 +2547,6 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
   var pane=(sub==='ops'||sub==='streaming')?opsPane:(sub==='schedule'?schedulePane:(sub==='crew'?crewPane:(sub==='vendors'?vendorsPane:(sub==='workflow'?workflowPane:(sub==='packlist'?packlistPane:(sub==='tracking'?trackingPaneHTML(key):(sub==='travel'?travelPaneHTML(key):(sub==='survey'?surveyPaneHTML(key):(sub==='omni'?omniPane:(sub==='bookings'?bookingsPaneHTML(key):(sub==='finance'?financeWorkspaceHTML(key):overviewPane)))))))))));
 
   if(typeof MuseLive!=='undefined')pane+=MuseLive.paneHTML(key,sub);
-  if(typeof MuseWork!=='undefined')pane+=MuseWork.paneHTML(key,sub);
 
   /* ---- v30 Module 14: persistent shell + swappable pane -------------------------
      The header, weather band, venue map banner, location strip and SUB-TAB BAR form
@@ -3873,21 +3879,22 @@ function renderPersonnelDir(){
     if(q){var hay=(m.name+' '+m.pos+' '+m.group+' '+(m.id||'')+' '+(m.category||'')+' '+m.email+' '+m.phone+' '+m.prov+' '+pp.shows.map(function(s){return s.name+' '+s.client;}).join(' ')).toLowerCase();if(hay.indexOf(q)<0)return false;}
     return true;
   });
-  if(!filtered.length){body.innerHTML="<tr><td colspan=\"9\" class=\"py-6 text-center text-gray-400\">No personnel match your search. <button onclick=\"openPersonnelAdd()\" class=\"text-blue-700 font-bold hover:underline\">+ Add one</button></td></tr>";}
+  if(!filtered.length){body.innerHTML="<tr><td colspan=\"10\" class=\"py-6 text-center text-gray-400\">No personnel match your search. <button onclick=\"openPersonnelAdd()\" class=\"text-blue-700 font-bold hover:underline\">+ Add one</button></td></tr>";}
   else{
     body.innerHTML=filtered.map(function(pp){var m=pp.m;
       var grpColor={"Field & Technical":"#0866ff","IT / Network & Engineering":"#0866ff","PCR / Control Room":"#0a58ca","Production & Executive":"#f5832a"}[m.group]||"#65676b";
       var statusPill=pp.onShift?'<span class="inline-block whitespace-nowrap px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[9px] mono">\u25cf On Shift</span>':'<span class="inline-block whitespace-nowrap px-2 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-500 text-[9px] mono">Off Shift</span>';
       var od=personnelInfo(m.name);var nm=m.name.replace(/'/g,"\\'");
       var catColor={"Employee":"bg-blue-50 border-blue-200 text-blue-700","Freelancer":"bg-violet-50 border-violet-200 text-violet-700","Vendor":"bg-orange-50 border-orange-200 text-orange-700","Talent / On-Air":"bg-pink-50 border-pink-200 text-pink-700"}[m.category]||"bg-gray-100 border-gray-200 text-gray-600";
-      return '<tr class="personnel-row hover:bg-gray-50/60"><td class="py-2.5"><button onclick="openPersonnelEdit(\''+nm+'\')" class="font-semibold text-gray-900 hover:text-blue-700 hover:underline text-left">'+m.name+'</button>'+(m.custom?'<span class="ml-1 text-[8px] font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded px-1">added</span>':'')+'</td>'+
-        '<td class="py-2.5 whitespace-nowrap"><span class="mono text-[9px] text-gray-500">'+esc(m.id||'')+'</span> <span class="inline-block text-[8px] font-bold border rounded px-1 py-px '+catColor+'">'+esc(m.category||'')+'</span>'+(m.exportExempt?'<span class="ml-1 text-[8px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1" title="Excluded from techbook exports (admin-set at account creation)">exempt</span>':'')+'</td>'+
-        '<td class="py-2.5 text-gray-700">'+esc(m.pos||'\u2014')+'</td>'+
-        '<td class="py-2.5"><span class="inline-flex items-center gap-1.5 text-[10px]"><span class="w-2 h-2 rounded-full" style="background:'+grpColor+'"></span>'+m.group.replace(' / Network & Engineering',' / Eng').replace(' / Control Room',' / PCR')+'</span></td>'+
-        '<td class="py-2.5"><input value="'+esc(od.passport||m.passport||'').replace(/"/g,'&quot;')+'" onchange="setPersonnelInfo(\''+nm+'\',\'passport\',this.value)" placeholder="passport / ID" class="w-full bg-transparent mono text-[10px] text-gray-700 border border-transparent hover:border-gray-200 focus:border-blue-300 rounded px-1.5 py-1" style="outline:none;min-width:100px"></td>'+
-        '<td class="py-2.5"><input value="'+esc(od.homeBase||m.homeBase||'').replace(/"/g,'&quot;')+'" onchange="setPersonnelInfo(\''+nm+'\',\'homeBase\',this.value.toUpperCase());this.value=this.value.toUpperCase()" placeholder="IATA" maxlength="3" class="w-full bg-transparent mono uppercase text-[10px] font-bold text-blue-700 border border-transparent hover:border-gray-200 focus:border-blue-300 rounded px-1.5 py-1" style="outline:none;min-width:54px"></td>'+
-        '<td class="py-2.5 mono text-[10px] text-gray-600">'+(m.email?'<a href="mailto:'+m.email+'" class="text-blue-700 hover:underline">'+m.email+'</a>':'')+(m.phone&&m.phone!=='\u2014'?' \u00b7 '+m.phone:'')+'</td>'+
-        '<td class="py-2.5 whitespace-nowrap">'+statusPill+'</td>'+
+      return '<tr class="personnel-row hover:bg-gray-50/60"><td class="py-2.5 pr-4 align-middle"><button onclick="openPersonnelEdit(\''+nm+'\')" class="font-semibold text-gray-900 hover:text-blue-700 hover:underline text-left">'+m.name+'</button>'+(m.custom?'<span class="ml-1 text-[8px] font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded px-1">added</span>':'')+'</td>'+
+        '<td class="py-2.5 pr-4 whitespace-nowrap align-middle"><span class="mono text-[9px] text-gray-500">'+esc(m.id||'')+'</span> <span class="inline-block text-[8px] font-bold border rounded px-1 py-px '+catColor+'">'+esc(m.category||'')+'</span>'+(m.exportExempt?'<span class="ml-1 text-[8px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1" title="Excluded from techbook exports (admin-set at account creation)">exempt</span>':'')+'</td>'+
+        '<td class="py-2.5 pr-4 text-gray-700 align-middle">'+esc(m.pos||'\u2014')+'</td>'+
+        '<td class="py-2.5 pr-4 align-middle"><span class="inline-flex items-center gap-1.5 text-[10px] whitespace-nowrap"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+grpColor+'"></span>'+m.group.replace(' / Network & Engineering',' / Eng').replace(' / Control Room',' / PCR')+'</span></td>'+
+        '<td class="py-2.5 pr-4 align-middle"><input value="'+esc(od.passport||m.passport||'').replace(/"/g,'&quot;')+'" onchange="setPersonnelInfo(\''+nm+'\',\'passport\',this.value)" placeholder="passport / ID" class="w-full bg-transparent mono text-[10px] text-gray-700 border border-transparent hover:border-gray-200 focus:border-blue-300 rounded px-1.5 py-1" style="outline:none;min-width:100px"></td>'+
+        '<td class="py-2.5 pr-4 align-middle"><input value="'+esc(od.homeBase||m.homeBase||'').replace(/"/g,'&quot;')+'" onchange="setPersonnelInfo(\''+nm+'\',\'homeBase\',this.value.toUpperCase());this.value=this.value.toUpperCase()" placeholder="IATA" maxlength="3" class="w-full bg-transparent mono uppercase text-[10px] font-bold text-blue-700 border border-transparent hover:border-gray-200 focus:border-blue-300 rounded px-1.5 py-1" style="outline:none;min-width:54px"></td>'+
+        '<td class="py-2.5 pr-4 text-[10px] text-gray-700 align-middle" style="max-width:200px"><div class="truncate">'+(m.email?'<a href="mailto:'+esc(m.email)+'" class="text-blue-700 hover:underline" title="'+esc(m.email)+'">'+esc(m.email)+'</a>':'<span class="text-gray-400">\u2014</span>')+'</div></td>'+
+        '<td class="py-2.5 pr-4 mono text-[10px] text-gray-700 whitespace-nowrap align-middle">'+(m.phone&&m.phone!=='\u2014'?'<a href="tel:'+esc(String(m.phone).replace(/[^+\d]/g,""))+'" class="text-gray-800 hover:text-blue-700">'+esc(m.phone)+'</a>':'<span class="text-gray-400">\u2014</span>')+'</td>'+
+        '<td class="py-2.5 pr-4 whitespace-nowrap align-middle">'+statusPill+'</td>'+
         '<td class="py-2.5 text-right whitespace-nowrap">'+((typeof permIsAdmin==='function'&&permIsAdmin())?'<button onclick="genAccountFor(\''+nm+'\')" title="'+((typeof accountFor==='function'&&accountFor(m.name))?'Manage Muse Live account':'Generate Muse Live account')+'" class="p-1 '+((typeof accountFor==='function'&&accountFor(m.name))?'text-purple-600 hover:text-purple-800':'text-gray-400 hover:text-purple-700')+'"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></button>':'')+'<button onclick="openPersonnelEdit(\''+nm+'\')" title="Edit personnel" class="text-gray-400 hover:text-blue-600 p-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>'+(m.custom?'<button onclick="deletePersonnel(\''+nm+'\')" title="Delete personnel" class="text-gray-400 hover:text-red-600 p-1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>':'')+'</td></tr>';
     }).join('');
   }
@@ -5497,7 +5504,7 @@ function masterScheduleBlocks(){
   var fac=[
     ["PCR 1","Muse AI World Tour Tech Rehearsal","Mon–Tue","Compound"],
     ["PCR 1","Ray-Ban Meta Gen 3 Launch Setup","Fri–Sat","Compound"],
-    ["PCR 4","Ray-Ban Meta Gen 3 Launch Remote Test","Mon–Wed","Harbor"],
+    ["PCR 4","Ray-Ban Meta Gen 3 Launch Remote Test","Mon–Wed","MPK"],
     ["PCR 4","Creator Week Cam Map","Sat–Sun","Route"],
     ["PCR 6","Muse AI Launchth GFX Build","Wed–Thu","Studio M1"],
     ["Studio M1","Muse AI Launchth Rehearsal","Thu–Sat","Meta NYC"],
@@ -6540,7 +6547,7 @@ function museCorrectHint(corr){
 }
 
 /* ===== MUSEAI — data-driven assistant over all production data ===== */
-var prodSyn={museaitour:["world tour","muse ai world tour","museaitour","tour","metlife","finale","mawt","mawt26"],raybangen3:["ray-ban","rayban","ray ban","gen 3","glasses","smart glasses","harbor"],orion:["orion","ar glasses","levis","levi's","santa clara","reveal"],museailaunch:["muse ai","muse ai launch","launch keynote","keynote","studio m1","hudson yards"],whatsapp:["whatsapp","whats app","business summit","summit","q&a desk","channels"],igcreators:["instagram","creator week","creators","creator","reels","herald"],charm:["charm","meta charm","wearable","wearables","milan","design week","fiera"]};
+var prodSyn={museaitour:["world tour","muse ai world tour","museaitour","tour","metlife","finale","mawt","mawt26"],raybangen3:["ray-ban","rayban","ray ban","gen 3","glasses","smart glasses","menlo park","mpk","meta hq","classroom stage"],orion:["orion","ar glasses","levis","levi's","santa clara","reveal"],museailaunch:["muse ai","muse ai launch","launch keynote","keynote","studio m1","hudson yards"],whatsapp:["whatsapp","whats app","business summit","summit","q&a desk","channels"],igcreators:["instagram","creator week","creators","creator","reels","herald"],charm:["charm","meta charm","wearable","wearables","milan","design week","fiera"]};
 var deptSyn=[
  ["Audio",["audio","audoi","audioo","sound","a1","a2"," mix","dante","madi","calrec","console"]],
  ["Cameras / Video",["camera","camra","camara","cam ","cams","video","vedio","lens","ldx","hdc"]],
@@ -6789,7 +6796,7 @@ function museaiAnswer(qRaw){
     var critc=pc.criticalPath.slice(0,6).join(' → ');
     var healthc=pc.SPI>=0.98?'on or ahead of schedule':(pc.SPI>=0.9?'slightly behind schedule':'behind schedule');
     var costc=pc.CPI>=0.98?'on or under budget':(pc.CPI>=0.9?'trending slightly over budget':'over budget');
-    return prodName(pkc)+" project controls (Primavera-style CPM): forecast finish "+pc.finish+", "+pc.pctComplete+"% complete. Critical path — "+critc+". SPI "+pc.SPI+" ("+healthc+"), CPI "+pc.CPI+" ("+costc+"), EAC "+$fmt(pc.EAC)+", VAC "+$fmt(pc.VAC)+". "+(pc.negFloatActivities?pc.negFloatActivities+" activit"+(pc.negFloatActivities===1?"y is":"ies are")+" on negative float (deadline at risk). ":"")+(pc.resourceOverallocations.length?"Resource over-allocation on "+pc.resourceOverallocations.join(', ')+" — run \"Level within float\" on the Resources view. ":"")+(pc.gates.length?"Open stage-gates: "+pc.gates.slice(0,3).join('; ')+". ":"All stage-gates passed. ")+"Open the Schedule tab for the CPM Gantt, resource leveling, EVM S-curve, gates and what-if scenarios — or Portfolio Controls in the Master Schedule for the cross-production rollup.";
+    return prodName(pkc)+" project controls (CPM): forecast finish "+pc.finish+", "+pc.pctComplete+"% complete. Critical path — "+critc+". SPI "+pc.SPI+" ("+healthc+"), CPI "+pc.CPI+" ("+costc+"), EAC "+$fmt(pc.EAC)+", VAC "+$fmt(pc.VAC)+". "+(pc.negFloatActivities?pc.negFloatActivities+" activit"+(pc.negFloatActivities===1?"y is":"ies are")+" on negative float (deadline at risk). ":"")+(pc.resourceOverallocations.length?"Resource over-allocation on "+pc.resourceOverallocations.join(', ')+" — run \"Level within float\" on the Resources view. ":"")+(pc.gates.length?"Open stage-gates: "+pc.gates.slice(0,3).join('; ')+". ":"All stage-gates passed. ")+"Open the Schedule tab for the CPM Gantt, resource leveling, EVM S-curve, gates and what-if scenarios — or Portfolio Controls in the Master Schedule for the cross-production rollup.";
   }
   // city conditions panel (Work Item 3)
   if(/(air quality|aqi|conditions|city weather|windy|humidity|barometric|pressure|wind gust)/.test(q))
@@ -8348,6 +8355,7 @@ var EVENT_CHECKLIST=[
   {id:'grip',title:'Grip / Access',items:['Jib / FOH / truss / platforms','Capacity (psf)','Wood plug / steel ramp / rails','4×4 — do not touch cam track','Yellow jackets / loaders / lifts']},
   {id:'schedule',title:'Schedule / Transport',items:['Schedule with venue','Receipts / transfers','Heavy equipment / climb','PPE','Walkie inventory','Steadicam / wireless','Catering / craft','Pyro extinguishers']},
   {id:'data',title:'Data / Network / TX',items:['Data drop + bandwidth','Wi-Fi','Muse Live network / VPN','Workstations / printers','Skytech / Verizon / carrier','News integration / MUSE1','Satellite','Microwave',"LiveU LU800 / cellular",'MOT / noise']},
+  {id:'stream',title:'Streaming',items:['Destinations confirmed (Facebook Live · Instagram Live · meta.com embeds · Workplace)','RTMPS stream keys in vault — not in run-of-show','Contribution: SRT primary + bonded cellular backup paths green','MediaConnect flow + MediaLive channel healthy','ABR ladder locked (rungs · fps · bitrate per rung)','Packaging: HLS + LL-HLS + DASH/CMAF enabled','Multi-CDN delivery weight set (CloudFront / Akamai)','Loudness target met (−24 LKFS ±2) · audio description rendition','Captions tested (608/708 + live stenocaptions)','Monitoring: TAG probe + CloudWatch alarms + PagerDuty routes verified','QoE beacons firing (rebuffer · startup · failures)','DVR window + start-over tested','Thresholds set: SRT loss > 0.5%, edge 5xx > 0.5%, segment age > 6 s, rebuffer > 1%','Failover drill (primary → backup) rehearsed within 48 h','SCTE-35 slate / countdown markers armed']},
   {id:'venue',title:'Venue / Permits',items:['Times of operation','Union agreement','Empties / boneyard / dock','Security','IPTV / ribbon','Venue tech spec / layout / BSP','ADA area / seat kills','Fence / carpet','Forklift / scissor / articulating / boom','Harness / keys / insurance / waiver']},
   {id:'labor',title:'Labor / EHS',items:['Crew count / meal / per diem','Approvals / job positions / scope','Lodging / visa','Scenery — flame-retardant fabric','First aid / rigger / steward','Coordinator / makeup / gaffer / runners / supervisor','Plot / grid / ladders / lifts','Fall arrest / emergency plan / exits / rally','Rain / ponchos / umbrellas','Welcome / maps / road closures']}
 ];

@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" width="1600" height="1000" role="img" aria-label="Meta HQ · Classroom Stage longitudinal section">
+  <rect width="1600" height="1000" fill="#1C1E21"/>
+  <g stroke="#0A58CA" stroke-width=".4" opacity=".5">
+    <g><line x1="0" y1="100" x2="1600" y2="100"/><line x1="0" y1="200" x2="1600" y2="200"/><line x1="0" y1="300" x2="1600" y2="300"/><line x1="0" y1="400" x2="1600" y2="400"/><line x1="0" y1="500" x2="1600" y2="500"/><line x1="0" y1="600" x2="1600" y2="600"/><line x1="0" y1="700" x2="1600" y2="700"/><line x1="0" y1="800" x2="1600" y2="800"/><line x1="0" y1="900" x2="1600" y2="900"/></g>
+    <g><line x1="200" y1="0" x2="200" y2="1000"/><line x1="400" y1="0" x2="400" y2="1000"/><line x1="600" y1="0" x2="600" y2="1000"/><line x1="800" y1="0" x2="800" y2="1000"/><line x1="1000" y1="0" x2="1000" y2="1000"/><line x1="1200" y1="0" x2="1200" y2="1000"/><line x1="1400" y1="0" x2="1400" y2="1000"/></g>
+  </g>
+  <!-- floor -->
+  <line x1="120" y1="800" x2="1480" y2="800" stroke="#88a8ff" stroke-width="2.4"/>
+  <!-- ceiling / trim -->
+  <line x1="200" y1="300" x2="1400" y2="300" stroke="#88a8ff" stroke-width="2.4"/>
+  <text x="1430" y="300" fill="#88a8ff" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">32'-0" TRIM</text>
+  <!-- side walls -->
+  <line x1="200" y1="300" x2="200" y2="800" stroke="#88a8ff" stroke-width="2.4"/>
+  <line x1="1400" y1="300" x2="1400" y2="800" stroke="#88a8ff" stroke-width="2.4"/>
+  <!-- stage riser -->
+  <rect x="520" y="730" width="560" height="70" fill="#242526" stroke="#88a8ff" stroke-width="1.4"/>
+  <text x="800" y="776" text-anchor="middle" fill="#88a8ff" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">STAGE RISER · 24" HIGH</text>
+  <!-- LED back wall -->
+  <rect x="620" y="420" width="360" height="310" fill="#0064E0" stroke="#88a8ff" stroke-width="1.4"/>
+  <text x="800" y="500" text-anchor="middle" fill="#FFFFFF" font-family="system-ui,sans-serif" font-weight="700" font-size="16">LED BACK WALL</text>
+  <text x="800" y="520" text-anchor="middle" fill="#B9D7FF" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">28'-0" × 10'-6"</text>
+  <!-- truss -->
+  <line x1="480" y1="350" x2="1120" y2="350" stroke="#F7B928" stroke-width="3"/>
+  <g stroke="#F7B928" stroke-width="1">
+    <line x1="480" y1="350" x2="520" y2="330"/><line x1="520" y1="330" x2="560" y2="350"/>
+    <line x1="560" y1="350" x2="600" y2="330"/><line x1="600" y1="330" x2="640" y2="350"/>
+    <line x1="640" y1="350" x2="680" y2="330"/><line x1="680" y1="330" x2="720" y2="350"/>
+    <line x1="720" y1="350" x2="760" y2="330"/><line x1="760" y1="330" x2="800" y2="350"/>
+    <line x1="800" y1="350" x2="840" y2="330"/><line x1="840" y1="330" x2="880" y2="350"/>
+    <line x1="880" y1="350" x2="920" y2="330"/><line x1="920" y1="330" x2="960" y2="350"/>
+    <line x1="960" y1="350" x2="1000" y2="330"/><line x1="1000" y1="330" x2="1040" y2="350"/>
+    <line x1="1040" y1="350" x2="1080" y2="330"/><line x1="1080" y1="330" x2="1120" y2="350"/>
+  </g>
+  <text x="800" y="332" text-anchor="middle" fill="#F7B928" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11" letter-spacing=".1em">PRE-RIG TRUSS · 12" BOX</text>
+  <!-- fixtures -->
+  <g fill="#F7B928">
+    <rect x="516" y="356" width="8" height="18"/><rect x="596" y="356" width="8" height="18"/>
+    <rect x="676" y="356" width="8" height="18"/><rect x="756" y="356" width="8" height="18"/>
+    <rect x="836" y="356" width="8" height="18"/><rect x="916" y="356" width="8" height="18"/>
+    <rect x="996" y="356" width="8" height="18"/><rect x="1076" y="356" width="8" height="18"/>
+  </g>
+  <!-- hard cam position -->
+  <g fill="#0866FF" stroke="#88a8ff">
+    <rect x="1250" y="724" width="60" height="36" rx="4"/>
+  </g>
+  <text x="1280" y="748" text-anchor="middle" fill="#FFFFFF" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">C2</text>
+  <text x="1280" y="784" text-anchor="middle" fill="#88a8ff" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11">HARD CAM · 42' THROW</text>
+  <!-- audience seating -->
+  <g stroke="#4B4F56" stroke-width="1">
+    <path d="M240 800 L240 744 L1180 744 L1180 800" fill="none"/>
+    <line x1="280" y1="800" x2="280" y2="750"/><line x1="340" y1="800" x2="340" y2="750"/><line x1="400" y1="800" x2="400" y2="750"/>
+    <line x1="460" y1="800" x2="460" y2="750"/><line x1="900" y1="800" x2="900" y2="750"/>
+    <line x1="960" y1="800" x2="960" y2="750"/><line x1="1020" y1="800" x2="1020" y2="750"/><line x1="1080" y1="800" x2="1080" y2="750"/>
+    <line x1="1140" y1="800" x2="1140" y2="750"/>
+  </g>
+  <text x="700" y="772" text-anchor="middle" fill="#65676B" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">SEATING · 8 ROWS RAKED</text>
+  <!-- dimensions -->
+  <g stroke="#F5A3B1" stroke-width="1" fill="none">
+    <path d="M200 860 L1400 860"/>
+    <path d="M200 850 L200 870"/><path d="M1400 850 L1400 870"/>
+  </g>
+  <text x="800" y="882" text-anchor="middle" fill="#F5A3B1" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="12">120'-0"</text>
+  <!-- title block -->
+  <g transform="translate(1140,920)">
+    <rect width="340" height="60" fill="#242526" stroke="#88a8ff"/>
+    <text x="12" y="22" fill="#F5F7FA" font-family="system-ui,sans-serif" font-size="14" font-weight="700">META HQ · CLASSROOM STAGE</text>
+    <text x="12" y="42" fill="#88a8ff" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11">LONGITUDINAL SECTION · REV 2.0</text>
+  </g>
+</svg>

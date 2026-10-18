@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Meta HQ Menlo Park — surrounding area">
+  <defs>
+    <linearGradient id="aerial" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E7F3FF"/><stop offset="1" stop-color="#DBE4EE"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#A8DAB5"/><stop offset="1" stop-color="#6CBF78"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0064E0"/><stop offset=".55" stop-color="#0082FB"/><stop offset="1" stop-color="#00C2FF"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#aerial)"/>
+  <!-- bay / water (left-top edge) -->
+  <path d="M0 0 L 460 0 Q 300 180 180 320 Q 60 440 0 540 Z" fill="#9BC4FF" opacity=".7"/>
+  <path d="M0 0 L 420 0 Q 280 160 160 300 Q 60 400 0 500 Z" fill="#88a8ff" opacity=".55"/>
+  <text x="140" y="220" font-family="system-ui,sans-serif" font-size="14" font-weight="700" fill="#0064E0" transform="rotate(-28 140 220)" opacity=".8">SAN FRANCISCO BAY</text>
+  <!-- 101 freeway sweeping diagonal -->
+  <path d="M-20 820 Q 400 740 760 580 Q 1120 420 1620 300" stroke="#8A8D91" stroke-width="38" fill="none"/>
+  <path d="M-20 820 Q 400 740 760 580 Q 1120 420 1620 300" stroke="#F5F7FA" stroke-width="2" stroke-dasharray="20 20" fill="none"/>
+  <text x="1250" y="340" font-family="system-ui,sans-serif" font-size="16" font-weight="700" fill="#4B4F56" transform="rotate(-24 1250 340)">US-101 BAYSHORE FREEWAY</text>
+  <!-- Hacker Way (loop) -->
+  <path d="M700 460 L1180 420 L1240 680 L740 720 Z" stroke="#CED0D4" stroke-width="10" fill="none"/>
+  <path d="M700 460 L1180 420 L1240 680 L740 720 Z" stroke="#FFFFFF" stroke-width="2" stroke-dasharray="12 10" fill="none"/>
+  <text x="990" y="416" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11" font-weight="700" fill="#65676B">HACKER WAY</text>
+  <!-- buildings MPK 20 / 21 / 22 / Classroom Stage -->
+  <g font-family="system-ui,sans-serif" font-size="11" font-weight="700" fill="#1C1E21" text-anchor="middle">
+    <rect x="770" y="500" width="130" height="80" fill="#CED0D4" stroke="#8A8D91"/><text x="835" y="546">MPK 20</text>
+    <rect x="920" y="500" width="130" height="80" fill="#CED0D4" stroke="#8A8D91"/><text x="985" y="546">MPK 21</text>
+    <rect x="1070" y="500" width="130" height="80" fill="#CED0D4" stroke="#8A8D91"/><text x="1135" y="546">MPK 22</text>
+    <!-- Classroom Stage -->
+    <rect x="820" y="600" width="330" height="90" fill="#0866FF" stroke="#0064E0" stroke-width="2"/>
+    <text x="985" y="638" fill="#FFFFFF" font-size="14">CLASSROOM STAGE</text>
+    <text x="985" y="660" fill="#B9D7FF" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10">1 HACKER WAY · MPK</text>
+  </g>
+  <!-- rooftop garden parks (greens) -->
+  <path d="M700 440 L1240 400 L1240 420 L700 460 Z" fill="url(#greenGrad)"/>
+  <path d="M740 720 L1240 680 L1240 700 L740 740 Z" fill="url(#greenGrad)"/>
+  <!-- tree dots -->
+  <g fill="#1E7B34" opacity=".55">
+    <circle cx="660" cy="760" r="10"/><circle cx="690" cy="780" r="8"/><circle cx="620" cy="800" r="12"/>
+    <circle cx="1300" cy="400" r="10"/><circle cx="1340" cy="430" r="8"/><circle cx="1380" cy="400" r="12"/>
+  </g>
+  <!-- pin on classroom stage -->
+  <g transform="translate(985,620)">
+    <circle r="18" fill="#E41E3F" stroke="#FFFFFF" stroke-width="3"/>
+    <circle r="6" fill="#FFFFFF"/>
+  </g>
+  <!-- compass -->
+  <g transform="translate(1500,60)" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11" fill="#1C1E21" text-anchor="middle">
+    <circle r="34" fill="#FFFFFF" stroke="#CED0D4"/>
+    <path d="M0 -24 L8 10 L0 4 L-8 10 Z" fill="#E41E3F"/>
+    <text y="-30">N</text>
+  </g>
+  <!-- caption -->
+  <g transform="translate(40,40)">
+    <rect width="420" height="78" rx="12" fill="#FFFFFF" opacity=".94" stroke="#CED0D4"/>
+    <text x="20" y="30" font-family="system-ui,sans-serif" font-size="12" font-weight="700" letter-spacing=".08em" fill="#65676B">META HQ · SURROUNDING AREA</text>
+    <text x="20" y="54" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#1C1E21">Menlo Park campus · Hacker Way loop</text>
+    <text x="20" y="70" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="#8A8D91">37.4848°N · 122.1484°W · US-101 access</text>
+  </g>
+  <rect x="40" y="864" width="1520" height="4" fill="url(#sweep)"/>
+</svg>

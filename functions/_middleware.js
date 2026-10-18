@@ -7,7 +7,7 @@
 //   2. Per-user email + password, when accounts exist in KV (functions/api/auth/users.js)
 //   3. The shared access password — only while no per-user accounts exist
 //      (or ALLOW_SHARED_PASSWORD=true). The password is never stored: PW_HASH = sha256('muse-live:' + password).
-import { json, pwHash, readSession, sha256hex, signSession, sessionCookies, clearCookies, sameOrigin } from './_lib/session.js';
+import { json, pwHash, readSession, sha256hex, signSession, sessionCookies, clearCookies, sameOrigin, usingDefaultSecrets } from './_lib/session.js';
 import { getUser, hasUsers, normEmail, verifyPassword } from './_lib/users.js';
 import { audit } from './_lib/audit.js';
 
@@ -80,6 +80,12 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const path = url.pathname;
   const secure = url.protocol === 'https:';
+  // Refuse to run on https without a deployment-specific signing secret: otherwise session HMAC
+  // keys derive from DEFAULT_PW_HASH (a public constant) and tokens can be forged offline.
+  if (secure && usingDefaultSecrets(env)) {
+    return new Response('Muse Live is misconfigured: set MUSE_PASSWORD_HASH or SESSION_SECRET.',
+      { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+  }
   const session = await readSession(request, env);
   let authed = !!session;
 

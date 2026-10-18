@@ -2,7 +2,7 @@
    Images generated in-session. */
 (function (root) {
   'use strict';
-  var VER = 20260827;
+  var VER = 20261017; /* bump: Ray-Ban survey + 360 moved to MPK SVG set */
   function cap(src, caption, by) {
     return { src: src, caption: caption, ts: 'seeded walk', by: by || 'Site survey' };
   }
@@ -13,23 +13,23 @@
       around: 'Photo: Epicgenius / Wikimedia Commons · CC BY-SA 4.0'
     }
   };
-  function pack(key, venue, shots) {
-    var b = 'assets/survey/' + key + '/', c = CREDIT[key] || {};
+  function pack(key, venue, ext) {
+    var b = 'assets/survey/' + key + '/', c = CREDIT[key] || {}, e = ext || 'jpg';
     return {
       gallery: [
-        cap(b + 'exterior.jpg', venue + ' — exterior / approach', c.exterior),
-        cap(b + 'compound.jpg', venue + ' — compound / platforms', c.compound)
+        cap(b + 'exterior.' + e, venue + ' — exterior / approach', c.exterior),
+        cap(b + 'compound.' + e, venue + ' — compound / platforms', c.compound)
       ],
       around: [
-        cap(b + 'around.jpg', venue + ' — surrounding area', c.around)
+        cap(b + 'around.' + e, venue + ' — surrounding area', c.around)
       ],
-      pano: b + 'pano.jpg'
+      pano: b + 'pano.' + e
     };
   }
   root.MUSE_SURVEY_MEDIA_VER = VER;
   root.MUSE_SURVEY_MEDIA = {
     museaitour: pack('museaitour', 'MetLife Stadium'),
-    raybangen3: pack('raybangen3', 'New York Harbor'),
+    raybangen3: pack('raybangen3', 'Meta HQ · Classroom Stage', 'svg'),
     orion: pack('orion', "Levi's Stadium"),
     museailaunch: pack('museailaunch', 'Meta NYC · Hudson Yards'),
     whatsapp: pack('whatsapp', 'WhatsApp Washington DC Hub'),

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Meta HQ Classroom Stage — compound and platforms">
+  <defs>
+    <linearGradient id="asphalt" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3E4042"/><stop offset="1" stop-color="#1C1E21"/>
+    </linearGradient>
+    <linearGradient id="sweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0064E0"/><stop offset=".55" stop-color="#0082FB"/><stop offset="1" stop-color="#00C2FF"/>
+    </linearGradient>
+    <pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+      <path d="M60 0H0V60" stroke="#55575B" stroke-width=".6" fill="none"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#asphalt)"/>
+  <rect width="1600" height="900" fill="url(#grid)" opacity=".4"/>
+  <!-- stage pad -->
+  <rect x="420" y="300" width="760" height="340" fill="#242526" stroke="#88a8ff" stroke-width="2"/>
+  <text x="800" y="330" text-anchor="middle" font-family="system-ui,sans-serif" font-size="14" font-weight="700" letter-spacing=".12em" fill="#88a8ff">CLASSROOM STAGE · PAD</text>
+  <!-- truss boundary -->
+  <rect x="440" y="340" width="720" height="280" fill="none" stroke="#88a8ff" stroke-dasharray="8 6" stroke-width="1.5" opacity=".7"/>
+  <!-- camera positions -->
+  <g font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11" fill="#FFFFFF" text-anchor="middle">
+    <circle cx="500" cy="400" r="16" fill="#0866FF"/><text x="500" y="404">C1</text>
+    <circle cx="800" cy="380" r="16" fill="#0866FF"/><text x="800" y="384">C2</text>
+    <circle cx="1100" cy="400" r="16" fill="#0866FF"/><text x="1100" y="404">C3</text>
+    <circle cx="800" cy="560" r="16" fill="#0866FF"/><text x="800" y="564">C4</text>
+  </g>
+  <!-- jib arc -->
+  <path d="M300 500 Q800 240 1300 500" stroke="#F7B928" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+  <text x="800" y="260" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="11" fill="#F7B928">JIB ARC · 30 FT</text>
+  <!-- trucks -->
+  <g transform="translate(80,660)">
+    <rect width="220" height="90" rx="6" fill="#F5F7FA" stroke="#88a8ff"/>
+    <text x="110" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#1C1E21">GAME CREEK · FLYPACK A</text>
+    <text x="110" y="64" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="#65676B">4 cam · 16 ch audio · EVS</text>
+  </g>
+  <g transform="translate(80,780)">
+    <rect width="220" height="90" rx="6" fill="#F5F7FA" stroke="#88a8ff"/>
+    <text x="110" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#1C1E21">POWER · MERIDIAN 400A</text>
+    <text x="110" y="64" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="#65676B">A/B tie-in · ATS verified</text>
+  </g>
+  <!-- LiveU pack -->
+  <g transform="translate(1300,660)">
+    <rect width="220" height="90" rx="6" fill="#F5F7FA" stroke="#88a8ff"/>
+    <text x="110" y="42" text-anchor="middle" font-family="system-ui,sans-serif" font-size="12" font-weight="700" fill="#1C1E21">LIVEU LU800 · BONDED</text>
+    <text x="110" y="64" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="#65676B">5-band · 25 Mbps</text>
+  </g>
+  <!-- Spectrum underline bar -->
+  <rect x="40" y="864" width="1520" height="4" fill="url(#sweep)"/>
+  <!-- caption -->
+  <g transform="translate(40,40)">
+    <rect width="420" height="78" rx="12" fill="#FFFFFF" opacity=".94" stroke="#CED0D4"/>
+    <text x="20" y="30" font-family="system-ui,sans-serif" font-size="12" font-weight="700" letter-spacing=".08em" fill="#65676B">COMPOUND / PLATFORMS</text>
+    <text x="20" y="54" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#1C1E21">Classroom Stage pad · camera plot</text>
+    <text x="20" y="70" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="#8A8D91">Ray-Ban Meta Gen 3 Reveal · Jun 26 2026</text>
+  </g>
+</svg>

@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" role="img" aria-label="Meta HQ — Classroom Stage exterior, concept rendering">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#E7F3FF"/><stop offset=".6" stop-color="#D4E8FF"/><stop offset="1" stop-color="#F5F7FA"/>
+    </linearGradient>
+    <linearGradient id="facade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5F7FA"/><stop offset="1" stop-color="#CED0D4"/>
+    </linearGradient>
+    <linearGradient id="brandSweep" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#0064E0"/><stop offset=".55" stop-color="#0082FB"/><stop offset="1" stop-color="#00C2FF"/>
+    </linearGradient>
+    <pattern id="windows" width="34" height="30" patternUnits="userSpaceOnUse">
+      <rect width="34" height="30" fill="#F5F7FA"/>
+      <rect x="4" y="4" width="26" height="22" fill="#242526" opacity=".82"/>
+      <rect x="4" y="4" width="26" height="4" fill="#0082FB" opacity=".32"/>
+    </pattern>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <!-- distant hills -->
+  <path d="M0 640 Q320 560 640 620 T1280 600 T1600 630 L1600 720 L0 720 Z" fill="#B9D7FF" opacity=".55"/>
+  <path d="M0 700 Q400 640 820 680 T1600 690 L1600 760 L0 760 Z" fill="#9BC4FF" opacity=".55"/>
+  <!-- ground / plaza -->
+  <rect x="0" y="720" width="1600" height="180" fill="#E4E6EB"/>
+  <path d="M0 760 L1600 760" stroke="#CED0D4" stroke-width="2"/>
+  <!-- walkway stripes -->
+  <g opacity=".55">
+    <path d="M80 820 L1520 820" stroke="#B0B3B8" stroke-dasharray="18 20" stroke-width="2"/>
+  </g>
+  <!-- main HQ building (isometric block) -->
+  <g transform="translate(260,400)">
+    <polygon points="0,320 540,320 540,0 0,0" fill="url(#facade)" stroke="#B0B3B8"/>
+    <rect x="20" y="24" width="500" height="200" fill="url(#windows)"/>
+    <!-- entrance -->
+    <rect x="226" y="240" width="90" height="80" fill="#242526"/>
+    <rect x="236" y="252" width="30" height="68" fill="#0082FB" opacity=".3"/>
+    <rect x="276" y="252" width="30" height="68" fill="#0082FB" opacity=".3"/>
+    <!-- rooftop plant -->
+    <rect x="40" y="-24" width="80" height="24" fill="#B0B3B8"/>
+    <rect x="420" y="-30" width="80" height="30" fill="#B0B3B8"/>
+    <!-- Meta ∞ brand -->
+    <g transform="translate(380,36) scale(.42)">
+      <path fill="#0081fb" d="m31.06,125.96c0,10.98 2.41,19.41 5.56,24.51 4.13,6.68 10.29,9.51 16.57,9.51 8.1,0 15.51-2.01 29.79-21.76 11.44-15.83 24.92-38.05 33.99-51.98l15.36-23.6c10.67-16.39 23.02-34.61 37.18-46.96 11.56-10.08 24.03-15.68 36.58-15.68 21.07,0 41.14,12.21 56.5,35.11 16.81,25.08 24.97,56.67 24.97,89.27 0,19.38-3.82,33.62-10.32,44.87-6.28,10.88-18.52,21.75-39.11,21.75l0-31.02c17.63,0 22.03-16.2 22.03-34.74 0-26.42-6.16-55.74-19.73-76.69-9.63-14.86-22.11-23.94-35.84-23.94-14.85,0-26.8,11.2-40.23,31.17-7.14,10.61-14.47,23.54-22.7,38.13l-9.06,16.05c-18.2,32.27-22.81,39.62-31.91,51.75-15.95,21.24-29.57,29.29-47.5,29.29-21.27,0-34.72-9.21-43.05-23.09-6.8-11.31-10.14-26.15-10.14-43.06z"/>
+      <path fill="#0082FB" d="m24.49,37.3c14.24-21.95 34.79-37.3 58.36-37.3 13.65,0 27.22,4.04 41.39,15.61 15.5,12.65 32.02,33.48 52.63,67.81l7.39,12.32c17.84,29.72 27.99,45.01 33.93,52.22 7.64,9.26 12.99,12.02 19.94,12.02 17.63,0 22.03-16.2 22.03-34.74l27.4-.86c0,19.38-3.82,33.62-10.32,44.87-6.28,10.88-18.52,21.75-39.11,21.75-12.8,0-24.14-2.78-36.68-14.61-9.64-9.08-20.91-25.21-29.58-39.71l-25.79-43.08c-12.94-21.62-24.81-37.74-31.68-45.04-7.39-7.85-16.89-17.33-32.05-17.33-12.27,0-22.69,8.61-31.41,21.78z"/>
+    </g>
+  </g>
+  <!-- secondary wing -->
+  <g transform="translate(880,480)">
+    <polygon points="0,240 460,240 460,0 0,0" fill="url(#facade)" stroke="#B0B3B8"/>
+    <rect x="20" y="20" width="420" height="160" fill="url(#windows)"/>
+  </g>
+  <!-- Classroom Stage pavilion (hero element) -->
+  <g transform="translate(840,620)">
+    <polygon points="0,0 220,-60 440,0 440,100 0,100" fill="#1C1E21" opacity=".9"/>
+    <rect x="20" y="12" width="400" height="78" fill="#242526"/>
+    <text x="220" y="60" text-anchor="middle" font-family="system-ui,sans-serif" font-size="30" font-weight="700" fill="#FFFFFF">CLASSROOM STAGE</text>
+    <text x="220" y="86" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="14" fill="#88a8ff">1 HACKER WAY · MPK</text>
+    <!-- spectrum sweep underline -->
+    <rect x="20" y="92" width="400" height="4" fill="url(#brandSweep)"/>
+  </g>
+  <!-- OB truck (abstract) -->
+  <g transform="translate(100,720)">
+    <rect x="0" y="-54" width="140" height="54" rx="4" fill="#F5F7FA" stroke="#B0B3B8"/>
+    <rect x="100" y="-66" width="40" height="12" fill="#B0B3B8"/>
+    <circle cx="24" cy="4" r="8" fill="#1C1E21"/><circle cx="56" cy="4" r="8" fill="#1C1E21"/>
+    <circle cx="104" cy="4" r="8" fill="#1C1E21"/><circle cx="128" cy="4" r="8" fill="#1C1E21"/>
+    <text x="70" y="-22" text-anchor="middle" font-family="ui-monospace,Menlo,Consolas,monospace" font-size="10" fill="#4B4F56">GAME CREEK FLYPACK</text>
+  </g>
+  <!-- caption bar -->
+  <g transform="translate(0,0)">
+    <rect x="40" y="40" width="340" height="68" rx="12" fill="#FFFFFF" opacity=".92" stroke="#CED0D4"/>
+    <text x="60" y="68" font-family="system-ui,sans-serif" font-size="12" font-weight="700" letter-spacing=".08em" fill="#65676B">META HQ · EXTERIOR / APPROACH</text>
+    <text x="60" y="92" font-family="system-ui,sans-serif" font-size="14" font-weight="600" fill="#1C1E21">Classroom Stage build-up · Hacker Way frontage</text>
+  </g>
+</svg>

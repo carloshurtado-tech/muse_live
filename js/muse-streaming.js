@@ -82,12 +82,12 @@
     raybangen3: {
       state: 'ENDED', peak: 412000, viewers: 0, latency: 'Standard HLS · 15–20 s (6 s segments)',
       destinations: ['Facebook Live · Ray-Ban Meta Page (RTMPS)', 'Instagram Live · @rayban + @meta collab (RTMPS)', 'meta.com/rayban launch page (HLS)'],
-      venueNet: 'Pier 26 hut: single 1 GbE municipal fiber + 5 GHz point-to-point microwave to Battery Park · Starlink standby',
+      venueNet: 'Classroom Stage IDF: single 1 GbE campus fiber uplink + 5 GHz point-to-point bridge to MPK Building 23 · Starlink standby',
       primary: 'Haivision Makito X4 · SRT caller → MediaConnect us-east-1 · 1,200 ms latency',
       backup: 'LiveU LU800 bonded (4× 5G) → LiveU Matrix → MediaConnect input 2',
       cloud: 'MediaLive Standard (2 pipelines) · input failover after 10 s input loss (raised from default — see INC-2026-0612)',
       loudness: '-24 LKFS (ATSC A/85)', captions: 'EEG Falcon → CEA-608 → WebVTT',
-      ladder: LADDER_169, streams: [['Program · archive (VOD)', 'program', yt('connect26')], ['ISO · harbor cam (VOD)', 'iso', yt('connect25b')]]
+      ladder: LADDER_169, streams: [['Program · archive (VOD)', 'program', yt('connect26')], ['ISO · stage cam (VOD)', 'iso', yt('connect25b')]]
     },
     orion: {
       state: 'STANDBY', peak: 0, viewers: 0, latency: 'LL-HLS target 4 s',
@@ -399,7 +399,7 @@
         (st.role === 'vertical' ? '<span class="ms-vframe" aria-hidden="true"></span>' : '') +
         (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
         '<div class="ms-osd">' + badge(stateOf(key)) + '<span class="ms-health" data-tm="' + st.id + ':health">' + dot(g.overall) + LEVEL_TXT[g.overall] + '</span></div>' +
-        '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(\'' + esc(slot) + '\',this)" aria-pressed="false" aria-label="Listen to ' + esc(st.name) + '">🔇</button>' +
+        '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(\'' + esc(slot) + '\',this)" aria-pressed="false" aria-label="Listen to ' + esc(st.name) + '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>' +
       '</div>' +
       '<figcaption class="ms-cap"><div class="ms-cap-main"><b>' + esc(opts.showName ? nameOf(key) : st.name) + '</b><span>' + esc(opts.showName ? st.name : st.role) + '</span></div>' +
         '<div class="ms-cap-kpis"><span title="Concurrent viewers">👁 <b data-tm="' + st.id + ':viewers">' + (t.live ? fmtN(t.m.viewers) : '—') + '</b></span>' +
@@ -452,7 +452,13 @@
     }
     return '<div class="ms-charts">' + card('Concurrent viewers', 'viewers', 'is-blue', 'last 3 min' + (t.src && t.src.viewers ? ' · ' + t.src.viewers : ' · demo data')) + card('Rebuffer ratio', 'rebuffer', 'is-amber', '% of watch time') + card('SRT packet loss', 'loss', 'is-red', '% · primary contribution') + card('CDN egress', 'egress', 'is-green', 'Gbps') + '</div>';
   }
-  function section(title, body, extra) { return '<section class="ms-card"><div class="ms-card-h"><h3>' + title + '</h3>' + (extra || '') + '</div>' + body + '</section>'; }
+  function section(title, body, extra, defaultOpen) {
+    /* defaultOpen === false → collapse by default; the top-of-fold sections stay open */
+    if (defaultOpen === false) {
+      return '<details class="ms-card ms-card-fold"><summary class="ms-card-h"><h3>' + title + '</h3>' + (extra || '') + '</summary><div class="ms-card-body">' + body + '</div></details>';
+    }
+    return '<section class="ms-card"><div class="ms-card-h"><h3>' + title + '</h3>' + (extra || '') + '</div>' + body + '</section>';
+  }
   function kv(rows) { return '<dl class="ms-kv">' + rows.map(function (r) { return '<div><dt>' + r[0] + '</dt><dd>' + r[1] + '</dd></div>'; }).join('') + '</dl>'; }
 
   function paneHTML(key) {
@@ -492,19 +498,19 @@
         section('Measured QoE · your players', '<div data-qoe="' + key + '"><p class="ms-empty">Loading…</p></div>', '<span class="ms-src is-live">Real</span>') +
         section('SLO · ' + SLO_TARGET + '% availability', sloHTML(key)) +
       '</div>' +
-      section('Pre-flight', '<div data-preflight="' + key + '">' + preflightBody(key) + '</div>', '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseStreaming.preflight(\'' + key + '\')">Run pre-flight</button>') +
+      section('Pre-flight', '<div data-preflight="' + key + '">' + preflightBody(key) + '</div>', '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseStreaming.preflight(\'' + key + '\')">Run pre-flight</button>', false) +
       '<div class="ms-two">' +
-        section('Destinations & ingest', '<ul class="ms-list">' + s.destinations.map(function (d) { return '<li>' + esc(d) + '</li>'; }).join('') + '</ul><p class="ms-note">RTMPS primary + backup ingest per destination · stream keys in vault, never in the run-of-show.</p>' + fbHTML(key)) +
-        section('Contribution & redundancy', kv([['Primary', esc(s.primary)], ['Backup', esc(s.backup)], ['Cloud', esc(s.cloud)], ['Venue network', esc(s.venueNet)]])) +
+        section('Destinations & ingest', '<ul class="ms-list">' + s.destinations.map(function (d) { return '<li>' + esc(d) + '</li>'; }).join('') + '</ul><p class="ms-note">RTMPS primary + backup ingest per destination · stream keys in vault, never in the run-of-show.</p>' + fbHTML(key), '', false) +
+        section('Contribution & redundancy', kv([['Primary', esc(s.primary)], ['Backup', esc(s.backup)], ['Cloud', esc(s.cloud)], ['Venue network', esc(s.venueNet)]]), '', false) +
       '</div>' +
-      section('Encoding ladder', ladder, '<span class="ms-sub">' + (s.ladder === LADDER_916 ? 'Vertical 9:16' : '16:9') + ' · ' + s.ladder.length + ' rungs</span>') +
+      section('Encoding ladder', ladder, '<span class="ms-sub">' + (s.ladder === LADDER_916 ? 'Vertical 9:16' : '16:9') + ' · ' + s.ladder.length + ' rungs</span>', false) +
       '<div class="ms-two">' +
-        section('Packaging & delivery', kv([['Formats', 'HLS (TS + fMP4/CMAF) · LL-HLS partial segments 0.33 s · DASH CMAF'], ['Segments', '2 s (LL) · 6 s (standard) · 3 segments live sync'], ['DVR / start-over', '2 h window · VOD archive at T+0'], ['Latency', esc(s.latency)], ['CDN', 'CloudFront + Akamai, origin shield, weighted ' + (r.cdn ? r.cdn.cloudfront + '/' + r.cdn.akamai : '60/40') + ' with health-based failover'], ['Access', 'Signed URLs / token auth on embeds · geo rules per rights']])) +
-        section('Audio · captions · accessibility', kv([['Loudness', esc(s.loudness)], ['Captions', esc(s.captions)], ['Audio description', 'Secondary audio rendition on request'], ['Ad / slate markers', 'SCTE-35 splice_insert for slates & breaks · countdown slate T-15 min']])) +
+        section('Packaging & delivery', kv([['Formats', 'HLS (TS + fMP4/CMAF) · LL-HLS partial segments 0.33 s · DASH CMAF'], ['Segments', '2 s (LL) · 6 s (standard) · 3 segments live sync'], ['DVR / start-over', '2 h window · VOD archive at T+0'], ['Latency', esc(s.latency)], ['CDN', 'CloudFront + Akamai, origin shield, weighted ' + (r.cdn ? r.cdn.cloudfront + '/' + r.cdn.akamai : '60/40') + ' with health-based failover'], ['Access', 'Signed URLs / token auth on embeds · geo rules per rights']]), '', false) +
+        section('Audio · captions · accessibility', kv([['Loudness', esc(s.loudness)], ['Captions', esc(s.captions)], ['Audio description', 'Secondary audio rendition on request'], ['Ad / slate markers', 'SCTE-35 splice_insert for slates & breaks · countdown slate T-15 min']]), '', false) +
       '</div>' +
       '<div class="ms-two">' +
-        section('Monitoring & alerting', kv([['Probes', 'TAG multiviewer probe on program + backup · MediaConnect & MediaLive CloudWatch alarms'], ['QoE', 'Player beacons (rebuffer, startup, failures, bitrate) per destination'], ['Paging', 'PagerDuty: SEV-1/2 → streaming on-call + TOC · Slack #live-ops-bridge'], ['Thresholds', 'SRT loss > 0.5% · segment age > 6 s · edge 5xx > 0.5% · rebuffer > 1%']])) +
-        section('Go-live checklist', checklist, '<span class="ms-sub">' + done + ' / ' + CHECKLIST.length + ' done</span>') +
+        section('Monitoring & alerting', kv([['Probes', 'TAG multiviewer probe on program + backup · MediaConnect & MediaLive CloudWatch alarms'], ['QoE', 'Player beacons (rebuffer, startup, failures, bitrate) per destination'], ['Paging', 'PagerDuty: SEV-1/2 → streaming on-call + TOC · Slack #live-ops-bridge'], ['Thresholds', 'SRT loss > 0.5% · segment age > 6 s · edge 5xx > 0.5% · rebuffer > 1%']]), '', false) +
+        section('Go-live checklist', checklist, '<span class="ms-sub">' + done + ' / ' + CHECKLIST.length + ' done</span>', false) +
       '</div>' +
       '<details class="ms-card ms-details"><summary><h3>Data sources</h3><span class="ms-sub">Map this show\'s streams to AWS CloudWatch and Mux Data</span></summary>' + sourcesHTML(key) + '</details>' +
       section('Incidents · ' + esc(nameOf(key)), incHTML || '<p class="ms-empty">No incidents logged for this show.</p>', '<span class="ms-sub">' + openInc + ' open · <button type="button" class="ms-link" onclick="navGo(\'incidents\')">All incident reports</button></span>') +
@@ -974,8 +980,10 @@
       var unmute = p.yt ? p.muted : p.video.muted;
       // one monitor in your ears at a time
       Object.keys(players).forEach(function (k) { var q = players[k]; if (q.yt) { if (!q.muted) { ytCmd(q, 'mute'); q.muted = true; } } else q.video.muted = true; });
-      document.querySelectorAll('.ms-audio').forEach(function (b) { b.textContent = '🔇'; b.setAttribute('aria-pressed', 'false'); });
-      if (unmute) { if (p.yt) { ytCmd(p, 'unMute'); ytCmd(p, 'setVolume', [80]); p.muted = false; } else { p.video.muted = false; p.video.play().catch(function () {}); } btn.textContent = '🔊'; btn.setAttribute('aria-pressed', 'true'); }
+      var MUTED_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+      var LIVE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+      document.querySelectorAll('.ms-audio').forEach(function (b) { b.innerHTML = MUTED_SVG; b.setAttribute('aria-pressed', 'false'); });
+      if (unmute) { if (p.yt) { ytCmd(p, 'unMute'); ytCmd(p, 'setVolume', [80]); p.muted = false; } else { p.video.muted = false; p.video.play().catch(function () {}); } btn.innerHTML = LIVE_SVG; btn.setAttribute('aria-pressed', 'true'); }
     },
     addStream: function (key, form) {
       var url = String(form.url.value || '').trim();

@@ -8,13 +8,17 @@ export const SESSION = 'muse_session';
 export const HINT = 'muse_authed';
 export const MAX_AGE = 60 * 60 * 24 * 7;
 export const ROLES = ['admin', 'producer', 'engineer', 'viewer'];
-// sha256('muse-live:' + password). Override per environment with the MUSE_PASSWORD_HASH secret.
+// sha256('muse-live:' + password). Local dev only; production MUST set MUSE_PASSWORD_HASH.
 export const DEFAULT_PW_HASH = 'b774222f71346737d53bc90fd0572e8b2f86d34b02b16b1c9704cc18a3f85db0';
 
 const enc = new TextEncoder();
 
 /** @param {any} env */
 export function pwHash(env) { return (env && env.MUSE_PASSWORD_HASH) || DEFAULT_PW_HASH; }
+/** True when no deployment-specific signing material was configured. */
+export function usingDefaultSecrets(env) {
+  return !(env && (env.SESSION_SECRET || env.MUSE_PASSWORD_HASH));
+}
 
 /** @param {string} text */
 export async function sha256hex(text) {

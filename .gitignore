@@ -16,6 +16,8 @@ playwright-report/
 .TemporaryItems/
 .Spotlight-V100/
 .Trashes
+# iCloud two-device conflict copies: "index 2.html", "muse-app-a 2.js", etc.
+* [0-9].*
 
 # node (never commit it; glasses-src builds in scratchpad)
 glasses-src/node_modules/

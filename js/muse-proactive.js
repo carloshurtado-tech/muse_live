@@ -46,10 +46,28 @@
     sync();
   }
 
+  /* ---------------- subsection panel in the drawer (keeps alerts out of chat) ---------------- */
+  function mountPanel() {
+    var p = $('museaiAlerts'); if (p) return p;
+    var messages = $('museaiMessages'); if (!messages) return null;
+    p = document.createElement('details'); p.id = 'museaiAlerts'; p.hidden = true;
+    p.style.cssText = 'border-bottom:1px solid rgba(228,30,63,.18);background:rgba(228,30,63,.06);flex:0 0 auto';
+    p.innerHTML = '<summary style="list-style:none;cursor:pointer;padding:10px 16px;font-size:12px;font-weight:700;color:#B82E3F;display:flex;align-items:center;gap:8px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span>Muse noticed</span><span class="mp-panel-count" style="opacity:.75;font-weight:600" aria-hidden="true"></span></summary>' +
+      '<div class="mp-panel-body" style="max-height:40vh;overflow-y:auto;padding:8px 12px;display:flex;flex-direction:column;gap:8px"></div>';
+    messages.parentNode.insertBefore(p, messages);
+    return p;
+  }
+  function syncPanel() {
+    var p = $('museaiAlerts'); if (!p) return;
+    var body = p.querySelector('.mp-panel-body'), n = body ? body.children.length : 0;
+    p.hidden = !n;
+    var c = p.querySelector('.mp-panel-count'); if (c) c.textContent = n ? '(' + n + ')' : '';
+  }
+
   /* ---------------- cards ---------------- */
   function openCount() { return Object.keys(P.cards).filter(function (k) { return P.cards[k].open; }).length; }
   function card(item) {
-    var m = $('museaiMessages'); if (!m) return;
+    var panel = mountPanel(); var m = panel && panel.querySelector('.mp-panel-body'); if (!m) return;
     var id = 'mp' + (++seq); P.cards[id] = item; item.open = true;
     var el = document.createElement('div'); el.className = 'ma-row ma-bot mp-row'; el.id = id;
     el.setAttribute('role', 'status');
@@ -65,12 +83,13 @@
         (item.rec ? '<p class="mp-rec">I recommend: <b>' + esc(item.rec.label) + '</b>. Nothing changes until you confirm.</p>' : '') +
         '<div class="ma-card-btns mp-btns">' + btns + '</div></div></div>';
     m.appendChild(el);
-    if (ui()) ui().scrollDown();
+    syncPanel();
   }
   function finish(id, html) {
     var item = P.cards[id], el = $(id); if (!item) return;
     item.open = false;
     if (el) { var b = el.querySelector('.mp-btns, .mp-draft'); if (b) b.outerHTML = '<div class="mp-result">' + html + '</div>'; var c = el.querySelector('.mp-card'); if (c) c.classList.add('is-done'); }
+    syncPanel();
   }
   function note(text) {
     // Keep the conversation aware of what the user decided on a proactive card.
@@ -173,6 +192,6 @@
     wrapped.__mp = true; root.toggleMuseAi = wrapped;
   }
   P.check = check;
-  function boot() { mountToggle(); hookToggle(); badge(); setTimeout(function () { check(); setInterval(check, EVERY_MS); }, FIRST_MS); }
+  function boot() { mountToggle(); mountPanel(); hookToggle(); badge(); setTimeout(function () { check(); setInterval(check, EVERY_MS); }, FIRST_MS); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 50); }); else setTimeout(boot, 50);
 })(typeof window !== 'undefined' ? window : globalThis);

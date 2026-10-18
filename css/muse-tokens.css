@@ -207,15 +207,15 @@
   --live-red-border:#F5A3B1;
 
   /* ---------- Assistants ----------
-     Muse = spectrum orange, Omni = spectrum purple. Same tokens the rest of
-     the platform uses, so a green in Muse is the dashboard green. */
-  --museai-accent:245 131 42;
-  --museai-bot-bg:255 240 229;
-  --museai-bot-ink:178 74 0;
-  --museai-bot-line:251 198 164;
-  --museai-user-bg:231 243 255;
-  --museai-user-ink:10 88 202;
-  --museai-user-line:185 215 255;
+     Muse + Omni share a soft Meta-blue palette so they read as one ecosystem.
+     Same tokens the rest of the platform uses. */
+  --museai-accent:8 102 255;
+  --museai-bot-bg:231 243 255;
+  --museai-bot-ink:10 88 202;
+  --museai-bot-line:185 215 255;
+  --museai-user-bg:240 242 245;
+  --museai-user-ink:36 37 38;
+  --museai-user-line:206 208 212;
   --omni-accent:8 102 255;
 
   /* ---------- Radius ---------- */

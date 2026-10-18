@@ -14,6 +14,8 @@
 // playback_failure_percentage) plus the realtime metric current-concurrent-viewers.
 // Fields we return use the client's telemetry names so values replace the simulation 1:1.
 
+import { who, canWrite } from '../_lib/who.js';
+
 const enc = new TextEncoder();
 
 function json(body, status = 200) {
@@ -135,7 +137,9 @@ export async function onRequestGet({ request, env }) {
   return json({ ok: true, aws: !!(env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY), region: env.AWS_REGION || null, mux: !!(env.MUX_TOKEN_ID && env.MUX_TOKEN_SECRET) });
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  if (!canWrite(await who(context))) return json({ ok: false, error: 'Your role is read-only.' }, 403);
   let cfg;
   try { cfg = await request.json(); } catch (e) { return json({ ok: false, error: 'Bad request' }, 400); }
   const stages = {}, errors = [];

@@ -14,5 +14,5 @@ export async function audit(env, e) {
     list.push({ t: new Date().toISOString(), who: e.who || 'anonymous', role: e.role || '', action: e.action, key: e.key || '', detail: e.detail === undefined ? '' : e.detail });
     if (list.length > MAX_PER_DAY) list.splice(0, list.length - MAX_PER_DAY);
     await env.MUSE_KV.put(k, JSON.stringify(list), { expirationTtl: 60 * 60 * 24 * 400 });
-  } catch (err) { /* auditing must never break the request */ }
+  } catch (err) { try { console.error('audit:', k, err && err.message || err); } catch (e) {} }
 }

@@ -304,6 +304,7 @@ export async function onRequestPost(context) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
       body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(45000),
     });
   } catch (e) {
     return json({ ok: false, error: 'Muse could not reach Meta Model API.' }, 502);

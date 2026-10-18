@@ -26,16 +26,16 @@
       severity: 'SEV-2', status: 'Closed', category: 'Contribution', postmortem: 'Published',
       started: '2026-06-26T09:14:32-04:00', detected: '2026-06-26T09:14:41-04:00', mitigated: '2026-06-26T09:15:10-04:00', resolved: '2026-06-26T09:18:13-04:00',
       commander: 'Lila Hart', reporter: 'Streaming on-call (TOC)', platforms: ['Facebook Live', 'Instagram Live', 'meta.com/rayban'],
-      summary: 'Fourteen minutes into the live Harbor Reveal, the primary SRT contribution from Pier 26 began dropping packets (0% → 18% in 6 s) and MediaLive did not fail over to the LiveU bonded backup for 29 s. That was the 10 s input-loss threshold plus the ramp before the input was declared lost. Viewers on every destination saw rebuffering for about 38 s. After failover the stream ran on LiveU for 3 min, until the fiber recovered and the TOC switched back manually during a planned VT.',
+      summary: 'Fourteen minutes into the live MPK Classroom Launch, the primary SRT contribution from the Classroom Stage IDF began dropping packets (0% → 18% in 6 s) and MediaLive did not fail over to the LiveU bonded backup for 29 s. That was the 10 s input-loss threshold plus the ramp before the input was declared lost. Viewers on every destination saw rebuffering for about 38 s. After failover the stream ran on LiveU for 3 min, until the campus fiber recovered and the TOC switched back manually during a planned VT.',
       impact: { viewers_affected: 297000, viewer_minutes: 96400, peak_concurrent: 412000, rebuffer_peak_pct: 7.8, rebuffer_baseline_pct: 0.4, duration_viewer_visible: '38 s', duration_total: '3 m 41 s', sla: 'Breached the 99.9% availability target for the event (99.55%)' },
-      root_cause: 'A failing SFP on the venue access switch in the Pier 26 hut flapped the single 1 GbE municipal fiber circuit. SRT at 1,200 ms latency could not recover bursts longer than the buffer, and MediaLive automatic input failover was set to a 10 s input-loss threshold, which was raised after a false failover in rehearsal.',
-      contributing: ['Single fiber circuit into the hut. The 5 GHz microwave link was a backup for comms only, not video.', 'Failover threshold raised from 2 s to 10 s after a rehearsal false positive, without a follow-up review.', 'SRT latency sized for a land venue (1,200 ms). Open-water sites need 2,000 ms+ because of harbor RF and longer paths.', 'The SFP showed CRC errors in the switch logs from 08:40, but nobody was watching switch telemetry.'],
+      root_cause: 'A failing SFP on the venue access switch in the Classroom Stage IDF flapped the single 1 GbE campus fiber uplink. SRT at 1,200 ms latency could not recover bursts longer than the buffer, and MediaLive automatic input failover was set to a 10 s input-loss threshold, which was raised after a false failover in rehearsal.',
+      contributing: ['Single fiber uplink from the Classroom Stage IDF. The 5 GHz campus bridge was a backup for comms only, not video.', 'Failover threshold raised from 2 s to 10 s after a rehearsal false positive, without a follow-up review.', 'SRT latency sized for a 50 ms RTT campus path (1,200 ms buffer). Outdoor roaming RF on the demo loop adds jitter and needs a wider buffer.', 'The SFP showed CRC errors in the switch logs from 08:40, but nobody was watching switch telemetry.'],
       resolution: 'MediaLive failed over to input 2 (LiveU). The TOC switched back to primary at 09:18:13 during a VT once SRT loss held at 0% for 2 min. The SFP was replaced at 09:40 during the post-show.',
       went_well: ['LiveU backup was hot and failover was seamless once triggered.', 'TOC and streaming on-call were on the bridge within 20 s.', 'Return to primary was done during a VT, so it was invisible to viewers.'],
       went_wrong: ['38 s of rebuffering that a 2 s threshold would have cut to about 4 s.', 'No alarm on venue switch CRC errors.', 'Status page and comms to exec stakeholders lagged by 6 minutes.'],
       timeline: [
         ['2026-06-26T08:40:00-04:00', 'Venue switch logs first CRC errors on port Gi1/0/24 (seen in the post-show review)'],
-        ['2026-06-26T09:00:00-04:00', 'Harbor Reveal goes live on all destinations'],
+        ['2026-06-26T09:00:00-04:00', 'MPK Classroom Launch goes live on all destinations'],
         ['2026-06-26T09:14:32-04:00', 'SRT primary packet loss jumps 0% → 18%; RTT 22 → 310 ms'],
         ['2026-06-26T09:14:41-04:00', 'CloudWatch alarm MediaConnect-SourceLoss pages streaming on-call; TAG probe shows freeze on program'],
         ['2026-06-26T09:14:52-04:00', 'Bridge opened in #live-ops-bridge; TOC confirms the LiveU backup is clean'],
@@ -53,7 +53,7 @@
         ['Exec stakeholder comms template in the run-of-show: first update within 3 minutes', 'Production Mgmt — M. Chen', '2026-07-10', 'Done']
       ],
       telemetry: { srt_loss_pct_peak: 18.2, srt_rtt_ms_peak: 310, mediaLive_input: 'Failover → input 2 (LiveU)', cdn_5xx_pct: 0.02, rebuffer_pct_peak: 7.8, startup_s_peak: 3.9, viewers_at_start: 401200 },
-      tags: ['srt', 'failover', 'medialive', 'liveu', 'fiber', 'harbor', 'sfp']
+      tags: ['srt', 'failover', 'medialive', 'liveu', 'fiber', 'campus', 'sfp']
     },
     {
       id: 'INC-2026-0613', production: 'raybangen3', title: 'Closed captions missing on Facebook Live for 6 minutes',
@@ -327,13 +327,13 @@
         '<span class="mi-id">' + i.id + '</span><span class="mi-when">Post-mortem: ' + esc(i.postmortem || 'Draft') + '</span></div>' +
         '<h2>' + esc(i.title) + '</h2>' +
         '<p class="mi-d-meta"><button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + i.production + '\')">' + esc(prodName(i.production)) + '</button> · ' + esc(i.category) + ' · Incident commander ' + esc(i.commander || '—') + ' · Reported by ' + esc(i.reporter || '—') + (i.platforms && i.platforms.length ? ' · ' + esc(i.platforms.join(', ')) : '') + '</p>' +
-        '<div class="mi-d-actions"><button type="button" class="ms-btn ms-btn-primary" onclick="museaiAsk(\'Brief me on incident ' + i.id + '\')">Ask Muse to brief me</button><button type="button" class="ms-btn" onclick="MuseIncidents.copy(\'' + i.id + '\')">Copy post-mortem</button></div>' +
+        '<div class="mi-d-actions"><button type="button" class="ms-btn ms-btn-primary" onclick="MuseIncidents.openEdit(\'' + i.id + '\')">✎ Edit report</button><button type="button" class="ms-btn" onclick="museaiAsk(\'Brief me on incident ' + i.id + '\')">Ask Muse to brief me</button><button type="button" class="ms-btn" onclick="MuseIncidents.copy(\'' + i.id + '\')">Copy post-mortem</button>' + (i.clip_url ? '<a class="ms-btn" href="' + esc(i.clip_url) + '" target="_blank" rel="noopener">Recorded clip ↗</a>' : '') + '</div>' +
       '</header>' +
       '<div class="mi-kpis">' + kpis.map(function (k) { return '<div><span>' + k[0] + '</span><b>' + esc(k[1]) + '</b></div>'; }).join('') + '</div>' +
       (im.sla ? '<p class="mi-sla">' + esc(im.sla) + '</p>' : '') +
       '<section><h3>Summary</h3><p>' + esc(i.summary) + '</p></section>' +
-      '<section><h3>Timeline</h3><ol class="mi-timeline">' + (i.timeline || []).map(function (t) { return '<li><time>' + fmt(t.t) + '</time><span>' + esc(t.text) + '</span></li>'; }).join('') + '</ol>' +
-        '<form class="mi-inline" onsubmit="event.preventDefault();MuseIncidents.addTimeline(\'' + i.id + '\',this)"><input name="text" placeholder="Add a timeline entry (timestamped now)" aria-label="Timeline entry" required><button class="ms-btn">Add</button></form></section>' +
+      '<section><h3>Timeline</h3><ol class="mi-timeline">' + (i.timeline || []).map(function (t) { return '<li><time>' + fmt(t.t) + (t.tc ? ' · <b class="mi-tc">TC ' + esc(t.tc) + '</b>' : '') + '</time><span>' + esc(t.text) + '</span></li>'; }).join('') + '</ol>' +
+        '<form class="mi-inline" onsubmit="event.preventDefault();MuseIncidents.addTimeline(\'' + i.id + '\',this)"><input name="text" placeholder="Add a timeline entry (stamped now)" aria-label="Timeline entry" required><input name="tc" placeholder="TC (HH:MM:SS)" aria-label="Broadcast timecode" pattern="[0-9]{1,2}:[0-9]{2}:[0-9]{2}(:[0-9]{2})?" style="width:140px" title="HH:MM:SS or HH:MM:SS:FF"><button class="ms-btn">Add</button></form></section>' +
       '<section><h3>Root cause</h3><p>' + esc(i.root_cause || '—') + '</p></section>' +
       '<section><h3>Contributing factors</h3>' + bullets(i.contributing) + '</section>' +
       '<section><h3>Resolution</h3><p>' + esc(i.resolution || '—') + '</p></section>' +
@@ -482,7 +482,74 @@
       if ((s === 'Resolved' || s === 'Closed') && !i.resolved) { i.resolved = new Date().toISOString(); i._userResolved = true; }
       i.timeline.push({ t: new Date().toISOString(), text: 'Status → ' + s }); save(); rerender();
     },
-    addTimeline: function (id, form) { var i = get(id); if (!i) return; i.timeline.push({ t: new Date().toISOString(), text: form.text.value.trim() }); save(); rerender(); },
+    addTimeline: function (id, form) {
+      var i = get(id); if (!i) return;
+      var tc = (form.tc && form.tc.value || '').trim();
+      i.timeline.push({ t: new Date().toISOString(), text: form.text.value.trim(), tc: tc || undefined });
+      save(); rerender();
+    },
+    openEdit: function (id) {
+      var i = get(id); if (!i) return;
+      var im = i.impact || {};
+      var ov = document.createElement('div'); ov.className = 'mi-modal'; ov.id = 'miEdit';
+      ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', 'Edit incident');
+      ov.onclick = function (e) { if (e.target === ov) ov.remove(); };
+      function ta(name, label, val, rows) {
+        return '<label>' + label + '<textarea name="' + name + '" rows="' + (rows || 3) + '">' + esc(val || '') + '</textarea></label>';
+      }
+      function inp(name, label, val, extra) {
+        return '<label>' + label + '<input name="' + name + '" value="' + esc(val || '').replace(/"/g, '&quot;') + '" ' + (extra || '') + '></label>';
+      }
+      function selOpt(name, label, cur, opts) {
+        return '<label>' + label + '<select name="' + name + '">' + opts.map(function (o) { return '<option' + (o === cur ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') + '</select></label>';
+      }
+      var startedLocal = i.started ? new Date(i.started).toISOString().slice(0, 16) : '';
+      var resolvedLocal = i.resolved ? new Date(i.resolved).toISOString().slice(0, 16) : '';
+      ov.innerHTML = '<form class="mi-modal-box" onsubmit="event.preventDefault();MuseIncidents.saveEdit(\'' + i.id + '\',this)">' +
+        '<h2>Edit incident ' + esc(i.id) + '</h2>' +
+        '<p class="mi-muted">Resolved reports stay editable — fixes, follow-ups and timecode notes keep landing here.</p>' +
+        inp('title', 'Title', i.title, 'required') +
+        '<div class="mi-grid2">' + selOpt('severity', 'Severity', i.severity, Object.keys(SEVS)) + selOpt('status', 'Status', i.status, STATUSES) + '</div>' +
+        '<div class="mi-grid2">' + selOpt('category', 'Category', i.category, CATEGORIES) + inp('commander', 'Incident commander', i.commander) + '</div>' +
+        '<div class="mi-grid2">' + inp('reporter', 'Reporter', i.reporter) + inp('platforms', 'Platforms (comma-separated)', (i.platforms || []).join(', ')) + '</div>' +
+        '<div class="mi-grid2">' + inp('started', 'Started', startedLocal, 'type="datetime-local"') + inp('resolved', 'Resolved', resolvedLocal, 'type="datetime-local"') + '</div>' +
+        '<div class="mi-grid2">' + inp('viewers_affected', 'Viewers affected', im.viewers_affected, 'type="number" min="0"') + inp('viewer_minutes', 'Viewer-minutes lost', im.viewer_minutes, 'type="number" min="0"') + '</div>' +
+        inp('clip_url', 'Recorded clip URL (optional)', i.clip_url, 'type="url" placeholder="https://…"') +
+        ta('summary', 'What happened', i.summary) +
+        ta('root_cause', 'Root cause', i.root_cause) +
+        ta('resolution', 'Resolution', i.resolution) +
+        ta('contributing', 'Contributing factors (one per line)', (i.contributing || []).join('\n'), 2) +
+        '<div class="mi-grid2">' + ta('went_well', 'What went well (one per line)', (i.went_well || []).join('\n'), 3) + ta('went_wrong', 'What went wrong (one per line)', (i.went_wrong || []).join('\n'), 3) + '</div>' +
+        '<div class="mi-modal-btns"><button type="button" class="ms-btn" onclick="document.getElementById(\'miEdit\').remove()">Cancel</button><button type="submit" class="ms-btn ms-btn-primary">Save changes</button></div></form>';
+      document.body.appendChild(ov);
+      setTimeout(function () { var t = ov.querySelector('input[name=title]'); if (t) t.focus(); }, 30);
+    },
+    saveEdit: function (id, form) {
+      var i = get(id); if (!i) return;
+      var g = function (n) { var el = form.elements[n]; return el ? String(el.value || '').trim() : ''; };
+      var splitLines = function (s) { return s.split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean); };
+      i.title = g('title') || i.title;
+      i.severity = g('severity') || i.severity;
+      i.status = g('status') || i.status;
+      i.category = g('category') || i.category;
+      i.commander = g('commander');
+      i.reporter = g('reporter');
+      i.platforms = g('platforms').split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+      if (g('started')) i.started = new Date(g('started')).toISOString();
+      if (g('resolved')) i.resolved = new Date(g('resolved')).toISOString(); else i.resolved = '';
+      i.impact = i.impact || {};
+      i.impact.viewers_affected = g('viewers_affected') ? Number(g('viewers_affected')) : null;
+      i.impact.viewer_minutes = g('viewer_minutes') ? Number(g('viewer_minutes')) : null;
+      i.clip_url = g('clip_url');
+      i.summary = g('summary');
+      i.root_cause = g('root_cause');
+      i.resolution = g('resolution');
+      i.contributing = splitLines(g('contributing'));
+      i.went_well = splitLines(g('went_well'));
+      i.went_wrong = splitLines(g('went_wrong'));
+      i.timeline.push({ t: new Date().toISOString(), text: 'Report edited' });
+      save(); var el = document.getElementById('miEdit'); if (el) el.remove(); rerender();
+    },
     addAction: function (id, form) { var i = get(id); if (!i) return; i.actions.push({ text: form.text.value.trim(), owner: form.owner.value.trim(), due: form.due.value, status: 'Open' }); save(); rerender(); },
     toggleAction: function (id, n, done) { var i = get(id); if (!i || !i.actions[n]) return; i.actions[n].status = done ? 'Done' : 'Open'; save(); rerender(); },
     openNew: openNew, create: create, createRecord: createRecord, draftFromTelemetry: draftFromTelemetry, similar: similar,

@@ -10,7 +10,7 @@
 /* ---------------- venue & origin presets ---------------- */
 var TRK_VENUES={
  museaitour:{label:"Hard Rock Stadium · Miami",lat:25.958,lng:-80.2389},
- raybangen3:{label:"Battery Park · NYC Harbor",lat:40.7033,lng:-74.0170},
+ raybangen3:{label:"Meta HQ · Menlo Park",lat:37.4848,lng:-122.1484},
  orion:{label:"Levi's Stadium · Santa Clara",lat:37.4032,lng:-121.9697},
  museailaunch:{label:"Meta NYC · Studio M1",lat:40.7536,lng:-74.0007},
  whatsapp:{label:"Meta Miami",lat:25.7906,lng:-80.3164},
@@ -490,7 +490,7 @@ var workOrders=[
  {id:'WO-2650',prod:'orion',desc:'Venue Power Survey',res:'Engineering survey team',cost:12400,status:'Draft'},
  {id:'WO-2652',prod:'museailaunch',desc:'Studio M1 Lighting Rig',res:'House LD + 4 electrics',cost:29800,status:'Confirmed'},
  {id:'WO-2657',prod:'igcreators',desc:'Float Cam Mounts ×6',res:'Rigging crew + fab shop',cost:18650,status:'In Progress'},
- {id:'WO-2660',prod:'raybangen3',desc:'Dockside Shore Power 200A',res:'Marine electrician',cost:9400,status:'Complete'}];
+ {id:'WO-2660',prod:'raybangen3',desc:'Classroom Stage 200A Tie-In',res:'Facilities electrician',cost:9400,status:'Complete'}];
 
 var TX_RES={
  'Galaxy-19 Tp 12':{cap:72,type:'Satellite'},
@@ -541,10 +541,10 @@ var txBookings=[
  {id:'TX-147',prod:'museaitour',src:'MetLife · Presentation Studio Cam 2',res:"LiveU LU800",dst:'Meta Miami · MIA Spare',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
  {id:'TX-148',prod:'museaitour',src:'MetLife · Outside Announce Cam 1',res:"LiveU LU800 #2",dst:'Meta Miami',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
  {id:'TX-149',prod:'museaitour',src:"Meta Miami · Harmonic XOS Special 1–4",res:"Harmonic XOS",dst:'MetLife FlyPack Dec 1–4',bw:120,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- // ---- Ray-Ban Meta Gen 3 Launch — NYC Harbor ----
- {id:'TX-118',prod:'raybangen3',src:'NYC Harbor Remote',res:"LiveU LU800 #2",dst:'Meta NYC TOC',bw:80,cost:5200,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Booked'},
- {id:'TX-119',prod:'raybangen3',src:'NYC Harbor Remote',res:"LiveU LU800",dst:'Meta NYC TOC',bw:45,cost:1800,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Hold'},
- {id:'TX-120',prod:'raybangen3',src:'NYC Harbor Remote',res:'Level3 Diverse Ring',dst:'Meta Cloud Ingest',bw:1200,cost:9400,start:'2026-06-26T05:30',end:'2026-06-26T14:00',status:'Booked'},
+ // ---- Ray-Ban Meta Gen 3 Launch — Meta HQ, Menlo Park ----
+ {id:'TX-118',prod:'raybangen3',src:'Meta HQ · Classroom Stage',res:"LiveU LU800 #2",dst:'Meta MPK TOC',bw:80,cost:5200,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Booked'},
+ {id:'TX-119',prod:'raybangen3',src:'Meta HQ · Classroom Stage',res:"LiveU LU800",dst:'Meta MPK TOC',bw:45,cost:1800,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Hold'},
+ {id:'TX-120',prod:'raybangen3',src:'Meta HQ · Classroom Stage',res:'Level3 Diverse Ring',dst:'Meta Cloud Ingest',bw:1200,cost:9400,start:'2026-06-26T05:30',end:'2026-06-26T14:00',status:'Booked'},
  // ---- WhatsApp Summit — multi-market (shares Galaxy-19 with Muse AI World Tour → conflict) ----
  {id:'TX-123',prod:'whatsapp',src:'Meta Miami',res:'Galaxy-19 Tp 12',dst:'Meta Cloud Ingest',bw:36,cost:4100,start:'2026-07-12T14:00',end:'2026-07-12T18:00',status:'Hold'},
  {id:'TX-126',prod:'whatsapp',src:'8× Market Remotes',res:'TOC Router 2110',dst:'Meta NYC TOC',bw:1600,cost:22500,start:'2026-11-03T12:00',end:'2026-11-04T02:00',status:'Hold'},
@@ -567,8 +567,8 @@ var finPOs=[
  {id:'PO-88121',prod:'museaitour',vendor:'NEP Group',desc:'ND1 mobile unit — Muse AI World Tour package',amount:412000,status:'Issued',wo:'',docs:['NEP_ND1_Quote_v3.pdf']},
  {id:'PO-88134',prod:'museaitour',vendor:'Aggreko',desc:'IBC compound power distro',amount:48200,status:'Acknowledged',wo:'WO-2641',docs:['Aggreko_PO_88134.pdf']},
  {id:'PO-88140',prod:'museaitour',vendor:'LTN Global',desc:'Fiber ring + Jul 8–19 transmission',amount:96500,status:'Issued',wo:'WO-2644',docs:[]},
- {id:'PO-88102',prod:'raybangen3',vendor:'Game Creek Video',desc:'Harbor flypack rental',amount:38500,status:'Fulfilled',wo:'',docs:['GC_Rental_Agreement.pdf']},
- {id:'PO-88107',prod:'raybangen3',vendor:'ConEd Marine Services',desc:'Dockside shore power 200A',amount:9400,status:'Fulfilled',wo:'WO-2660',docs:[]},
+ {id:'PO-88102',prod:'raybangen3',vendor:'Game Creek Video',desc:'MPK Classroom Stage flypack rental',amount:38500,status:'Fulfilled',wo:'',docs:['GC_Rental_Agreement.pdf']},
+ {id:'PO-88107',prod:'raybangen3',vendor:'Meridian Power Services',desc:'MPK Classroom Stage 200A tie-in',amount:9400,status:'Fulfilled',wo:'WO-2660',docs:[]},
  {id:'PO-88155',prod:'museailaunch',vendor:'PRG',desc:'Studio M1 lighting rig',amount:29800,status:'Acknowledged',wo:'WO-2652',docs:['PRG_Lighting_Quote.pdf']},
  {id:'PO-88160',prod:'igcreators',vendor:'All Mobile Video',desc:'Float cam fabrication ×6',amount:18650,status:'Issued',wo:'WO-2657',docs:[]},
  {id:'PO-88149',prod:'orion',vendor:'Internal Engineering',desc:'Venue power survey',amount:12400,status:'Draft',wo:'WO-2650',docs:[]},
@@ -659,7 +659,62 @@ function finExceptions(key){var ex=[];
   return ex;}
 function finTabBadge(key){var n=finOverdueList(key).length;
   return n?(typeof museBadgeHTML==='function'?museBadgeHTML(n):''):'';}
-function openProjFinance(key){if(!productions[key])return;projSubTab[key]='finance';switchView(key);}
+function openProjFinance(key){
+  if(!productions[key])return;
+  var host=document.getElementById('view-finance');
+  if(!host){projSubTab[key]='finance';switchView(key);return;}
+  finWsTab[key]='gl'; /* open on general ledger inside Finance, not the project workspace */
+  host.innerHTML=financeWorkspaceHTML(key);
+}
+/* Finance stays on the finance page; a modal shows the production's roll-up without navigating. */
+function openProjFinancePopup(key){
+  var p=productions[key];if(!p)return;
+  var ov=document.getElementById('finProjOverlay'),bx=document.getElementById('finProjBox');
+  if(!ov||!bx){openProjFinance(key);return;}
+  var r=finReportTotals(key);var budget=finBudgets[key]||0;
+  var over=r.variance<0;var pct=budget?Math.round(r.efc/budget*100):0;
+  var pos=finPOs.filter(function(x){return x.prod===key;});
+  var openPO=pos.filter(function(x){return x.status!=='Fulfilled'&&x.status!=='Closed';});
+  var openPOTotal=openPO.reduce(function(s,x){return s+(x.amount||0);},0);
+  var invs=finInvoices.filter(function(v){return v.prod===key;});
+  var openInv=invs.filter(function(v){return v.status!=='Paid';});
+  var openInvTotal=openInv.reduce(function(s,v){return s+(v.amount||0);},0);
+  var overdue=finOverdueList(key);
+  var recent=invs.slice().sort(function(a,b){return (b.recd||'').localeCompare(a.recd||'');}).slice(0,3);
+  function kpi(l,v,sub,tone){return '<div class="rounded-xl border border-gray-200 p-3 bg-gray-50/60"><div class="text-[9px] font-bold uppercase tracking-wider text-gray-500">'+l+'</div><div class="text-lg font-bold mono '+(tone||'text-gray-900')+' mt-1">'+v+'</div>'+(sub?'<div class="text-[10px] text-gray-500 mt-0.5">'+sub+'</div>':'')+'</div>';}
+  function sumLine(label,count,amount,tone){return '<div class="flex items-center justify-between py-1.5 text-[11px]"><span class="text-gray-600">'+label+'</span><span class="mono '+(tone||'text-gray-900')+'"><b>'+count+'</b> · '+$fmt(amount)+'</span></div>';}
+  var recentHTML=recent.length?recent.map(function(v){
+    var paid=v.status==='Paid';var late=invOverdue(v);
+    return '<div class="flex items-center gap-2 py-1 text-[11px]"><span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background:'+(paid?'#1E7B34':late?'#E41E3F':'#B26B00')+'"></span>'+
+      '<span class="mono text-[10px] text-gray-500 flex-shrink-0" style="width:5.5rem">'+esc(v.id||'')+'</span>'+
+      '<span class="text-gray-800 truncate flex-1">'+esc(v.vendor||'')+'</span>'+
+      '<span class="mono font-semibold text-gray-900 flex-shrink-0">'+$fmt(v.amount||0)+'</span>'+
+      '<span class="text-[9px] uppercase font-bold flex-shrink-0 '+(paid?'text-emerald-700':late?'text-red-600':'text-amber-700')+'" style="width:3.5rem;text-align:right">'+esc(v.status||'')+'</span></div>';
+  }).join(''):'<p class="text-[10px] text-gray-400 py-2">No invoices on file yet.</p>';
+  bx.innerHTML='<div class="flex items-start justify-between pb-3 border-b border-gray-200 mb-4">'+
+      '<div><h3 class="text-base font-bold text-gray-900">'+esc(prodName(key))+' · Finance Overview</h3><p class="text-[10px] text-gray-500 mt-0.5">Snapshot — Open full ledger drills into the general ledger for this production.</p></div>'+
+      '<button onclick="closeProjFinancePopup()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">✕</button></div>'+
+    '<div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">'+
+      kpi('Budget',$fmt(budget))+
+      kpi('EFC',$fmt(r.efc),pct?pct+'% of budget':'',over?'text-red-600':'text-gray-900')+
+      kpi('Actual',$fmt(r.actual),'invoiced to date')+
+      kpi('Variance',(r.variance>=0?'+':'')+$fmt(r.variance),over?'over budget':'under budget',over?'text-red-600':'text-emerald-700')+
+    '</div>'+
+    '<div class="rounded-xl border border-gray-200 p-3 mb-3">'+
+      '<div class="text-[9px] font-bold uppercase tracking-wider text-gray-500 mb-1">AP / PO snapshot</div>'+
+      sumLine('Open purchase orders',openPO.length,openPOTotal)+
+      sumLine('Open invoices',openInv.length,openInvTotal,openInv.length?'text-amber-700':'text-gray-900')+
+      (overdue.length?sumLine('Overdue invoices',overdue.length,overdue.reduce(function(s,v){return s+(v.amount||0);},0),'text-red-600'):'')+
+    '</div>'+
+    '<div class="rounded-xl border border-gray-200 p-3 mb-3">'+
+      '<div class="text-[9px] font-bold uppercase tracking-wider text-gray-500 mb-1">Recent invoices</div>'+recentHTML+
+    '</div>'+
+    '<div class="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">'+
+      '<button onclick="closeProjFinancePopup()" class="text-[11px] font-bold text-gray-700 border border-gray-300 rounded-lg px-3 py-1.5 hover:bg-gray-50">Close</button>'+
+      '<button onclick="closeProjFinancePopup();openProjFinance(\''+key+'\')" class="text-[11px] font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800">Open full ledger →</button></div>';
+  ov.style.display='flex';
+}
+function closeProjFinancePopup(){var ov=document.getElementById('finProjOverlay');if(ov)ov.style.display='none';}
 /* ---------------- mutations (all log + persist + re-render) ---------------- */
 function finRefresh(key){saveOps();renderOps();
   var act=document.querySelector('.view-pane.active');if(act&&act.id==='view-'+key){try{renderProjectView(key);}catch(e){}}}
@@ -1381,7 +1436,7 @@ function museaiAppBlueprint(focusKey){
       scheduling:'Muse Schedule — one source of truth for facility rooms (PCR/ACR/Studio), transmission circuits (CRK), REMI, edit/EVS, mobile units, encoders/bonded kits and crew. Real date/time bookings (Confirmed/Hold/Tentative/Released, on-air flag), conflict detection (double-bookings, <10 h crew turnaround, >12 h days) with one-click fixes, find-a-slot, utilization, .ics export, change log. Per show: Bookings tab with crew labor & timecards posting to the cost report (acct 20). Dashboard control-room board derives from it.',
       omni:'Teams/email/TOC drawer + Graph stubs; messages link to records; critical priority alerts.',
       roles:'Header "Viewing as" role switcher; permCan gates finance/scheduling/vendors; scopes for equipment/travel/comms; admins provision accounts from personnel cards.',
-      controls:'Project controls Primavera-style: CPM Gantt, float/slack, SPI/CPI EVM, EAC/VAC, resource histogram/leveling, stage gates, what-if scenarios (plan object / planMuseAiSummary).',
+      controls:'Project controls: CPM Gantt, float/slack, SPI/CPI EVM, EAC/VAC, resource histogram/leveling, stage gates, what-if scenarios (plan object / planMuseAiSummary).',
       inventory:'Global Equipment Library barcodes, serials, check-in/out, maintenance, value rollup.',
       ifb:"Unified IFB Signal Routing on Overview — REM (mix-minus) + TIFF (cam-op/producer) lines mapped to LiveU LU800/Fiber/Satellite paths.",
       excel:'Download Template / Import / Export with validation preview on Equipment, Vendors, Personnel, Talent, Locations, ENG, Finance.',
@@ -2049,7 +2104,7 @@ function engMigrate(e){
   return e;}
 
 var engRequests=[
- {id:'ENG-1001',prod:'museaitour',name:'Zocalo Roof — Pregame Live',window:'Jun 11 · 19:05 ET',location:'Inmuebles Cortes — Roof Top, CDMX',status:'Confirmed',
+ {id:'ENG-1001',prod:'raybangen3',name:'Classroom Stage — Pre-Show Lav Walkup',window:'Jun 26 · 11:30 PT',location:'Meta HQ · Classroom Stage South Entry · MPK',status:'Confirmed',
   op:true,opname:'',camera:"Sony HDC-5500",lens:"Fujinon UA80x9",lenstype:'Box / long',
   prompter:true,prompterspec:'15" on-cam',vanity:true,vanityspec:"TVLogic LUM-310R",
   cameras:[
@@ -2064,30 +2119,30 @@ var engRequests=[
    {cat:'On-Camera LED',model:"Litepanels Astra 6x",count:1,ctemp:'2000-10000K RGBWW',power:'10',mount:'shoe / magnet',notes:'On-cam fill'},
    {cat:'Tube / Wand',model:"Astera Titan Tube",count:1,ctemp:'3200-6500K RGB, IP65',power:'72',mount:'clamp / stand',notes:'Background accent'}],
   lightingSetup:'3-point interview',
-  gear:engGearClone(ENG_DEFAULT_GEAR),loc:{venue:'Inmuebles Cortes — Roof Top, CDMX',lat:19.4339,lng:-99.1330},
-  notes:'Talent hit from rooftop set; coordinate uplink window with TOC.'},
- {id:'ENG-1002',prod:'museaitour',name:'Hyatt Polanco — Green Screen Hit',window:'Jun 11 · 14:00 ET',location:'Hyatt Polanco — Drawing Room C',status:'Crewed',
+  gear:engGearClone(ENG_DEFAULT_GEAR),loc:{venue:'Meta HQ · Classroom Stage · 1 Hacker Way, Menlo Park, CA',lat:37.4848,lng:-122.1484},
+  notes:'Pre-show walkup hit from the Classroom Stage south entry; coordinate uplink window with MPK TOC.'},
+ {id:'ENG-1002',prod:'museailaunch',name:'Hudson Yards Rooftop — Launch Live Hit',window:'Nov 12 · 15:45 ET',location:'Meta NYC · 50 Hudson Yards — Rooftop Pad',status:'Crewed',
   op:true,opname:'Alejandro Santiago',camera:"Grass Valley LDX 86N",lens:"Fujinon UA107x8.4",lenstype:'PTZ integrated',
   prompter:false,prompterspec:'',vanity:true,vanityspec:"Sony PVM-X2400",
   liveus:[{model:"LiveU LU800",serial:'LU600-2210',path:'Bonded + fiber'}],
   rems:[{ref:'REM 2 · 212-431-1002',talent:'Dana Whitfield',personal:false,phone:''}],
   tiffs:[{ref:'TIFF 2 · 212-431-1042',person:'Alex Marlowe',personal:true,phone:'(212) 561-0103'}],
   micqty:2,mictype:'Lavalier',ifbqty:2,ifbtype:'Comtek',
-  gear:engGearClone(ENG_DEFAULT_GEAR),loc:{venue:'Hyatt Polanco — Drawing Room C',lat:19.4327,lng:-99.1917},
-  notes:'Green screen / virtual set; PTZ robo controlled from EIC position.'}];
+  gear:engGearClone(ENG_DEFAULT_GEAR),loc:{venue:'Meta NYC · 50 Hudson Yards · New York, NY',lat:40.7536,lng:-74.0007},
+  notes:'Rooftop pad hit for Muse AI launch window; comms via Hudson Yards TOC.'}];
 
-function saveEng(){try{localStorage.setItem('muselive_eng_v1',JSON.stringify(engRequests));}
+function saveEng(){try{localStorage.setItem('muselive_eng_v3',JSON.stringify(engRequests));}
   catch(e){
     /* v34: survey photos can overflow quota — drop the inline image payloads (session-only)
        and retry so every other ENG field still persists; be honest about it */
     try{var slim=engRequests.map(function(r){var c=JSON.parse(JSON.stringify(r));
         if(c.surveyPhotos)c.surveyPhotos=c.surveyPhotos.map(function(p){return {caption:p.caption||'',ts:p.ts||'',src:''};});return c;});
-      localStorage.setItem('muselive_eng_v1',JSON.stringify(slim));
+      localStorage.setItem('muselive_eng_v3',JSON.stringify(slim));
       if(!window.__engQuotaToasted&&typeof toast==='function'){window.__engQuotaToasted=true;
         toast('⚠ Storage full — ENG survey photos are session-only this session; all other ENG data is saved');}
     }catch(e2){}
   }}
-function loadEng(){try{var r=localStorage.getItem('muselive_eng_v1');if(r){var l=JSON.parse(r);if(Array.isArray(l))engRequests=l;}}catch(e){}
+function loadEng(){try{var r=localStorage.getItem('muselive_eng_v3');if(r){var l=JSON.parse(r);if(Array.isArray(l))engRequests=l;}}catch(e){}
   try{engRequests.forEach(engMigrate);}catch(e){}}
 
 function engStatusPill(s){var m={'Requested':'bg-gray-100 text-gray-600 border-gray-200','Confirmed':'bg-blue-50 text-blue-700 border-blue-200','Crewed':'bg-cyan-50 text-cyan-700 border-cyan-200','Gear Pulled':'bg-amber-50 text-amber-700 border-amber-200','On Location':'bg-purple-50 text-purple-700 border-purple-200','Complete':'bg-emerald-50 text-emerald-700 border-emerald-200'};
@@ -2108,12 +2163,12 @@ function renderEng(){
   if(nav)nav.innerHTML=typeof museBadgeHTML==='function'?museBadgeHTML(openCount):'';
   if(!board)return;
   if(!engRequests.length){board.innerHTML='<div class="bg-white rounded-2xl p-10 border border-gray-200/60 text-center" style="box-shadow:0 4px 20px rgba(0,0,0,.03)"><p class="text-3xl mb-2">🎥</p><p class="text-sm font-semibold text-gray-700">No ENG requests yet</p><p class="text-[11px] text-gray-500 mt-1">Create a request to spec out a live camera hit — crew, camera, transmission, audio and support gear.</p></div>';return;}
-  // group by production
-  var byProd={};engRequests.forEach(function(e){(byProd[e.prod]=byProd[e.prod]||[]).push(e);});
-  board.innerHTML=Object.keys(byProd).map(function(pk){var p=productions[pk]||{name:pk};
-    var cards=byProd[pk].map(function(e){return engCard(e);}).join('');
-    return '<div><div class="flex items-center gap-2 mb-2"><span class="w-2 h-2 rounded-full" style="background:'+(dotBg[p.tagColor]||'#b0b3b8')+'"></span><h3 class="text-[11px] font-bold uppercase tracking-wider text-gray-600">'+esc(p.name||pk)+'</h3><span class="text-[9px] mono text-gray-400">'+byProd[pk].length+' hit'+(byProd[pk].length>1?'s':'')+'</span></div><div class="grid grid-cols-1 xl:grid-cols-2 gap-3">'+cards+'</div></div>';
-  }).join('');
+  /* flat grid — cards side-by-side on medium+ screens, production chip on each card */
+  board.innerHTML='<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">'+
+    engRequests.map(function(e){var p=productions[e.prod]||{name:e.prod};
+      var prodChip='<div class="flex items-center gap-2 mb-2"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[p.tagColor]||'#b0b3b8')+'"></span><span class="text-[9px] font-bold uppercase tracking-wider text-gray-500 truncate">'+esc(p.name||e.prod)+'</span></div>';
+      return '<div>'+prodChip+engCard(e)+'</div>';
+    }).join('')+'</div>';
 }
 
 function engCard(e){
@@ -3579,21 +3634,6 @@ function trCardHTML(key,r){
       '<button onclick="trDelete(\''+key+'\',\''+r.id+'\')" class="text-[9px] font-bold text-red-600 hover:underline ml-auto">Delete request</button></div>'+
     '</div>';
   return '<div class="border border-gray-200 rounded-xl px-3 py-2 bg-white">'+head+body+'</div>';}
-function trSectionHTML(key){
-  loadTravelOnce();
-  var travOwn=(typeof permScope==='function'&&permScope('travel')==='own');
-  var me=(typeof permUser==='function')?permUser():'';
-  var reqs=trList(key).filter(function(r){return !travOwn||r.person===me;});
-  var counts={};reqs.forEach(function(r){counts[r.status]=(counts[r.status]||0)+1;});
-  var chips=TRAVEL_FLOW.map(function(f){return counts[f[0]]?'<span class="text-[8px] font-bold border rounded px-1.5 py-0.5 '+f[2]+'">'+counts[f[0]]+' '+f[1]+'</span>':'';}).join('');
-  return '<div class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
-    '<div class="flex flex-wrap items-center justify-between gap-2 mb-2"><div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Travel Requests — Concur Workflow</h3>'+
-    '<p class="text-[9px] text-gray-500 mt-0.5">Event-bound requests · WBS-allocated lines · per-diem engine · '+TRAVEL_FLOW.length+'-state lifecycle</p></div>'+
-    '<div class="flex items-center gap-1.5 flex-wrap">'+chips+
-    '<button onclick="openTrNew(\''+key+'\')" class="text-[10px] font-bold text-white bg-blue-600 rounded-lg px-2.5 py-1.5 hover:bg-blue-700">+ New Request</button></div></div>'+
-    (reqs.length?'<div class="space-y-1.5">'+reqs.map(function(r){return trCardHTML(key,r);}).join('')+'</div>'
-      :'<p class="text-[10px] text-gray-400 text-center py-3">No travel requests yet — create one to bind travel to this broadcast event with per-diems and WBS allocation.</p>')+
-    '</div>';}
 /* new-request modal */
 function openTrNew(key){
   var ov=document.getElementById('trOverlay'),bx=document.getElementById('trBox');if(!ov||!bx)return;
@@ -3720,7 +3760,7 @@ function renderTravelPortalOps(host){
   }
   // ---- cross-project rollup: UNIQUE travelers (one flight record per person —
   //      a person crewed on several productions must not multiply-count) ----
-  var now=Date.now();var kpiAir=0,kpiDep24=0;var deps=[],attn=[],projStat={};
+  var now=Date.now();var kpiAir=0,kpiDep24=0;var attn=[],projStat={};
   var seenBooked={},seenPend={};
   order.forEach(function(k){
     var crew=getProjectCrew(k).filter(function(s){return (s.name||'').trim();});
@@ -3728,12 +3768,11 @@ function renderTravelPortalOps(host){
     crew.forEach(function(s){var f=crewFlight(s.name);
       if(!f){pn++;seenPend[s.name]=1;return;}
       b++;
-      if(seenBooked[s.name])return; // KPIs + departures dedupe by person
+      if(seenBooked[s.name])return;
       seenBooked[s.name]=1;
       var ph=flightPhase(f);if(ph.id==='air')kpiAir++;
       var dt=Date.parse(f.dep&&f.dep.localTime||'');
-      if(!isNaN(dt)){if(dt>now&&dt<now+86400000)kpiDep24++;
-        if(dt>now-2*3600000)deps.push({k:(f.projKey&&productions[f.projKey])?f.projKey:k,name:s.name,pos:s.pos||'',f:f,ts:dt,ph:ph});}
+      if(!isNaN(dt)&&dt>now&&dt<now+86400000)kpiDep24++;
     });
     projStat[k]={booked:b,pending:pn,crew:crew.length};
     if(pn)attn.push({k:k,n:pn});
@@ -3741,14 +3780,21 @@ function renderTravelPortalOps(host){
   var kpiBooked=0,kpiPend=0,_n;
   for(_n in seenBooked)kpiBooked++;
   for(_n in seenPend)if(!seenBooked[_n])kpiPend++;
-  deps.sort(function(a,b2){return a.ts-b2.ts;});deps=deps.slice(0,7);
   function kpiTile(n,label,sub){return '<div class="rounded-xl p-3 text-center" style="background:rgba(0,0,0,.14)"><div class="text-2xl font-bold text-white leading-none">'+n+'</div><div class="text-[8px] font-bold uppercase tracking-wider text-blue-100 mt-1">'+label+'</div>'+(sub?'<div class="text-[8px] text-blue-200/80 mt-0.5">'+sub+'</div>':'')+'</div>';}
   // ---- hero: title + global KPIs ----
+  /* next unbooked traveler, so the "Book next" CTA has a one-click target */
+  var nextUnbooked=null;
+  for(var _ki=0;_ki<order.length&&!nextUnbooked;_ki++){var _k=order[_ki];
+    var _crew=getProjectCrew(_k).filter(function(s){return (s.name||'').trim();});
+    for(var _si=0;_si<_crew.length;_si++){if(!crewFlight(_crew[_si].name)){nextUnbooked={key:_k,name:_crew[_si].name,pos:_crew[_si].pos||''};break;}}
+  }
+  var bookCta=nextUnbooked?'<button onclick="portalSetProj(\''+nextUnbooked.key+'\');setTimeout(function(){openBookFlight(\''+nextUnbooked.key+'\',\''+String(nextUnbooked.name).replace(/\\/g,"\\\\").replace(/\'/g,"\\\'")+'\')},40)" class="text-[11px] font-bold text-blue-700 bg-white rounded-lg px-3 py-1.5 hover:bg-blue-50 inline-flex items-center gap-1.5">✈ Book next · '+esc(nextUnbooked.name)+'</button>':'<span class="text-[10px] text-blue-100">All crew booked ✓</span>';
   var hero='<div class="rounded-2xl p-5 text-white" style="background:#0866FF">'+
     '<div class="flex flex-wrap items-center justify-between gap-3 mb-4">'+
       '<div><h1 class="text-2xl font-semibold tracking-tight">Travel Portal</h1>'+
       '<p class="text-[11px] text-blue-100 mt-0.5">Every project’s travel in one place — cycle productions, book crew, watch the manifest fill.</p></div>'+
-      '<button onclick="portalSetMode(\'crew\')" class="text-[10px] font-bold text-white/90 border border-white/30 rounded-lg px-2.5 py-1.5 hover:bg-white/10">👤 Crew portal preview</button></div>'+
+      '<div class="flex items-center gap-2 flex-wrap">'+bookCta+
+      '<button onclick="portalSetMode(\'crew\')" class="text-[10px] font-bold text-white/90 border border-white/30 rounded-lg px-2.5 py-1.5 hover:bg-white/10">👤 Crew portal preview</button></div></div>'+
     '<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">'+
       kpiTile(kpiBooked,'Booked · on manifest','unique travelers')+
       kpiTile(kpiPend,'Pending to book','across '+order.length+' projects')+
@@ -3760,19 +3806,6 @@ function renderTravelPortalOps(host){
       '<span class="text-[9px] font-bold uppercase tracking-wider text-amber-700">⚠ Needs booking</span>'+
       attn.map(function(a){return '<button onclick="portalSetProj(\''+a.k+'\')" class="text-[9px] font-bold text-amber-800 bg-white border border-amber-200 rounded-lg px-2 py-1 hover:bg-amber-100">'+esc(productions[a.k].tab||productions[a.k].name)+' · '+a.n+'</button>';}).join('')+
       '<span class="text-[9px] text-amber-600 ml-auto hidden sm:block">click a project to jump into its workspace</span></div>':'';
-  // ---- cross-project departures board ----
-  var depRows=deps.map(function(d){var al=airline(d.f.airlineCode);var p2=productions[d.k];
-    return '<div role="button" tabindex="0" onclick="portalSetProj(\''+d.k+'\')" onkeydown="if(event.key===\'Enter\'){portalSetProj(\''+d.k+'\');}" class="flex flex-wrap items-center gap-2 px-2.5 py-2 rounded-xl border border-gray-200/70 hover:border-blue-300 hover:bg-blue-50/30 cursor-pointer transition-all">'+
-      '<span class="w-6 h-6 flex-shrink-0">'+al.logo+'</span>'+
-      '<div class="flex-shrink-0" style="min-width:118px"><p class="text-[11px] font-bold text-gray-900 truncate">'+esc(d.name)+'</p><p class="text-[8px] text-gray-500 truncate">'+esc(d.pos)+'</p></div>'+
-      '<span class="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded border flex-shrink-0" style="border-color:'+(dotBg[p2.tagColor]||'#b0b3b8')+'55;color:'+(dotBg[p2.tagColor]||'#65676B')+';background:'+(dotBg[p2.tagColor]||'#b0b3b8')+'14">'+esc(p2.tab||p2.name)+'</span>'+
-      '<span class="mono text-[10px] font-bold text-gray-800 flex-shrink-0">'+esc(d.f.flightNumber)+'</span>'+
-      '<span class="mono text-[9px] text-gray-500 flex-shrink-0">'+esc(d.f.dep.code)+' '+fmtLocalTime(d.f.dep.localTime)+' → '+esc(d.f.arr.code)+' · '+fmtLocalDate(d.f.dep.localTime)+'</span>'+
-      '<span class="ml-auto flex items-center gap-1.5 flex-shrink-0"><span class="text-[8px] font-bold border rounded px-1.5 py-0.5 '+d.ph.cls+'">'+d.ph.label.toUpperCase()+(d.ph.id==='air'?' · '+d.ph.pct+'%':'')+'</span>'+flightTrackLinks(d.f)+'</span></div>';}).join('');
-  var depBoard='<div class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
-    '<div class="flex items-center justify-between mb-2"><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">✈ Departures Board — all projects</h3>'+
-    '<span class="text-[8px] text-gray-400">phases from itinerary times · click a row to open that project’s workspace</span></div>'+
-    (depRows?'<div class="space-y-1.5">'+depRows+'</div>':'<p class="text-[10px] text-gray-400 text-center py-3">No upcoming departures on file — book crew below and they roll onto the board.</p>')+'</div>';
   // ---- project switcher: cycle & pick ----
   var chips=order.map(function(k){var p2=productions[k];var st=projStat[k]||{booked:0,pending:0,crew:0};var on=(k===portalProjKey);
     return '<button onclick="portalSetProj(\''+k+'\')" class="flex-shrink-0 flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 transition-all '+(on?'border-blue-400 bg-blue-50/60 ring-1 ring-blue-300':'border-gray-200 bg-white hover:border-blue-200 hover:bg-blue-50/40')+'">'+
@@ -3788,7 +3821,7 @@ function renderTravelPortalOps(host){
     '<h2 class="text-sm font-bold text-gray-900">Workspace — '+esc(pSel.name)+'</h2>'+
     '<button onclick="openProject(\''+portalProjKey+'\')" class="text-[9px] font-bold text-blue-700 hover:underline">Open full project →</button></div>'+
     travelPaneHTML(portalProjKey)+'</div>';
-  host.innerHTML='<div class="space-y-4">'+hero+attnBar+depBoard+switcher+ws+'</div>';
+  host.innerHTML='<div class="space-y-4">'+hero+attnBar+switcher+ws+'</div>';
   setTimeout(function(){if(document.getElementById('tpWidgetMount'))mountSkyscanner();},30);
 }
 function renderPortalView(){
@@ -3916,7 +3949,7 @@ function travelPaneHTML(key){var p=productions[key];loadTravelOnce();
     (total&&!travOwn?'<div class="flex items-center gap-2 mb-3"><div class="flex-1 h-1.5 rounded-full bg-gray-100 overflow-hidden"><div class="h-full rounded-full" style="width:'+Math.round(withFlights.length/total*100)+'%;background:linear-gradient(90deg,#31A24C,#31A24C)"></div></div><span class="text-[9px] mono font-bold text-gray-500 flex-shrink-0">'+withFlights.length+'/'+total+' booked</span></div>':'');
   var card1open='<div class="bg-white rounded-2xl p-4 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">';
   if(!withFlights.length){
-    return '<div class="space-y-3">'+trSectionHTML(key)+card1open+head+
+    return '<div class="space-y-3">'+card1open+head+
       (travOwn?'<div class="text-center py-6 text-[11px] text-gray-400">No itinerary on file for you yet. Your production manager books travel.</div>'
         :'<div class="text-center py-6"><p class="text-2xl mb-1">🛫</p><p class="text-[11px] font-semibold text-gray-700">Nobody on the manifest yet</p><p class="text-[10px] text-gray-400 mt-0.5">Add personnel in the Travel Control Center below and book their flight — they appear here the moment the booking confirms.</p></div>')+'</div>'+
       (travOwn?'':travelpayoutsCardHTML(key))+'</div>';
@@ -3957,7 +3990,7 @@ function travelPaneHTML(key){var p=productions[key];loadTravelOnce();
   if(travelFilter.group==='flight'&&shown.length){rows=flightGroupRows(shown);}
   else{rows=shown.map(function(m){return flightRow(m.name,m.pos,crewFlight(m.name),key);}).join('');}
   if(!rows)rows='<div class="text-center py-8 text-[11px] text-gray-400">No travelers match this filter. <button onclick="setTravelFilter(\'all\',\'\');setTravelSearch(\'\')" class="text-blue-700 font-bold hover:underline">Clear</button></div>';
-  return '<div class="space-y-3">'+trSectionHTML(key)+
+  return '<div class="space-y-3">'+
     card1open+head+(travOwn?'':stats+chipBar)+searchBar+'<div class="space-y-2">'+rows+'</div></div>'+
     (travOwn?'':travelpayoutsCardHTML(key))+'</div>';
 }
@@ -5113,7 +5146,7 @@ function npcById(id){for(var i=0;i<npcEvents.length;i++)if(npcEvents[i].id===id)
    and the NPC conflict check all follow it.
    Row: [resource, [[startCol, spanDays, activity, bg, fg, timeWindow?, prodKey?], …]] */
 var FACILITY_ROWS=[["PCR 1",[[0,7,'Muse AI World Tour — Match Coverage','#f9db8e','#b24a00','12:00–18:00 ET','museaitour'],[1,2,'Muse AI World Tour Tech Rehearsal','#f9db8e','#b24a00','07:00–11:00 ET','museaitour'],[4,2,'Ray-Ban Meta Gen 3 Launch Setup','#a8dab5','#12301c','08:00–12:00 ET','raybangen3']]],
-  ["PCR 4",[[0,3,'Ray-Ban Meta Gen 3 Launch Remote Test','#a8dab5','#12301c','06:00–09:00 ET','raybangen3'],[0,7,'Ray-Ban Meta Gen 3 Launch — Harbor Remote','#a8dab5','#12301c','06:00–10:00 ET','raybangen3'],[5,2,'Creator Week Cam Map','#fbc6a4','#b24a00','13:00–16:00 ET','igcreators']]],
+  ["PCR 4",[[0,3,'Ray-Ban Meta Gen 3 Launch Remote Test','#a8dab5','#12301c','06:00–09:00 PT','raybangen3'],[0,7,'Ray-Ban Meta Gen 3 Launch — MPK Remote','#a8dab5','#12301c','06:00–10:00 PT','raybangen3'],[5,2,'Creator Week Cam Map','#fbc6a4','#b24a00','13:00–16:00 ET','igcreators']]],
   ["PCR 6",[[2,2,'Muse AI Launchth GFX Build','#e7f3ff','#0a58ca','10:00–17:00 ET','museailaunch']]],
   ["Studio M1",[[3,3,'Muse AI Launchth Rehearsal','#e7f3ff','#0a58ca','09:00–18:00 ET','museailaunch']]],
   ["ACR 2",[[0,2,"Calrec Artemis",'#b9d7ff','#0a58ca','09:00–13:00 ET','museaitour'],[0,7,'Muse AI World Tour — Keynote Mix','#f9db8e','#b24a00','12:00–18:00 ET','museaitour'],[4,1,'Mix Check','#a8dab5','#12301c','10:00 ET','raybangen3']]],
@@ -5122,7 +5155,7 @@ var FACILITY_ROWS=[["PCR 1",[[0,7,'Muse AI World Tour — Match Coverage','#f9db
   ["MIX 4",[[3,2,'Muse AI Launchth — Music Mix','#e7f3ff','#0a58ca','14:00–18:00 ET','museailaunch']]],
   ["REMI Bay",[[1,4,'WhatsApp Summit Survey Calls','#fde7ea','#b3122e','09:00–17:00 ET','whatsapp']]],
   ["CRK 1",[[0,7,'Muse AI World Tour — Keynote Feed A-Path','#fde7ea','#b3122e','ON AIR · 12:00–18:00 ET','museaitour']]],
-  ["CRK 2",[[0,7,'Ray-Ban Meta Gen 3 Launch — Harbor Feed','#a8dab5','#12301c','06:00–10:00 ET','raybangen3']]],
+  ["CRK 2",[[0,7,'Ray-Ban Meta Gen 3 Launch — MPK Stage Feed','#a8dab5','#12301c','06:00–10:00 PT','raybangen3']]],
   ["CRK 4",[[2,3,'Muse AI Launchth — GFX Uplink Test','#e7f3ff','#0a58ca','14:00–16:00 ET','museailaunch']]]];
 
 /* a span [a,a+aw) overlaps [b,b+bw) ? */
@@ -5691,7 +5724,7 @@ function getSurvey(key){var p=productions[key];
    ============================================================================ */
 var VENUES={
   museaitour:{name:'Hard Rock Stadium',address:'347 Don Shula Dr, Miami Gardens, FL 33056',lat:25.9580,lng:-80.2389,zoom:15},
-  raybangen3:{name:'New York Harbor — Battery / Hudson River',address:'Battery Park, New York, NY 10004',lat:40.7002,lng:-74.0170,zoom:13},
+  raybangen3:{name:'Meta HQ — Menlo Park Campus',address:'1 Hacker Way, Menlo Park, CA 94025',lat:37.4848,lng:-122.1484,zoom:16},
   orion:{name:"Levi's Stadium",address:'4900 Marie P DeBartolo Way, Santa Clara, CA 95054',lat:37.4030,lng:-121.9698,zoom:15},
   museailaunch:{name:'Meta NYC · Hudson Yards — Studio M1',address:'50 Hudson Yards, New York, NY 10001',lat:40.7536,lng:-74.0007,zoom:16},
   whatsapp:{name:'WhatsApp — Washington DC Hub',address:'4001 Nebraska Ave NW, Washington, DC 20016',lat:38.9446,lng:-77.0807,zoom:14},
@@ -5706,7 +5739,6 @@ var VENUE_LOOKUP=[
   [/hyatt|polanco/,{lat:19.4290,lng:-99.1900,name:'Hyatt Regency Mexico City',address:'Campos Eliseos 204, Polanco, CDMX'}],
   [/hudson yards|studio m1|museailaunch/,{lat:40.7536,lng:-74.0007,name:'Meta NYC · Hudson Yards',address:'50 Hudson Yards, New York, NY 10001'}],
   [/herald|macy|takeover/,{lat:40.7509,lng:-73.9890,name:"Instagram Herald Square",address:'151 W 34th St, New York, NY 10001'}],
-  [/harbor|sail|hudson|battery/,{lat:40.7002,lng:-74.0170,name:'New York Harbor',address:'Battery Park, New York, NY 10004'}],
   [/milano|milan|cortina|fiera|rho/,{lat:45.5179,lng:9.0851,name:'Milan IBC — Fiera Milano Rho',address:'SS del Sempione 28, 20017 Rho, Milan, Italy'}],
   [/washington|nebraska|bureau|midterm|capitol|dc\b/,{lat:38.9446,lng:-77.0807,name:'WhatsApp Washington DC Hub',address:'4001 Nebraska Ave NW, Washington, DC 20016'}],
   [/allegiant|las vegas/,{lat:36.0909,lng:-115.1830,name:'Allegiant Stadium',address:'3333 Al Davis Way, Las Vegas, NV 89118'}]
@@ -6542,7 +6574,12 @@ function getCadPlans(key){var s=getSurvey(key);if(!s.cad){
     // seed the venue engineering/CAD set — real converted DWG drawings (markup-ready).
     // v37: each carries a `vec` key so it opens as a LIVE VECTOR drawing (real layers,
     // selectable entities, editable text) rather than the baked PNG the tiles preview.
-    var seed=[
+    var seed=key==='raybangen3'?[
+      {id:'cad_mpk_plan',name:'Classroom Stage — General Plan',meta:'mpk_classroom_plan.dwg · stage + seating + grid',kind:'camera',tag:'DWG',render:'mpk-plan',vec:'mpk-plan',dwg:'mpk_classroom_plan.dwg',img:null},
+      {id:'cad_mpk_section',name:'Classroom Stage — Longitudinal Section',meta:'mpk_classroom_section.dwg · trim + truss + seating rake',kind:'section',tag:'DWG',render:'mpk-section',vec:'mpk-section',dwg:'mpk_classroom_section.dwg',img:null},
+      {id:'cad_mpk_power',name:'Power Distribution — A/B Buses',meta:'mpk_classroom_power.dwg · utility + gen + ATS',kind:'power',tag:'DWG',render:'mpk-power',vec:'mpk-power',dwg:'mpk_classroom_power.dwg',img:null},
+      {id:'cad_mpk_lighting',name:'Lighting Plot — Pre-Rig',meta:'mpk_classroom_lighting.dwg · SkyPanel + Source 4 + MAC Aura',kind:'camera',tag:'DWG',render:'mpk-lighting',vec:'mpk-lighting',dwg:'mpk_classroom_lighting.dwg',img:null}
+    ]:[
       {id:'cad_sec2',name:'Seating Bowl — Cross Section',meta:'stadium_section_2.dwg · roof truss + tiers',kind:'section',tag:'DWG',render:'section2',vec:'section2',dwg:'stadium_section_2.dwg',img:null},
       {id:'cad_plan',name:'Field & Stands — General Plan',meta:'football_stadium_.dwg · pitch + grandstands',kind:'camera',tag:'DWG',render:'football',vec:'football',dwg:'football_stadium_.dwg',img:null},
       {id:'cad_lvl6',name:'Level 6 — Upper Concourse Plan',meta:'stadium1_plan_level6.dwg · structural ring',kind:'power',tag:'DWG',render:'plan6',vec:'plan6',dwg:'stadium1_plan_level6.dwg',img:null},
@@ -6551,7 +6588,7 @@ function getCadPlans(key){var s=getSurvey(key);if(!s.cad){
     s.cad=seed;}
   else{/* upgrade sets seeded by v29-v36 in an existing browser so they open as vector too */
     for(var i=0;i<s.cad.length;i++){var c=s.cad[i];
-      if(!c.vec&&!c.dxfText&&c.render&&/^(section1|section2|football|plan6)$/.test(c.render))c.vec=c.render;}}
+      if(!c.vec&&!c.dxfText&&c.render&&/^(section1|section2|football|plan6|mpk-plan|mpk-section|mpk-power|mpk-lighting)$/.test(c.render))c.vec=c.render;}}
   return s.cad;}
 /* A real drawing with no raster preview must NOT borrow a fabricated schematic — say
    what the file is and let the engine draw the truth when it is opened. */
@@ -6863,6 +6900,53 @@ function cadSeedDoc(kind){
     poly('POWER',1,[[168,24],[182,24],[182,36],[168,36]],true);
     text('POWER',1,164,38,'GEN TIE-IN · 400A',2.8);
     text('TEXT',7,40,136,(kind==='section2'?'SEATING BOWL — CROSS SECTION':'LONGITUDINAL SECTION')+'  ·  1:600',3.4);
+  }else if(kind==='mpk-plan'){
+    /* Classroom Stage — stage block + raked seating + LED wall + camera plots */
+    poly('STRUCTURE',7,[[70,22],[130,22],[130,38],[70,38]],true);
+    poly('STRUCTURE',7,[[70,18],[130,18],[130,21],[70,21]],true);
+    for(i=0;i<10;i++)line('SEATING',9,40,46+i*7,160,46+i*7);
+    var mcams=[[100,118,'CAM 1 · HOME'],[40,70,'CAM 2 · LOW L'],[160,70,'CAM 3 · LOW R'],[100,42,'CAM 4 · STAGE']];
+    for(i=0;i<mcams.length;i++){circ('CAMERA',5,mcams[i][0],mcams[i][1],2.4);
+      text('CAMERA',5,mcams[i][0]+3.5,mcams[i][1]+1,mcams[i][2],2.6);}
+    poly('POWER',1,[[10,100],[20,100],[20,118],[10,118]],true);
+    text('POWER',1,10,120,'DISTRO A · 200A',2.6);
+    text('TEXT',7,40,136,'CLASSROOM STAGE — GENERAL PLAN  ·  1:200',3.4);
+  }else if(kind==='mpk-section'){
+    /* raked seating in section + stage + LED wall + lighting trim */
+    line('STRUCTURE',7,10,20,190,20);
+    for(i=0;i<16;i++){var sx=30+i*8,sy=22+i*5;line('SEATING',9,sx,sy,sx+8,sy);line('SEATING',9,sx+8,sy,sx+8,sy+5);}
+    poly('STRUCTURE',7,[[16,24],[28,24],[28,44],[16,44]],true);
+    poly('STRUCTURE',7,[[14,46],[30,46],[30,86],[14,86]],true);
+    line('STRUCTURE',7,10,100,190,100);
+    text('TEXT',7,100,102,'LIGHTING TRIM · 10.5m',2.6);
+    circ('CAMERA',5,170,70,2.4);text('CAMERA',5,174,70,'CAM 1 · 22m',2.6);
+    line('DIMS',4,6,20,6,100);text('DIMS',4,1,60,'10.5m',2.6);
+    text('TEXT',7,40,136,'CLASSROOM STAGE — LONGITUDINAL SECTION  ·  1:200',3.4);
+  }else if(kind==='mpk-power'){
+    /* A/B buses: utility, gen, ATS, distros, cable runs */
+    poly('POWER',1,[[20,100],[40,100],[40,124],[20,124]],true);
+    text('POWER',1,20,126,'UTILITY · 400A',2.6);
+    poly('POWER',1,[[160,100],[180,100],[180,124],[160,124]],true);
+    text('POWER',1,160,126,'GEN · 400A',2.6);
+    poly('POWER',1,[[90,80],[110,80],[110,96],[90,96]],true);
+    text('POWER',1,90,98,'ATS',2.6);
+    line('CABLE',2,40,112,90,88);line('CABLE',2,160,112,110,88);
+    poly('POWER',1,[[60,40],[80,40],[80,60],[60,60]],true);
+    text('POWER',1,60,62,'DISTRO A · 200A',2.6);
+    poly('POWER',1,[[120,40],[140,40],[140,60],[120,60]],true);
+    text('POWER',1,120,62,'DISTRO B · 200A',2.6);
+    line('CABLE',2,100,80,70,60);line('CABLE',2,100,80,130,60);
+    text('TEXT',7,40,136,'POWER DISTRIBUTION — A/B BUSES  ·  single-line',3.4);
+  }else if(kind==='mpk-lighting'){
+    /* FOH + rear truss + fixture positions */
+    poly('STRUCTURE',7,[[30,60],[170,60],[170,65],[30,65]],true);
+    poly('STRUCTURE',7,[[30,85],[170,85],[170,90],[30,90]],true);
+    for(i=0;i<10;i++){var fx=35+i*15;
+      circ('CAMERA',5,fx,62.5,1.4);circ('CAMERA',5,fx,87.5,1.4);
+      text('TEXT',7,fx-2,54,'S'+(i+1),2.2);}
+    poly('STRUCTURE',7,[[70,22],[130,22],[130,32],[70,32]],true);
+    text('TEXT',7,80,28,'STAGE',2.6);
+    text('TEXT',7,40,136,'LIGHTING PLOT — PRE-RIG  ·  SkyPanel S60 + Source 4',3.4);
   }
   return doc;}
 
@@ -7785,13 +7869,13 @@ var comms=[
 
  // ============ THREAD: INV-30377 ConEd overdue (finance escalation) ============
  {id:'MSG-9003',channel:'teams',dir:'in',priority:'high',from:'Lila Hart',to:'Tech Production',
-  subject:'',body:'Heads up \u2014 ConEd invoice INV-30377 for Ray-Ban Meta Gen 3 Launch is now overdue. Can we expedite the AP exception so we do not hold the harbor power tie-in?',
+  subject:'',body:'Heads up \u2014 Meridian Power invoice INV-30377 for Ray-Ban Meta Gen 3 Launch is now overdue. Can we expedite the AP exception so we do not hold the MPK Classroom Stage power tie-in?',
   ts:'2026-06-15 14:33',linkType:'inv',linkId:'INV-30377',prod:'raybangen3',read:false,thread:'T-30377'},
  {id:'MSG-9027',channel:'teams',dir:'out',priority:'high',from:'Rowan Blake',to:'Tech Production',
-  subject:'',body:'On it. Pushing the AP exception to Finance now with the dockside power dependency flagged. Need this cleared before the 6/26 rig.',
+  subject:'',body:'On it. Pushing the AP exception to Finance now with the MPK Classroom Stage power dependency flagged. Need this cleared before the 6/26 rig.',
   ts:'2026-06-15 14:41',linkType:'inv',linkId:'INV-30377',prod:'raybangen3',read:false,thread:'T-30377'},
  {id:'MSG-9028',channel:'email',dir:'in',priority:'high',from:'Accounts Payable <ap@meta.com>',to:'Rowan Blake',
-  subject:'INV-30377 \u2014 Exception Approved',body:'AP exception approved. ConEd Marine Services will be paid out same-day via wire. Reference 30377 cleared \u2014 no hold on the harbor tie-in.',
+  subject:'INV-30377 \u2014 Exception Approved',body:'AP exception approved. Meridian Power Services will be paid out same-day via wire. Reference 30377 cleared \u2014 no hold on the MPK Classroom Stage tie-in.',
   ts:'2026-06-16 09:10',linkType:'inv',linkId:'INV-30377',prod:'raybangen3',read:false,thread:'T-30377'},
 
  // ============ THREAD: Galaxy-19 transponder conflict (TOC / transmission, CRITICAL) ============
@@ -7913,7 +7997,7 @@ function commsPriorityPill(pr){
 function commsChannelName(ch){return ch==='toc'?'TOC Alert':(ch==='teams'?'Teams':'Outlook');}
 
 /* ================= UNIFIED COMMS VIEW ================= */
-var commsFilter={channel:'all',q:'',linkType:'all'};
+var commsFilter={channel:'all',q:'',linkType:'all',status:'all'};
 function setCommsFilter(field,val){commsFilter[field]=(commsFilter[field]===val&&field!=='q')?'all':val;renderComms();}
 function renderComms(){
   loadCommsOnce();commsNavBadge();
@@ -7921,6 +8005,10 @@ function renderComms(){
   // channel filter button states (now includes TOC)
   ['all','email','teams','toc'].forEach(function(c){var b=document.getElementById('cf_'+c);if(!b)return;
     var on=(commsFilter.channel===c);
+    b.className='text-[10px] font-bold px-2.5 py-1 rounded-md '+(on?'bg-white shadow-sm text-gray-900':'text-gray-500 hover:text-gray-700');});
+  // status tab states (Inbox / Unread / Starred / Sent)
+  ['all','unread','critical','sent'].forEach(function(c){var b=document.getElementById('cs_'+c);if(!b)return;
+    var on=(commsFilter.status===c);
     b.className='text-[10px] font-bold px-2.5 py-1 rounded-md '+(on?'bg-white shadow-sm text-gray-900':'text-gray-500 hover:text-gray-700');});
   var host=document.getElementById('commsBody');if(!host)return;
   var stats=document.getElementById('commsStats');
@@ -7956,6 +8044,9 @@ function renderComms(){
   var list=vis.filter(function(m){
     if(commsFilter.channel!=='all'&&m.channel!==commsFilter.channel)return false;
     if(commsFilter.linkType!=='all'&&m.linkType!==commsFilter.linkType)return false;
+    if(commsFilter.status==='unread'&&!(!m.read&&m.dir==='in'))return false;
+    if(commsFilter.status==='critical'&&m.priority!=='critical')return false;
+    if(commsFilter.status==='sent'&&m.dir!=='out')return false;
     if(q){var hay=(m.from+' '+m.to+' '+m.subject+' '+museRichPlain(m.body)+' '+commsLinkLabel(m.linkType,m.linkId)).toLowerCase();if(hay.indexOf(q)<0)return false;}
     return true;}).sort(function(a,b){return (a.ts<b.ts?1:-1);});
   // group into threads
@@ -7993,12 +8084,12 @@ function openCommsThread(tk){loadCommsOnce();
   var ov=document.getElementById('commsMsgOverlay');var bx=document.getElementById('commsMsgBox');if(!ov||!bx)return;
   var head=msgs[0];
   var bubbles=msgs.map(function(m){var out=m.dir==='out';
-    return '<div class="flex '+(out?'justify-end':'justify-start')+'"><div class="max-w-[80%] '+(out?'comms-bubble-out bg-blue-600 text-white':'bg-gray-100 text-gray-800')+' rounded-2xl px-3.5 py-2.5">'+
+    return '<div class="flex '+(out?'justify-end':'justify-start')+'"><div class="max-w-[80%] '+(out?'rounded-2xl rounded-br-sm':'rounded-2xl rounded-bl-sm')+' px-3 py-2 text-xs" style="'+(out?'background:#0866FF;color:#fff':'background:#F0F2F5;color:#050505')+'">'+
       '<div class="flex items-center gap-2 mb-1"><span class="text-[9px] font-bold '+(out?'text-blue-100':'text-gray-500')+'">'+esc(out?'You':m.from)+'</span>'+commsChannelChip(m.channel)+'<span class="text-[8px] mono '+(out?'text-blue-200':'text-gray-400')+'">'+esc(m.ts)+'</span></div>'+
-      (m.subject&&!out?'<p class="text-[11px] font-bold mb-1">'+esc(m.subject)+'</p>':'')+
-      museRichView(m.body,'text-[11px] leading-snug'+(out?' rt-on-dark':''))+'</div></div>';
+      (m.subject&&!out?'<p class="text-xs font-bold mb-1">'+esc(m.subject)+'</p>':'')+
+      museRichView(m.body,'text-xs leading-relaxed'+(out?' rt-on-dark':''))+'</div></div>';
   }).join('');
-  bx.innerHTML='<div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 flex-shrink-0">'+
+  bx.innerHTML='<div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0">'+
       '<div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><h3 class="text-sm font-bold text-gray-900 truncate">'+esc(head.subject||(commsChannelName(head.channel)+' thread · '+head.from))+'</h3>'+commsPriorityPill(msgs.reduce(function(acc,m){var r={critical:0,high:1,normal:2};return (r[m.priority]<r[acc])?m.priority:acc;},'normal'))+'</div>'+
       '<button onclick="commsLinkGo(\''+head.linkType+'\',\''+head.linkId+'\')" class="text-[10px] font-bold text-blue-700 hover:underline">'+commsLinkIcon(head.linkType)+' Linked to '+esc(commsLinkLabel(head.linkType,head.linkId))+' →</button></div>'+
       '<button onclick="closeCommsMsg()" class="text-gray-400 hover:text-gray-700 text-lg leading-none flex-shrink-0 ml-2">✕</button></div>'+
@@ -8116,7 +8207,7 @@ function commsInit(){loadCommsOnce();commsNavBadge();}
 
 
 /* ---- embedded converted DWG drawings (base64 PNG) + CAD viewer ---- */
-var CAD_RENDERS = {"section2":"assets/cad/section2.png","section1":"assets/cad/section1.png","plan6":"assets/cad/plan6.png","football":"assets/cad/football.png"};
+var CAD_RENDERS = {"section2":"assets/cad/section2.png","section1":"assets/cad/section1.png","plan6":"assets/cad/plan6.png","football":"assets/cad/football.png","mpk-plan":"assets/cad/mpk-plan.svg","mpk-section":"assets/cad/mpk-section.svg","mpk-power":"assets/cad/mpk-power.svg","mpk-lighting":"assets/cad/mpk-lighting.svg"};
 /* ============================================================================
    CAD MARKUP VIEWER — full-screen, high-fidelity annotation layer over the
    rendered site plans. Real HTML5 Canvas engine: pan/zoom, freehand pen,
@@ -9846,7 +9937,7 @@ function cadRoundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo
 var MD_SEED_WBS=[
   {id:'PRJ-2026-MUSEAITOUR-01',desc:'Muse AI World Tour — IBC Operations',active:true,prod:'museaitour'},
   {id:'PRJ-2026-MUSEAITOUR-02',desc:'Muse AI World Tour — Venue Production',active:true,prod:'museaitour'},
-  {id:'PRJ-2026-RAYBANGEN3-01',desc:'Ray-Ban Meta Gen 3 — Harbor Broadcast',active:true,prod:'raybangen3'},
+  {id:'PRJ-2026-RAYBANGEN3-01',desc:'Ray-Ban Meta Gen 3 — MPK Classroom Launch',active:true,prod:'raybangen3'},
   {id:'PRJ-2026-ORION-01',desc:'Orion Developer Preview — Host Broadcast',active:true,prod:'orion'},
   {id:'PRJ-2026-ORION-02',desc:'Orion Developer Preview — Digital & Streaming',active:true,prod:'orion'},
   {id:'PRJ-2026-MUSEAILAUNCH-01',desc:'Muse AI Launch Keynote',active:true,prod:'museailaunch'},
@@ -10113,8 +10204,7 @@ function finReportTotals(key){finEnsureCostReport(key);var t={budget:0,committed
 
 /* ============================================================================
    v35 — FINANCE & ACCOUNTING SUITE (enterprise)
-   Portfolio-wide accounting modeled on SAP S/4HANA, Oracle ERP Cloud/EPM, Workday
-   Financial Management and Oracle NetSuite: executive cockpit · general ledger +
+   Portfolio-wide accounting for Meta Broadcast: executive cockpit · general ledger +
    chart of accounts · AP & AR aging · budgeting & forecasting · financial reports
    (P&L, Balance Sheet, Cash Flow, Trial Balance). Aggregates the existing per-
    production cost reports / POs / WOs / transmission spend / AP invoices and
@@ -10199,7 +10289,7 @@ function finCockpitHTML(scope){var isAll=(scope==='all');var t=finAgg(scope);var
   var prodCard='';
   if(isAll){var pm=order.reduce(function(m,k){return Math.max(m,finReportTotals(k).efc,finBudgets[k]||0);},1);
     var rows=order.map(function(k){var r=finReportTotals(k);var over=r.variance<0;
-      return '<div class="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50 rounded-lg px-1 -mx-1" onclick="openProjFinance(\''+k+'\')">'+
+      return '<div class="flex items-center gap-2 py-1 cursor-pointer hover:bg-gray-50 rounded-lg px-1 -mx-1" onclick="openProjFinancePopup(\''+k+'\')">'+
         '<span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+(dotBg[productions[k].tagColor]||'#b0b3b8')+'"></span>'+
         '<span class="text-[10px] font-semibold text-gray-800 truncate flex-shrink-0" style="width:10rem">'+esc(prodName(k))+'</span>'+
         '<div class="flex-1 h-4 bg-gray-100 rounded-md overflow-hidden relative"><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+Math.min(100,(finBudgets[k]||0)/pm*100)+'%;background:#e4e6eb"></div><div class="h-full absolute top-0 left-0 rounded-md" style="width:'+Math.min(100,r.efc/pm*100)+'%;background:'+(over?'linear-gradient(90deg,#E41E3F,#E41E3F)':'linear-gradient(90deg,#31A24C,#31A24C)')+'"></div></div>'+
@@ -10366,7 +10456,7 @@ function financeWorkspaceHTML(scope){scope=scope||'all';var isAll=(scope==='all'
   var head=isAll?('<div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">'+
       '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0" style="background:linear-gradient(135deg,#1c1e21,#242526)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>'+
       '<div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Finance &amp; Accounting</h1><p class="text-xs text-gray-500 mt-0.5">Portfolio general ledger, AP/AR, budgeting &amp; reporting across '+order.length+' productions · FY2025–26 · USD</p></div></div>'+
-      '<div class="flex items-center gap-2 flex-wrap"><span class="text-[8px] mono font-bold bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded hidden sm:inline">S/4HANA · Oracle ERP · Workday · NetSuite</span>'+
+      '<div class="flex items-center gap-2 flex-wrap"><span class="text-[8px] mono font-bold bg-gray-100 text-gray-500 border border-gray-200 px-2 py-1 rounded hidden sm:inline">Meta Finance · FY2025–26 · USD</span>'+
       '<button onclick="finExportCSV(\''+scope+'\')" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">⬇ GL CSV</button>'+
       '<button onclick="finPrintPack(\''+scope+'\')" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-2 hover:bg-gray-800">🖨 Statement Pack</button></div></div>'):
     ('<div class="flex flex-wrap items-center justify-between gap-2 mb-1"><div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Finance &amp; Accounting — '+esc(prodName(scope))+'</h3><p class="text-[9px] text-gray-500 mt-0.5">Ledger, receivables, budget &amp; statements for this production · USD</p></div>'+
@@ -10793,8 +10883,7 @@ function schedLaborRecon(key){var S=ensureSchedLabor(key);var est=0,act=0,estH=0
 /* ---- Bookings tab: Muse Schedule bookings + crew labor & timecards ---- */
 function bookingsTabBadge(key){try{var n=MuseSchedule.conflicts({prod:key}).length;return n?' <span class="text-red-500">●</span>':'';}catch(e){return '';}}
 function bookingsPaneHTML(key){
-  var sched=(typeof MuseSchedule!=='undefined')?MuseSchedule.projectPaneHTML(key):'<p class="text-xs text-red-600">Muse Schedule failed to load.</p>';
-  return '<div class="space-y-4">'+sched+schedLaborPaneHTML(key)+'</div>';}
+  return '<div class="space-y-4">'+schedLaborPaneHTML(key)+'</div>';}
 function schedLaborPaneHTML(key){var S=ensureSchedLabor(key);var hasTc=S.timecards.length>0;
   var est=schedLaborEstimate(key);var fromSched=est.filter(function(e){return e.source==='Muse Schedule';}).length;
   var estTotal=est.reduce(function(s,e){return s+e.est.loaded;},0),estHrs=est.reduce(function(s,e){return s+e.est.hours;},0);
@@ -11164,9 +11253,6 @@ function schedulePaneHTML(key){var v=schedView[key]||'timeline';
    MUSE LIVE v36 — ENTERPRISE PROJECT CONTROLS
    Broadcast productions as true CPM activity networks with resources, cost,
    baselines, stage-gates, what-if scenarios, and a portfolio rollup.
-   Inspiration: Oracle Primavera P6 (CPM · resource leveling), Planisware
-   (portfolio · stage-gate · predictive what-if), Contruent (EVM · change
-   control), Microsoft PPM (Excel-style grid · executive dashboards).
    Engine (cpmCompute/planEVM/planLevelResources/planMonteCarlo) verified in a
    standalone ES5 Node harness (43 assertions) before landing here.
    ========================================================================== */

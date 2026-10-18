@@ -16,6 +16,7 @@
 // function checks the session itself for sign and POST, and the token for feeds.
 
 import { DEFAULT_PW_HASH } from '../_lib/session.js';
+import { canWrite } from '../_lib/who.js';
 const KV_KEY = 'calendar:schedule';
 const MAX_SNAPSHOT = 2_000_000;
 
@@ -111,6 +112,7 @@ export async function onRequest(context) {
 
   if (request.method === 'POST') {
     if (!signedIn(request, env, data)) return json({ ok: false, error: 'Sign in required' }, 401);
+    if (!canWrite(data && data.user)) return json({ ok: false, error: 'Your role is read-only.' }, 403);
     const raw = await request.text();
     if (raw.length > MAX_SNAPSHOT) return json({ ok: false, error: 'Snapshot too large' }, 413);
     let snap; try { snap = JSON.parse(raw); } catch (e) { return json({ ok: false, error: 'Bad JSON' }, 400); }

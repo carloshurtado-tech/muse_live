@@ -6237,7 +6237,8 @@ function downloadTechbook(key,opts){
         doc.text('Muse Live · LIVE DATA EXPORT · Confidential · '+(p.version||''),40,H-18);
         doc.text(p.name+'  ·  Page '+pg+' of '+pages,W-40,H-18,{align:'right'});}
 
-      doc.save('Muse_Live_'+TBTAG+'_'+(p.name||'Production').replace(/[^a-z0-9]+/gi,'_')+'.pdf');
+      var _tbName='Muse_Live_'+TBTAG+'_'+(p.name||'Production').replace(/[^a-z0-9]+/gi,'_')+'.pdf';
+      if(opts.onPdf)opts.onPdf(doc,_tbName,pages);else doc.save(_tbName);
       _tbSnap();
       toast('Live techbook PDF ('+pages+' pages) for '+p.name+' — reflects current production data');
     }catch(e){toast('Using print export instead…');printTechbook(p,opts);}

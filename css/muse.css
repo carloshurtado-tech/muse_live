@@ -2198,7 +2198,6 @@ html.dark .prod-menu-row.tab-inactive:hover{background:#27282D;}
 html.dark .project-card:hover{border-color:#4B4F56;box-shadow:0 8px 30px rgba(0,0,0,.5);}
 html.dark .dept-tile.collapsed:hover{box-shadow:0 6px 18px rgba(0,0,0,.45);}
 html.dark ::-webkit-scrollbar-thumb{background:#4b4f56;}
-html.dark progress::-webkit-progress-bar{background:#30333A;}
 html.dark input::placeholder,html.dark textarea::placeholder{color:#65676b;opacity:1;}
 html.dark [stroke="#3E4042"]{stroke:#ced0d4;}
 
@@ -4823,3 +4822,6 @@ html.dark button[title^="Scheduling conflicts"]{background:#D21F3C !important;co
 html:not(.dark) button[title^="Scheduling conflicts"]{color:#B3122E !important;}
 html.dark .muse-sync-text{color:#AAAFB9 !important;}
 html.dark .view-pane h3.uppercase,html.dark .view-pane h3.text-gray-700,html.dark .view-pane h3.text-gray-800{color:#FFFFFF !important;}
+/* Native <progress>: Firefox paints the track on the element itself (Chrome on ::-webkit-progress-bar), so both get the toolkit track and full radius. */
+progress{border:0;border-radius:var(--uit-corner-radius-full);overflow:hidden;background:var(--uit-color-background-elevation2);}
+progress::-webkit-progress-bar{background:var(--uit-color-background-elevation2);border-radius:var(--uit-corner-radius-full);}

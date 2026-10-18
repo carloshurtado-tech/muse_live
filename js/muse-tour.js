@@ -15,6 +15,39 @@
   function openShow(key, tab) { call(function () { root.projSubTab[key] = tab; }); go(key); call(function () { root.setProjTab(key, tab); }); }
   function closeMuse() { call(function () { if (root.museaiOpen) root.toggleMuseAi(); }); }
   var ASK = 'What happened at the Ray-Ban event, and what did we change afterwards?';
+  /* Techbook PDF → a new tab. Browsers only allow new tabs from a recent click, so a click reserves the tab
+     up front; in auto-play (no click) the card offers "Open the techbook PDF" once it's built. */
+  var pdfUrl = null;
+  function exportTechbook(tab) {
+    if (!tab && auto && !paused && ui) { togglePause(); ui.card.querySelector('#mtBody').textContent = 'Building the techbook PDF from live data: locations, departments, pack list, power, fiber and crew…'; } // hold the step until the PDF exists
+    call(function () {
+      root.downloadTechbook('museaitour', { onPdf: function (doc, name, pages) {
+        call(function () { doc.setProperties({ title: name.replace(/_/g, ' ').replace(/\.pdf$/, '') }); });
+        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+        pdfUrl = URL.createObjectURL(doc.output('blob'));
+        var ua = navigator.userActivation;
+        if (tab && !tab.closed) { tab.location.href = pdfUrl; return; }
+        if (ua && ua.isActive && root.open(pdfUrl, '_blank')) { if (auto && paused) togglePause(); return; }
+        offerPdf(pages);
+      } });
+    });
+  }
+  function openPdfTab() {
+    var t = root.open('', '_blank');
+    if (!t) return null;
+    call(function () { t.document.title = 'Building techbook…'; t.document.body.style.cssText = 'font:16px system-ui;padding:40px;color:#65676B'; t.document.body.textContent = 'Building the techbook PDF from live data…'; });
+    return t;
+  }
+  function offerPdf(pages) {
+    if (!ui || i < 0 || STEPS[i].auto !== exportTechbook) return;
+    var a = ui.card.querySelector('#mtAction');
+    a.hidden = false; a.textContent = 'Open the techbook PDF ↗';
+    a.onclick = function () { root.open(pdfUrl, '_blank'); };
+    ui.card.querySelector('#mtBody').textContent = 'Your ' + pages + '-page techbook is ready, built from live data a moment ago. Open it in a new tab, or press Next to continue.';
+    ui.live.textContent = 'Techbook PDF ready.';
+    if (auto && !paused) togglePause();
+    call(function () { a.focus({ preventScroll: true }); });
+  }
   function askMuse() { var i = $('#museaiInput'); var q = i && i.value ? i.value : ASK; call(function () { root.MuseAgent.ask(q); }); }
 
   // secs: how long the step stays up in auto-play (null = wait for the viewer).
@@ -30,15 +63,15 @@
     { secs: 10, title: 'Incidents that teach', body: 'Blameless post-mortems with impact, timeline, root cause and owned action items. Here: everything that went wrong at the Ray-Ban Meta Gen 3 launch, and what was changed so it can\'t happen twice.',
       before: function () { go('incidents'); setTimeout(function () { call(function () { root.MuseIncidents.query('Ray-Ban'); }); }, 150); }, target: ['#incidentsHost .mi-layout', '#incidentsHost'], wait: 500 },
     { secs: 9, title: 'No more double-booking', body: 'Muse Schedule puts rooms, circuits, encoders, trucks and crew on one timeline. Conflicts are caught as you book, with one-click fixes.',
-      before: function () { go('schedule'); setTimeout(function () { call(function () { root.MuseSchedule.panel('conflicts'); }); }, 250); }, target: ['#view-schedule [class*="sc-conf"]', '#view-schedule [class*="sc-kpi"]', '#view-schedule'], wait: 600 },
+      before: function () { go('schedule'); setTimeout(function () { call(function () { root.MuseSchedule.panel('conflicts'); }); }, 250); }, target: ['#view-schedule .sc-panel', '#view-schedule .sc-kpis', '#view-schedule'], wait: 600 },
     { secs: 16, title: 'Ask Muse anything', body: 'Muse is the live broadcast and streaming agent. It reads every show, stream, incident and booking through tools, cites what it found and proposes changes for a human to confirm. It is answering this one live.',
       before: function () { go('dashboard'); call(function () { if (!root.museaiOpen) root.toggleMuseAi(); }); setTimeout(function () { var i = $('#museaiInput'); if (i) i.value = ASK; }, 200); },
       target: ['#museaiDrawer'], auto: askMuse, action: { label: 'Ask Muse now', run: askMuse } },
     { secs: 8, title: 'Bookings, per show', body: 'Every production sees its own bookings, conflicts and crew labor, reconciled against timecards and posted to the cost report.',
       before: function () { closeMuse(); openShow('museailaunch', 'bookings'); }, target: ['#projPane-museailaunch', '#view-museailaunch'], wait: 700 },
-    { secs: 8, title: 'The techbook, always live', body: 'One click exports the full technical book for a show (locations, departments, pack list, power, fiber, crew) straight from live data.',
+    { secs: 11, title: 'The techbook, always live', body: 'One click builds the full technical book for a show (locations, departments, pack list, power, fiber, crew) as a PDF, straight from live data. Exporting it for you now.',
       before: function () { openShow('museaitour', 'overview'); call(function () { scrollTo(0, 0); }); }, target: ['#view-museaitour button[onclick^="downloadTechbook"]', '#view-museaitour'], wait: 600,
-      action: { label: 'Export techbook', run: function () { call(function () { root.downloadTechbook('museaitour'); }); } } },
+      auto: exportTechbook, action: { label: 'Export techbook', run: function () { exportTechbook(openPdfTab()); } } },
     { secs: null, title: 'That\'s Muse Live', body: 'Plan, stream, schedule and learn from every show, with Muse on comms. Keep exploring: you\'re in a read-only guest session, so nothing you change affects anyone else.',
       before: function () { go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: [],
       action: { label: 'How it\'s built', run: function () { location.href = '/about'; } } }
@@ -96,12 +129,16 @@
     var s = STEPS[i], el = targetEl(s), card = ui.card, spot = ui.spot, pad = 8;
     var vw = root.innerWidth, vh = root.innerHeight;
     if (!el) { spot.className = 'mt-spot is-none'; card.style.left = Math.max(16, (vw - card.offsetWidth) / 2) + 'px'; card.style.top = Math.max(16, (vh - card.offsetHeight) / 2) + 'px'; return; }
+    // The cut-out follows the target's own box and corner radius; parts outside the viewport just run off-screen.
     var r = el.getBoundingClientRect();
-    var top = Math.max(4, r.top - pad), left = Math.max(4, r.left - pad), w = Math.min(vw - left - 4, r.width + pad * 2), h = Math.min(vh - top - 4, r.height + pad * 2);
+    var top = r.top - pad, left = r.left - pad, w = r.width + pad * 2, h = r.height + pad * 2;
     spot.className = 'mt-spot'; spot.style.top = top + 'px'; spot.style.left = left + 'px'; spot.style.width = w + 'px'; spot.style.height = h + 'px';
+    var rad = parseFloat(getComputedStyle(el).borderTopLeftRadius) || (el.firstElementChild && parseFloat(getComputedStyle(el.firstElementChild).borderTopLeftRadius)) || 0; // square wrapper of rounded cards → use the cards' radius
+    spot.style.borderRadius = (rad + pad) + 'px';
+    var vTop = Math.max(0, top), vBot = Math.min(vh, top + h);
     var cw = card.offsetWidth, ch = card.offsetHeight, ct, cl = Math.min(Math.max(16, left), vw - cw - 16);
-    if (top + h + 12 + ch < vh) ct = top + h + 12;
-    else if (top - 12 - ch > 0) ct = top - 12 - ch;
+    if (vBot + 12 + ch < vh) ct = vBot + 12;
+    else if (vTop - 12 - ch > 0) ct = vTop - 12 - ch;
     else { ct = vh - ch - 16; cl = vw - cw - 16; } // tall target: park the card in the bottom-right corner
     card.style.top = ct + 'px'; card.style.left = cl + 'px';
   }

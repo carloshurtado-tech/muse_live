@@ -14,6 +14,7 @@
   function go(view) { call(function () { root.navGo ? root.navGo(view) : root.switchView(view); }); }
   function openShow(key, tab) { call(function () { root.projSubTab[key] = tab; }); go(key); call(function () { root.setProjTab(key, tab); }); }
   function closeMuse() { call(function () { if (root.museaiOpen) root.toggleMuseAi(); }); }
+  function closeOmni() { call(function () { if (root.omniDrawerOpen) root.closeOmniDrawer(); }); }
   var ASK = 'What happened at the Ray-Ban event, and what did we change afterwards?';
   /* Techbook PDF → a new tab. Browsers only allow new tabs from a recent click, so a click reserves the tab
      up front; in auto-play (no click) the card offers "Open the techbook PDF" once it's built. */
@@ -52,8 +53,8 @@
 
   // secs: how long the step stays up in auto-play (null = wait for the viewer).
   var STEPS = [
-    { secs: 7, title: 'Welcome to Muse Live', body: 'An operations platform for live events that are broadcast and streamed. In the next 90 seconds: the live stream wall, one show\'s end-to-end streaming chain, incident post-mortems, the resource schedule and Muse, the AI agent on comms.',
-      before: function () { closeMuse(); go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: [] },
+    { secs: 7, title: 'Welcome to Muse Live', body: 'An operations platform for live events that are broadcast and streamed. In the next 90 seconds: the live stream wall, one show\'s end-to-end streaming chain, incident post-mortems, finance, Omni and Muse, the AI agent on comms.',
+      before: function () { closeMuse(); closeOmni(); go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: [] },
     { secs: 9, title: 'Today, at a glance', body: 'What is on air right now, live viewers, shows at risk and open incidents. Every number is a shortcut into the detail.',
       before: function () { go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: ['#dashHome', '#view-dashboard section'] },
     { secs: 10, title: 'Every live stream, one wall', body: 'Each show\'s program feed with end-to-end health: concurrent viewers, rebuffering ratio, glass-to-glass latency and errors. One glance tells an engineer where to look and an executive whether to worry.',
@@ -61,16 +62,16 @@
     { secs: 11, title: 'Inside a show: the streaming chain', body: 'Encoder → contribution (SRT) → cloud transcode → CDN → viewer, with health at every hop. Below it: the ABR encoding ladder, destinations, captions, loudness and the go-live checklist.',
       before: function () { openShow('museaitour', 'streaming'); }, target: ['.ms-chain', '.ms-wrap', '#view-museaitour'], wait: 900 },
     { secs: 10, title: 'Incidents that teach', body: 'Blameless post-mortems with impact, timeline, root cause and owned action items. Here: everything that went wrong at the Ray-Ban Meta Gen 3 launch, and what was changed so it can\'t happen twice.',
-      before: function () { go('incidents'); setTimeout(function () { call(function () { root.MuseIncidents.query('Ray-Ban'); }); }, 150); }, target: ['#incidentsHost .mi-layout', '#incidentsHost'], wait: 500 },
-    { secs: 9, title: 'No more double-booking', body: 'Muse Schedule puts rooms, circuits, encoders, trucks and crew on one timeline. Conflicts are caught as you book, with one-click fixes.',
-      before: function () { go('schedule'); setTimeout(function () { call(function () { root.MuseSchedule.panel('conflicts'); }); }, 250); }, target: ['#view-schedule .sc-panel', '#view-schedule .sc-kpis', '#view-schedule'], wait: 600 },
+      before: function () { go('incidents'); setTimeout(function () { call(function () { root.MuseIncidents.query('Ray-Ban'); }); }, 150); }, target: ['#incidentsHost'], top: true, wait: 500 },
+    { secs: 10, title: 'Always on budget', body: 'Finance runs on the same live data as the show: budget against actuals, purchase orders, invoices and vendor payments. Producers stay on budget, vendors get paid on time, and everyone sees the same numbers.',
+      before: function () { go('finance'); }, target: ['#view-finance'], top: true, wait: 600 },
     { secs: 16, title: 'Ask Muse anything', body: 'Muse is the live broadcast and streaming agent. It reads every show, stream, incident and booking through tools, cites what it found and proposes changes for a human to confirm. It is answering this one live.',
       before: function () { go('dashboard'); call(function () { if (!root.museaiOpen) root.toggleMuseAi(); }); setTimeout(function () { var i = $('#museaiInput'); if (i) i.value = ASK; }, 200); },
       target: ['#museaiDrawer'], auto: askMuse, action: { label: 'Ask Muse now', run: askMuse } },
-    { secs: 8, title: 'Bookings, per show', body: 'Every production sees its own bookings, conflicts and crew labor, reconciled against timecards and posted to the cost report.',
-      before: function () { closeMuse(); openShow('museailaunch', 'bookings'); }, target: ['#projPane-museailaunch', '#view-museailaunch'], wait: 700 },
+    { secs: 10, title: 'Omni: every conversation, per show', body: 'Every email, Teams chat and TOC alert about a show lands in its Omni, linked to the production, purchase order or incident it is about. Nothing gets dropped between inboxes, and everyone on the show is informed from one place.',
+      before: function () { closeMuse(); call(function () { root.openOmniForProject('museaitour'); }); }, target: ['#omniDrawer'], wait: 700 },
     { secs: 11, title: 'The techbook, always live', body: 'One click builds the full technical book for a show (locations, departments, pack list, power, fiber, crew) as a PDF, straight from live data. Exporting it for you now.',
-      before: function () { openShow('museaitour', 'overview'); call(function () { scrollTo(0, 0); }); }, target: ['#view-museaitour button[onclick^="downloadTechbook"]', '#view-museaitour'], wait: 600,
+      before: function () { closeOmni(); openShow('museaitour', 'overview'); call(function () { scrollTo(0, 0); }); }, target: ['#view-museaitour button[onclick^="downloadTechbook"]', '#view-museaitour'], wait: 600,
       auto: exportTechbook, action: { label: 'Export techbook', run: function () { exportTechbook(openPdfTab()); } } },
     { secs: null, title: 'That\'s Muse Live', body: 'Plan, stream, schedule and learn from every show, with Muse on comms. Keep exploring: you\'re in a read-only guest session, so nothing you change affects anyone else.',
       before: function () { go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: [],
@@ -105,7 +106,7 @@
     });
     document.addEventListener('keydown', onKey, true);
     document.addEventListener('visibilitychange', onVisibility);
-    root.addEventListener('resize', place); root.addEventListener('scroll', place, true);
+    root.addEventListener('resize', placeSoon); root.addEventListener('scroll', placeSoon, true);
     ui = { spot: spot, card: card, live: live, bar: card.querySelector('#mtProg i') };
     return ui;
   }
@@ -121,25 +122,32 @@
   function onVisibility() { if (auto && document.hidden && !paused) togglePause(); }
 
   function targetEl(s) {
-    for (var k = 0; k < (s.target || []).length; k++) { var el = $(s.target[k]); if (el && el.getClientRects().length && el.offsetParent !== null) return el; }
+    // offsetParent is null for position:fixed (the Muse and Omni drawers), so test the box instead.
+    for (var k = 0; k < (s.target || []).length; k++) { var el = $(s.target[k]); if (el && (el.offsetParent !== null || getComputedStyle(el).position === 'fixed') && el.getBoundingClientRect().width > 0) return el; }
     return null;
   }
+  var raf = 0;
+  function placeSoon() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; place(); }); }
   function place() {
     if (!ui || i < 0) return;
     var s = STEPS[i], el = targetEl(s), card = ui.card, spot = ui.spot, pad = 8;
     var vw = root.innerWidth, vh = root.innerHeight;
     if (!el) { spot.className = 'mt-spot is-none'; card.style.left = Math.max(16, (vw - card.offsetWidth) / 2) + 'px'; card.style.top = Math.max(16, (vh - card.offsetHeight) / 2) + 'px'; return; }
-    // The cut-out follows the target's own box and corner radius; parts outside the viewport just run off-screen.
-    var r = el.getBoundingClientRect();
-    var top = r.top - pad, left = r.left - pad, w = r.width + pad * 2, h = r.height + pad * 2;
+    // The cut-out is the target's own box and corners. No padding on a side the target already touches
+    // (a docked drawer), so the cut-out never runs past the window; off-screen parts of tall targets just clip.
+    var r = el.getBoundingClientRect(), cs = getComputedStyle(el), kid = el.firstElementChild ? getComputedStyle(el.firstElementChild) : null;
+    var pt = r.top <= 1 ? 0 : pad, pl = r.left <= 1 ? 0 : pad, pr = r.right >= vw - 1 ? 0 : pad, pb = r.bottom >= vh - 1 ? 0 : pad;
+    var top = r.top - pt, left = r.left - pl, w = r.width + pl + pr, h = r.height + pt + pb;
+    function rad(corner, a, b) { return ((parseFloat(cs[corner]) || (kid && parseFloat(kid[corner])) || 0) + Math.min(a, b)) + 'px'; } // square wrapper of rounded cards → the cards' radius
     spot.className = 'mt-spot'; spot.style.top = top + 'px'; spot.style.left = left + 'px'; spot.style.width = w + 'px'; spot.style.height = h + 'px';
-    var rad = parseFloat(getComputedStyle(el).borderTopLeftRadius) || (el.firstElementChild && parseFloat(getComputedStyle(el.firstElementChild).borderTopLeftRadius)) || 0; // square wrapper of rounded cards → use the cards' radius
-    spot.style.borderRadius = (rad + pad) + 'px';
+    spot.style.borderRadius = [rad('borderTopLeftRadius', pt, pl), rad('borderTopRightRadius', pt, pr), rad('borderBottomRightRadius', pb, pr), rad('borderBottomLeftRadius', pb, pl)].join(' ');
     var vTop = Math.max(0, top), vBot = Math.min(vh, top + h);
     var cw = card.offsetWidth, ch = card.offsetHeight, ct, cl = Math.min(Math.max(16, left), vw - cw - 16);
     if (vBot + 12 + ch < vh) ct = vBot + 12;
     else if (vTop - 12 - ch > 0) ct = vTop - 12 - ch;
-    else { ct = vh - ch - 16; cl = vw - cw - 16; } // tall target: park the card in the bottom-right corner
+    else if (left - 16 - cw > 16) { ct = vh - ch - 16; cl = left - 16 - cw; } // tall target with room beside it (a docked drawer): card next to it
+    else if (vw - (left + w) - 16 - cw > 16) { ct = vh - ch - 16; cl = left + w + 16; }
+    else { ct = vh - ch - 16; cl = vw - cw - 16; } // full-width tall target: park the card in the bottom-right corner
     card.style.top = ct + 'px'; card.style.left = cl + 'px';
   }
 
@@ -185,16 +193,29 @@
     c.querySelector('#mtPause').hidden = !timed;
     c.querySelector('#mtHint').hidden = !auto;
     ui.live.textContent = 'Step ' + (i + 1) + ' of ' + STEPS.length + ': ' + s.title + '. ' + s.body;
-    document.documentElement.classList.add('mt-on');
-    var wait = s.wait || 300;
+    var de = document.documentElement; de.classList.add('mt-on', 'mt-moving'); // hidden while the view changes, shown once placed
+    var wait = s.wait || 300, n0 = i;
     setTimeout(function () {
+      if (i !== n0) return;
       var el = targetEl(s);
-      if (el) call(function () { el.scrollIntoView({ block: el.offsetHeight > innerHeight * 0.6 ? 'start' : 'center', behavior: 'instant' }); });
-      setTimeout(function () { place(); var f = c.querySelector(timed ? '#mtPause' : '#mtNext'); call(function () { (f || c).focus({ preventScroll: true }); }); }, 60);
+      if (s.top) call(function () { scrollTo(0, 0); });
+      else if (el) call(function () { el.scrollIntoView({ block: el.offsetHeight > innerHeight * 0.6 ? 'start' : 'center', behavior: 'instant' }); });
+      settled(el).then(function () {
+        if (i !== n0) return;
+        if (s.top) call(function () { scrollTo(0, 0); });
+        place(); de.classList.remove('mt-moving');
+        var f = c.querySelector(timed ? '#mtPause' : '#mtNext'); call(function () { (f || c).focus({ preventScroll: true }); });
+      });
     }, wait);
     if (auto && s.auto) autoRun = setTimeout(function () { call(s.auto); }, wait + 900);
     if (timed) { remaining = s.secs * 1000; if (paused) bar(0); else run(); }
-    place();
+  }
+  // Resolves when the target (and anything inside it) has finished sliding or fading in, so the
+  // cut-out is measured once, at rest. Capped so a looping animation can't stall the tour.
+  function settled(el) {
+    var anims = []; try { anims = el ? el.getAnimations({ subtree: true }).filter(function (a) { return a.effect && a.effect.getTiming().iterations !== Infinity; }) : []; } catch (e) {}
+    var done = Promise.all(anims.map(function (a) { return a.finished.catch(function () {}); }));
+    return Promise.race([done, new Promise(function (r) { setTimeout(r, 900); })]).then(function () { return new Promise(function (r) { requestAnimationFrame(function () { r(); }); }); });
   }
   function start(opts) {
     auto = !!(opts && opts.auto); paused = false;
@@ -206,8 +227,9 @@
     if (ui) { ui.spot.remove(); ui.card.remove(); ui.live.remove(); ui = null; }
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('visibilitychange', onVisibility);
-    root.removeEventListener('resize', place); root.removeEventListener('scroll', place, true);
-    document.documentElement.classList.remove('mt-on');
+    root.removeEventListener('resize', placeSoon); root.removeEventListener('scroll', placeSoon, true);
+    cancelAnimationFrame(raf); raf = 0;
+    document.documentElement.classList.remove('mt-on', 'mt-moving');
     if (lastFocus && lastFocus.focus) call(function () { lastFocus.focus(); });
   }
 

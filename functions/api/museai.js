@@ -130,7 +130,7 @@ const TOOLS = [
   }, ['query']),
   fn('open_in_app', 'Navigate the user\'s Muse Live window. Either a production tab (production + tab), a top-level view, or an incident. This only changes what is on screen.', {
     production: { type: 'string', description: 'Production key or name, for a production tab.' },
-    tab: { type: 'string', enum: ['overview', 'ops', 'streaming', 'survey', 'finance', 'bookings', 'schedule', 'travel', 'crew', 'vendors', 'tracking', 'workflow', 'packlist', 'omni'] },
+    tab: { type: 'string', enum: ['overview', 'ops', 'streaming', 'survey', 'finance', 'schedule', 'travel', 'crew', 'vendors', 'tracking', 'workflow', 'packlist', 'omni'] },
     view: { type: 'string', enum: ['dashboard', 'streams', 'incidents', 'schedule', 'kb', 'engrequests', 'personnel', 'finance', 'portal', 'comms', 'equipment', 'telemetry', 'vendors'] },
     incident: { type: 'string', description: 'Optional incident id to open in Incident Reports.' },
   }),

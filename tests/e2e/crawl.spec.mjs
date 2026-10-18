@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { signIn } from './helpers.mjs';
 
 const VIEWS = ['streams', 'incidents', 'dashboard', 'kb', 'schedule', 'engrequests', 'personnel', 'finance', 'portal', 'comms', 'equipment', 'telemetry', 'vendors'];
-const TABS = ['overview', 'ops', 'streaming', 'survey', 'finance', 'bookings', 'schedule', 'travel', 'crew', 'vendors', 'tracking', 'workflow', 'packlist', 'omni'];
+const TABS = ['overview', 'ops', 'streaming', 'survey', 'finance', 'schedule', 'travel', 'crew', 'vendors', 'tracking', 'workflow', 'packlist', 'omni'];
 const PRODUCTIONS = ['museaitour', 'raybangen3', 'orion', 'museailaunch', 'whatsapp', 'igcreators', 'charm'];
 
 test('every top-level view renders without errors (light + dark)', async ({ page }) => {

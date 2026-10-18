@@ -12,7 +12,7 @@ const MAX_MS = 31000;
 const DEFAULT_BASE = 'https://api.meta.ai/v1';
 const MODEL = 'muse-voice-transcribe-1.0';
 // Words the recognizer would otherwise mis-hear on comms.
-const KEYWORDS = ['Muse', 'Muse Live', 'Muse AI', 'World Tour', 'Muse AI World Tour', 'Creator Week', 'Launch Keynote', 'Ray-Ban', 'Ray-Ban Meta', 'Orion', 'MetLife', 'WhatsApp', 'Instagram', 'Charm', 'LlamaCon',
+const KEYWORDS = ['Muse', 'Muse Live', 'Muse AI', 'World Tour', 'Muse AI World Tour', 'Creator Week', 'Launch Keynote', 'Ray-Ban', 'Ray-Ban Meta', 'Orion', 'Hacker Square', 'WhatsApp', 'Instagram', 'Charm', 'LlamaCon',
   'PCR', 'ACR', 'CRK', 'REMI', 'EVS', 'IFB', 'RVON', 'LiveU', 'SRT', 'HLS', 'CDN', 'MediaLive', 'Makito', 'techbook'];
 
 function json(body, status = 200) {

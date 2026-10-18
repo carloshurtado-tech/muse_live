@@ -62,7 +62,7 @@
         "{{Infobox equipment\n| name = SMPTE ST 2110\n| type = Essence-over-IP suite\n| department = TX\n| format = 2110-10/-20/-30/-40 + 2059 PTP\n}}\nPlant format on modern trucks. Video, audio, and ancillary on separate flows. Timing is [[Troubleshooting:2110 PTP unlocked|PTP (ST 2059)]]. Leaf: [[Cisco Catalyst 9300]]. Do not duplicate the live hop chain here — open Broadcast Ops for the path; this page is the spec.\n\n== Related ==\n* [[TAC-12 fiber]]\n* [[Troubleshooting:No picture at TOC]]"),
 
       row('', 'TAC-12 fiber', 'equipment', 'TX', ['Equipment', 'Fiber', 'TX'],
-        "{{Infobox equipment\n| name = TAC-12 SMPTE fiber\n| type = Ruggedized 12-strand\n| department = TX\n| connector = expanded-beam / SMPTE hybrid\n}}\nCompound backbone between truck bulkhead and venue. '''Caps on immediately. Photograph both ends before unmate.''' Procedure: [[Fiber bulkhead strike]]. Pin damage: [[Repair:TAC-12 bulkhead pin damage]]. Schematic note: [[Muse AI World Tour MetLife signal path]]."),
+        "{{Infobox equipment\n| name = TAC-12 SMPTE fiber\n| type = Ruggedized 12-strand\n| department = TX\n| connector = expanded-beam / SMPTE hybrid\n}}\nCompound backbone between truck bulkhead and venue. '''Caps on immediately. Photograph both ends before unmate.''' Procedure: [[Fiber bulkhead strike]]. Pin damage: [[Repair:TAC-12 bulkhead pin damage]]. Schematic note: [[Muse AI World Tour finale signal path (MPK)]]."),
 
       row('', "LiveU LU800", 'equipment', 'TX', ['Equipment', 'TX'],
         "{{Infobox equipment\n| name = LiveU LU800\n| manufacturer = LiveU LU800\n| type = Bonded cellular encoder\n| department = TX\n| power = 12–19 V DC, do not cycle on air\n| connector = SDI in, bonded LTE/5G\n| barcode = MUSE-TX-LU800\n}}\nBonded contribution. Watch Mbps at TOC. If '''< 12 Mbps for 8 s''', TOC hits backup — do not power-cycle mid-hit. [[LiveU LU800 failover]] · [[Repair:LiveU LU800 under 12 Mbps]] · [[Manual:LiveU LU800]].", { barcode: 'MUSE-TX-LU800' }),
@@ -134,7 +134,7 @@
 
       /* ---- Troubleshooting ---- */
       row('Troubleshooting', 'No picture at TOC', 'troubleshooting', 'Cameras', ['Troubleshooting', 'Cameras', 'TOC'],
-        "{{Hatnote|Start at the camera, not the TOC monitor.}}\n\n== Tree ==\n# '''Any raster at the truck?''' If no → power / CCU. If yes → path.\n# '''CCU LINK green?''' If no: reseat fiber, [[Sony HDC-5500 power-up]], [[Repair:Sony HDC-5500 CCU no LINK]].\n# '''Encoder bitrate healthy?''' If no: [[LiveU LU800 failover]]. If yes: TOC router / Harmonic XOS / 2110 flow.\n# '''PTP locked?''' If no: [[Troubleshooting:2110 PTP unlocked]].\n# Confirm on [[Leader LV5600]] before calling the camera \"dead.\"\n\nRelated: [[Sony HDC-5500]], [[Muse AI World Tour MetLife signal path]]."),
+        "{{Hatnote|Start at the camera, not the TOC monitor.}}\n\n== Tree ==\n# '''Any raster at the truck?''' If no → power / CCU. If yes → path.\n# '''CCU LINK green?''' If no: reseat fiber, [[Sony HDC-5500 power-up]], [[Repair:Sony HDC-5500 CCU no LINK]].\n# '''Encoder bitrate healthy?''' If no: [[LiveU LU800 failover]]. If yes: TOC router / Harmonic XOS / 2110 flow.\n# '''PTP locked?''' If no: [[Troubleshooting:2110 PTP unlocked]].\n# Confirm on [[Leader LV5600]] before calling the camera \"dead.\"\n\nRelated: [[Sony HDC-5500]], [[Muse AI World Tour finale signal path (MPK)]]."),
 
       row('Troubleshooting', 'Truck voltage sag', 'troubleshooting', 'Power', ['Troubleshooting', 'Power', 'Truck'],
         "== Tree ==\n# '''Shore vs gen?''' Shore: venue electrician. Gen: fuel + load share.\n# '''UPS online?''' Ride through on [[APC Smart-UPS SRT 8kVA UPS]]. If UPS < 40% load-shed '''RF first'''.\n# Do not transfer gens during a hit unless GNG is already HOLD.\n# After: [[Shore to gen transfer]] notes in the log.\n\nWeather: [[GNG weather hold]]."),
@@ -159,7 +159,7 @@
 
       /* ---- Procedures ---- */
       row('', 'Fiber bulkhead strike', 'procedure', 'TX', ['Procedures', 'Fiber', 'TX'],
-        "{{Procedure}}\n\n# Confirm GNG is '''HOLD''' ([[GNG weather hold]]).\n# Cap live TAC-12 at the truck bulkhead.\n# Photograph both ends before unmate.\n# Dust caps on immediately.\n# Log strand IDs in PackList.\n# Muse / TOC: \"bulkhead struck, dark.\"\n\nIf pins are bent: [[Repair:TAC-12 bulkhead pin damage]]. Path: [[Muse AI World Tour MetLife signal path]]."),
+        "{{Procedure}}\n\n# Confirm GNG is '''HOLD''' ([[GNG weather hold]]).\n# Cap live TAC-12 at the truck bulkhead.\n# Photograph both ends before unmate.\n# Dust caps on immediately.\n# Log strand IDs in PackList.\n# Muse / TOC: \"bulkhead struck, dark.\"\n\nIf pins are bent: [[Repair:TAC-12 bulkhead pin damage]]. Path: [[Muse AI World Tour finale signal path (MPK)]]."),
 
       row('', 'RF 200 kHz clash response', 'procedure', 'RF', ['Procedures', 'RF'],
         "{{Procedure}}\n\n# Open Broadcast Ops → RF.\n# Identify overlapping TX within 200 kHz.\n# Park the lower-priority service +200 kHz or to spare.\n# Recheck license note.\n# Re-scan. If still hot, drop to wired IFB.\n# Log incident with both frequencies.\n\nGear: [[Shure Axient Digital AD4Q + AD1]]. Tree: [[Troubleshooting:RF 200 kHz clash]]."),
@@ -180,7 +180,7 @@
         "{{Procedure}}\n\n# GNG HOLD if transferring during occupied PCR.\n# UPS must be online ([[APC Smart-UPS SRT 8kVA UPS]]).\n# Transfer, confirm phases, then release HOLD.\n# If sag continues: [[Troubleshooting:Truck voltage sag]]."),
 
       /* ---- Specs / schematic / incidents ---- */
-      row('', 'Muse AI World Tour MetLife signal path', 'spec', 'TX', ['Specs', 'Fiber', 'TX'],
+      row('', 'Muse AI World Tour finale signal path (MPK)', 'spec', 'TX', ['Specs', 'Fiber', 'TX'],
         "{{Hatnote|Hop chain lives in Broadcast Ops for Muse AI World Tour. Do not duplicate it here.}}\n\nOpen the live path on the production → Broadcast Ops tab. This page only records exceptions and fiber discipline ([[Fiber bulkhead strike]], [[TAC-12 fiber]], [[Cisco Catalyst 9300]]).", { show: 'museaitour' }),
 
       row('', 'RF clash — Muse AI World Tour compound (demo)', 'incident', 'RF', ['Incidents', 'RF'],

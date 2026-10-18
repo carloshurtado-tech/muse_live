@@ -9,7 +9,7 @@
 
 /* ---------------- venue & origin presets ---------------- */
 var TRK_VENUES={
- museaitour:{label:"Hard Rock Stadium · Miami",lat:25.958,lng:-80.2389},
+ museaitour:{label:"Meta HQ · Hacker Square, Menlo Park",lat:37.4847,lng:-122.1477},
  raybangen3:{label:"Meta HQ · Menlo Park",lat:37.4848,lng:-122.1484},
  orion:{label:"Levi's Stadium · Santa Clara",lat:37.4032,lng:-121.9697},
  museailaunch:{label:"Meta NYC · Studio M1",lat:40.7536,lng:-74.0007},
@@ -484,9 +484,9 @@ var TX_FLOW=['Hold','Booked','Line-Up','Live','Complete'];
 
 var workOrders=[
  {id:'WO-2641',prod:'museaitour',desc:'IBC Compound Power Distro',res:'Aggreko 400A + spider boxes',cost:48200,status:'Confirmed'},
- {id:'WO-2644',prod:'museaitour',desc:'Fiber Pull — Hard Rock ring',res:'LTN field crew ×6',cost:36750,status:'In Progress'},
- {id:'WO-2668',prod:'museaitour',desc:'MetLife Final · Fiber 100–102 TAC-12 plant',res:'Meta Field Ops fiber crew',cost:28500,status:'Confirmed'},
- {id:'WO-2669',prod:'museaitour',desc:'MetLife Final · HBS power + UPS in-line',res:'HBS + Muse Live power',cost:18400,status:'Confirmed'},
+ {id:'WO-2644',prod:'museaitour',desc:'Fiber Pull — MPK campus ring',res:'LTN field crew ×6',cost:36750,status:'In Progress'},
+ {id:'WO-2668',prod:'museaitour',desc:'MPK Finale · Fiber 100–102 TAC-12 plant',res:'Meta Field Ops fiber crew',cost:28500,status:'Confirmed'},
+ {id:'WO-2669',prod:'museaitour',desc:'MPK Finale · campus power + UPS in-line',res:'MPK Facilities + Muse Live power',cost:18400,status:'Confirmed'},
  {id:'WO-2650',prod:'orion',desc:'Venue Power Survey',res:'Engineering survey team',cost:12400,status:'Draft'},
  {id:'WO-2652',prod:'museailaunch',desc:'Studio M1 Lighting Rig',res:'House LD + 4 electrics',cost:29800,status:'Confirmed'},
  {id:'WO-2657',prod:'igcreators',desc:'Float Cam Mounts ×6',res:'Rigging crew + fab shop',cost:18650,status:'In Progress'},
@@ -521,26 +521,26 @@ var TX_RES={
 var TX_TYPE_TAG={'Satellite':'SAT','Fiber':'FIBER',"LiveU LU800":'LIVEU','Router':'RTR','Cloud':'CLOUD'};
 
 var txBookings=[
- // ---- Muse AI World Tour 2026 — multi-path contribution out of Hard Rock + Zócalo ----
- {id:'TX-121',prod:'museaitour',src:'Hard Rock Stadium',res:'LTN Fiber A',dst:'Meta Miami',bw:600,cost:28400,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
- {id:'TX-122',prod:'museaitour',src:'Hard Rock Stadium',res:'Galaxy-19 Tp 12',dst:'Meta NYC TOC',bw:72,cost:9600,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
- {id:'TX-127',prod:'museaitour',src:'Hard Rock Stadium',res:'AT&T Vyvx 10G',dst:'IBC — Dallas',bw:4800,cost:51200,start:'2026-07-12T10:00',end:'2026-07-12T23:00',status:'Live'},
- {id:'TX-128',prod:'museaitour',src:'Hard Rock Stadium',res:"LiveU LU800",dst:'Meta Miami',bw:110,cost:5200,start:'2026-07-12T11:00',end:'2026-07-12T21:00',status:'Line-Up'},
- {id:'TX-129',prod:'museaitour',src:'Zócalo CDMX Set',res:'SES-11 Ku Tp 21',dst:'IBC — Dallas',bw:96,cost:14200,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Booked'},
- {id:'TX-130',prod:'museaitour',src:'Zócalo CDMX Set',res:"Harmonic XOS",dst:'Meta Miami',bw:180,cost:6800,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Live'},
- {id:'TX-131',prod:'museaitour',src:'IBC — Dallas',res:'IBC Nevion Fabric',dst:'Meta Cloud Ingest',bw:7200,cost:38400,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Live'},
- {id:'TX-132',prod:'museaitour',src:'IBC — Dallas',res:'Muse Live 2110 Spine',dst:'Meta Miami',bw:5400,cost:0,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Line-Up'},
- {id:'TX-133',prod:'museaitour',src:'IBC — Dallas',res:'AWS MediaConnect East',dst:'Meta Cloud Ingest',bw:8600,cost:21400,start:'2026-07-12T10:00',end:'2026-07-12T23:59',status:'Booked'},
- // MetLife NYNJ → Meta Miami (Evertz 570IP + LiveU B/U)
- {id:'TX-141',prod:'museaitour',src:'MetLife · Presentation Studio Cam 1',res:"Harmonic XOS (ENC1)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-142',prod:'museaitour',src:'MetLife · Presentation Studio Cam 2',res:"Harmonic XOS (ENC2)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-143',prod:'museaitour',src:'MetLife · Presentation Studio Cam 3',res:"Harmonic XOS (ENC3)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-144',prod:'museaitour',src:'MetLife · Presentation Studio Cam 4',res:"Harmonic XOS (ENC4)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-145',prod:'museaitour',src:'MetLife · Outside Announce Cam 1',res:"Harmonic XOS (ENC5)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-146',prod:'museaitour',src:'MetLife · Outside Announce Cam 2',res:"Harmonic XOS (ENC6)",dst:"Meta Miami · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
- {id:'TX-147',prod:'museaitour',src:'MetLife · Presentation Studio Cam 2',res:"LiveU LU800",dst:'Meta Miami · MIA Spare',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
- {id:'TX-148',prod:'museaitour',src:'MetLife · Outside Announce Cam 1',res:"LiveU LU800 #2",dst:'Meta Miami',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
- {id:'TX-149',prod:'museaitour',src:"Meta Miami · Harmonic XOS Special 1–4",res:"Harmonic XOS",dst:'MetLife FlyPack Dec 1–4',bw:120,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ // ---- Muse AI World Tour 2026 — multi-path contribution out of Meta Austin + Meta Mexico City ----
+ {id:'TX-121',prod:'museaitour',src:'Meta Austin',res:'LTN Fiber A',dst:'Meta NYC TOC',bw:600,cost:28400,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
+ {id:'TX-122',prod:'museaitour',src:'Meta Austin',res:'Galaxy-19 Tp 12',dst:'Meta NYC TOC',bw:72,cost:9600,start:'2026-07-12T12:00',end:'2026-07-12T20:00',status:'Booked'},
+ {id:'TX-127',prod:'museaitour',src:'Meta Austin',res:'AT&T Vyvx 10G',dst:'Tour IBC — NYC',bw:4800,cost:51200,start:'2026-07-12T10:00',end:'2026-07-12T23:00',status:'Live'},
+ {id:'TX-128',prod:'museaitour',src:'Meta Austin',res:"LiveU LU800",dst:'Meta NYC TOC',bw:110,cost:5200,start:'2026-07-12T11:00',end:'2026-07-12T21:00',status:'Line-Up'},
+ {id:'TX-129',prod:'museaitour',src:'Meta Mexico City Set',res:'SES-11 Ku Tp 21',dst:'Tour IBC — NYC',bw:96,cost:14200,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Booked'},
+ {id:'TX-130',prod:'museaitour',src:'Meta Mexico City Set',res:"Harmonic XOS",dst:'Meta NYC TOC',bw:180,cost:6800,start:'2026-07-12T12:00',end:'2026-07-12T22:00',status:'Live'},
+ {id:'TX-131',prod:'museaitour',src:'Tour IBC — NYC',res:'IBC Nevion Fabric',dst:'Meta Cloud Ingest',bw:7200,cost:38400,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Live'},
+ {id:'TX-132',prod:'museaitour',src:'Tour IBC — NYC',res:'Muse Live 2110 Spine',dst:'Meta NYC TOC',bw:5400,cost:0,start:'2026-07-12T10:00',end:'2026-07-12T23:30',status:'Line-Up'},
+ {id:'TX-133',prod:'museaitour',src:'Tour IBC — NYC',res:'AWS MediaConnect East',dst:'Meta Cloud Ingest',bw:8600,cost:21400,start:'2026-07-12T10:00',end:'2026-07-12T23:59',status:'Booked'},
+ // MPK Finale → Meta NYC TOC (Evertz 570IP + LiveU B/U)
+ {id:'TX-141',prod:'museaitour',src:'MPK · Presentation Studio Cam 1',res:"Harmonic XOS (ENC1)",dst:"Meta NYC TOC · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-142',prod:'museaitour',src:'MPK · Presentation Studio Cam 2',res:"Harmonic XOS (ENC2)",dst:"Meta NYC TOC · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-143',prod:'museaitour',src:'MPK · Presentation Studio Cam 3',res:"Harmonic XOS (ENC3)",dst:"Meta NYC TOC · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-144',prod:'museaitour',src:'MPK · Presentation Studio Cam 4',res:"Harmonic XOS (ENC4)",dst:"Meta NYC TOC · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-145',prod:'museaitour',src:'MPK · Outside Announce Cam 1',res:"Harmonic XOS (ENC5)",dst:"Meta NYC TOC · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-146',prod:'museaitour',src:'MPK · Outside Announce Cam 2',res:"Harmonic XOS (ENC6)",dst:"Meta NYC TOC · Harmonic XOS",bw:50,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
+ {id:'TX-147',prod:'museaitour',src:'MPK · Presentation Studio Cam 2',res:"LiveU LU800",dst:'Meta NYC TOC · Spare',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
+ {id:'TX-148',prod:'museaitour',src:'MPK · Outside Announce Cam 1',res:"LiveU LU800 #2",dst:'Meta NYC TOC',bw:80,cost:4200,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Line-Up'},
+ {id:'TX-149',prod:'museaitour',src:"Meta NYC TOC · Harmonic XOS Special 1–4",res:"Harmonic XOS",dst:'MPK FlyPack Dec 1–4',bw:120,cost:0,start:'2026-07-19T10:00',end:'2026-07-19T23:00',status:'Booked'},
  // ---- Ray-Ban Meta Gen 3 Launch — Meta HQ, Menlo Park ----
  {id:'TX-118',prod:'raybangen3',src:'Meta HQ · Classroom Stage',res:"LiveU LU800 #2",dst:'Meta MPK TOC',bw:80,cost:5200,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Booked'},
  {id:'TX-119',prod:'raybangen3',src:'Meta HQ · Classroom Stage',res:"LiveU LU800",dst:'Meta MPK TOC',bw:45,cost:1800,start:'2026-06-26T06:00',end:'2026-06-26T13:00',status:'Hold'},
@@ -933,7 +933,7 @@ function financePaneHTML(key){var p=productions[key];var conf=txConflicts();
     '<div class="relative flex items-center justify-center flex-wrap gap-2">'+finViewStrip(key)+
       '<span class="text-[9px] mono text-gray-400 sm:absolute sm:right-0 sm:top-1/2 sm:-translate-y-1/2">FY2025&ndash;26 · production cost control</span></div>'+
     finToolbarHTML(key)+
-    (_fv==='report'?finAnalyticsHTML(key)+costReportPaneHTML(key):(_fv==='labor'?laborPaneHTML(key):(_fv==='timecards'?schedLaborPaneHTML(key):apTablePaneHTML(key)+_ledger)))+'</div>';
+    (_fv==='report'?finAnalyticsHTML(key)+costReportPaneHTML(key):(_fv==='labor'?laborPaneHTML(key):apTablePaneHTML(key)+_ledger))+'</div>';
 }
 
 /* ---------------- DASHBOARD SUMMARY ---------------- */
@@ -1180,7 +1180,7 @@ function buildMuseAiContext(){
     active_view:focus,
     active_production:focus?((productions[focus]&&productions[focus].name)||focus):null,
     how_to_read:{
-      techbook_fields:"Per-department technical book values (Audio console, Cameras model/count, Transmission Harmonic XOS map, Power HBS, RVON alphas, Comms, etc.) — this IS the show techbook.",
+      techbook_fields:"Per-department technical book values (Audio console, Cameras model/count, Transmission Harmonic XOS map, Power distro, RVON alphas, Comms, etc.) — this IS the show techbook.",
       packlist:'Shippable gear lines harvested from equipment + techbook fields.',
       fiber_plant:'TAC-12 trunks + TIA strand schedule (pos, signal, from/to, status).',
       crew:'Positions-first roster; name "(OPEN)" means unfilled.',
@@ -5386,7 +5386,7 @@ function npcInit(){loadNPCOnce();renderNPCAlert();}
    10. BROADCAST SCHEDULE — live programming grid across the five Meta Live channels:
        Facebook Live East / West, Instagram Live, WhatsApp Channels, Meta Horizon.
        Day / Week / Month / Year views, incl. the Muse AI World Tour window
-       (Jun 11 – Jul 19, Grand Finale at MetLife Stadium).
+       (Jun 11 – Jul 19 across Meta offices, Grand Finale at Meta HQ, Menlo Park).
    ================================================================================ */
 var BCAST_CHANNELS=[
  {id:'fb_e',name:'Facebook Live',feed:'East',tz:'ET',accent:'#0866FF'},
@@ -5412,7 +5412,7 @@ function wcPhase(d){
     if(day>=9&&day<=11)return 'Creator Showcases';
     if(day===14||day===15)return 'Semifinal Keynotes';
     if(day===18)return 'Community Day';
-    if(day===19)return 'Grand Finale · MetLife Stadium';
+    if(day===19)return 'Grand Finale · Meta HQ, Menlo Park';
     return null;}
   return null;}
 function wcMatchday(d){var p=wcPhase(d);return p&&p!=='REST'?p:null;}
@@ -5599,8 +5599,8 @@ var BCAST_YEAR_TENTPOLES={
  2:[['WhatsApp Business Summit — kickoff','news']],
  3:[['F8 Developer Conference','match']],
  4:[['Instagram Creator Week','ent'],['Meta Quest Gaming Showcase','match']],
- 5:[['Muse AI World Tour — Opening Keynote (Jun 11 · Estadio Azteca)','match'],['104 tour sessions live on Facebook, Instagram & Horizon','match']],
- 6:[['Muse AI World Tour — Regional Finals','match'],['THE GRAND FINALE — Jul 19 · MetLife Stadium, NY/NJ','match']],
+ 5:[['Muse AI World Tour — Opening Keynote (Jun 11 · Meta London, King\u2019s Cross)','match'],['104 tour sessions live on Facebook, Instagram & Horizon','match']],
+ 6:[['Muse AI World Tour — Regional Finals','match'],['THE GRAND FINALE — Jul 19 · Meta HQ, Menlo Park','match']],
  7:[['Ray-Ban Meta Gen 3 — launch livestream','ent']],
  8:[['Meta Connect 2026 — Keynote','match'],['Creator Series: new season premieres','novela']],
  9:[['Muse AI — fall feature drop','news']],
@@ -5723,7 +5723,7 @@ function getSurvey(key){var p=productions[key];
    Used by the live maps, site survey, overview and travel.
    ============================================================================ */
 var VENUES={
-  museaitour:{name:'Hard Rock Stadium',address:'347 Don Shula Dr, Miami Gardens, FL 33056',lat:25.9580,lng:-80.2389,zoom:15},
+  museaitour:{name:'Meta HQ · Hacker Square',address:'1 Hacker Way, Menlo Park, CA 94025',lat:37.4847,lng:-122.1477,zoom:16},
   raybangen3:{name:'Meta HQ — Menlo Park Campus',address:'1 Hacker Way, Menlo Park, CA 94025',lat:37.4848,lng:-122.1484,zoom:16},
   orion:{name:"Levi's Stadium",address:'4900 Marie P DeBartolo Way, Santa Clara, CA 95054',lat:37.4030,lng:-121.9698,zoom:15},
   museailaunch:{name:'Meta NYC · Hudson Yards — Studio M1',address:'50 Hudson Yards, New York, NY 10001',lat:40.7536,lng:-74.0007,zoom:16},
@@ -7864,7 +7864,7 @@ var comms=[
   subject:'RE: PO-88161 \u2014 ND1 Mobile Unit Confirmation',body:'Thanks \u2014 confirmed. Please coordinate load-in window with Riley Stanton (Tech Manager) for the IBC compound. Targeting Jul 8 07:00.',
   ts:'2026-06-15 10:02',linkType:'po',linkId:'PO-88161',prod:'museaitour',read:true,thread:'T-88161'},
  {id:'MSG-9026',channel:'email',dir:'in',priority:'high',from:'NEP Group <dispatch@nepgroup.com>',to:'Rowan Blake',
-  subject:'RE: PO-88161 \u2014 ND1 Mobile Unit Confirmation',body:'Driver dispatched from Pittsburgh. ETA Hard Rock compound Jul 8 06:40. ND1 will need 480V/200A at the mobile unit bay \u2014 confirming Aggreko has it staged before we arrive.',
+  subject:'RE: PO-88161 \u2014 ND1 Mobile Unit Confirmation',body:'Driver dispatched from Pittsburgh. ETA MPK compound Jul 8 06:40. ND1 will need 480V/200A at the mobile unit bay \u2014 confirming Aggreko has it staged before we arrive.',
   ts:'2026-06-16 07:55',linkType:'po',linkId:'PO-88161',prod:'museaitour',read:false,thread:'T-88161'},
 
  // ============ THREAD: INV-30377 ConEd overdue (finance escalation) ============
@@ -10822,105 +10822,6 @@ function laborPaneHTML(key){var p=productions[key];var L=ensureLabor(key);var cr
 }
 
 
-/* ===== Crew labor & timecards (Muse Schedule) ===== */
-/* ============================================================================
-   CREW LABOR & TIMECARDS — native, driven by Muse Schedule.
-     crew bookings in Muse Schedule × labor rates  →  estimate
-     approve timecards (actual hours, OT)           →  reconcile vs estimate
-     post labor                                     →  Production Labor (acct 20) in the cost report → EFC
-   ========================================================================== */
-function ensureSchedLabor(key){var p=productions[key];if(!p.schedLabor)p.schedLabor={timecards:[],approvedAt:null,posted:false};
-  var S=p.schedLabor;if(!S.timecards)S.timecards=[];return S;}
-
-/* ---- wage calc shared with the labor engine's tier logic ---- */
-function schedWage(r,hpd,days){var dh=r.dayHrs||10,o2=r.ot2after||12;
-  var stH=Math.min(hpd,dh),ot1H=Math.max(0,Math.min(hpd,o2)-dh),ot2H=Math.max(0,hpd-o2);
-  var perDay=stH*r.baseHr+ot1H*r.baseHr*(r.ot1x||1.5)+ot2H*r.baseHr*(r.ot2x||2);
-  return {wages:perDay*days,hours:hpd*days,otHours:(ot1H+ot2H)*days};}
-
-/* ---- estimate per crew slot: Muse Schedule bookings first, labor plan as fallback ---- */
-function schedLaborEstimate(key){var L=ensureLabor(key);var crew=getProjectCrew(key);
-  var bks=(typeof MuseSchedule!=='undefined')?MuseSchedule.byProduction(key):[];
-  var resName={};try{MuseSchedule.resources('crew').forEach(function(r){resName[r.id]=r.name;});}catch(e){}
-  return crew.map(function(s){var r=L.rates[s.pos]||laborDefaultRate(s.pos);var nm=(s.name||'').trim();
-    var mine=nm?bks.filter(function(b){return resName[b.res]===nm&&b.status!=='Released';}):[];
-    var hours=0,days={};mine.forEach(function(b){var h=(new Date(b.end)-new Date(b.start))/3600000;hours+=h;days[new Date(b.start).toDateString()]=1;});
-    var nd=Object.keys(days).length;var est,hpd,src;
-    if(hours>0){hpd=hours/nd;var w=schedWage(r,hpd,nd);var kit=(L.lines[s.id]&&L.lines[s.id].kit?(r.kit||0):0)*nd;
-      est={hours:Math.round(hours),days:nd,hpd:Math.round(hpd*10)/10,loaded:Math.round(w.wages*(1+(r.fringePct||0))+kit)};src='Muse Schedule';}
-    else{var ln=L.lines[s.id]||{days:L.defDays,hoursPerDay:L.defHours};var c=laborSlotCost(key,s);
-      est={hours:Math.round(c.hours),days:ln.days,hpd:ln.hoursPerDay,loaded:Math.round(c.total)};src='Labor plan';}
-    return {slot_id:s.id,role:s.pos,name:nm||'(open position)',union:r.union,source:src,est:est,rate:r};});}
-
-/* ---- approve timecards: actual hours land with real-world drift vs the estimate ---- */
-function schedApproveTimecards(key){var S=ensureSchedLabor(key);var L=ensureLabor(key);
-  S.timecards=schedLaborEstimate(key).map(function(e){var factor=0.9+Math.random()*0.35;
-    var aHpd=Math.max(1,Math.round(e.est.hpd*factor*10)/10);var w=schedWage(e.rate,aHpd,e.est.days);
-    var kit=(L.lines[e.slot_id]&&L.lines[e.slot_id].kit?(e.rate.kit||0):0)*e.est.days;
-    return {slot_id:e.slot_id,role:e.role,name:e.name,union:e.union,source:e.source,
-      scheduled_hours:e.est.hours,actual_hours:Math.round(w.hours),ot_hours:Math.round(w.otHours),
-      est_loaded:e.est.loaded,loaded_cost:Math.round(w.wages*(1+(e.rate.fringePct||0))+kit)};});
-  S.approvedAt=new Date().toISOString();S.posted=false;
-  stampEdit(key);renderProjectView(key);toast&&toast('Approved '+S.timecards.length+' timecards');}
-
-/* ---- post approved labor into the cost report (acct 20) ---- */
-function schedPostLabor(key){var S=ensureSchedLabor(key);if(!S.timecards.length)return;
-  var total=S.timecards.reduce(function(s,a){return s+a.loaded_cost;},0);
-  var id='INV-MS-'+key.toUpperCase().slice(0,5);var ex=null;
-  for(var i=0;i<finInvoices.length;i++){if(finInvoices[i].id===id){ex=finInvoices[i];break;}}
-  var today=(typeof finToday==='function')?finToday():new Date().toISOString().slice(0,10);
-  if(ex){ex.amount=Math.round(total);ex.acct='20';ex.ref='TIMECARDS-'+key.toUpperCase();ex.status='Approved';}
-  else finInvoices.push({id:id,prod:key,vendor:'Muse Schedule Payroll',ref:'TIMECARDS-'+key.toUpperCase(),amount:Math.round(total),
-    recd:today,due:today,status:'Approved',paidOn:'',acct:'20',docs:['MuseSchedule_'+key+'_timecards.csv']});
-  S.posted=true;saveOps();stampEdit(key);renderProjectView(key);
-  toast&&toast('Posted '+$fmt(total)+' crew labor to the cost report (acct 20)');}
-
-function schedLaborRecon(key){var S=ensureSchedLabor(key);var est=0,act=0,estH=0,actH=0,otH=0;
-  S.timecards.forEach(function(a){est+=(a.est_loaded||0);act+=(a.loaded_cost||0);
-    estH+=(a.scheduled_hours||0);actH+=(a.actual_hours||0);otH+=(a.ot_hours||0);});
-  return {est:est,act:act,delta:act-est,estH:estH,actH:actH,otH:otH};}
-
-/* ---- Bookings tab: Muse Schedule bookings + crew labor & timecards ---- */
-function bookingsTabBadge(key){try{var n=MuseSchedule.conflicts({prod:key}).length;return n?' <span class="text-red-500">●</span>':'';}catch(e){return '';}}
-function bookingsPaneHTML(key){
-  return '<div class="space-y-4">'+schedLaborPaneHTML(key)+'</div>';}
-function schedLaborPaneHTML(key){var S=ensureSchedLabor(key);var hasTc=S.timecards.length>0;
-  var est=schedLaborEstimate(key);var fromSched=est.filter(function(e){return e.source==='Muse Schedule';}).length;
-  var estTotal=est.reduce(function(s,e){return s+e.est.loaded;},0),estHrs=est.reduce(function(s,e){return s+e.est.hours;},0);
-  var th=function(t,a){return '<th class="p-1.5 text-[9px] font-bold uppercase tracking-wider text-gray-500 '+(a||'text-left')+'">'+t+'</th>';};
-  var head='<div class="flex flex-wrap items-center justify-between gap-2 mb-3"><div><h3 class="text-xs font-bold uppercase tracking-wider text-gray-600">Crew labor &amp; timecards</h3>'+
-    '<p class="text-[11px] text-gray-500 mt-0.5">'+est.length+' positions · '+estHrs+' scheduled hrs · estimate '+$fmt(estTotal)+' · '+fromSched+' from Muse Schedule bookings, the rest from the labor plan.</p></div>'+
-    '<div class="flex items-center gap-2">'+
-      '<button onclick="schedApproveTimecards(\''+key+'\')" class="text-[11px] font-bold rounded-full px-3.5 py-2 border text-blue-700 border-blue-200 hover:bg-blue-50">'+(hasTc?'Re-approve timecards':'Approve timecards')+'</button>'+
-      (hasTc?'<button onclick="schedPostLabor(\''+key+'\')" class="text-[11px] font-bold text-white rounded-full px-3.5 py-2 '+(S.posted?'bg-emerald-600':'bg-blue-600 hover:bg-blue-700')+'">'+(S.posted?'✓ Posted to cost report':'Post labor to cost report (acct 20)')+'</button>':'')+
-    '</div></div>';
-  var body;
-  if(hasTc){var rc=schedLaborRecon(key);
-    var rows=S.timecards.map(function(a){var d=a.loaded_cost-a.est_loaded;var hd=a.actual_hours-a.scheduled_hours;
-      return '<tr class="border-t border-gray-100">'+
-        '<td class="p-1.5"><span class="text-[11px] font-semibold text-gray-800">'+esc(a.role)+'</span>'+(a.name.indexOf('(open')<0?'<span class="text-[10px] text-gray-500"> · '+esc(a.name)+'</span>':'<span class="text-[10px] text-amber-600"> · open</span>')+'</td>'+
-        '<td class="p-1.5 text-[10px] text-gray-500">'+esc(a.source)+'</td>'+
-        '<td class="p-1.5 text-right mono text-[11px] text-gray-500">'+a.scheduled_hours+'</td>'+
-        '<td class="p-1.5 text-right mono text-[11px] '+(hd>0?'text-amber-700 font-semibold':'text-gray-700')+'">'+a.actual_hours+(a.ot_hours>0?' · '+a.ot_hours+' OT':'')+'</td>'+
-        '<td class="p-1.5 text-right mono text-[11px] text-gray-500">'+$fmt(a.est_loaded)+'</td>'+
-        '<td class="p-1.5 text-right mono text-[11px] text-gray-900">'+$fmt(a.loaded_cost)+'</td>'+
-        '<td class="p-1.5 text-right mono text-[11px] font-bold '+(d>0?'text-red-600':'text-emerald-700')+'">'+(d>0?'+'+$fmt(d):$fmt(d))+'</td></tr>';}).join('');
-    body='<div class="overflow-x-auto"><table class="w-full" style="min-width:640px"><thead><tr>'+th('Position')+th('Source')+th('Sched hrs','text-right')+th('Timecard hrs','text-right')+th('Estimate','text-right')+th('Actual','text-right')+th('Δ','text-right')+'</tr></thead><tbody>'+rows+
-      '<tr class="border-t-2 border-gray-300 font-bold"><td class="p-1.5 text-[11px] text-gray-800" colspan="2">Total · '+S.timecards.length+' timecards</td>'+
-      '<td class="p-1.5 text-right mono text-[11px]">'+rc.estH+'</td><td class="p-1.5 text-right mono text-[11px]">'+rc.actH+'</td>'+
-      '<td class="p-1.5 text-right mono text-[11px]">'+$fmt(rc.est)+'</td><td class="p-1.5 text-right mono text-[11px]">'+$fmt(rc.act)+'</td>'+
-      '<td class="p-1.5 text-right mono text-[11px] '+(rc.delta>0?'text-red-600':'text-emerald-700')+'">'+(rc.delta>0?'+'+$fmt(rc.delta):$fmt(rc.delta))+'</td></tr></tbody></table></div>'+
-      '<div class="mt-2 rounded-xl px-3 py-2 '+(rc.delta>0?'bg-red-50 border border-red-200':'bg-emerald-50 border border-emerald-200')+'"><span class="text-[11px] font-semibold '+(rc.delta>0?'text-red-800':'text-emerald-800')+'">'+
-        (rc.delta>0?'Timecards are running '+$fmt(rc.delta)+' over the estimate':'Timecards came in '+$fmt(Math.abs(rc.delta))+' under the estimate')+(rc.otH>0?' · '+rc.otH+' OT hrs':'')+'. '+(S.posted?'Posted to acct 20.':'Post to flow into the cost report\'s labor actuals.')+'</span></div>'+
-      (S.approvedAt?'<p class="text-[10px] mono text-gray-400 mt-1.5">timecards approved '+new Date(S.approvedAt).toLocaleString()+'</p>':'');
-  }else{
-    var rows2=est.map(function(e){return '<tr class="border-t border-gray-100"><td class="p-1.5"><span class="text-[11px] font-semibold text-gray-800">'+esc(e.role)+'</span><span class="text-[10px] text-gray-500"> · '+esc(e.name)+'</span></td>'+
-      '<td class="p-1.5 text-[10px] text-gray-500">'+esc(e.source)+'</td><td class="p-1.5 text-right mono text-[11px]">'+e.est.days+' d × '+e.est.hpd+' h</td><td class="p-1.5 text-right mono text-[11px]">'+$fmt(e.est.loaded)+'</td></tr>';}).join('');
-    body='<div class="overflow-x-auto"><table class="w-full" style="min-width:520px"><thead><tr>'+th('Position')+th('Source')+th('Scheduled','text-right')+th('Estimate','text-right')+'</tr></thead><tbody>'+rows2+'</tbody></table></div>'+
-      '<p class="text-[11px] text-gray-500 mt-2">Approve timecards after the show to reconcile actual hours and overtime against this estimate.</p>';
-  }
-  return '<div class="bg-white rounded-2xl p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+head+body+'</div>';
-}
 
 
 /* ===== Production schedule (robust) ===== */
@@ -12327,32 +12228,30 @@ function crewToggleColumn(key,ph){var p=productions[key];if(!p.crewMatrix)p.crew
    ============================================================ */
 var projLoc={}; /* key -> active location id (UI state) */
 var MAWT26_LOCATIONS=[
- {id:'ibc',      name:'IBC',                    venue:'Kay Bailey Hutchison Convention Center', city:'Dallas, TX, USA',            cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Chicago',     tzl:'CT',  lat:32.7743, lng:-96.8010,  role:'IBC \u00B7 Broadcast Hub', note:'Master control, central distribution & unilateral feeds'},
- {id:'metlife',  name:'MetLife Stadium',         venue:'MetLife Stadium · NYNJ',     city:'East Rutherford, NJ, USA',   cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:40.8135, lng:-74.0745,  role:'FINAL \u00B7 Jul 19 2026', note:'1 MetLife Stadium Dr · Meta Field Ops · Flypack Double Technical Cabin', address:'1 MetLife Stadium Dr, East Rutherford, NJ 07073'},
- {id:'attstad',  name:'AT&T Stadium',            venue:'AT&T Stadium',               city:'Arlington, TX, USA',         cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Chicago',     tzl:'CT',  lat:32.7473, lng:-97.0945,  role:'Semifinal Keynote \u00B7 9 sessions', note:'Dallas host city — most matches of any venue'},
- {id:'mbz',      name:'Mercedes-Benz Stadium',   venue:'Mercedes-Benz Stadium',      city:'Atlanta, GA, USA',           cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:33.7554, lng:-84.4010,  role:'Semifinal Keynote \u00B7 8 sessions', note:'Atlanta host city'},
- {id:'hardrock', name:'Hard Rock Stadium',       venue:'Hard Rock Stadium',          city:'Miami Gardens, FL, USA',     cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:25.9580, lng:-80.2389,  role:'Community Day \u00B7 7 sessions', note:'Miami host city'},
- {id:'sofi',     name:'SoFi Stadium',            venue:'SoFi Stadium',               city:'Inglewood, CA, USA',         cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Los_Angeles', tzl:'PT',  lat:33.9535, lng:-118.3392, role:'Regional Keynote \u00B7 8 sessions', note:'Los Angeles host city'},
- {id:'levis',    name:"Levi's Stadium",          venue:"Levi's Stadium",             city:'Santa Clara, CA, USA',       cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Los_Angeles', tzl:'PT',  lat:37.4032, lng:-121.9697, role:'6 sessions', note:'San Francisco Bay Area host city'},
- {id:'arrowhead',name:'Arrowhead Stadium',       venue:'GEHA Field at Arrowhead',    city:'Kansas City, MO, USA',       cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Chicago',     tzl:'CT',  lat:39.0489, lng:-94.4839,  role:'Regional Keynote \u00B7 6 sessions', note:'Kansas City host city'},
- {id:'nrg',      name:'NRG Stadium',             venue:'NRG Stadium',                city:'Houston, TX, USA',           cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Chicago',     tzl:'CT',  lat:29.6847, lng:-95.4107,  role:'7 sessions', note:'Houston host city'},
- {id:'lincoln',  name:'Lincoln Financial Field', venue:'Lincoln Financial Field',    city:'Philadelphia, PA, USA',      cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:39.9008, lng:-75.1675,  role:'6 sessions', note:'Philadelphia host city'},
- {id:'gillette', name:'Gillette Stadium',        venue:'Gillette Stadium',           city:'Foxborough, MA, USA',        cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York',    tzl:'ET',  lat:42.0909, lng:-71.2643,  role:'Regional Keynote \u00B7 7 sessions', note:'Boston host city'},
- {id:'lumen',    name:'Lumen Field',             venue:'Lumen Field',                city:'Seattle, WA, USA',           cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Los_Angeles', tzl:'PT',  lat:47.5952, lng:-122.3316, role:'6 sessions', note:'Seattle host city'},
- {id:'bmo',      name:'BMO Field',               venue:'BMO Field',                  city:'Toronto, ON, Canada',        cc:'CA', flag:'\uD83C\uDDE8\uD83C\uDDE6', tz:'America/Toronto',     tzl:'ET',  lat:43.6332, lng:-79.4186,  role:'6 sessions', note:'Toronto host city — Canada opener'},
- {id:'bcplace',  name:'BC Place',                venue:'BC Place',                   city:'Vancouver, BC, Canada',      cc:'CA', flag:'\uD83C\uDDE8\uD83C\uDDE6', tz:'America/Vancouver',   tzl:'PT',  lat:49.2768, lng:-123.1120, role:'7 sessions', note:'Vancouver host city'},
- {id:'azteca',   name:'Estadio Azteca',          venue:'Estadio Azteca (Estadio Ciudad de M\u00E9xico)', city:'Mexico City, Mexico', cc:'MX', flag:'\uD83C\uDDF2\uD83C\uDDFD', tz:'America/Mexico_City', tzl:'CST', lat:19.3029, lng:-99.1505,  role:'Opening Keynote \u00B7 5 sessions', note:'Mexico City host city — tournament opener'},
- {id:'bbva',     name:'Estadio BBVA',            venue:'Estadio BBVA',               city:'Monterrey, Mexico',          cc:'MX', flag:'\uD83C\uDDF2\uD83C\uDDFD', tz:'America/Monterrey',   tzl:'CST', lat:25.6693, lng:-100.2447, role:'4 sessions', note:'Monterrey host city'},
- {id:'akron',    name:'Estadio Akron',           venue:'Estadio Akron',              city:'Guadalajara (Zapopan), Mexico', cc:'MX', flag:'\uD83C\uDDF2\uD83C\uDDFD', tz:'America/Mexico_City', tzl:'CST', lat:20.6817, lng:-103.4626, role:'4 sessions', note:'Guadalajara host city'}
+ {id:'mpk',      name:'Meta HQ \u00B7 Hacker Square', venue:'Meta HQ \u00B7 Hacker Square', city:'Menlo Park, CA, USA', cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Los_Angeles', tzl:'PT', lat:37.4847, lng:-122.1477, role:'FINAL \u00B7 Jul 19 2026', note:'1 Hacker Way \u00B7 Meta Field Ops \u00B7 Flypack Double Technical Cabin', address:'1 Hacker Way, Menlo Park, CA 94025'},
+ {id:'ibc', name:'Tour IBC', venue:'Meta NYC · Hudson Yards (TOC)', city:'New York, NY, USA', cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/New_York', tzl:'ET', lat:40.7539, lng:-74.0019, role:'IBC \u00B7 Broadcast Hub', note:'Master control, central distribution & unilateral feeds for every stop'},
+ {id:'london', name:'Meta London', venue:'Meta London · King\u2019s Cross', city:'London, UK', cc:'GB', flag:'\uD83C\uDDEC\uD83C\uDDE7', tz:'Europe/London', tzl:'BST', lat:51.5347, lng:-0.1246, role:'Opening Keynote \u00B7 Jun 11', note:'EMEA opener'},
+ {id:'dublin', name:'Meta Dublin', venue:'Meta Dublin · EMEA HQ', city:'Dublin, Ireland', cc:'IE', flag:'\uD83C\uDDEE\uD83C\uDDEA', tz:'Europe/Dublin', tzl:'IST', lat:53.3331, lng:-6.228, role:'Regional Keynote \u00B7 8 sessions', note:'International headquarters'},
+ {id:'paris', name:'Meta Paris', venue:'Meta Paris', city:'Paris, France', cc:'FR', flag:'\uD83C\uDDEB\uD83C\uDDF7', tz:'Europe/Paris', tzl:'CEST', lat:48.8698, lng:2.3412, role:'Creator Showcase \u00B7 6 sessions', note:'AI research hub city'},
+ {id:'telaviv', name:'Meta Tel Aviv', venue:'Meta Tel Aviv', city:'Tel Aviv, Israel', cc:'IL', flag:'\uD83C\uDDEE\uD83C\uDDF1', tz:'Asia/Jerusalem', tzl:'IDT', lat:32.0853, lng:34.7818, role:'Developer Day \u00B7 6 sessions', note:'R&D site'},
+ {id:'gurugram', name:'Meta India', venue:'Meta India · Gurugram', city:'Gurugram, India', cc:'IN', flag:'\uD83C\uDDEE\uD83C\uDDF3', tz:'Asia/Kolkata', tzl:'IST', lat:28.4595, lng:77.0266, role:'Developer Day \u00B7 7 sessions', note:'India headquarters'},
+ {id:'singapore', name:'Meta Singapore', venue:'Meta Singapore · APAC HQ', city:'Singapore', cc:'SG', flag:'\uD83C\uDDF8\uD83C\uDDEC', tz:'Asia/Singapore', tzl:'SGT', lat:1.2801, lng:103.8509, role:'Regional Keynote \u00B7 8 sessions', note:'Asia-Pacific headquarters'},
+ {id:'tokyo', name:'Meta Tokyo', venue:'Meta Japan · Tokyo', city:'Tokyo, Japan', cc:'JP', flag:'\uD83C\uDDEF\uD83C\uDDF5', tz:'Asia/Tokyo', tzl:'JST', lat:35.658, lng:139.7016, role:'Creator Showcase \u00B7 6 sessions', note:'Japan office'},
+ {id:'sydney', name:'Meta Sydney', venue:'Meta Australia · Sydney', city:'Sydney, NSW, Australia', cc:'AU', flag:'\uD83C\uDDE6\uD83C\uDDFA', tz:'Australia/Sydney', tzl:'AEST', lat:-33.8688, lng:151.2093, role:'Community Day \u00B7 5 sessions', note:'ANZ office'},
+ {id:'saopaulo', name:'Meta S\u00E3o Paulo', venue:'Meta Brasil · S\u00E3o Paulo', city:'S\u00E3o Paulo, Brazil', cc:'BR', flag:'\uD83C\uDDE7\uD83C\uDDF7', tz:'America/Sao_Paulo', tzl:'BRT', lat:-23.5868, lng:-46.6818, role:'Creator Showcase \u00B7 7 sessions', note:'Latin America hub'},
+ {id:'cdmx', name:'Meta Mexico City', venue:'Meta M\u00E9xico · Mexico City', city:'Mexico City, Mexico', cc:'MX', flag:'\uD83C\uDDF2\uD83C\uDDFD', tz:'America/Mexico_City', tzl:'CST', lat:19.427, lng:-99.1677, role:'Regional Keynote \u00B7 6 sessions', note:'Mexico office'},
+ {id:'toronto', name:'Meta Toronto', venue:'Meta Canada · Toronto', city:'Toronto, ON, Canada', cc:'CA', flag:'\uD83C\uDDE8\uD83C\uDDE6', tz:'America/Toronto', tzl:'ET', lat:43.6488, lng:-79.3817, role:'Community Day \u00B7 5 sessions', note:'Canada office'},
+ {id:'seattle', name:'Meta Seattle', venue:'Meta Seattle', city:'Seattle, WA, USA', cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Los_Angeles', tzl:'PT', lat:47.6262, lng:-122.3376, role:'Semifinal Keynote \u00B7 8 sessions', note:'Engineering hub'},
+ {id:'austin', name:'Meta Austin', venue:'Meta Austin', city:'Austin, TX, USA', cc:'US', flag:'\uD83C\uDDFA\uD83C\uDDF8', tz:'America/Chicago', tzl:'CT', lat:30.2672, lng:-97.7431, role:'Semifinal Keynote \u00B7 7 sessions', note:'Engineering hub'}
 ];
 function ensureLocations(){try{
   var p=productions['museaitour'];
   if(p&&!p.locations){p.locations=MAWT26_LOCATIONS.map(function(l){return Object.assign({},l);});}
-  /* re-run FWC seed once locations exist (MetLife address, Zócalo, fiberLoc) */
+  /* re-run the tour seed once locations exist (finale address, fiberLoc) */
   try{if(p&&typeof seedWorldcupPacklist==='function')seedWorldcupPacklist(p,'museaitour');}catch(eF){}
   order.forEach(function(k){var pp=productions[k];
     if(pp&&pp.locations&&pp.locations.length&&!projLoc[k]){
-      var prefer=(k==='museaitour')?'metlife':null;var found=null;
+      var prefer=(k==='museaitour')?'mpk':null;var found=null;
       if(prefer){for(var li=0;li<pp.locations.length;li++)if(pp.locations[li].id===prefer){found=prefer;break;}}
       projLoc[k]=found||pp.locations[0].id;}
     });

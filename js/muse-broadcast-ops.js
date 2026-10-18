@@ -125,18 +125,18 @@
     var o = ensure(p);
     if (o.signalPath.length) {
       if (!o.remi || !(parseFloat(o.remi.budgetMs) > 0))
-        o.remi = { contribMs: 85, returnMs: 95, budgetMs: 250, path: "Harmonic XOS→Miami + Makito SRT return", notes: 'REMI delay budget 250ms end-to-end; measure at tech reh' };
+        o.remi = { contribMs: 85, returnMs: 95, budgetMs: 250, path: "Harmonic XOS→NYC TOC + Makito SRT return", notes: 'REMI delay budget 250ms end-to-end; measure at tech reh' };
       return o;
     }
     o.signalPath = [
       { id: 'sp1', order: 1, name: 'Presentation Studio Cam 1–4', type: 'Camera / Source', from: 'Studio floor', to: 'Stagebox A', status: 'green', lastGood: nowISO(), notes: "HDC-3500 · Canon CJ45ex9.7B/22x" },
       { id: 'sp2', order: 2, name: 'Stagebox A → Flypack', type: 'Embed / Stagebox', from: 'Stagebox A', to: 'Meta Field Ops', status: 'green', lastGood: nowISO(), notes: 'SMPTE hybrid' },
-      { id: 'sp3', order: 3, name: "Harmonic XOS–6", type: 'Encoder / TX', from: "Jupiter", to: 'NYNJ FO hand-off', status: 'green', lastGood: nowISO(), notes: '12 enc / 6 dec · 1GB×2' },
-      { id: 'sp4', order: 4, name: 'NYNJ → Miami FO', type: 'Contribution Fiber', from: 'HBS Port 1/2', to: 'TC Miami', status: 'green', lastGood: nowISO(), notes: "Harmonic XOS path" },
-      { id: 'sp5', order: 5, name: "LiveU LU800/U", type: 'Contribution Cellular', from: 'Stadium compound', to: 'TC Miami', status: 'amber', lastGood: '', notes: 'Serial validation on spare LU800' },
-      { id: 'sp6', order: 6, name: "Harmonic XOS returns", type: 'Return / IFB', from: 'TC Miami', to: "Saturn", status: 'green', lastGood: nowISO(), notes: 'PGM + multiview' },
+      { id: 'sp3', order: 3, name: "Harmonic XOS–6", type: 'Encoder / TX', from: "Jupiter", to: 'MPK FO hand-off', status: 'green', lastGood: nowISO(), notes: '12 enc / 6 dec · 1GB×2' },
+      { id: 'sp4', order: 4, name: 'MPK → NYC TOC FO', type: 'Contribution Fiber', from: 'MPK NetEng Port 1/2', to: 'Meta NYC TOC', status: 'green', lastGood: nowISO(), notes: "Harmonic XOS path" },
+      { id: 'sp5', order: 5, name: "LiveU LU800/U", type: 'Contribution Cellular', from: 'MPK compound', to: 'Meta NYC TOC', status: 'amber', lastGood: '', notes: 'Serial validation on spare LU800' },
+      { id: 'sp6', order: 6, name: "Harmonic XOS returns", type: 'Return / IFB', from: 'Meta NYC TOC', to: "Saturn", status: 'green', lastGood: nowISO(), notes: 'PGM + multiview' },
       { id: 'sp7', order: 7, name: "Evertz EQX 32×32 plant", type: 'Plant Router / Matrix', from: 'Flypack router', to: 'ISO / EVS / GFX', status: 'green', lastGood: nowISO(), notes: '128² class matrix' },
-      { id: 'sp8', order: 8, name: 'TOC distribution', type: 'Distribution / TOC', from: 'TC Miami', to: 'Network / affiliates', status: 'green', lastGood: nowISO(), notes: 'Final air path' }
+      { id: 'sp8', order: 8, name: 'TOC distribution', type: 'Distribution / TOC', from: 'Meta NYC TOC', to: 'Network / affiliates', status: 'green', lastGood: nowISO(), notes: 'Final air path' }
     ];
     o.truck = {
       name: "Jupiter",
@@ -147,7 +147,7 @@
       hvac: 'Dual-zone · gen-independent A/C',
       weightLbs: 18500,
       bayMap: 'Bay A: Appear/Evertz EQX 32×32 · Bay B: Audio Calrec Artemis · Bay C: EVS/ISO · Bulkhead stern',
-      notes: 'HBS compound power primary; UPS in-line on TX bus'
+      notes: 'MPK campus power primary; UPS in-line on TX bus'
     };
     o.power = {
       shoreA: 300,
@@ -165,10 +165,10 @@
       notes: '3×125V 2-phase 100A Cam-Lock · continuous derate 80%'
     };
     o.rf = [
-      { id: 'rf1', service: 'Host lav 1–4', txFreq: '518.000', rxFreq: '518.000', band: 'UHF', license: 'FWC-RF-2026-A', status: 'coordinated', venue: 'MetLife', notes: "Shure Axient Digital AD4Q + AD1" },
-      { id: 'rf2', service: 'IFB Elite 1–6', txFreq: '470.125', rxFreq: '470.125', band: 'UHF', license: 'FWC-RF-2026-B', status: 'coordinated', venue: 'MetLife', notes: 'RTS IFB-325 cord packs' },
+      { id: 'rf1', service: 'Host lav 1–4', txFreq: '518.000', rxFreq: '518.000', band: 'UHF', license: 'MAWT-RF-2026-A', status: 'coordinated', venue: 'MPK', notes: "Shure Axient Digital AD4Q + AD1" },
+      { id: 'rf2', service: 'IFB Elite 1–6', txFreq: '470.125', rxFreq: '470.125', band: 'UHF', license: 'MAWT-RF-2026-B', status: 'coordinated', venue: 'MPK', notes: 'RTS IFB-325 cord packs' },
       { id: 'rf3', service: 'FreeSpeak beltpacks', txFreq: '1920–1930', rxFreq: '1920–1930', band: '1.9 GHz DECT', license: 'Part 15', status: 'cleared', venue: 'Compound', notes: "Riedel Bolero" },
-      { id: 'rf4', service: 'Cam RF (ENG B/U)', txFreq: '2.412', rxFreq: '2.412', band: '2.4 GHz', license: 'unlicensed', status: 'pending', venue: 'Stadium bowl', notes: 'Coordinate vs Wi-Fi AP plan' }
+      { id: 'rf4', service: 'Cam RF (ENG B/U)', txFreq: '2.412', rxFreq: '2.412', band: '2.4 GHz', license: 'unlicensed', status: 'pending', venue: 'Hacker Square', notes: 'Coordinate vs Wi-Fi AP plan' }
     ];
     o.sat = [
       {
@@ -187,7 +187,7 @@
       }
     ];
     o.goNoGoNotes = "FO primary + LiveU LU800/U + sat contingency. TOC signal confirmation required T-90.";
-    o.remi = { contribMs: 85, returnMs: 95, budgetMs: 250, path: "Harmonic XOS→Miami + Makito SRT return", notes: 'REMI delay budget 250ms end-to-end; measure at tech reh' };
+    o.remi = { contribMs: 85, returnMs: 95, budgetMs: 250, path: "Harmonic XOS→NYC TOC + Makito SRT return", notes: 'REMI delay budget 250ms end-to-end; measure at tech reh' };
     o.weatherHold = false;
     return o;
   }

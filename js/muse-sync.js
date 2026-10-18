@@ -206,7 +206,8 @@
       if (this === ls && enabled && MIRROR.indexOf(k) >= 0) pushMirror(k);
     };
     me().then(function (u) {
-      if (!u) { enabled = false; settle(); return; }
+      // Guest demo: the curated seed, no pull of team data and no first-visit reload (halves first load).
+      if (!u || u.email === 'guest') { enabled = false; settle(); return; }
       enabled = true;
       return initialPull().then(function (changed) {
         if (enabled === false) return;

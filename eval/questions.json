@@ -40,6 +40,6 @@
     { "id": "crew-02", "cat": "crew", "q": "Who's the transmission engineer for Orion?", "must": [["Pat Wynn"]] },
     { "id": "crew-03", "cat": "crew", "q": "Who is the production manager on the Muse AI Launch Keynote?", "must": [["Alex Marlowe"]] },
     { "id": "ven-01", "cat": "venue", "q": "Where is the Orion reveal?", "must": [["Levi", "Santa Clara"]] },
-    { "id": "ven-02", "cat": "venue", "q": "Which venue hosts the World Tour grand finale?", "must": [["MetLife"]] }
+    { "id": "ven-02", "cat": "venue", "q": "Which venue hosts the World Tour grand finale?", "must": [["Menlo Park", "Hacker Square", "MPK", "Meta HQ"]] }
   ]
 }

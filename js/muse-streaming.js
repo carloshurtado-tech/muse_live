@@ -71,7 +71,7 @@
     museaitour: {
       state: 'LIVE', peak: 1850000, viewers: 1240000, latency: 'LL-HLS · 4–6 s glass-to-glass (standard HLS fallback 18 s)',
       destinations: ['Facebook Live · Meta AI Page (RTMPS)', 'Instagram Live · @meta (RTMPS, 9:16 cut-down)', 'meta.com/events embed (HLS via CloudFront + Akamai)', 'Workplace Live · company-wide simulcast', 'Threads · live clips (post-show)'],
-      venueNet: 'MetLife IT: 2× 10 GbE dark fiber on diverse paths to NJ POP · Starlink Business ×2 standby · 1 Gbps measured 942↓ / 936↑',
+      venueNet: 'Meta MPK campus network: 2× 10 GbE on diverse paths from Hacker Square to the Menlo Park POP · Starlink Business ×2 standby · 1 Gbps measured 942↓ / 936↑',
       primary: 'Haivision Makito X4 (×2, 1+1) · SRT caller → AWS Elemental MediaConnect us-east-1 · UDP 5000 · 1,200 ms latency · AES-256',
       backup: 'LiveU LU800 bonded (4× 5G + Starlink) → LiveU Matrix → MediaConnect input 2',
       cloud: 'AWS Elemental MediaLive Standard channel (2 pipelines) · automatic input failover after 2 s input loss',
@@ -276,7 +276,7 @@
     else start = Math.max(0, info.offset + (live ? now % 2700 : 0));
     f.src = 'https://www.youtube-nocookie.com/embed/' + info.id + '?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&loop=1&playlist=' + info.id +
       '&start=' + start + '&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
-    f.className = 'ms-video ms-yt'; f.title = info.title; f.setAttribute('tabindex', '-1');
+    f.className = 'ms-video ms-yt'; f.title = info.title; f.setAttribute('tabindex', '-1'); f.loading = 'lazy'; // off-screen monitors don't boot a player
     f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture'); f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     return players[slotKey] = { video: f, yt: info, url: 'yt:' + info.id, stats: { state: 'playing', stalls: 0, errors: 0 }, muted: true };
   }

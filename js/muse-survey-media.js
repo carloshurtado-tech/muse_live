@@ -2,7 +2,7 @@
    Images generated in-session. */
 (function (root) {
   'use strict';
-  var VER = 20261017; /* bump: Ray-Ban survey + 360 moved to MPK SVG set */
+  var VER = 20261018; /* bump: World Tour finale moved to MPK (shares the MPK SVG set) */
   function cap(src, caption, by) {
     return { src: src, caption: caption, ts: 'seeded walk', by: by || 'Site survey' };
   }
@@ -28,7 +28,7 @@
   }
   root.MUSE_SURVEY_MEDIA_VER = VER;
   root.MUSE_SURVEY_MEDIA = {
-    museaitour: pack('museaitour', 'MetLife Stadium'),
+    museaitour: pack('raybangen3', 'Meta HQ · Menlo Park', 'svg'),
     raybangen3: pack('raybangen3', 'Meta HQ · Classroom Stage', 'svg'),
     orion: pack('orion', "Levi's Stadium"),
     museailaunch: pack('museailaunch', 'Meta NYC · Hudson Yards'),

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { signIn } from './helpers.mjs';
 
-test('Muse Schedule: drag moves a booking, conflicts panel opens, project Bookings tab renders', async ({ page }) => {
+test('Muse Schedule: drag moves a booking, conflicts panel opens, project Omni tab renders', async ({ page }) => {
   const errors = await signIn(page);
   await page.evaluate(() => { window.switchView('schedule'); window.setSchedTab('muse'); });
   const bar = page.locator('.sc-row .sc-bar').first();
@@ -17,7 +17,7 @@ test('Muse Schedule: drag moves a booking, conflicts panel opens, project Bookin
   expect(after).not.toBe(before);
   await page.evaluate(() => window.MuseSchedule.panel('conflicts'));
   expect(await page.evaluate(() => window.MuseSchedule.conflicts().length)).toBeGreaterThanOrEqual(0);
-  await page.evaluate(() => { window.projSubTab.museailaunch = 'bookings'; window.navGo('museailaunch'); });
+  await page.evaluate(() => { window.projSubTab.museailaunch = 'omni'; window.navGo('museailaunch'); });
   await page.waitForTimeout(800);
   expect(errors, errors.join('\n')).toEqual([]);
 });

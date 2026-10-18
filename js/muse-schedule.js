@@ -10,7 +10,7 @@
      Omni schedule change log (log), and Muse (brief / summary).
    • Labor rule sets (union / overtime-style): per-crew rest, maximum day, daily OT, double and
      golden time, weekly OT, meal penalties, 6th/7th-day premiums and minimum calls. Rule names
-     appear in conflict texts; the Crew labor & timecards card is priced through them.
+     appear in conflict texts.
    • Crew self-service ("My schedule", #schedule/crew/<name>): upcoming calls, printable call
      sheets, availability blocks (status "Unavailable") and hold accept / decline.
    • Calendar sync: signed iCalendar subscription feeds served by functions/api/calendar.js.
@@ -352,7 +352,7 @@
     } catch (e) {}
     return { baseHr: 65, fringePct: 0 };
   }
-  // Premium breakdown for one show's crew (Bookings tab, Muse, labor card).
+  // Premium breakdown for one show's crew (Muse Schedule labor rules, Muse).
   function laborBreakdown(key) {
     ensure();
     var people = {};
@@ -605,10 +605,6 @@
     if (quiet) return;
     // Master Schedule: re-render the whole tab so the tab badge and conflict bubble update too.
     try { if (document.getElementById('scSchedule') && typeof root.renderSchedule === 'function') root.renderSchedule(); else if (document.getElementById('scSchedule')) renderInto(document.getElementById('scheduleGantt')); } catch (e) {}
-    try {
-      var act = document.querySelector('.view-pane.active'), k = act && act.id.replace(/^view-/, '');
-      if (k && P()[k] && root.projSubTab && root.projSubTab[k] === 'bookings') root.renderProjectView(k);
-    } catch (e) {}
   }
 
   /* ---------------- summaries for Muse ---------------- */
@@ -1155,7 +1151,7 @@
           '<td>' + (c.meal_penalties ? c.meal_penalties + ' · ' + money(c.meal_penalty_cost) : '—') + '</td><td>' + ((c.day6 + c.day7) || '—') + '</td><td>' + money(c.wages) + '</td></tr>';
       }).join('') +
       '</tbody><tfoot><tr><td colspan="2">Total</td><td>' + t.hours + '</td><td>' + t.ot + '</td><td>' + t.dt + '</td><td>' + t.golden + '</td><td>' + money(t.meal_penalty_cost) + '</td><td></td><td>' + money(t.wages) + '</td></tr></tfoot></table></div>' +
-      '<p class="sc-help">' + esc(lb.note) + ' Wages are before fringe and kit; the labor & timecards card below uses the same rules.</p></section>';
+      '<p class="sc-help">' + esc(lb.note) + ' Wages are before fringe and kit.</p></section>';
   }
 
   /* ---------------- calendar subscriptions ---------------- */
@@ -1206,38 +1202,6 @@
     try { if (location.protocol === 'file:' || root.MuseSync.readOnly()) return Promise.resolve(false); } catch (e) {}
     return fetch('/api/calendar', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(snap) })
       .then(function (r) { return r.ok; }).catch(function () { return false; });
-  }
-
-  /* ---------------- labor card integration ---------------- */
-  // The Crew labor & timecards card (app bundle) prices crew through the global schedWage /
-  // schedLaborEstimate. Wrap both so estimates and approved timecards follow the rule sets.
-  function hookLabor() {
-    if (root.__msLaborHooked || typeof root.schedLaborEstimate !== 'function' || typeof root.schedWage !== 'function') return;
-    root.__msLaborHooked = true;
-    var origEst = root.schedLaborEstimate, origWage = root.schedWage;
-    root.schedWage = function (r, hpd, days) {
-      if (!r || !r._ms) return origWage(r, hpd, days);
-      var rs = r._ms, h = Math.max(hpd, rs.minCall || 0);
-      var g = rs.golden > 0 ? Math.max(0, h - rs.golden) : 0, dt = Math.max(0, h - rs.dt) - g, ot = Math.max(0, Math.min(h, rs.dt) - rs.dailyOT), st = Math.min(h, rs.dailyOT);
-      var perDay = r.baseHr * (st + ot * rs.otX + dt * rs.dtX + g * rs.goldenX);
-      return { wages: perDay * days, hours: hpd * days, otHours: (ot + dt + g) * days };
-    };
-    root.schedLaborEstimate = function (key) {
-      var list = origEst(key);
-      try {
-        list.forEach(function (e) {
-          if (e.source !== 'Muse Schedule' || !e.name) return;
-          var res = crewRes(e.name); if (!res) return;
-          var rs = ruleFor(res), base = origWage(e.rate, e.est.hpd, e.est.days).wages;
-          var lab = laborFor(res.id, { prod: key, rate: e.rate.baseHr }), fr = 1 + (e.rate.fringePct || 0);
-          e.est.loaded = Math.max(0, Math.round(e.est.loaded - base * fr + lab.wages * fr));
-          e.rate = Object.assign({}, e.rate, { _ms: rs });
-          e.union = (e.union ? e.union + ' · ' : '') + rs.name;
-          e.rules = { rule: rs.name, premium_cost: lab.premium_cost, meal_penalties: lab.meal_penalties, ot: lab.ot, dt: lab.dt, golden: lab.golden };
-        });
-      } catch (x) {}
-      return list;
-    };
   }
 
   /* ---------------- deep link: #schedule/crew/<name> ---------------- */
@@ -1353,8 +1317,7 @@
 
   function boot() {
     try { ensure(); afterChange(true); } catch (e) {}
-    try { hookLabor(); } catch (e) {}
-    setTimeout(function () { try { hookLabor(); syncNow(); } catch (e) {} }, 1500);
+    setTimeout(function () { try { syncNow(); } catch (e) {} }, 1500);
     setTimeout(function () { try { routeFromHash(bootHash); } catch (e) {} }, 700);
   }
   // newURL carries the hash as typed; the app's router may already have rewritten location.hash.

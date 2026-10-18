@@ -118,7 +118,7 @@
     });
     document.addEventListener('keydown', onKey, true);
     document.addEventListener('visibilitychange', onVisibility);
-    root.addEventListener('resize', placeSoon); root.addEventListener('scroll', placeSoon, true);
+    if (!track) track = requestAnimationFrame(tick);
     ui = { veil: veil, spot: spot, card: card, live: live, bar: card.querySelector('#mtProg i') };
     return ui;
   }
@@ -138,11 +138,21 @@
     for (var k = 0; k < (s.target || []).length; k++) { var t = s.target[k], el = typeof t === 'function' ? t() : $(t); if (el && (el.offsetParent !== null || getComputedStyle(el).position === 'fixed') && el.getBoundingClientRect().width > 0) return el; }
     return null;
   }
-  var raf = 0;
-  function placeSoon() { if (!raf) raf = requestAnimationFrame(function () { raf = 0; place(); }); }
+  /* Track the target every frame while the tour is on. One-shot placement goes stale whenever layout
+     moves after the measurement (late iframes and fonts, slow machines, ultrawide re-layout) or a view
+     re-render replaces the node, so re-resolve and re-place the moment anything shifts. */
+  var curEl = null, posKey = '', track = 0;
+  function resolveEl() { if (i >= 0 && !(curEl && curEl.isConnected)) curEl = targetEl(STEPS[i]); return curEl; }
+  function tick() {
+    track = requestAnimationFrame(tick);
+    if (!ui || i < 0) return;
+    var el = resolveEl(), r = el && el.getBoundingClientRect();
+    var k = (r ? [r.left, r.top, r.width, r.height].join() : 'none') + '|' + innerWidth + ',' + innerHeight + ',' + ui.card.offsetWidth + ',' + ui.card.offsetHeight;
+    if (k !== posKey) { posKey = k; place(); }
+  }
   function place() {
     if (!ui || i < 0) return;
-    var s = STEPS[i], el = targetEl(s), card = ui.card, spot = ui.spot, pad = 8;
+    var el = resolveEl(), card = ui.card, spot = ui.spot, pad = 8;
     var vw = root.innerWidth, vh = root.innerHeight;
     if (!el) { spot.className = 'mt-spot is-none'; card.style.left = Math.max(16, (vw - card.offsetWidth) / 2) + 'px'; card.style.top = Math.max(16, (vh - card.offsetHeight) / 2) + 'px'; return; }
     // The cut-out is the target's own box and corners. No padding on a side the target already touches
@@ -160,6 +170,9 @@
     else if (left - 16 - cw > 16) { ct = vh - ch - 16; cl = left - 16 - cw; } // tall target with room beside it (a docked drawer): card next to it
     else if (vw - (left + w) - 16 - cw > 16) { ct = vh - ch - 16; cl = left + w + 16; }
     else { ct = vh - ch - 16; cl = vw - cw - 16; } // full-width tall target: park the card in the bottom-right corner
+    // Whatever the branch chose, the card stays on screen (a below-the-fold target must not drag it off).
+    ct = Math.min(Math.max(16, ct), Math.max(16, vh - ch - 16));
+    cl = Math.min(Math.max(16, cl), Math.max(16, vw - cw - 16));
     card.style.top = ct + 'px'; card.style.left = cl + 'px';
   }
 
@@ -188,7 +201,7 @@
   function step(n) {
     if (n < 0) return;
     if (n >= STEPS.length) { end(); return; }
-    build(); i = n; clearClock();
+    build(); i = n; clearClock(); curEl = null; posKey = '';
     var s = STEPS[i];
     call(s.before);
     jump(s); // same task as the render: off-screen monitors never start loading
@@ -245,11 +258,12 @@
   function jump(s) {
     var el = targetEl(s);
     call(function () {
-      if (s.top) { if (scrollY) scrollTo(0, 0); return; }
+      if (s.top && scrollY) scrollTo(0, 0);
       if (!el) return;
       var r = el.getBoundingClientRect(), head = 96;
+      if (s.top && r.top < innerHeight) return; // the top of the page already shows it
       if (r.top >= head && r.bottom <= innerHeight) return;
-      scrollTo(0, Math.max(0, r.top + scrollY - head));
+      scrollTo(0, Math.max(0, r.top + scrollY - head)); // on narrow screens a "top" target can sit below the fold
     });
     return el;
   }
@@ -263,8 +277,7 @@
     if (ui) { ui.veil.remove(); ui.spot.remove(); ui.card.remove(); ui.live.remove(); ui = null; }
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('visibilitychange', onVisibility);
-    root.removeEventListener('resize', placeSoon); root.removeEventListener('scroll', placeSoon, true);
-    cancelAnimationFrame(raf); raf = 0;
+    cancelAnimationFrame(track); track = 0; curEl = null; posKey = '';
     document.documentElement.classList.remove('mt-on', 'mt-moving');
     if (lastFocus && lastFocus.focus) call(function () { lastFocus.focus(); });
   }

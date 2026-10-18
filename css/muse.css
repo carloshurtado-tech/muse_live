@@ -4360,6 +4360,7 @@ html.dark .mt-prog{background:rgba(255,255,255,.14);}
 .mt-prog[hidden],.mt-hint[hidden]{display:none;}
 .mt-hint{margin:12px 0 0;font-size:12px;line-height:16px;color:#5C6370;}
 html.dark .mt-hint{color:#CFD3D9;}
+@media (hover:none){.mt-hint{display:none;}} /* keyboard hint means nothing on touch */
 
 
 /* ===================== PLATFORM (merged from css/parts/platform.css) ===================== */

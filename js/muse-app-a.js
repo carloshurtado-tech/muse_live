@@ -6948,7 +6948,7 @@ function toggleMuseAi(){museaiOpen=!museaiOpen;var d=document.getElementById('mu
   }else{
     try{d.style.zIndex='70';}catch(eZ2){}
   }
-  d.style.transform=museaiOpen?'translateX(0)':'translateX(100%)';
+  d.style.transform=museaiOpen?'translateX(0)':'translateX(calc(100% + 60px))';
   try{if(typeof museSyncEdgeTabs==='function')museSyncEdgeTabs();
   else l.style.display=museaiOpen?'none':'flex';}catch(eTab){l.style.display=museaiOpen?'none':'flex';}
   if(museaiOpen){

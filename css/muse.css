@@ -4828,3 +4828,17 @@ html.dark .view-pane h3.uppercase,html.dark .view-pane h3.text-gray-700,html.dar
 /* Native <progress>: Firefox paints the track on the element itself (Chrome on ::-webkit-progress-bar), so both get the toolkit track and full radius. */
 progress{border:0;border-radius:var(--uit-corner-radius-full);overflow:hidden;background:var(--uit-color-background-elevation2);}
 progress::-webkit-progress-bar{background:var(--uit-color-background-elevation2);border-radius:var(--uit-corner-radius-full);}
+/* Top banner as a tile, matching the dashboard cards (e.g. "Meta offices · local time"). */
+html body > header.sticky.glass-panel{top:12px;margin:12px 24px 0;width:auto;border-radius:20px !important;background:#FFFFFF !important;box-shadow:0 0 0 1px rgba(5,5,5,.06),0 4px 20px rgba(0,0,0,.04) !important;border:0 !important;}
+html.dark body > header.sticky.glass-panel{background:#1F1F1F !important;box-shadow:0 0 0 1px rgba(255,255,255,.06) !important;}
+/* Muse and Omni float inside the window with rounded corners (desktop); closed, they clear the edge and its shadow. */
+@media (min-width:900px){
+  #museaiDrawer,.omni-drawer{top:12px !important;right:12px !important;bottom:12px !important;height:auto !important;max-height:none !important;border-radius:24px !important;overflow:hidden;border:0 !important;box-shadow:0 0 0 1px var(--uit-color-border-primary),0 16px 48px rgba(0,0,0,.28) !important;}
+  .omni-drawer{transform:translateX(calc(100% + 60px));}
+  .omni-drawer.open{transform:translateX(0);}
+}
+/* Guided tour: a steady dim while a step changes view, so view switches and jumps are never seen. */
+.mt-veil{position:fixed;inset:0;z-index:94;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .18s ease;}
+html.mt-moving .mt-veil{opacity:1;}
+@media (min-width:640px){main.muse-main{padding-top:0;}} /* the floating banner's 12px top gap + tile rhythm replaces it */
+@media (max-width:639px){html body > header.sticky.glass-panel{margin:8px 12px 0;top:8px;}}

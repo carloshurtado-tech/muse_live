@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script src="js/muse-observe.js?v=20261018-46nk"></script>
+<script src="js/muse-observe.js?v=20261018-48yl"></script>
 <meta charset="UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
@@ -31,11 +31,13 @@
   }catch(e){}
 })();
 </script>
-<script src="js/muse-sync.js?v=20261018-46nk"></script>
+<script src="js/muse-sync.js?v=20261018-48yl"></script>
 <script>
 /* Gate before first paint unless this browser already holds a session. */
 (function(){try{var ok=document.cookie.indexOf('muse_authed=1')>=0;
 if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
+/* Guided demo: a frosted welcome screen covers the app while it loads; the tour removes it (20 s safety). */
+(function(){try{var d=document.documentElement;if(/[?&]tour=auto\b/.test(location.search)||sessionStorage.getItem('muse_tour')==='auto'){d.classList.add('muse-intro');setTimeout(function(){d.classList.remove('muse-intro');},20000);}}catch(e){}})();
 </script>
 <script>
 /* First paint: dark unless the user stored light or Follow OS. */
@@ -112,36 +114,36 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
   }catch(e){}
 })();
 </script>
-<link rel="preload" href="css/muse.css?v=20261018-46nk" as="style">
+<link rel="preload" href="css/muse.css?v=20261018-48yl" as="style">
 <link rel="preload" href="assets/brand/meta-mark-animated.svg" as="image">
-<link rel="stylesheet" href="css/muse.css?v=20261018-46nk" id="museDarkThemeLink">
-<script src="js/muse-demo.js?v=20261018-46nk" defer></script>
-<script src="js/muse-planet-trucks.js?v=20261018-46nk" defer></script>
-<script src="js/muse-platform.js?v=20261018-46nk" defer></script>
-<script src="js/muse-lazy.js?v=20261018-46nk" defer></script>
-<script src="js/muse-kb-seed.js?v=20261018-46nk" defer></script>
-<script src="js/muse-records.js?v=20261018-46nk" defer></script>
-<script src="js/muse-wiki-schema.js?v=20261018-46nk" defer></script>
-<script src="js/muse-kb.js?v=20261018-46nk" defer></script>
-<script src="js/muse-recovery.js?v=20261018-46nk" defer></script>
-<script src="js/muse-app-a.min.js?v=20261018-46nk" defer></script>
-<script src="js/muse-app-b.min.js?v=20261018-46nk" defer></script>
-<script src="js/muse-schedule.js?v=20261018-46nk" defer></script>
-<script src="js/muse-export-gear.js?v=20261018-46nk" defer></script>
-<script src="js/muse-ops-os.js?v=20261018-46nk" defer></script>
-<script src="js/muse-live-core.js?v=20261018-46nk" defer></script>
-<script src="js/muse-live-ops.js?v=20261018-46nk" defer></script>
-<script src="js/muse-work-core.js?v=20261018-46nk" defer></script>
-<script src="js/muse-work-ui.js?v=20261018-46nk" defer></script>
-<script src="js/muse-generic-kit.js?v=20261018-46nk" defer></script>
-<script src="js/muse-incidents.js?v=20261018-46nk" defer></script>
-<script src="js/muse-streaming.js?v=20261018-46nk" defer></script>
-<script src="js/muse-agent.js?v=20261018-46nk" defer></script>
-<script src="js/muse-voice.js?v=20261018-46nk" defer></script>
-<script src="js/muse-proactive.js?v=20261018-46nk" defer></script>
-<script src="js/muse-survey-media.js?v=20261018-46nk" defer></script>
-<script src="js/muse-tour.js?v=20261018-46nk" defer></script>
-<script src="js/muse-a11y.js?v=20261018-46nk" defer></script>
+<link rel="stylesheet" href="css/muse.css?v=20261018-48yl" id="museDarkThemeLink">
+<script src="js/muse-demo.js?v=20261018-48yl" defer></script>
+<script src="js/muse-planet-trucks.js?v=20261018-48yl" defer></script>
+<script src="js/muse-platform.js?v=20261018-48yl" defer></script>
+<script src="js/muse-lazy.js?v=20261018-48yl" defer></script>
+<script src="js/muse-kb-seed.js?v=20261018-48yl" defer></script>
+<script src="js/muse-records.js?v=20261018-48yl" defer></script>
+<script src="js/muse-wiki-schema.js?v=20261018-48yl" defer></script>
+<script src="js/muse-kb.js?v=20261018-48yl" defer></script>
+<script src="js/muse-recovery.js?v=20261018-48yl" defer></script>
+<script src="js/muse-app-a.min.js?v=20261018-48yl" defer></script>
+<script src="js/muse-app-b.min.js?v=20261018-48yl" defer></script>
+<script src="js/muse-schedule.js?v=20261018-48yl" defer></script>
+<script src="js/muse-export-gear.js?v=20261018-48yl" defer></script>
+<script src="js/muse-ops-os.js?v=20261018-48yl" defer></script>
+<script src="js/muse-live-core.js?v=20261018-48yl" defer></script>
+<script src="js/muse-live-ops.js?v=20261018-48yl" defer></script>
+<script src="js/muse-work-core.js?v=20261018-48yl" defer></script>
+<script src="js/muse-work-ui.js?v=20261018-48yl" defer></script>
+<script src="js/muse-generic-kit.js?v=20261018-48yl" defer></script>
+<script src="js/muse-incidents.js?v=20261018-48yl" defer></script>
+<script src="js/muse-streaming.js?v=20261018-48yl" defer></script>
+<script src="js/muse-agent.js?v=20261018-48yl" defer></script>
+<script src="js/muse-voice.js?v=20261018-48yl" defer></script>
+<script src="js/muse-proactive.js?v=20261018-48yl" defer></script>
+<script src="js/muse-survey-media.js?v=20261018-48yl" defer></script>
+<script src="js/muse-tour.js?v=20261018-48yl" defer></script>
+<script src="js/muse-a11y.js?v=20261018-48yl" defer></script>
 <style id="museDashLayout">
 /* Classic dashboard + telemetry layout — desktop columns by default */
 .dash-row-main{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(0,2fr)!important;gap:1.5rem!important;align-items:start}
@@ -234,9 +236,31 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 }
 @media (max-height:620px) and (max-width:899px){#museGate .gate-art{display:none;}}
 @media (prefers-reduced-motion:reduce){#museGate{transition:none;}}
+#museIntro{position:fixed;inset:0;z-index:2147482000;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:rgba(12,14,18,.6);-webkit-backdrop-filter:blur(28px) saturate(1.5);backdrop-filter:blur(28px) saturate(1.5);
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#FFFFFF;
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .5s ease,visibility 0s linear .5s;}
+html.muse-intro #museIntro{opacity:1;visibility:visible;pointer-events:auto;transition:none;}
+html.muse-intro,html.muse-intro body{overflow:hidden;}
+#museIntro .mintro-in{text-align:center;max-width:560px;}
+#museIntro img{display:block;width:176px;height:auto;margin:0 auto 30px;filter:drop-shadow(0 10px 36px rgba(8,102,255,.45));}
+#museIntro .mintro-t{margin:0;font-size:clamp(26px,4vw,38px);line-height:1.15;font-weight:700;letter-spacing:-.01em;}
+#museIntro .mintro-s{margin:12px 0 0;font-size:17px;line-height:1.4;color:rgba(255,255,255,.78);}
+#museIntro .mintro-bar{width:220px;height:4px;margin:30px auto 0;border-radius:2px;background:rgba(255,255,255,.16);overflow:hidden;}
+#museIntro .mintro-bar i{display:block;width:40%;height:100%;border-radius:2px;background:#0866FF;animation:mintro-load 1.4s ease-in-out infinite;}
+@keyframes mintro-load{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}
+@media (prefers-reduced-motion:reduce){#museIntro .mintro-bar i{animation:none;width:100%;opacity:.6;}#museIntro{transition:none;}}
 </style>
 </head>
 <body class="min-h-screen flex flex-col muse-has-rail muse-has-navrail">
+<div id="museIntro" role="status" aria-live="polite">
+  <div class="mintro-in">
+    <img src="assets/brand/meta-mark-animated.svg?v=2" alt="Meta" width="176" height="120">
+    <p class="mintro-t">Welcome to the Muse Live demo</p>
+    <p class="mintro-s">Getting the control room ready. The tour starts in a moment.</p>
+    <div class="mintro-bar" aria-hidden="true"><i></i></div>
+  </div>
+</div>
 <div id="museGate" role="dialog" aria-modal="true" aria-labelledby="museGateTitle" aria-hidden="true">
   <div class="gate-shell">
     <div class="gate-hero">
@@ -1536,7 +1560,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 </button>
 
 <!-- MUSE ASSISTANT DRAWER -->
-<div id="museaiDrawer" class="glass-drawer shadow-2xl flex flex-col border-l border-gray-200/40" role="dialog" aria-label="Muse, live broadcast and streaming agent" data-muse-state="idle" style="position:fixed;top:0;right:0;height:100%;z-index:70;width:420px;max-width:94vw;transform:translateX(100%);transition:transform .25s ease">
+<div id="museaiDrawer" class="glass-drawer shadow-2xl flex flex-col border-l border-gray-200/40" role="dialog" aria-label="Muse, live broadcast and streaming agent" data-muse-state="idle" style="position:fixed;top:0;right:0;height:100%;z-index:70;width:420px;max-width:94vw;transform:translateX(calc(100% + 60px));transition:transform .25s ease">
   <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
     <div class="flex items-center gap-2.5 min-w-0">
       <span class="ma-head-ava"><img src="assets/brand/muse-avatar.webp" alt="" width="40" height="40" draggable="false"></span>

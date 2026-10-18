@@ -19,6 +19,17 @@
   /* Techbook PDF → a new tab. Browsers only allow new tabs from a recent click, so a click reserves the tab
      up front; in auto-play (no click) the card offers "Open the techbook PDF" once it's built. */
   var pdfUrl = null;
+  // The rounded tile (non-transparent background, rounded corners) that holds a heading with this text.
+  function cardWith(rootSel, text) {
+    var hs = document.querySelectorAll(rootSel + ' h1,' + rootSel + ' h2,' + rootSel + ' h3,' + rootSel + ' h4');
+    for (var k = 0; k < hs.length; k++) {
+      if (hs[k].textContent.indexOf(text) !== 0) continue;
+      for (var e = hs[k].parentElement; e && e !== document.body; e = e.parentElement) {
+        var cs = getComputedStyle(e); if (parseFloat(cs.borderTopLeftRadius) > 0 && cs.backgroundColor !== 'rgba(0, 0, 0, 0)') return e;
+      }
+    }
+    return null;
+  }
   function exportTechbook(tab) {
     if (!tab && auto && !paused && ui) { togglePause(); ui.card.querySelector('#mtBody').textContent = 'Building the techbook PDF from live data: locations, departments, pack list, power, fiber and crew…'; } // hold the step until the PDF exists
     call(function () {
@@ -56,15 +67,15 @@
     { secs: 7, title: 'Welcome to Muse Live', body: 'An operations platform for live events that are broadcast and streamed. In the next 90 seconds: the live stream wall, one show\'s end-to-end streaming chain, incident post-mortems, finance, Omni and Muse, the AI agent on comms.',
       before: function () { closeMuse(); closeOmni(); go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: [] },
     { secs: 9, title: 'Today, at a glance', body: 'What is on air right now, live viewers, shows at risk and open incidents. Every number is a shortcut into the detail.',
-      before: function () { go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: ['#dashHome', '#view-dashboard section'] },
+      before: function () { go('dashboard'); }, target: ['#dashHome'], top: true },
     { secs: 10, title: 'Every live stream, one wall', body: 'Each show\'s program feed with end-to-end health: concurrent viewers, rebuffering ratio, glass-to-glass latency and errors. One glance tells an engineer where to look and an executive whether to worry.',
-      before: function () { go('streams'); }, target: ['#streamsHost .ms-kpis', '#streamsHost'] },
+      before: function () { go('streams'); }, target: ['#streamsHost .ms-tile:has([data-live="1"])', '#streamsHost .ms-tile'], top: true },
     { secs: 11, title: 'Inside a show: the streaming chain', body: 'Encoder → contribution (SRT) → cloud transcode → CDN → viewer, with health at every hop. Below it: the ABR encoding ladder, destinations, captions, loudness and the go-live checklist.',
-      before: function () { openShow('museaitour', 'streaming'); }, target: ['.ms-chain', '.ms-wrap', '#view-museaitour'], wait: 900 },
+      before: function () { openShow('museaitour', 'streaming'); }, target: ['#view-museaitour .ms-card:has(.ms-chain)', '#view-museaitour .ms-chain'], wait: 700 },
     { secs: 10, title: 'Incidents that teach', body: 'Blameless post-mortems with impact, timeline, root cause and owned action items. Here: everything that went wrong at the Ray-Ban Meta Gen 3 launch, and what was changed so it can\'t happen twice.',
-      before: function () { go('incidents'); setTimeout(function () { call(function () { root.MuseIncidents.query('Ray-Ban'); }); }, 150); }, target: ['#incidentsHost'], top: true, wait: 500 },
+      before: function () { go('incidents'); setTimeout(function () { call(function () { root.MuseIncidents.query('Ray-Ban'); }); }, 150); }, target: ['#miDetail'], top: true, wait: 600 },
     { secs: 10, title: 'Always on budget', body: 'Finance runs on the same live data as the show: budget against actuals, purchase orders, invoices and vendor payments. Producers stay on budget, vendors get paid on time, and everyone sees the same numbers.',
-      before: function () { go('finance'); }, target: ['#view-finance'], top: true, wait: 600 },
+      before: function () { go('finance'); }, target: [function () { return cardWith('#view-finance', 'Budget vs'); }], top: true, wait: 600 },
     { secs: 16, title: 'Ask Muse anything', body: 'Muse is the live broadcast and streaming agent. It reads every show, stream, incident and booking through tools, cites what it found and proposes changes for a human to confirm. It is answering this one live.',
       before: function () { go('dashboard'); call(function () { if (!root.museaiOpen) root.toggleMuseAi(); }); setTimeout(function () { var i = $('#museaiInput'); if (i) i.value = ASK; }, 200); },
       target: ['#museaiDrawer'], auto: askMuse, action: { label: 'Ask Muse now', run: askMuse } },
@@ -84,6 +95,7 @@
   function build() {
     if (ui) return ui;
     var spot = document.createElement('div'); spot.className = 'mt-spot'; spot.setAttribute('aria-hidden', 'true');
+    var veil = document.createElement('div'); veil.className = 'mt-veil'; veil.setAttribute('aria-hidden', 'true'); // steady dim while a step changes view
     var card = document.createElement('div'); card.className = 'mt-card'; card.setAttribute('role', 'dialog'); card.setAttribute('aria-modal', 'false');
     card.setAttribute('aria-labelledby', 'mtTitle'); card.setAttribute('aria-describedby', 'mtBody'); card.tabIndex = -1;
     card.innerHTML = '<div class="mt-prog" id="mtProg" hidden><i></i></div><p class="mt-count" id="mtCount"></p><h2 class="mt-title" id="mtTitle"></h2><p class="mt-body" id="mtBody"></p>' +
@@ -92,7 +104,7 @@
       '<button type="button" class="mt-btn" id="mtBack">Back</button><button type="button" class="mt-btn mt-primary" id="mtNext">Next</button></div>' +
       '<p class="mt-hint" id="mtHint" hidden>Space pauses · ← → step · Esc ends</p>';
     var live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.id = 'mtLive';
-    document.body.appendChild(spot); document.body.appendChild(card); document.body.appendChild(live);
+    document.body.appendChild(veil); document.body.appendChild(spot); document.body.appendChild(card); document.body.appendChild(live);
     card.querySelector('#mtNext').onclick = function () { step(i + 1); };
     card.querySelector('#mtBack').onclick = function () { step(i - 1); };
     card.querySelector('#mtClose').onclick = end;
@@ -107,7 +119,7 @@
     document.addEventListener('keydown', onKey, true);
     document.addEventListener('visibilitychange', onVisibility);
     root.addEventListener('resize', placeSoon); root.addEventListener('scroll', placeSoon, true);
-    ui = { spot: spot, card: card, live: live, bar: card.querySelector('#mtProg i') };
+    ui = { veil: veil, spot: spot, card: card, live: live, bar: card.querySelector('#mtProg i') };
     return ui;
   }
   function onKey(e) {
@@ -123,7 +135,7 @@
 
   function targetEl(s) {
     // offsetParent is null for position:fixed (the Muse and Omni drawers), so test the box instead.
-    for (var k = 0; k < (s.target || []).length; k++) { var el = $(s.target[k]); if (el && (el.offsetParent !== null || getComputedStyle(el).position === 'fixed') && el.getBoundingClientRect().width > 0) return el; }
+    for (var k = 0; k < (s.target || []).length; k++) { var t = s.target[k], el = typeof t === 'function' ? t() : $(t); if (el && (el.offsetParent !== null || getComputedStyle(el).position === 'fixed') && el.getBoundingClientRect().width > 0) return el; }
     return null;
   }
   var raf = 0;
@@ -179,6 +191,7 @@
     build(); i = n; clearClock();
     var s = STEPS[i];
     call(s.before);
+    jump(s); // same task as the render: off-screen monitors never start loading
     var c = ui.card;
     c.querySelector('#mtCount').textContent = (auto ? 'Demo · ' : 'Step ') + (i + 1) + ' of ' + STEPS.length;
     c.querySelector('#mtTitle').textContent = s.title;
@@ -197,13 +210,11 @@
     var wait = s.wait || 300, n0 = i;
     setTimeout(function () {
       if (i !== n0) return;
-      var el = targetEl(s);
-      if (s.top) call(function () { scrollTo(0, 0); });
-      else if (el) call(function () { el.scrollIntoView({ block: el.offsetHeight > innerHeight * 0.6 ? 'start' : 'center', behavior: 'instant' }); });
+      var el = jump(s);
       settled(el).then(function () {
         if (i !== n0) return;
-        if (s.top) call(function () { scrollTo(0, 0); });
-        place(); de.classList.remove('mt-moving');
+        jump(s); place(); de.classList.remove('mt-moving');
+        call(function () { de.classList.remove('muse-intro'); }); // the welcome screen hands over to the tour
         var f = c.querySelector(timed ? '#mtPause' : '#mtNext'); call(function () { (f || c).focus({ preventScroll: true }); });
       });
     }, wait);
@@ -215,7 +226,32 @@
   function settled(el) {
     var anims = []; try { anims = el ? el.getAnimations({ subtree: true }).filter(function (a) { return a.effect && a.effect.getTiming().iterations !== Infinity; }) : []; } catch (e) {}
     var done = Promise.all(anims.map(function (a) { return a.finished.catch(function () {}); }));
-    return Promise.race([done, new Promise(function (r) { setTimeout(r, 900); })]).then(function () { return new Promise(function (r) { requestAnimationFrame(function () { r(); }); }); });
+    return Promise.race([done, new Promise(function (r) { setTimeout(r, 900); })]).then(function () { return still(el); });
+  }
+  // Resolves once the target's box has not moved for 4 frames (late images, monitors, fonts), capped at 1.2 s.
+  function still(el) {
+    return new Promise(function (res) {
+      if (!el) { res(); return; }
+      var last = '', same = 0, t0 = Date.now();
+      (function check() {
+        var r = el.getBoundingClientRect(), k = [r.left, r.top, r.width, r.height].map(Math.round).join();
+        same = k === last ? same + 1 : 0; last = k;
+        if (same >= 4 || Date.now() - t0 > 1200) res(); else requestAnimationFrame(check);
+      })();
+    });
+  }
+  // Bring the step's target into view instantly (the veil hides the jump): page top for top-anchored steps,
+  // otherwise the target's top just under the sticky header, and only when it isn't already fully visible.
+  function jump(s) {
+    var el = targetEl(s);
+    call(function () {
+      if (s.top) { if (scrollY) scrollTo(0, 0); return; }
+      if (!el) return;
+      var r = el.getBoundingClientRect(), head = 96;
+      if (r.top >= head && r.bottom <= innerHeight) return;
+      scrollTo(0, Math.max(0, r.top + scrollY - head));
+    });
+    return el;
   }
   function start(opts) {
     auto = !!(opts && opts.auto); paused = false;
@@ -224,7 +260,7 @@
   function end() {
     clearClock();
     i = -1;
-    if (ui) { ui.spot.remove(); ui.card.remove(); ui.live.remove(); ui = null; }
+    if (ui) { ui.veil.remove(); ui.spot.remove(); ui.card.remove(); ui.live.remove(); ui = null; }
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('visibilitychange', onVisibility);
     root.removeEventListener('resize', placeSoon); root.removeEventListener('scroll', placeSoon, true);
@@ -256,12 +292,14 @@
       want = sessionStorage.getItem('muse_tour');
     } catch (e) {}
     if (!want) return;
+    // Start once shared data has settled and the page has finished loading (the welcome screen covers both).
     var synced = root.MuseSync && root.MuseSync.ready ? root.MuseSync.ready : Promise.resolve();
-    Promise.race([synced, new Promise(function (r) { setTimeout(r, 8000); })]).then(function () {
+    var loaded = document.readyState === 'complete' ? Promise.resolve() : new Promise(function (r) { root.addEventListener('load', r, { once: true }); });
+    Promise.race([Promise.all([synced, loaded]), new Promise(function (r) { setTimeout(r, 10000); })]).then(function () {
       setTimeout(function () {
         try { sessionStorage.removeItem('muse_tour'); } catch (e) {}
         start({ auto: want === 'auto' });
-      }, 1200);
+      }, 700);
     });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 400); });

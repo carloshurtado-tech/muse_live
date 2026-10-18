@@ -24,6 +24,7 @@
 const DEFAULT_MODEL = 'muse-spark-1.3';
 const DEFAULT_BASE = 'https://api.meta.ai/v1';
 const MAX_BODY = 900_000;
+const GUEST_MAX_BODY = 200_000, GUEST_MAX_OUT = 4000; // bounds one guest step at ~54k tokens
 const MAX_MESSAGES = 120;
 const EFFORTS = ['minimal', 'low', 'medium', 'high'];
 
@@ -248,7 +249,7 @@ async function addUsage(env, usage, guest) {
 }
 function dailyCap(env) { return Math.max(10000, Number(env && env.MUSE_DAILY_TOKEN_CAP) || 2000000); }
 // All guest sessions together share this slice of the day, so the public demo can't exhaust the team's budget.
-function guestCap(env) { return Math.max(10000, Number(env && env.MUSE_GUEST_DAILY_TOKEN_CAP) || 300000); }
+function guestCap(env) { return Math.max(10000, Number(env && env.MUSE_GUEST_DAILY_TOKEN_CAP) || 1500000); }
 
 /* ---------------- handlers ---------------- */
 export async function onRequestGet({ env }) {
@@ -276,7 +277,12 @@ export async function onRequestPost(context) {
   if (guest && (await usedToday(env, true)) >= guestCap(env)) {
     return json({ ok: false, capped: true, error: 'Muse has answered all the guest-demo questions it can for today. It resets at midnight UTC.' }, 429);
   }
-  if (guest) delete body.effort;
+  if (guest) {
+    if (raw.length > GUEST_MAX_BODY) return json({ ok: false, error: 'That conversation is too long for the guest demo. Start a new chat.' }, 413);
+    delete body.effort;
+    // Charge a worst-case estimate before the call, so parallel guest requests can't all pass the cap at once.
+    await addUsage(env, { total_tokens: Math.ceil(raw.length / 4) + GUEST_MAX_OUT }, true);
+  }
 
   const glance = body.mode === 'glance';
   const snapshot = typeof body.snapshot === 'string' ? body.snapshot.slice(0, 60000) : (body.snapshot && typeof body.snapshot === 'object' ? JSON.stringify(body.snapshot).slice(0, 60000) : '');
@@ -304,7 +310,7 @@ export async function onRequestPost(context) {
 
   const effort = EFFORTS.indexOf(body.effort) >= 0 ? body.effort : (glance ? 'minimal' : (env.MUSE_REASONING_EFFORT || 'low'));
   const base = (env.MUSE_API_BASE || DEFAULT_BASE).replace(/\/+$/, '');
-  const payload = { model: env.MUSE_MODEL || DEFAULT_MODEL, messages, reasoning_effort: effort, max_completion_tokens: glance ? 400 : 6000 };
+  const payload = { model: env.MUSE_MODEL || DEFAULT_MODEL, messages, reasoning_effort: effort, max_completion_tokens: glance ? 400 : (guest ? GUEST_MAX_OUT : 6000) };
   if (!glance) { payload.tools = TOOLS; payload.tool_choice = 'auto'; payload.parallel_tool_calls = true; }
   const wantStream = !!body.stream && !glance;
   if (wantStream) { payload.stream = true; payload.stream_options = { include_usage: true }; }
@@ -334,7 +340,7 @@ export async function onRequestPost(context) {
 
   let j;
   try { j = await r.json(); } catch (e) { return json({ ok: false, error: 'Meta Model API returned an unreadable response.' }, 502); }
-  const done = addUsage(env, j.usage, guest);
+  const done = guest ? Promise.resolve() : addUsage(env, j.usage); // guests were charged up front
   if (context.waitUntil) context.waitUntil(done); else await done;
   const choice = j && j.choices && j.choices[0];
   const msg = (choice && choice.message) || {};
@@ -387,7 +393,7 @@ function relayStream(r, context, model, effort) {
       const tc = calls.filter((c) => c && c.function.name).map((c, i) => ({ id: c.id || 'call_' + i, type: 'function', function: { name: c.function.name, arguments: c.function.arguments || '{}' } }));
       if (tc.length) message.tool_calls = tc;
       send(ctrl, { t: 'done', ok: true, message, usage, finish, model, effort });
-      const done = addUsage(context.env, usage, context.museGuest);
+      const done = context.museGuest ? Promise.resolve() : addUsage(context.env, usage);
       if (context.waitUntil) context.waitUntil(done);
     },
   });

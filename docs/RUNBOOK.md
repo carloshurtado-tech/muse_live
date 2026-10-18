@@ -56,5 +56,6 @@ deploy — `npm run build` does it.
 - Guest demo (landing page "Start the 90-second demo"): `POST /api/auth/guest` issues a read-only
   `viewer` session for 24 h. Set `GUEST_DEMO=off` to hide the buttons, refuse new guests and end
   existing guest sessions. Guests can't use voice; Muse allows them `MUSE_GUEST_RATE_PER_MIN`
-  (default 10) requests per minute and all guests share `MUSE_GUEST_DAILY_TOKEN_CAP` (default 300000)
-  tokens per day, inside the workspace's `MUSE_DAILY_TOKEN_CAP`.
+  (default 10) requests per minute and all guests share `MUSE_GUEST_DAILY_TOKEN_CAP` (default 1500000)
+  tokens per day, inside the workspace's `MUSE_DAILY_TOKEN_CAP`. Guest requests are capped at 200 KB and
+  4000 output tokens, and each is charged a worst-case estimate before the model call.

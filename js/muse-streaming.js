@@ -924,10 +924,26 @@
   }
 
   /* ---------------- live updates (in place, no re-render) ---------------- */
-  function setTm(id, html) { var els = document.querySelectorAll('[data-tm="' + id + '"]'); for (var i = 0; i < els.length; i++) els[i].innerHTML = html; }
+  // During a tick, cells come from one index of the visible [data-tm] elements (not ~30 page scans per stream),
+  // and a cell is only rewritten when its text changes.
+  var tmIndex = null;
+  function setTm(id, html) {
+    var els = tmIndex ? tmIndex[id] : document.querySelectorAll('[data-tm="' + id + '"]'); if (!els) return;
+    for (var i = 0; i < els.length; i++) if (els[i].innerHTML !== html) els[i].innerHTML = html;
+  }
+  function indexTm() {
+    var idx = {}, all = document.querySelectorAll('[data-tm]');
+    for (var i = 0; i < all.length; i++) { var e = all[i]; if (e.offsetParent === null) continue; var k = e.getAttribute('data-tm'); (idx[k] = idx[k] || []).push(e); }
+    return idx;
+  }
   var tickN = 0;
   function tick() {
+    if (document.hidden) return; // background tab: nothing to paint
     tickN++;
+    tmIndex = indexTm();
+    try { tickBody(); } finally { tmIndex = null; }
+  }
+  function tickBody() {
     keys().forEach(function (k) {
       streamsFor(k).forEach(function (st) {
         var t = teleFor(k, st); stepTele(t);

@@ -6,6 +6,8 @@
 // Storage: env.MUSE_KV (Cloudflare KV) when bound, otherwise isolate memory (fine for a demo,
 // resets when the isolate recycles).
 
+import { who, canWrite } from '../_lib/who.js';
+
 const TTL_MS = 6 * 3600 * 1000, MAX_SESSIONS = 300;
 const mem = (globalThis.__museQoe = globalThis.__museQoe || new Map());
 
@@ -23,7 +25,10 @@ async function store(env, show, data) {
 const okKey = (s) => typeof s === 'string' && /^[a-z0-9_-]{1,64}$/i.test(s);
 const num = (v, max) => (typeof v === 'number' && isFinite(v) && v >= 0 ? Math.min(v, max) : 0);
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  // Read-only sessions (the public guest demo) can't write to the panel labelled "Real"; accepted and dropped.
+  if (!canWrite(await who(context))) return json({ ok: true, stored: false });
   let b;
   try { b = JSON.parse(await request.text()); } catch (e) { return json({ ok: false, error: 'Bad beacon' }, 400); }
   if (!b || !okKey(b.show) || !okKey(b.stream) || !okKey(b.session)) return json({ ok: false, error: 'Bad beacon' }, 400);

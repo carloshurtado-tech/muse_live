@@ -28,7 +28,7 @@
   var enabled = null;            // null = unknown, false = no shared storage / signed out, true = on
   var state = 'idle';            // idle | saving | synced | offline | stale | local
   var staleBy = '', lastSync = 0;
-  var timers = {}, watchers = {}, seen = {};
+  var timers = {}, watchers = {}, seen = {}, saving = {};
   var mePromise = null;
 
   function readJSON(k, d) { try { var v = ls && ls.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
@@ -72,14 +72,17 @@
     if (u && u.role === 'viewer') { dequeue(key); return false; } // read-only session (guest demo): changes stay on this device
     if (text.length > MAX_BYTES) { try { console.warn('[MuseSync] ' + key + ' is larger than 256 KB; kept on this device only.'); } catch (e) { /* noop */ } dequeue(key); return false; }
     setState('saving');
+    saving[key] = true; // the poll ignores this key until the PUT answers (own write, not "elsewhere")
     return req('PUT', key, text).then(function (r) {
       if (r.ok) { dequeue(key); lastSync = Date.now(); return r.json().then(function (j) { seen[key] = j.updated || Date.now(); setState(Object.keys(queue()).length ? 'saving' : 'synced'); return true; }); }
       if (r.status === 403) { dequeue(key); setState('synced'); return false; } // read-only role
       enqueue(key, text); setState('offline'); return false;
-    }).catch(function () { enqueue(key, text); setState('offline'); return false; });
+    }).catch(function () { enqueue(key, text); setState('offline'); return false; })
+      .finally(function () { delete saving[key]; }); // after seen[key] is recorded
     });
   }
   function put(key, value) {
+    if (enabled === false) return; // signed out or guest demo: nothing will ever be sent
     var text; try { text = JSON.stringify(value); } catch (e) { return; }
     enqueue(key, text);
     clearTimeout(timers[key]);
@@ -102,7 +105,7 @@
       req('HEAD', key).then(function (r) {
         if (!r.ok) return;
         var up = +(r.headers.get('X-Muse-Updated') || 0), by = r.headers.get('X-Muse-By') || '';
-        if (!up || up <= (seen[key] || 0)) return;
+        if (saving[key] || !up || up <= (seen[key] || 0)) return;
         seen[key] = up;
         var mirrored = MIRROR.filter(function (k) { return kvKey(k) === key; })[0];
         if (mirrored) remoteMirror(mirrored, by);
@@ -126,8 +129,6 @@
     }, DEBOUNCE_MS);
   }
   function remoteMirror(k, by) {
-    var mine = me && w.__museSyncMe && (w.__museSyncMe.email || w.__museSyncMe.name);
-    if (by && mine && by === mine) return; // my own write echoing back
     staleBy = by || 'someone';
     setState('stale');
   }

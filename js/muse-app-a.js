@@ -1145,7 +1145,7 @@ function loadState(){try{
     saveGear();}catch(e){}
   }}
   var vd=localStorage.getItem('muselive_vendors');if(vd){var vl=JSON.parse(vd);if(Array.isArray(vl)&&vl.length)vendors=vl;}
-  var raw=localStorage.getItem('muselive_custom');if(raw){var o=JSON.parse(raw);if(o&&o.custom){for(var k in o.custom){if(!productions[k]){productions[k]=o.custom[k];}}if(o.order&&o.order.length){o.order.forEach(function(k){if(order.indexOf(k)<0&&productions[k])order.push(k);});}}}
+  var raw=localStorage.getItem('muselive_custom');if(raw){var o=JSON.parse(raw);if(o&&o.custom){for(var k in o.custom){if(!productions[k]){productions[k]=o.custom[k];productions[k].name=museCleanName(productions[k].name);}}if(o.order&&o.order.length){o.order.forEach(function(k){if(order.indexOf(k)<0&&productions[k])order.push(k);});}}}
   var er=localStorage.getItem('muselive_edits');if(er){var e=JSON.parse(er);for(var k2 in e){if(!productions[k2])continue;var ed=e[k2];
     if(Array.isArray(ed)){if(ed.length===productions[k2].dept.length)productions[k2].dept=ed;} // legacy format
     else if(ed){if(Array.isArray(ed.dept)){ed.dept.forEach(function(sd){if(!Array.isArray(sd))return;var cur=null;for(var z=0;z<productions[k2].dept.length;z++){if(productions[k2].dept[z][0]===sd[0]){cur=productions[k2].dept[z];break;}}if(cur){cur[1]=sd[1];cur[2]=sd[2];if(sd.__customNote)cur.__customNote=sd.__customNote;}else{productions[k2].dept.push(sd.slice());}});}if(ed.tbFields)productions[k2].tbFields=ed.tbFields;if(ed.tbEquip)productions[k2].tbEquip=ed.tbEquip;if(ed.vendors)productions[k2].vendors=ed.vendors;if(ed.crewMatrix)productions[k2].crewMatrix=ed.crewMatrix;if(ed.crew)productions[k2].crew=ed.crew;if(ed.invItems)productions[k2].invItems=ed.invItems;if(ed.survey)productions[k2].survey=ed.survey;if(ed.labor)productions[k2].labor=ed.labor;if(ed.sched)productions[k2].sched=ed.sched;if(ed.approvals)productions[k2].approvals=ed.approvals;if(ed.activity)productions[k2].activity=ed.activity;if(ed.tasks)productions[k2].tasks=ed.tasks;if(ed.signoff)productions[k2].signoff=ed.signoff;if(ed.packStatus)productions[k2].packStatus=ed.packStatus;if(ed.deptLoc)productions[k2].deptLoc=ed.deptLoc;if(ed.surveyLoc)productions[k2].surveyLoc=ed.surveyLoc;if(ed.vendorsLoc)productions[k2].vendorsLoc=ed.vendorsLoc;if(ed.fiber)productions[k2].fiber=ed.fiber;if(ed.fiberLoc)productions[k2].fiberLoc=ed.fiberLoc;if(ed.locations)productions[k2].locations=ed.locations;if(ed.ifbRoute)productions[k2].ifbRoute=ed.ifbRoute;if(ed.deptUI)productions[k2].deptUI=ed.deptUI;if(ed.audioAssets)productions[k2].audioAssets=ed.audioAssets;if(ed.replay)productions[k2].replay=ed.replay;if(ed.gfxAssets)productions[k2].gfxAssets=ed.gfxAssets;if(ed.travelReqs)productions[k2].travelReqs=ed.travelReqs;if(ed.plan)productions[k2].plan=ed.plan;if(ed.deptChecks)productions[k2].deptChecks=ed.deptChecks;if(ed.siteCheckins)productions[k2].siteCheckins=ed.siteCheckins;if(ed.broadcastOps)productions[k2].broadcastOps=ed.broadcastOps;}}}
@@ -5244,7 +5244,7 @@ function npStarterSchedule(start,end,time,venue){
 }
 /* reusable project-creation core — used by the modal AND the National Press Club intake */
 function createProjectFromData(d){
-  var title=d.name;var key=slugify(title);var base=key,n=2;while(productions[key]){key=base+n;n++;}
+  var title=museCleanName(d.name);var key=slugify(title);var base=key,n=2;while(productions[key]){key=base+n;n++;}
   productions[key]={name:title,customer:d.customer||'External Productions',tab:(title.length>16?title.slice(0,15)+'…':title),
     venue:d.venue||'Location TBD',date:d.date||'TBD',dateStart:d.dateStart||'',dateEnd:d.dateEnd||'',time:d.time||'',desc:d.desc||'',
     tag:d.tag||(title.length>20?title.slice(0,19)+'…':title),status:d.status||'Pre-Production',
@@ -6254,6 +6254,8 @@ function downloadTechbook(key,opts){
 
 /* ===== PRINT-BASED TECHBOOK (no CDN — always works; Save as PDF) ===== */
 function txt(s){return s==null?'':''+s;}
+/* Show names reach many templates (some unescaped) and other browsers via MuseSync: markup characters never belong in one. */
+function museCleanName(s){return String(s==null?'':s).replace(/[<>`]/g,'').replace(/'/g,'\u2019').replace(/"/g,'\u201D').trim();}
 function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function spectrumSVGmarkup(sz,bodyFill){
   /* Official Muse Live Spectrum from assets/brand — natural aspect (~1.727:1) */

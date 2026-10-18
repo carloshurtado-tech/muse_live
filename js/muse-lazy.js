@@ -12,7 +12,8 @@
 
   var loading = {};
   var loaded = {};
-  var CACHE_V = '20261017-sched1';
+  // Same ?v= tag as this loader's own <script> (the build bumps it), so lazy modules refresh on every deploy.
+  var CACHE_V = (/[?&]v=([^&#]+)/.exec((document.currentScript || {}).src || '') || [])[1] || 'dev';
 
   function scriptBase() {
     try {

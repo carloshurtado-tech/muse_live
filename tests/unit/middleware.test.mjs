@@ -61,3 +61,13 @@ test('guest demo: public about page; read-only viewer session; voice blocked; GU
   assert.equal((await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: off }))).status, 403);
   assert.equal((await (await onRequest(ctx('/api/ping', { env: off, headers: { Cookie: cookie } }))).json()).authed, false);
 });
+test('QoE beacons from read-only sessions are accepted but not stored', async () => {
+  const { onRequestPost } = await import('../../functions/api/qoe.js');
+  const env = { MUSE_KV: memoryKV() };
+  const beacon = { show: 'museaitour', stream: 'main', session: 's1', rebuffer_ms: 864e5, play_ms: 1000 };
+  const v = await (await onRequestPost(ctx('/api/qoe', { method: 'POST', body: beacon, env, user: { u: 'guest', r: 'viewer' } }))).json();
+  assert.equal(v.stored, false);
+  assert.equal(await env.MUSE_KV.get('qoe:museaitour'), null);
+  await onRequestPost(ctx('/api/qoe', { method: 'POST', body: beacon, env, user: { u: 'team', r: 'admin' } }));
+  assert.notEqual(await env.MUSE_KV.get('qoe:museaitour'), null);
+});

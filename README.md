@@ -54,6 +54,45 @@ Browser                                Cloudflare Pages (edge)                  
 
 More in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/SECURITY.md](docs/SECURITY.md).
 
+### How Muse answers a question
+
+The model never sees the database and never writes on its own.
+
+1. The browser builds a live snapshot: every show’s readiness, dates, stream health and open incidents.
+2. `POST /api/museai` adds the persona and tool schemas and makes **one** call to Meta Model API, so the key never leaves the server.
+3. If the model asks for tools (production, techbook, crew, schedule, streaming, incidents, weather…), the browser runs them against the plan of record and posts the results back, for up to 8 steps.
+4. Anything that would change data comes back as a Confirm card. A person decides, and Undo is offered.
+
+## The job, and where it lives in the app
+
+| Streaming & broadcast responsibility | In Muse Live |
+| --- | --- |
+| Deliver live events end to end | Per-show streaming plan: destinations and ingest, contribution and redundancy (SRT primary, bonded cellular backup), packaging (HLS / LL-HLS / DASH), CDN, captions and loudness, pre-flight and go-live checklist. |
+| Encoding and ABR ladders | Encoding ladder per show: rungs, codecs and bitrates on the plan of record. |
+| Monitoring and quality of experience | Live Streams wall; per-hop health; hls.js QoE beacons (startup, rebuffer, bitrate switches, errors); AWS MediaLive / MediaConnect / CloudFront and Mux Data adapters; availability SLO with error budget. |
+| Incident response and post-mortems | Incident Reports: severity, viewer impact, time to detect and mitigate, timeline, root cause and action items, linked to each show. |
+| Event production and broadcast planning | Department readiness, techbook PDF export, site surveys, venue drawings, power and fiber, gear and crew. |
+| Resources: encoders, circuits, rooms, crew | Muse Schedule with conflict detection, labor rules, crew self-service and ICS feeds. |
+| Facebook and Instagram Live | Server-side Graph API proxy for live video status and ingest stream health. |
+| Automation and tooling | Muse, an agent with tools over all of the above; every write goes through a human confirmation step. |
+
+## The guided demo
+
+The landing page’s **Start the 90-second demo** opens a read-only guest session and an auto-playing tour:
+home → Live Streams wall → a show’s end-to-end streaming chain → incident post-mortems → schedule
+conflicts → Muse answering live → bookings → the techbook PDF, built from live data and opened in a new
+tab. Space pauses, arrows step, Esc ends; the spotlight follows each target’s shape and every step is
+announced to screen readers.
+
+## Decisions and trade-offs
+
+- **Edge first, no servers to run.** Static assets and Functions on Cloudflare Pages, state in Workers KV: deploys in seconds, nothing to patch, close to viewers.
+- **Tools run in the browser.** The plan of record lives client-side today, so the agent’s tools do too; the server relays one model step at a time. As data moves into KV, tools can move server-side unchanged.
+- **Simulated where it must be, real where it can be.** Pipeline numbers are a seeded simulation labeled *Demo* until connected to CloudWatch, Mux or Facebook Live; video monitors, QoE beacons and pre-flight checks are real.
+- **Read-only by role, enforced on the server.** Viewer sessions (including the guest demo) are refused by every write endpoint; guests get their own Muse rate limit and daily token budget.
+- **Blameless by design.** Incident reports focus on the system and the timeline, and every follow-up has an owner and a status.
+- **Accessible from the start.** Keyboard paths, focus management, screen-reader announcements (including the tour) and contrast checked in both themes.
+
 ## Quality
 
 - **Muse accuracy eval:** 40 / 40 questions on the real model, median answer 5.8 s ([eval/REPORT.md](eval/REPORT.md)).

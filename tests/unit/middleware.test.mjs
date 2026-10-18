@@ -45,3 +45,19 @@ test('cross-site login posts are refused', async () => {
   const e = await env();
   assert.equal((await onRequest(ctx('/api/login', { method: 'POST', body: { password: PW }, headers: { Origin: 'https://evil.example' }, env: e }))).status, 403);
 });
+test('guest demo: public about page; read-only viewer session; voice blocked; GUEST_DEMO=off closes and revokes', async () => {
+  const e = await env();
+  assert.equal(await (await onRequest(ctx('/about', { env: e }))).text(), 'NEXT');
+  assert.equal((await onRequest(ctx('/api/auth/guest', { env: e }))).status, 405);
+  const res = await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: e }));
+  assert.equal(res.status, 200);
+  assert.equal((await res.json()).user.role, 'viewer');
+  assert.match(res.headers.getSetCookie()[0], /Max-Age=86400; HttpOnly/);
+  const cookie = cookieFrom(res);
+  assert.equal((await (await onRequest(ctx('/api/ping', { env: e, headers: { Cookie: cookie } }))).json()).authed, true);
+  assert.equal(await (await onRequest(ctx('/api/kv/a', { env: e, headers: { Cookie: cookie } }))).text(), 'NEXT');
+  assert.equal((await onRequest(ctx('/api/voice', { method: 'POST', body: 'x', env: e, headers: { Cookie: cookie } }))).status, 403);
+  const off = { ...e, GUEST_DEMO: 'off' };
+  assert.equal((await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: off }))).status, 403);
+  assert.equal((await (await onRequest(ctx('/api/ping', { env: off, headers: { Cookie: cookie } }))).json()).authed, false);
+});

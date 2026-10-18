@@ -53,3 +53,8 @@ deploy — `npm run build` does it.
 - Rotate everyone's sessions: change `SESSION_SECRET`.
 - Muse offline: `/api/museai` returns 503 when `MODEL_API_KEY` is missing; the drawer falls back to
   built-in answers. 402 from Meta = billing; 429 = rate limit.
+- Guest demo (landing page "Start the 90-second demo"): `POST /api/auth/guest` issues a read-only
+  `viewer` session for 24 h. Set `GUEST_DEMO=off` to hide the buttons, refuse new guests and end
+  existing guest sessions. Guests can't use voice; Muse allows them `MUSE_GUEST_RATE_PER_MIN`
+  (default 10) requests per minute and all guests share `MUSE_GUEST_DAILY_TOKEN_CAP` (default 300000)
+  tokens per day, inside the workspace's `MUSE_DAILY_TOKEN_CAP`.

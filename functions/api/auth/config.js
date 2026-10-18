@@ -11,5 +11,6 @@ export async function onRequestGet({ env }) {
     accounts: users,
     sharedPassword: !users || env.ALLOW_SHARED_PASSWORD === 'true',
     storage: !!env.MUSE_KV,
+    guest: env.GUEST_DEMO !== 'off',
   });
 }

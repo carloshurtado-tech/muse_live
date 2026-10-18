@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Muse Live is built</title>
+<meta name="description" content="Architecture, engineering decisions and honest limits of Muse Live, a live broadcast and streaming operations platform with an AI agent.">
+<link rel="icon" href="assets/brand/favicon.svg" type="image/svg+xml">
+<style>
+:root{
+  --bg:#F0F2F5;--card:#FFFFFF;--ink:#050505;--ink-2:#4B4F56;--ink-3:#65676B;--line:#E4E6EB;--accent:#0064E0;--accent-ink:#FFFFFF;
+  --chip:#E7F3FF;--chip-ink:#0A58CA;--ok:#1E7D3A;--code:#F5F6F7;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#18191A;--card:#242526;--ink:#E4E6EB;--ink-2:#CFD3D9;--ink-3:#B0B3B8;--line:#3A3B3C;--accent:#4599FF;--accent-ink:#050505;
+  --chip:#263951;--chip-ink:#A8CCFF;--ok:#5DD07D;--code:#1C1D1F;color-scheme:dark;}}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+a{color:var(--accent);font-weight:600;text-decoration:none;}
+a:hover{text-decoration:underline;}
+a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px;}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px;}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 0;}
+header.top .brand{display:flex;align-items:center;gap:10px;color:var(--ink);font-weight:700;font-size:17px;}
+header.top .brand img{height:22px;width:auto;}
+.btn{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 18px;border-radius:8px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:15px;}
+.btn:hover{text-decoration:none;filter:brightness(1.06);}
+.btn.ghost{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line);}
+.hero{padding:40px 0 32px;}
+.eyebrow{margin:0 0 10px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);}
+h1{margin:0 0 14px;font-size:clamp(32px,5vw,48px);line-height:1.08;letter-spacing:-.02em;}
+.lede{margin:0 0 24px;max-width:720px;font-size:19px;color:var(--ink-2);}
+.cta{display:flex;flex-wrap:wrap;gap:10px;}
+section{padding:36px 0;border-top:1px solid var(--line);}
+h2{margin:0 0 6px;font-size:26px;letter-spacing:-.01em;}
+.sub{margin:0 0 22px;color:var(--ink-3);max-width:720px;}
+h3{margin:0 0 6px;font-size:17px;}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));}
+.card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 0 0 1px var(--line);}
+.card p{margin:0;color:var(--ink-2);font-size:15px;}
+.card .where{margin-top:10px;font-size:13px;color:var(--ink-3);}
+.stats{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));}
+.stat{background:var(--card);border-radius:12px;padding:16px 18px;box-shadow:0 0 0 1px var(--line);}
+.stat b{display:block;font-size:30px;line-height:1.1;letter-spacing:-.01em;}
+.stat span{font-size:14px;color:var(--ink-3);}
+figure{margin:0;}
+.shot{background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line);}
+.shot img{display:block;width:100%;height:auto;}
+.shot figcaption{padding:12px 16px;font-size:14px;color:var(--ink-2);}
+.shots{display:grid;gap:16px;}
+@media (min-width:860px){.shots{grid-template-columns:1fr 1fr;}.shots figure:first-child{grid-column:1/-1;}}
+.diagram{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 0 0 1px var(--line);overflow-x:auto;}
+.diagram svg{display:block;min-width:760px;width:100%;height:auto;}
+.diagram .box{fill:var(--bg);stroke:var(--line);stroke-width:1.5;}
+.diagram .box.hot{stroke:var(--accent);}
+.diagram .t{fill:var(--ink);font:700 14px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+.diagram .s{fill:var(--ink-3);font:400 12px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;}
+.diagram .h{fill:var(--accent);font:700 11px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;letter-spacing:.08em;}
+.diagram .ln{stroke:var(--ink-3);stroke-width:1.5;fill:none;}
+.diagram .ah{fill:var(--ink-3);}
+table{width:100%;border-collapse:collapse;background:var(--card);border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line);font-size:15px;}
+th,td{text-align:left;vertical-align:top;padding:12px 16px;border-bottom:1px solid var(--line);}
+th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);background:var(--code);}
+tr:last-child td{border-bottom:0;}
+td:first-child{font-weight:600;width:36%;}
+.table-wrap{overflow-x:auto;border-radius:12px;}
+ol.steps{margin:0;padding-left:22px;color:var(--ink-2);}
+ol.steps li{margin:0 0 8px;}
+code{font:500 13.5px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code);padding:1px 6px;border-radius:5px;color:var(--ink);}
+.chip{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--chip);color:var(--chip-ink);margin-right:6px;}
+ul.limits{margin:0;padding-left:20px;color:var(--ink-2);}
+ul.limits li{margin:0 0 8px;}
+.bio{display:flex;gap:18px;align-items:flex-start;}
+.bio .avatar{flex:0 0 64px;height:64px;border-radius:50%;background:var(--chip);color:var(--chip-ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:22px;}
+.bio p{margin:0 0 8px;color:var(--ink-2);}
+footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color:var(--ink-3);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/"><img src="assets/brand/meta-mark.svg" alt="" width="34" height="22">Muse Live</a>
+    <a class="btn" href="/">Open the live demo</a>
+  </header>
+
+  <main>
+  <div class="hero">
+    <p class="eyebrow">How it’s built</p>
+    <h1>One place to plan, stream and learn from every live event</h1>
+    <p class="lede">Muse Live is an operations platform for live events that are both broadcast and streamed: the plan of record for every show, end-to-end stream health from encoder to viewer, blameless incident reports, a resource scheduler, and Muse, an AI agent that can read all of it and propose changes for a human to confirm.</p>
+    <div class="cta">
+      <a class="btn" href="/">Start the 90-second demo</a>
+      <a class="btn ghost" href="https://github.com/carloshurtado-tech/muse_live" target="_blank" rel="noopener">Source on GitHub</a>
+    </div>
+  </div>
+
+  <section aria-labelledby="who">
+    <h2 id="who">Who built it</h2>
+    <div class="card bio">
+      <div class="avatar" aria-hidden="true">CH</div>
+      <div>
+        <h3>Carlos Hurtado</h3>
+        <!-- BIO: replace with your own 2–4 sentences -->
+        <p>[Bio coming: 2–4 sentences on background, years in broadcast and current role.]</p>
+        <p><a href="https://github.com/carloshurtado-tech" target="_blank" rel="noopener">GitHub</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="see">
+    <h2 id="see">What you’ll see</h2>
+    <p class="sub">Every screen runs on the same live data, and Muse can answer questions about any of it.</p>
+    <div class="shots">
+      <figure class="shot"><img src="assets/about/chain.webp" alt="A show's live health panel: encode, contribute, ingest, package, deliver and watch stages with metrics, sparklines for viewers, rebuffer ratio, SRT loss and CDN egress, and a 99.9% availability SLO with error budget" width="1600" height="1000" loading="lazy">
+        <figcaption><span class="chip">Streaming</span>End-to-end health per show: encoder → SRT contribution → MediaConnect/MediaLive → packaging → multi-CDN → player QoE, with an availability SLO and error budget.</figcaption></figure>
+      <figure class="shot"><img src="assets/about/incidents.webp" alt="Incident report for a SEV-2: primary SRT contribution lost, 38 seconds of viewer-visible rebuffering before failover, with impact numbers, summary and timeline" width="1600" height="1000" loading="lazy">
+        <figcaption><span class="chip">Incidents</span>Blameless post-mortems with impact, time to detect and mitigate, root cause, timeline and owned follow-ups.</figcaption></figure>
+      <figure class="shot"><img src="assets/about/schedule.webp" alt="Muse Schedule timeline of control rooms with bookings, utilization numbers and a conflicts panel offering one-click fixes" width="1600" height="1000" loading="lazy">
+        <figcaption><span class="chip">Scheduling</span>Rooms, circuits, encoders, trucks and crew on one timeline, with conflicts and labor rules checked as you book.</figcaption></figure>
+    </div>
+  </section>
+
+  <section aria-labelledby="role">
+    <h2 id="role">The job, and where it lives in the app</h2>
+    <p class="sub">What a streaming and broadcast engineer owns on a live event, mapped to the part of Muse Live that supports it.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th scope="col">Responsibility</th><th scope="col">In Muse Live</th></tr></thead>
+      <tbody>
+        <tr><td>Deliver live events end to end</td><td>Per-show streaming plan: destinations and ingest, contribution and redundancy (SRT primary, bonded cellular backup), packaging (HLS / LL-HLS / DASH), CDN, captions and loudness, pre-flight and go-live checklist.</td></tr>
+        <tr><td>Encoding and ABR ladders</td><td>Encoding ladder per show, with rungs, codecs and bitrates on the plan of record.</td></tr>
+        <tr><td>Monitoring and quality of experience</td><td>Live Streams wall; per-hop health; hls.js monitors that post real QoE beacons (startup, rebuffer, bitrate switches, errors); adapters for AWS MediaLive / MediaConnect / CloudFront metrics and Mux Data; an availability SLO with error budget.</td></tr>
+        <tr><td>Incident response and post-mortems</td><td>Incident Reports: severity, viewer impact, time to detect and mitigate, timeline, root cause and action items, searchable and linked to each show.</td></tr>
+        <tr><td>Event production and broadcast planning</td><td>Productions with department readiness, techbook PDF export, site surveys, venue drawings, power and fiber, gear and crew.</td></tr>
+        <tr><td>Resources: encoders, circuits, rooms, crew</td><td>Muse Schedule with conflict detection, labor rules, crew self-service and ICS calendar feeds.</td></tr>
+        <tr><td>Platforms: Facebook and Instagram Live</td><td>A server-side Graph API proxy for live video status and ingest stream health (token never reaches the browser).</td></tr>
+        <tr><td>Automation and tooling</td><td>Muse, an agent with tools over all of the above; write actions always go through a human confirmation step.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section aria-labelledby="arch">
+    <h2 id="arch">Architecture</h2>
+    <p class="sub">A static single-page app at the edge, a thin server layer for anything secret, and an agent loop where the model plans and the browser runs the tools.</p>
+    <div class="diagram">
+      <svg viewBox="0 0 960 400" role="img" aria-labelledby="archT archD">
+        <title id="archT">Muse Live architecture</title>
+        <desc id="archD">The browser app talks over HTTPS to Cloudflare Pages. Pages Functions handle auth, the Muse agent step, shared storage and telemetry adapters. Functions call Workers KV, Meta Model API, AWS CloudWatch, Mux Data and the Facebook Graph API.</desc>
+        <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="ah" d="M0 0L10 5L0 10z"/></marker></defs>
+        <text class="h" x="20" y="28">BROWSER</text>
+        <rect class="box" x="20" y="40" width="260" height="330" rx="12"/>
+        <text class="t" x="40" y="72">App shell + feature modules</text>
+        <text class="s" x="40" y="92">streaming · incidents · schedule</text>
+        <text class="s" x="40" y="110">productions · techbook · crew</text>
+        <text class="t" x="40" y="150">Muse agent (tools run here)</text>
+        <text class="s" x="40" y="170">reads the live plan of record,</text>
+        <text class="s" x="40" y="188">Confirm cards for every write</text>
+        <text class="t" x="40" y="228">hls.js monitors</text>
+        <text class="s" x="40" y="248">QoE beacons: startup, rebuffer,</text>
+        <text class="s" x="40" y="266">bitrate switches, errors</text>
+        <text class="t" x="40" y="306">MuseSync</text>
+        <text class="s" x="40" y="326">localStorage ⇄ KV, offline queue,</text>
+        <text class="s" x="40" y="344">last write wins</text>
+        <path class="ln" d="M282 205 H346" marker-end="url(#a)" marker-start="url(#a)"/>
+        <text class="s" x="290" y="196">HTTPS</text>
+        <text class="h" x="350" y="28">CLOUDFLARE PAGES (EDGE)</text>
+        <rect class="box hot" x="350" y="40" width="290" height="330" rx="12"/>
+        <text class="t" x="370" y="72">_middleware</text>
+        <text class="s" x="370" y="92">HMAC sessions · roles · guest demo</text>
+        <text class="s" x="370" y="110">login throttle · CSP via _headers</text>
+        <text class="t" x="370" y="150">/api/museai</text>
+        <text class="s" x="370" y="170">one model step per call, streamed;</text>
+        <text class="s" x="370" y="188">rate limits + daily token caps</text>
+        <text class="t" x="370" y="228">/api/kv · /api/calendar · /api/audit</text>
+        <text class="s" x="370" y="248">shared state, ICS feeds, audit log</text>
+        <text class="t" x="370" y="288">/api/telemetry · /api/qoe · /api/fblive</text>
+        <text class="s" x="370" y="308">SigV4 CloudWatch, Mux Data,</text>
+        <text class="s" x="370" y="326">Graph API: keys stay server-side</text>
+        <path class="ln" d="M642 90 H706" marker-end="url(#a)"/>
+        <path class="ln" d="M642 165 H706" marker-end="url(#a)"/>
+        <path class="ln" d="M642 240 H706" marker-end="url(#a)"/>
+        <path class="ln" d="M642 300 H706" marker-end="url(#a)"/>
+        <text class="h" x="710" y="28">SERVICES</text>
+        <rect class="box" x="710" y="58" width="230" height="58" rx="10"/>
+        <text class="t" x="728" y="83">Workers KV</text><text class="s" x="728" y="102">shared state, users, audit</text>
+        <rect class="box" x="710" y="134" width="230" height="58" rx="10"/>
+        <text class="t" x="728" y="159">Meta Model API</text><text class="s" x="728" y="178">muse-spark, tool calling</text>
+        <rect class="box" x="710" y="210" width="230" height="58" rx="10"/>
+        <text class="t" x="728" y="235">AWS CloudWatch · Mux Data</text><text class="s" x="728" y="254">MediaLive, MediaConnect, CDN</text>
+        <rect class="box" x="710" y="286" width="230" height="58" rx="10"/>
+        <text class="t" x="728" y="311">Facebook Graph API</text><text class="s" x="728" y="330">Live video + ingest health</text>
+      </svg>
+    </div>
+  </section>
+
+  <section aria-labelledby="agent">
+    <h2 id="agent">How Muse answers a question</h2>
+    <p class="sub">The model never sees the database and never writes on its own.</p>
+    <ol class="steps">
+      <li>The browser builds a live snapshot: every show’s readiness, dates, stream health and open incidents.</li>
+      <li><code>POST /api/museai</code> adds the persona and tool schemas and makes <strong>one</strong> call to Meta Model API, so the key never leaves the server.</li>
+      <li>If the model asks for tools (production, techbook, crew, schedule, streaming, incidents, weather…), the browser runs them against the plan of record and posts the results back. This repeats for up to 8 steps.</li>
+      <li>Anything that would change data comes back as a Confirm card. A person decides, and Undo is offered.</li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="quality">
+    <h2 id="quality">How it’s checked</h2>
+    <p class="sub">From the test and eval suites in the repository and an axe accessibility audit.</p>
+    <div class="stats">
+      <div class="stat"><b>40 / 40</b><span>Muse accuracy eval on the real model, median answer 5.8 s</span></div>
+      <div class="stat"><b>25</b><span>unit tests: auth, sessions, guest access, KV, sync, incidents, SigV4, build</span></div>
+      <div class="stat"><b>7</b><span>Playwright end-to-end suites, including a crawl of every view</span></div>
+      <div class="stat"><b>0</b><span>axe WCAG 2.1 AA violations on the main views, light and dark</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="decisions">
+    <h2 id="decisions">Decisions and trade-offs</h2>
+    <div class="grid">
+      <div class="card"><h3>Edge first, no servers to run</h3><p>Static assets and Functions on Cloudflare Pages, state in Workers KV. Deploys in seconds, nothing to patch, and it is close to viewers everywhere.</p></div>
+      <div class="card"><h3>Tools run in the browser</h3><p>The plan of record lives client-side today, so the agent’s tools do too. The server only relays one model step at a time. As data moves into KV, tools can move server-side unchanged.</p></div>
+      <div class="card"><h3>Simulated where it must be, real where it can be</h3><p>Pipeline numbers are a seeded simulation, labeled “Demo”, until a stream is connected to CloudWatch, Mux or Facebook Live. Video monitors, QoE beacons and pre-flight checks are real.</p></div>
+      <div class="card"><h3>Read-only by role, enforced on the server</h3><p>Viewer sessions (including this guest demo) are refused by every write endpoint. Muse has separate rate limits and a daily token budget for guests.</p></div>
+      <div class="card"><h3>Blameless by design</h3><p>Incident reports focus on the system and the timeline, and every follow-up has an owner and a status, so the same failure can’t quietly happen twice.</p></div>
+      <div class="card"><h3>Accessible from the start</h3><p>Keyboard paths, focus management, screen-reader announcements (including the guided tour) and contrast checked in both themes.</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="limits">
+    <h2 id="limits">Honest limits</h2>
+    <ul class="limits">
+      <li>Viewer counts, bitrates and other pipeline metrics are simulated unless a show is connected to real telemetry. Every simulated number is labeled “Demo”.</li>
+      <li>Stream monitors play public recordings of Meta events from YouTube, standing in for live program feeds.</li>
+      <li>Most views are string-template JavaScript from an earlier build. Newer modules are self-contained, and <code>docs/MIGRATION.md</code> plans the move to React and TypeScript.</li>
+      <li>Shared storage is last-write-wins per key. That is fine for a small team; a real deployment needs per-record merges or a database.</li>
+      <li>This is a concept demo, not an official Meta product.</li>
+    </ul>
+  </section>
+  </main>
+
+  <footer>
+    Muse Live is a concept demo by Carlos Hurtado and is not affiliated with or endorsed by Meta. Meta, Ray-Ban, Instagram, WhatsApp and Muse are trademarks of their owners. Event recordings belong to their owners.
+  </footer>
+</div>
+</body>
+</html>

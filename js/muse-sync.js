@@ -68,13 +68,16 @@
   function dequeue(key) { var q = queue(); delete q[key]; writeJSON(QUEUE, q); }
   function send(key, text) {
     if (enabled === false) return Promise.resolve(false);
-    if (text.length > MAX_BYTES) { try { console.warn('[MuseSync] ' + key + ' is larger than 256 KB; kept on this device only.'); } catch (e) { /* noop */ } dequeue(key); return Promise.resolve(false); }
+    return me().then(function (u) {
+    if (u && u.role === 'viewer') { dequeue(key); return false; } // read-only session (guest demo): changes stay on this device
+    if (text.length > MAX_BYTES) { try { console.warn('[MuseSync] ' + key + ' is larger than 256 KB; kept on this device only.'); } catch (e) { /* noop */ } dequeue(key); return false; }
     setState('saving');
     return req('PUT', key, text).then(function (r) {
       if (r.ok) { dequeue(key); lastSync = Date.now(); return r.json().then(function (j) { seen[key] = j.updated || Date.now(); setState(Object.keys(queue()).length ? 'saving' : 'synced'); return true; }); }
       if (r.status === 403) { dequeue(key); setState('synced'); return false; } // read-only role
       enqueue(key, text); setState('offline'); return false;
     }).catch(function () { enqueue(key, text); setState('offline'); return false; });
+    });
   }
   function put(key, value) {
     var text; try { text = JSON.stringify(value); } catch (e) { return; }
@@ -189,8 +192,9 @@
   }
 
   /* ---------------- boot ---------------- */
+  var settle; var ready = new Promise(function (r) { settle = r; }); // first pull done and no reload pending
   function boot() {
-    if (!ls || !signedIn()) { enabled = false; return; }
+    if (!ls || !signedIn()) { enabled = false; settle(); return; }
     // Mirror writes from every module (no changes needed in the modules themselves).
     Storage.prototype.setItem = function (k, v) {
       nativeSet.call(this, k, v);
@@ -202,7 +206,7 @@
       if (this === ls && enabled && MIRROR.indexOf(k) >= 0) pushMirror(k);
     };
     me().then(function (u) {
-      if (!u) { enabled = false; return; }
+      if (!u) { enabled = false; settle(); return; }
       enabled = true;
       return initialPull().then(function (changed) {
         if (enabled === false) return;
@@ -214,6 +218,7 @@
           return;
         }
         if (changed.length) { staleBy = 'another device'; setState('stale'); } else setState('synced');
+        settle();
         flush();
         setInterval(poll, POLL_MS);
         setInterval(function () { if (Object.keys(queue()).length) flush(); }, RETRY_MS);
@@ -225,6 +230,8 @@
 
   w.MuseSync = {
     get: get, put: put, on: on, me: me, flush: flush,
+    ready: ready,
+    readOnly: function () { return !!(w.__museSyncMe && w.__museSyncMe.role === 'viewer'); },
     status: function () { return { state: state, enabled: !!enabled, lastSync: lastSync, pending: Object.keys(queue()).length }; },
     _kvKey: kvKey
   };

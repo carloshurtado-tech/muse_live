@@ -88,12 +88,12 @@ export async function verifyToken(env, token) {
 /** @param {Request} request @param {any} env */
 export async function readSession(request, env) { return verifyToken(env, readCookie(request, SESSION)); }
 
-/** @param {string} token @param {boolean} secure */
-export function sessionCookies(token, secure) {
+/** @param {string} token @param {boolean} secure @param {number} [maxAge] */
+export function sessionCookies(token, secure, maxAge = MAX_AGE) {
   const s = secure ? '; Secure' : '';
   return [
-    `${SESSION}=${token}; Path=/; Max-Age=${MAX_AGE}; HttpOnly; SameSite=Lax${s}`,
-    `${HINT}=1; Path=/; Max-Age=${MAX_AGE}; SameSite=Lax${s}`,
+    `${SESSION}=${token}; Path=/; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${s}`,
+    `${HINT}=1; Path=/; Max-Age=${maxAge}; SameSite=Lax${s}`,
   ];
 }
 /** @param {boolean} secure */

@@ -41,16 +41,6 @@ function museCfg(name){
   return (typeof v==='string')?v.trim():v;
 }
 function museCfgSource(){var c=window.MUSE_LIVE_CONFIG||{};return c._source||'none';}
-/* browsers heuristically cache config.local.js on static servers — re-fetch with
-   no-store at boot and apply if it changed, so key edits take effect on plain reload.
-   (file:// standalone copies skip this; the static <script> tags remain the base path.) */
-function cfgRefresh(){
-  if(location.protocol.indexOf('http')!==0)return;
-  fetch('config/config.local.js',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('none');return r.text();})
-  .then(function(t){
-    try{(new Function(t))();}catch(e){return;}
-    try{cfgBannerInit();}catch(e){}
-  }).catch(function(){});}
 /* non-blocking banner — demo ship: no key nag */
 function cfgBannerInit(){
   var host=document.getElementById('cfgBannerHost');if(!host)return;
@@ -361,7 +351,7 @@ var barGrad={amber:"#F7B928",emerald:"#1E7B34",red:"#E41E3F",purple:"#0866FF",bl
 var dotBg={amber:"#F7B928",emerald:"#1E7B34",red:"#E41E3F",purple:"#0866FF",blue:"#0866FF",orange:"#F5832A",teal:"#1E7B34",indigo:"#0866FF",rose:"#E41E3F",cyan:"#0866FF",gray:"#b0b3b8"};
 var customerList=["Reality Labs","Meta AI","WhatsApp","Facebook","Instagram","External Productions"];
 var customerStyle={
- "Reality Labs":{bg:"#e7f3ff",tx:"#0866FF",bd:"#b9d7ff"},
+ "Reality Labs":{bg:"#e7f3ff",tx:"#0064E0",bd:"#b9d7ff"},
  "Meta AI":{bg:"#f5edff",tx:"#7A3EFE",bd:"#d9c7ff"},
  "WhatsApp":{bg:"#e6f4ea",tx:"#1E7B34",bd:"#a8dab5"},
  "Facebook":{bg:"#e7f3ff",tx:"#0866ff",bd:"#b9d7ff"},
@@ -7499,7 +7489,6 @@ function initApp(){
     try{renderSchedule();}catch(e){}
     try{var nav=document.getElementById('tabNav');if(nav&&!nav.getAttribute('data-wired')){nav.setAttribute('data-wired','1');nav.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.getAttribute('data-view'))switchView(b.getAttribute('data-view'));});}}catch(e){}
     try{renderPersonnelDir();}catch(e){}
-    try{cfgRefresh();}catch(e){}
     try{setInterval(function(){if(typeof portalTick==='function')portalTick();},1000);}catch(e){}
     try{trackInit();}catch(e){}
     try{opsInit();}catch(e){}

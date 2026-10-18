@@ -12,11 +12,13 @@ import { getUser, hasUsers, normEmail, verifyPassword } from './_lib/users.js';
 import { audit } from './_lib/audit.js';
 
 // Served to signed-out visitors: the login page and what it needs to render.
-const PUBLIC_PATHS = new Set(['/', '/index.html', '/manifest.webmanifest', '/robots.txt', '/sitemap.xml', '/favicon.ico',
+const PUBLIC_PATHS = new Set(['/', '/index.html', '/about', '/about.html', '/manifest.webmanifest', '/robots.txt', '/sitemap.xml', '/favicon.ico',
   '/api/auth/config', '/api/auth/oidc/start', '/api/auth/oidc/callback',
   // Calendar subscriptions (Google / Outlook) can't send cookies; the handler checks its own token.
   '/api/calendar', '/api/calendar.ics']);
-const PUBLIC_PREFIXES = ['/assets/brand/', '/css/', '/api/calendar/'];
+const PUBLIC_PREFIXES = ['/assets/brand/', '/assets/about/', '/css/', '/api/calendar/'];
+// Guest demo: anyone can open a read-only 'viewer' session (KV/calendar/telemetry writes refuse it). GUEST_DEMO=off closes it.
+const GUEST = { u: 'guest', n: 'Guest reviewer', r: 'viewer' }, GUEST_MAX_AGE = 60 * 60 * 24;
 // Pages a signed-out visitor should be sent to the sign-in screen for (instead of a bare 401).
 const REDIRECT_PREFIXES = ['/glasses', '/ops'];
 
@@ -75,6 +77,17 @@ async function login(request, env, secure) {
   return json({ ok: true, user: { email: who.u === 'team' ? null : who.u, name: who.n, role: who.r } }, 200, sessionCookies(await signSession(env, who), secure).map((c) => ['Set-Cookie', c]));
 }
 
+async function guestLogin(request, env, secure) {
+  if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
+  if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
+  if (env.GUEST_DEMO === 'off') return json({ ok: false, error: 'The guest demo is closed. Use the team sign-in.' }, 403);
+  const retry = loginTake(loginKey(request));
+  if (retry) return json({ ok: false, error: 'Too many attempts. Try again in ' + retry + ' s.' }, 429);
+  await audit(env, { who: GUEST.u, role: GUEST.r, action: 'login', detail: 'guest demo' });
+  return json({ ok: true, user: { email: null, name: GUEST.n, role: GUEST.r } }, 200,
+    sessionCookies(await signSession(env, GUEST, GUEST_MAX_AGE), secure, GUEST_MAX_AGE).map((c) => ['Set-Cookie', c]));
+}
+
 export async function onRequest(context) {
   const { request, next, env } = context;
   const url = new URL(request.url);
@@ -88,10 +101,11 @@ export async function onRequest(context) {
   }
   const session = await readSession(request, env);
   let authed = !!session;
+  if (authed && session.u === GUEST.u && env.GUEST_DEMO === 'off') authed = false;
 
   // Accounts disabled after sign-in lose API access immediately (checked on API calls only,
   // so static assets don't cost a KV read each).
-  if (authed && session.u !== 'team' && path.startsWith('/api/') && env.MUSE_KV) {
+  if (authed && session.u !== 'team' && session.u !== GUEST.u && path.startsWith('/api/') && env.MUSE_KV) {
     const user = await getUser(env, session.u);
     if (!user || user.disabled) authed = false;
     else if (user.role !== session.r) session.r = user.role; // role changes apply immediately
@@ -100,6 +114,9 @@ export async function onRequest(context) {
 
   if (path === '/api/ping') return json({ ok: true, authed });
   if (path === '/api/login' || path === '/api/auth/login') return login(request, env, secure);
+  if (path === '/api/auth/guest') return guestLogin(request, env, secure);
+  // Voice transcription spends model credit and has no rate limit of its own: not for read-only sessions.
+  if (authed && session.r === 'viewer' && path === '/api/voice') return json({ ok: false, error: 'Voice is off in the guest demo. Type your question instead.' }, 403);
   if (path === '/logout' || path === '/api/auth/logout') {
     if (authed) await audit(env, { who: session.u, role: session.r, action: 'logout' });
     const headers = new Headers({ Location: '/', 'Cache-Control': 'no-store' });

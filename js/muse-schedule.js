@@ -1203,7 +1203,7 @@
     if (!db) return Promise.resolve(false);
     var snap = snapshot();
     try { if (root.MuseSync && typeof root.MuseSync.put === 'function') root.MuseSync.put('schedule', snap); } catch (e) {}
-    try { if (location.protocol === 'file:') return Promise.resolve(false); } catch (e) {}
+    try { if (location.protocol === 'file:' || root.MuseSync.readOnly()) return Promise.resolve(false); } catch (e) {}
     return fetch('/api/calendar', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(snap) })
       .then(function (r) { return r.ok; }).catch(function () { return false; });
   }

@@ -455,7 +455,10 @@
   function section(title, body, extra, defaultOpen) {
     /* defaultOpen === false → collapse by default; the top-of-fold sections stay open */
     if (defaultOpen === false) {
-      return '<details class="ms-card ms-card-fold"><summary class="ms-card-h"><h3>' + title + '</h3>' + (extra || '') + '</summary><div class="ms-card-body">' + body + '</div></details>';
+      // A summary can't contain controls (nested-interactive): buttons move to the top of the body.
+      var ctl = /<(button|a|select|input)\b/.test(extra || '');
+      return '<details class="ms-card ms-card-fold"><summary class="ms-card-h"><h3>' + title + '</h3>' + (ctl ? '' : (extra || '')) + '</summary><div class="ms-card-body">' +
+        (ctl ? '<div class="ms-fold-actions">' + extra + '</div>' : '') + body + '</div></details>';
     }
     return '<section class="ms-card"><div class="ms-card-h"><h3>' + title + '</h3>' + (extra || '') + '</div>' + body + '</section>';
   }

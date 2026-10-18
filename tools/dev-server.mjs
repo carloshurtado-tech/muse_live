@@ -65,6 +65,7 @@ function staticResponse(p) {
   let f = path.join(PUB, decodeURIComponent(p));
   if (!f.startsWith(PUB) || /^\/(functions|node_modules|\.git)\b|\/\.dev[^/]*$/.test(p)) return new Response('Not found', { status: 404 });
   if (fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
+  if (!fs.existsSync(f) && fs.existsSync(f + '.html')) f += '.html'; // Pages pretty URLs: /about → about.html
   if (!fs.existsSync(f)) return new Response('Not found', { status: 404 });
   const ext = path.extname(f).slice(1).toLowerCase();
   return new Response(fs.readFileSync(f), { headers: { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Cache-Control': 'no-store' } });

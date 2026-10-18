@@ -227,8 +227,8 @@ function sessionKey(request) {
   const m = /(?:^|;\s*)muse_session=([^;]+)/.exec(c);
   return (m ? 's:' + m[1].slice(-24) : 'ip:' + (request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local'));
 }
-async function takeToken(env, sk) {
-  const perMin = Math.max(1, Number(env && env.MUSE_RATE_PER_MIN) || 30);
+async function takeToken(env, sk, guest) {
+  const perMin = Math.max(1, Number(env && (guest ? env.MUSE_GUEST_RATE_PER_MIN : env.MUSE_RATE_PER_MIN)) || (guest ? 10 : 30));
   const cap = perMin, refillPerMs = perMin / 60000, now = Date.now(), k = 'museai:rl:' + sk;
   let b = (await kvGet(env, k)) || mem.buckets.get(k) || { t: cap, at: now };
   b.t = Math.min(cap, b.t + (now - b.at) * refillPerMs); b.at = now;
@@ -236,15 +236,19 @@ async function takeToken(env, sk) {
   mem.buckets.set(k, b); await kvPut(env, k, b, 3600);
   return { ok, retryS: ok ? 0 : Math.ceil((1 - b.t) / refillPerMs / 1000) };
 }
-function dayKey() { return 'museai:tokens:' + new Date().toISOString().slice(0, 10); }
-async function usedToday(env) { const k = dayKey(); const v = await kvGet(env, k); return Math.max(Number(v) || 0, mem.usage.get(k) || 0); }
-async function addUsage(env, usage) {
+function dayKey(guest) { return 'museai:tokens:' + new Date().toISOString().slice(0, 10) + (guest ? ':guest' : ''); }
+async function usedToday(env, guest) { const k = dayKey(guest); const v = await kvGet(env, k); return Math.max(Number(v) || 0, mem.usage.get(k) || 0); }
+async function addUsage(env, usage, guest) {
   const n = usage && (usage.total_tokens || ((usage.prompt_tokens || 0) + (usage.completion_tokens || 0)));
   if (!n) return;
-  const k = dayKey(), cur = (await usedToday(env)) + n;
-  mem.usage.set(k, cur); await kvPut(env, k, cur, 2 * 86400);
+  for (const g of guest ? [false, true] : [false]) {
+    const k = dayKey(g), cur = (await usedToday(env, g)) + n;
+    mem.usage.set(k, cur); await kvPut(env, k, cur, 2 * 86400);
+  }
 }
 function dailyCap(env) { return Math.max(10000, Number(env && env.MUSE_DAILY_TOKEN_CAP) || 2000000); }
+// All guest sessions together share this slice of the day, so the public demo can't exhaust the team's budget.
+function guestCap(env) { return Math.max(10000, Number(env && env.MUSE_GUEST_DAILY_TOKEN_CAP) || 300000); }
 
 /* ---------------- handlers ---------------- */
 export async function onRequestGet({ env }) {
@@ -261,11 +265,18 @@ export async function onRequestPost(context) {
   let body;
   try { body = JSON.parse(raw); } catch (e) { return json({ ok: false, error: 'Bad request.' }, 400); }
 
-  const rl = await takeToken(env, sessionKey(request));
+  const user = context.data && context.data.user;
+  const guest = !!user && user.u === 'guest';
+  context.museGuest = guest;
+  const rl = await takeToken(env, sessionKey(request), guest);
   if (!rl.ok) return json({ ok: false, error: 'Muse is pacing itself. Try again in ' + rl.retryS + ' s.' }, 429);
   if ((await usedToday(env)) >= dailyCap(env)) {
     return json({ ok: false, capped: true, error: 'Muse has reached today\'s usage limit for this workspace. It resets at midnight UTC; an admin can raise MUSE_DAILY_TOKEN_CAP.' }, 429);
   }
+  if (guest && (await usedToday(env, true)) >= guestCap(env)) {
+    return json({ ok: false, capped: true, error: 'Muse has answered all the guest-demo questions it can for today. It resets at midnight UTC.' }, 429);
+  }
+  if (guest) delete body.effort;
 
   const glance = body.mode === 'glance';
   const snapshot = typeof body.snapshot === 'string' ? body.snapshot.slice(0, 60000) : (body.snapshot && typeof body.snapshot === 'object' ? JSON.stringify(body.snapshot).slice(0, 60000) : '');
@@ -323,7 +334,7 @@ export async function onRequestPost(context) {
 
   let j;
   try { j = await r.json(); } catch (e) { return json({ ok: false, error: 'Meta Model API returned an unreadable response.' }, 502); }
-  const done = addUsage(env, j.usage);
+  const done = addUsage(env, j.usage, guest);
   if (context.waitUntil) context.waitUntil(done); else await done;
   const choice = j && j.choices && j.choices[0];
   const msg = (choice && choice.message) || {};
@@ -376,7 +387,7 @@ function relayStream(r, context, model, effort) {
       const tc = calls.filter((c) => c && c.function.name).map((c, i) => ({ id: c.id || 'call_' + i, type: 'function', function: { name: c.function.name, arguments: c.function.arguments || '{}' } }));
       if (tc.length) message.tool_calls = tc;
       send(ctrl, { t: 'done', ok: true, message, usage, finish, model, effort });
-      const done = addUsage(context.env, usage);
+      const done = addUsage(context.env, usage, context.museGuest);
       if (context.waitUntil) context.waitUntil(done);
     },
   });

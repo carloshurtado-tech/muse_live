@@ -3963,7 +3963,7 @@ html.dark .ms-wrap,html.dark .ms-dash,html.dark .mi-modal{--ms-ink:#FFFFFF;--ms-
 .ms-page-h p{font-size:14px;color:var(--ms-ink-2);margin:2px 0 0;}
 .ms-card{background:var(--ms-card);border-radius:16px;padding:16px;box-shadow:0 0 0 1px var(--ms-line),0 4px 20px rgba(0,0,0,.03);min-width:0;}
 details.ms-card-fold{padding:0;}
-details.ms-card-fold > summary{list-style:none;cursor:pointer;padding:14px 18px;margin:0;position:relative;}
+details.ms-card-fold > summary{list-style:none;cursor:pointer;padding:14px 46px 14px 18px;margin:0;position:relative;}
 details.ms-card-fold > summary::-webkit-details-marker{display:none;}
 details.ms-card-fold > summary::after{content:"";position:absolute;right:18px;top:50%;width:9px;height:9px;border-right:2px solid var(--ms-ink-2);border-bottom:2px solid var(--ms-ink-2);transform:translateY(-70%) rotate(45deg);transition:transform .18s ease;}
 details.ms-card-fold[open] > summary::after{transform:translateY(-30%) rotate(-135deg);}
@@ -4001,6 +4001,13 @@ html.dark details.bops-fold > summary:hover{background:#3A3D43;}
 .ms-state.is-live i{width:6px;height:6px;border-radius:999px;background:#fff;animation:ma-blink 1.6s ease-in-out infinite;}
 .ms-state.is-reh{background:#B26B00;}
 .ms-state.is-ended{background:#4B4F56;}
+.ms-state.is-standby{background:#65676B;}
+.ms-fold-actions{display:flex;justify-content:flex-end;gap:8px;margin:0 0 12px;}
+/* WCAG AA: white on the dark-theme red (#FF705D) is 2.7:1; badges use Meta red there instead. */
+html.dark body .muse-badge,html.dark body .nav-rail-attn,html.dark body .omni-fab-badge,html.dark body .attn-badge,html.dark body .mp-badge{background:#E41E3F !important;}
+/* Division pills over cover art carry brand colours as text on a translucent chip; keep them legible. */
+span.rounded-full[style*="background:rgba(28,30,33,.72)"]{background:rgba(20,22,24,.92) !important;color:#FFFFFF !important;}
+html.dark #snapFilterPills button[style*="color:#0064E0"]{color:#4599FF !important;}
 @keyframes ma-blink{0%,100%{opacity:1}50%{opacity:.25}}
 .ms-dot{display:inline-block;width:8px;height:8px;border-radius:999px;flex-shrink:0;background:#8A8D91;}
 .ms-dot.is-ok{background:var(--ms-green,#31A24C);}.ms-dot.is-warn{background:var(--ms-amber,#F7B928);}.ms-dot.is-crit{background:var(--ms-red,#E41E3F);}
@@ -4322,7 +4329,7 @@ html:not(.dark) [id$="Overlay"] > .bg-white,
 html:not(.dark) [id$="Overlay"] > div.bg-white.rounded-2xl,
 html:not(.dark) #gsOverlay > div{background:#FFFFFF !important;color:#050505 !important;}
 /* concept disclaimer (login card + user menu) */
-#museGate .gate-disclaimer{margin:10px auto 0;max-width:300px;text-align:center;font-size:11px;line-height:14px;color:#8A8D91;}
+#museGate .gate-disclaimer{margin:10px auto 0;max-width:300px;text-align:center;font-size:11px;line-height:14px;color:#65676B;}
 .muse-disclaimer{font-size:11px;line-height:14px;color:#8A8D91;margin:0;}
 html.dark .muse-disclaimer{color:#AAAFB9;}
 /* guided tour (js/muse-tour.js) */
@@ -4342,9 +4349,15 @@ html.dark .mt-body{color:#CFD3D9;}
 html.dark .mt-btn{background:#30333A;}
 .mt-btn:disabled{opacity:.5;}
 .mt-primary{background:#0866FF;color:#fff;}
-html.dark .mt-primary{background:#0866FF;color:#000;}
+html.dark .mt-primary{background:#0866FF;color:#fff;}
 .mt-btn:focus-visible{outline:2px solid #2694FE;outline-offset:2px;}
 @media (prefers-reduced-motion: reduce){.mt-spot{transition:none;}}
+.mt-prog{height:4px;margin:0 0 12px;border-radius:2px;background:rgba(5,5,5,.08);overflow:hidden;}
+html.dark .mt-prog{background:rgba(255,255,255,.14);}
+.mt-prog i{display:block;width:0;height:100%;border-radius:2px;background:#0866FF;}
+.mt-prog[hidden],.mt-hint[hidden]{display:none;}
+.mt-hint{margin:12px 0 0;font-size:12px;line-height:16px;color:#5C6370;}
+html.dark .mt-hint{color:#CFD3D9;}
 
 
 /* ===================== PLATFORM (merged from css/parts/platform.css) ===================== */

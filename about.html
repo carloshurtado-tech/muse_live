@@ -112,8 +112,8 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     <h2 id="see">What you’ll see</h2>
     <p class="sub">Every screen runs on the same live data, and Muse can answer questions about any of it.</p>
     <div class="shots">
-      <figure class="shot"><img src="assets/about/chain.webp" alt="A show's live health panel: encode, contribute, ingest, package, deliver and watch stages with metrics, sparklines for viewers, rebuffer ratio, SRT loss and CDN egress, and a 99.9% availability SLO with error budget" width="1600" height="1000" loading="lazy">
-        <figcaption><span class="chip">Streaming</span>End-to-end health per show: encoder → SRT contribution → MediaConnect/MediaLive → packaging → multi-CDN → player QoE, with an availability SLO and error budget.</figcaption></figure>
+      <figure class="shot"><img src="assets/about/chain.webp" alt="A show's live health panel: encode, contribute, ingest, package, deliver and watch stages with metrics, and sparklines for viewers, rebuffer ratio, SRT loss and CDN egress" width="1800" height="478" loading="lazy">
+        <figcaption><span class="chip">Streaming</span>End-to-end health per show: encoder → SRT contribution → MediaConnect/MediaLive → packaging → multi-CDN → player QoE. Each show also tracks a 99.9% availability SLO with its error budget.</figcaption></figure>
       <figure class="shot"><img src="assets/about/incidents.webp" alt="Incident report for a SEV-2: primary SRT contribution lost, 38 seconds of viewer-visible rebuffering before failover, with impact numbers, summary and timeline" width="1600" height="1000" loading="lazy">
         <figcaption><span class="chip">Incidents</span>Blameless post-mortems with impact, time to detect and mitigate, root cause, timeline and owned follow-ups.</figcaption></figure>
       <figure class="shot"><img src="assets/about/schedule.webp" alt="Muse Schedule timeline of control rooms with bookings, utilization numbers and a conflicts panel offering one-click fixes" width="1600" height="1000" loading="lazy">
@@ -133,6 +133,8 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
         <tr><td>Incident response and post-mortems</td><td>Incident Reports: severity, viewer impact, time to detect and mitigate, timeline, root cause and action items, searchable and linked to each show.</td></tr>
         <tr><td>Event production and broadcast planning</td><td>Productions with department readiness, techbook PDF export, site surveys, venue drawings, power and fiber, gear and crew.</td></tr>
         <tr><td>Resources: encoders, circuits, rooms, crew</td><td>Muse Schedule with conflict detection, labor rules, crew self-service and ICS calendar feeds.</td></tr>
+        <tr><td>Budget and vendors</td><td>Finance: budget against actuals, purchase orders, invoices and vendor payments per show.</td></tr>
+        <tr><td>Communication</td><td>Omni: every email, Teams chat and TOC alert linked to the show, purchase order or incident it is about.</td></tr>
         <tr><td>Platforms: Facebook and Instagram Live</td><td>A server-side Graph API proxy for live video status and ingest stream health (token never reaches the browser).</td></tr>
         <tr><td>Automation and tooling</td><td>Muse, an agent with tools over all of the above; write actions always go through a human confirmation step.</td></tr>
       </tbody>
@@ -209,8 +211,8 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     <p class="sub">From the test and eval suites in the repository and an axe accessibility audit.</p>
     <div class="stats">
       <div class="stat"><b>40 / 40</b><span>Muse accuracy eval on the real model, median answer 5.8 s</span></div>
-      <div class="stat"><b>25</b><span>unit tests: auth, sessions, guest access, KV, sync, incidents, SigV4, build</span></div>
-      <div class="stat"><b>7</b><span>Playwright end-to-end suites, including a crawl of every view</span></div>
+      <div class="stat"><b>27</b><span>unit tests: auth, sessions, guest access and AI spend limits, KV, sync, incidents, SigV4, build</span></div>
+      <div class="stat"><b>16</b><span>Playwright end-to-end tests, including a crawl of every view and every show tab</span></div>
       <div class="stat"><b>0</b><span>axe WCAG 2.1 AA violations on the main views, light and dark</span></div>
     </div>
   </section>

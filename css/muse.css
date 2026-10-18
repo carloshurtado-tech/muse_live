@@ -4841,5 +4841,5 @@ html.dark body > header.sticky.glass-panel{background:#1F1F1F !important;box-sha
 /* Guided tour: a steady dim while a step changes view, so view switches and jumps are never seen. */
 .mt-veil{position:fixed;inset:0;z-index:94;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .18s ease;}
 html.mt-moving .mt-veil{opacity:1;}
-@media (min-width:640px){main.muse-main{padding-top:0;}} /* the floating banner's 12px top gap + tile rhythm replaces it */
+@media (min-width:640px){main.muse-main{padding-top:12px;}} /* match the floating banner's 12px gap above, below and on every page (view panes' first tile has no top margin) */
 @media (max-width:639px){html body > header.sticky.glass-panel{margin:8px 12px 0;top:8px;}}

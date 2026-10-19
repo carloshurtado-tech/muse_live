@@ -4337,7 +4337,7 @@ html.dark .muse-disclaimer{color:#AAAFB9;}
 .mt-card{transition:opacity .18s ease;}
 html.mt-moving .mt-spot,html.mt-moving .mt-card{opacity:0;}
 .mt-spot.is-none{top:50%;left:50%;width:0;height:0;box-shadow:0 0 0 9999px rgba(0,0,0,.55);}
-.mt-card{position:fixed;z-index:96;width:min(380px,calc(100vw - 32px));background:#FFFFFF;color:#050505;border-radius:24px;padding:20px 20px 16px;
+.mt-card{position:fixed;z-index:96;width:min(380px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;background:#FFFFFF;color:#050505;border-radius:24px;padding:20px 20px 16px;
   box-shadow:0 20px 60px rgba(0,0,0,.35);font-family:var(--uit-font,system-ui);outline:none;}
 html.dark .mt-card{background:#27282D;color:#FFFFFF;box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.08);}
 .mt-count{margin:0 0 4px;font-size:12px;line-height:16px;font-weight:500;color:#5C6370;}

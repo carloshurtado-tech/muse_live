@@ -151,6 +151,7 @@
     var vp = innerWidth + ',' + innerHeight;
     if (vp !== vpKey) { vpKey = vp; jump(STEPS[i]); }
     var el = resolveEl(), r = el && el.getBoundingClientRect();
+    if (r && (r.bottom < 0 || r.top > innerHeight)) jump(STEPS[i]); // left the window (a reflow moved it): scroll back to it
     var k = (r ? [r.left, r.top, r.width, r.height].join() : 'none') + '|' + innerWidth + ',' + innerHeight + ',' + ui.card.offsetWidth + ',' + ui.card.offsetHeight;
     if (k !== posKey) { posKey = k; place(); }
   }
@@ -158,25 +159,30 @@
     if (!ui || i < 0) return;
     var el = resolveEl(), card = ui.card, spot = ui.spot, pad = 8;
     var vw = root.innerWidth, vh = root.innerHeight;
-    if (!el) { spot.className = 'mt-spot is-none'; card.style.left = Math.max(16, (vw - card.offsetWidth) / 2) + 'px'; card.style.top = Math.max(16, (vh - card.offsetHeight) / 2) + 'px'; return; }
-    // The cut-out is the target's own box and corners. No padding on a side the target already touches
-    // (a docked drawer), so the cut-out never runs past the window; off-screen parts of tall targets just clip.
+    if (!el) { spot.removeAttribute('style'); spot.className = 'mt-spot is-none'; // inline box of the last step would beat the class
+      card.style.left = Math.max(16, (vw - card.offsetWidth) / 2) + 'px'; card.style.top = Math.max(16, (vh - card.offsetHeight) / 2) + 'px'; return; }
+    // The cut-out is the target's own box and corners, trimmed to the window so its ring always closes,
+    // and the card always gets a place of its own beside it. Every number below comes from the window
+    // being drawn in right now — nothing fixed — so a phone, a scaled-up laptop and a 4K monitor all
+    // get the same arrangement, only at their own size: highlight first, card next to it, both whole.
     var r = el.getBoundingClientRect(), cs = getComputedStyle(el), kid = el.firstElementChild ? getComputedStyle(el.firstElementChild) : null;
     var pt = r.top <= 1 ? 0 : pad, pl = r.left <= 1 ? 0 : pad, pr = r.right >= vw - 1 ? 0 : pad, pb = r.bottom >= vh - 1 ? 0 : pad;
-    var top = r.top - pt, left = r.left - pl, w = r.width + pl + pr, h = r.height + pt + pb;
+    var cw = card.offsetWidth, ch = card.offsetHeight, edge = 16, gap = 12, min = 32;
+    var head = cs.position === 'fixed' ? 0 : headBottom(); // a drawer sits over the banner, nothing to clear
+    var top = Math.max(r.top - pt, head), left = Math.max(r.left - pl, 0);
+    var h = Math.max(min, Math.min(r.bottom + pb, vh - edge) - top), w = Math.max(min, Math.min(r.right + pr, vw) - left);
+    top = Math.min(top, Math.max(0, vh - edge - h)); left = Math.min(left, Math.max(0, vw - w)); // a target at the very edge keeps the minimum cut-out inside the window
+    var ct, cl = left;
+    if (top + h + gap + ch + edge <= vh) ct = top + h + gap;                              // under the cut-out
+    else if (top - gap - ch - edge >= 0) ct = top - gap - ch;                             // over it
+    else if (left - gap - cw - edge >= 0) { ct = top; cl = left - gap - cw; }             // tall target, room to its left
+    else if (vw - (left + w) - gap - cw - edge >= 0) { ct = top; cl = left + w + gap; }   // …or to its right
+    else { h = Math.max(min, vh - edge - ch - gap - top); ct = top + h + gap; }           // neither fits: trim the cut-out, card under it
+    ct = Math.min(Math.max(edge, ct), Math.max(edge, vh - ch - edge));
+    cl = Math.min(Math.max(edge, cl), Math.max(edge, vw - cw - edge));
     function rad(corner, a, b) { return ((parseFloat(cs[corner]) || (kid && parseFloat(kid[corner])) || 0) + Math.min(a, b)) + 'px'; } // square wrapper of rounded cards → the cards' radius
     spot.className = 'mt-spot'; spot.style.top = top + 'px'; spot.style.left = left + 'px'; spot.style.width = w + 'px'; spot.style.height = h + 'px';
     spot.style.borderRadius = [rad('borderTopLeftRadius', pt, pl), rad('borderTopRightRadius', pt, pr), rad('borderBottomRightRadius', pb, pr), rad('borderBottomLeftRadius', pb, pl)].join(' ');
-    var vTop = Math.max(0, top), vBot = Math.min(vh, top + h);
-    var cw = card.offsetWidth, ch = card.offsetHeight, ct, cl = Math.min(Math.max(16, left), vw - cw - 16);
-    if (vBot + 12 + ch < vh) ct = vBot + 12;
-    else if (vTop - 12 - ch > 0) ct = vTop - 12 - ch;
-    else if (left - 16 - cw > 16) { ct = vh - ch - 16; cl = left - 16 - cw; } // tall target with room beside it (a docked drawer): card next to it
-    else if (vw - (left + w) - 16 - cw > 16) { ct = vh - ch - 16; cl = left + w + 16; }
-    else { ct = vh - ch - 16; cl = vw - cw - 16; } // full-width tall target: park the card in the bottom-right corner
-    // Whatever the branch chose, the card stays on screen (a below-the-fold target must not drag it off).
-    ct = Math.min(Math.max(16, ct), Math.max(16, vh - ch - 16));
-    cl = Math.min(Math.max(16, cl), Math.max(16, vw - cw - 16));
     card.style.top = ct + 'px'; card.style.left = cl + 'px';
   }
 
@@ -257,16 +263,22 @@
       })();
     });
   }
+  // How much of the top of the window the banner is covering right now: 0 once it has scrolled away
+  // (overflow-x on <body> stops it sticking), and never more than a quarter of a short window.
+  function headBottom() { var h = document.querySelector('header.sticky'); return Math.max(0, Math.min(h ? h.getBoundingClientRect().bottom : 0, innerHeight / 4)); }
   // Bring the step's target into view instantly (the veil hides the jump): page top for top-anchored steps,
-  // otherwise the target's top just under the sticky header, and only when it isn't already fully visible.
+  // otherwise the target's top just under the banner. The target is moved up whenever it is out of view OR
+  // sitting too low for the card to fit under it — on a short window that is the only way to show both, and
+  // it is what keeps the arrangement the same on every screen instead of depending on how tall the window is.
   function jump(s) {
     var el = targetEl(s);
     call(function () {
       if (s.top && scrollY) scrollTo(0, 0);
       if (!el) return;
-      var r = el.getBoundingClientRect(), head = 96;
-      if (s.top && r.top < innerHeight) return; // the top of the page already shows it
-      if (r.top >= head && r.bottom <= innerHeight) return;
+      var r = el.getBoundingClientRect(), head = headBottom() + 12, ch = ui ? ui.card.offsetHeight : 0;
+      var roomUnder = innerHeight - r.bottom - 12 - ch - 16 >= 0 || r.height + head + 12 + ch + 16 > innerHeight; // no scroll can help a target taller than the window
+      if (r.top >= head && r.bottom <= innerHeight && roomUnder) return;
+      if (s.top && r.top < innerHeight && roomUnder) return; // the top of the page already shows it
       scrollTo(0, Math.max(0, r.top + scrollY - head)); // on narrow screens a "top" target can sit below the fold
     });
     return el;

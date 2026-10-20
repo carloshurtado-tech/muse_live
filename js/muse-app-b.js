@@ -3326,7 +3326,18 @@ function loadTravel(){try{var r=localStorage.getItem('muselive_travel_v1');if(r)
     else crewFlights=l; // pre-v31.1: the blob WAS the flights map
   }}}catch(e){}}
 function crewHotel(name){loadTravelOnce();return crewHotels[name]||null;}
-var _travelLoaded=false;function loadTravelOnce(){if(_travelLoaded)return;_travelLoaded=true;loadTravel();}
+var _travelLoaded=false;function loadTravelOnce(){if(_travelLoaded)return;_travelLoaded=true;loadTravel();try{travelDemoSeed();}catch(e){}}
+/* Demo travel: every flight lands the day before its show (rolling with MuseDemo) and most of the crew is booked.
+   shortcut: in-memory each boot, so an unbooked seeded traveler comes back on reload; upgrade when travel gets real data. */
+function travelDemoSeed(){var HUBS=['JFK','EWR','ATL','DEN','SEA','SJC','MCO','LAX','ORD'];var seen={};
+  order.forEach(function(k){var air=(window.MuseDemo&&MuseDemo.airDate(k))||'';if(!/^\d{4}-\d{2}-\d{2}$/.test(air))return;
+    var d=new Date(air+'T12:00:00');d.setDate(d.getDate()-1);var day=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2),dest=prodAirport(k);
+    getProjectCrew(k).forEach(function(s,i){var nm=(s.name||'').trim();if(!nm||seen[nm])return;seen[nm]=1;
+      var h=0;for(var c=0;c<nm.length;c++)h=(h*31+nm.charCodeAt(c))>>>0;
+      var f=crewFlights[nm];if(!f){if(i%8===5)return; /* a few stay pending */
+        var org=HUBS[h%HUBS.length];if(org===dest)org='MIA';var hh=6+h%9;
+        f=crewFlights[nm]={airlineCode:h%2?'DL':'UA',flightNumber:(h%2?'DL':'UA')+(100+h%900),dep:{code:org,terminal:'',gate:String(1+h%40),localTime:'T'+('0'+hh).slice(-2)+':'+(h%2?'15':'40')+':00'},arr:{code:dest,terminal:'',gate:String(1+(h>>4)%40),localTime:'T'+('0'+(hh+4)).slice(-2)+':'+(h%2?'45':'20')+':00'}};}
+      f.dep.localTime=day+String(f.dep.localTime).slice(10);f.arr.localTime=day+String(f.arr.localTime).slice(10);});});}
 
 /* local-time formatting — display the LOCAL clock at each airport (no TZ conversion) */
 function fmtLocalTime(iso){if(!iso)return '—';
@@ -4788,7 +4799,7 @@ function buildSearchIndex(){
   order.forEach(function(k){var p=productions[k];if(!p.tbEquip)return;
     Object.keys(p.tbEquip).forEach(function(dep){(p.tbEquip[dep]||[]).forEach(function(ln){
       var nm=ln.model||ln.item||'';if(!nm)return;
-      idx.push({type:'Equipment',label:nm,sub:p.name+' · '+dep,icon:'📦',action:"openProjPack('"+k+"')",kw:(nm+' '+dep+' '+p.name+' '+(ln.lens||'')+' '+(ln.notes||'')).toLowerCase()});
+      idx.push({type:'Equipment · packlist lines',label:nm,sub:p.name+' · '+dep,icon:'📦',action:"openProjPack('"+k+"')",kw:(nm+' '+dep+' '+p.name+' '+(ln.lens||'')+' '+(ln.notes||'')).toLowerCase()});
     });});
   });
   // departments per production

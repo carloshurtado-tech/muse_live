@@ -77,7 +77,7 @@
       cloud: 'AWS Elemental MediaLive Standard channel (2 pipelines) · automatic input failover after 2 s input loss',
       loudness: '-24 LKFS ±2 (ATSC A/85) · true peak -2 dBTP',
       captions: 'CART writer → EEG Falcon (iCap) → CEA-608/708 embedded → WebVTT sidecar',
-      ladder: LADDER_169, streams: [['Program · Clean feed', 'program', yt('connect26')], ['Backup · LiveU bonded', 'backup', yt('connect26', -8)], ['Vertical · Instagram 9:16', 'vertical', yt('connect25')], ['Confidence return · HLS (CMAF)', 'return', FEEDS.liveCmaf]]
+      ladder: LADDER_169, streams: [['Program · Clean feed', 'program', FEEDS.liveA], ['Backup · LiveU bonded', 'backup', FEEDS.liveB], ['Vertical · Instagram 9:16', 'vertical', FEEDS.liveScte], ['Confidence return · HLS (CMAF)', 'return', FEEDS.liveCmaf]]
     },
     raybangen3: {
       state: 'ENDED', peak: 412000, viewers: 0, latency: 'Standard HLS · 15–20 s (6 s segments)',
@@ -87,7 +87,7 @@
       backup: 'LiveU LU800 bonded (4× 5G) → LiveU Matrix → MediaConnect input 2',
       cloud: 'MediaLive Standard (2 pipelines) · input failover after 10 s input loss (raised from default — see INC-2026-0612)',
       loudness: '-24 LKFS (ATSC A/85)', captions: 'EEG Falcon → CEA-608 → WebVTT',
-      ladder: LADDER_169, streams: [['Program · archive (VOD)', 'program', yt('connect26')], ['ISO · stage cam (VOD)', 'iso', yt('connect25b')]]
+      ladder: LADDER_169, streams: [['Program · archive (VOD)', 'program', FEEDS.vodBunny], ['ISO · stage cam (VOD)', 'iso', FEEDS.vodSteel]]
     },
     orion: {
       state: 'STANDBY', peak: 0, viewers: 0, latency: 'LL-HLS target 4 s',
@@ -95,7 +95,7 @@
       venueNet: 'Levi\'s Stadium, Santa Clara: 2× 1 GbE stadium IT circuits to the broadcast compound · firewall change pending for UDP 5000–5010 (INC-2026-1002)',
       primary: 'AWS Elemental Live L800 (1+1) · SRT caller → MediaConnect us-west-2', backup: 'LiveU LU800 bonded → LiveU Matrix',
       cloud: 'MediaLive Standard (2 pipelines) · input failover 2 s', loudness: '-24 LKFS (ATSC A/85)', captions: 'AI captions (live) + CART QC',
-      ladder: LADDER_169, streams: [['Program · stream test', 'program', yt('devkey25')]]
+      ladder: LADDER_169, streams: [['Program · stream test', 'program', FEEDS.liveScte]]
     },
     museailaunch: {
       state: 'REHEARSAL', peak: 0, viewers: 340, latency: 'LL-HLS · 4 s',
@@ -103,7 +103,7 @@
       venueNet: 'Hudson Yards venue: 10 GbE fiber + Verizon 5G UWB bonded',
       primary: 'Haivision Makito X4 · SRT → MediaConnect us-east-1', backup: 'LiveU LU800 → LiveU Matrix',
       cloud: 'MediaLive Standard (2 pipelines)', loudness: '-24 LKFS (ATSC A/85)', captions: 'EEG Falcon → CEA-708 → WebVTT',
-      ladder: LADDER_169, streams: [['Program · dress rehearsal', 'program', yt('llamacon')]]
+      ladder: LADDER_169, streams: [['Program · dress rehearsal', 'program', FEEDS.liveA]]
     },
     whatsapp: {
       state: 'STANDBY', peak: 0, viewers: 0, latency: 'LL-HLS target 4 s (measured 9 s in the Oct 9 stream test — INC-2026-1009)',
@@ -111,7 +111,7 @@
       venueNet: 'Miami Beach Convention Center: 1 GbE house + Comcast Business backup',
       primary: 'AWS Elemental Live · SRT → MediaConnect us-east-1', backup: 'LiveU LU800 → LiveU Matrix',
       cloud: 'MediaLive Standard (2 pipelines)', loudness: '-24 LKFS (ATSC A/85)', captions: 'CART → EEG Falcon · English + Spanish (dual 608 CC1/CC3)',
-      ladder: LADDER_169, streams: [['Program · stream test', 'program', yt('connect25b')]]
+      ladder: LADDER_169, streams: [['Program · stream test', 'program', FEEDS.liveB]]
     },
     igcreators: {
       state: 'LIVE', peak: 960000, viewers: 615000, latency: 'Instagram Live native (≈3–5 s) · HLS mirror 8 s',
@@ -119,7 +119,7 @@
       venueNet: 'Street takeover, Times Square: LiveU LU800 bonded only (4 carriers) + venue Wi-Fi 6E for comms',
       primary: 'LiveU LU800 bonded (Verizon, T-Mobile, AT&T, Starlink Mini) → LiveU Matrix → MediaConnect', backup: 'Second LU800 on alternate carriers',
       cloud: 'MediaLive Standard (2 pipelines) · vertical 9:16 output group', loudness: '-24 LKFS (ATSC A/85)', captions: 'Instagram auto-captions + CART on 16:9',
-      ladder: LADDER_916, streams: [['Vertical program · 9:16', 'program', yt('connect25')], ['Roaming cam · LiveU', 'iso', yt('devkey25')]]
+      ladder: LADDER_916, streams: [['Vertical program · 9:16', 'program', FEEDS.liveScte], ['Roaming cam · LiveU', 'iso', FEEDS.liveCmaf]]
     },
     charm: {
       state: 'SCHEDULED', peak: 0, viewers: 0, latency: 'Standard HLS · 12 s (EU)',
@@ -127,7 +127,7 @@
       venueNet: 'Milan venue: 1 GbE Fastweb fiber + Vodafone 5G bonded',
       primary: 'Haivision Makito X4 · SRT → MediaConnect eu-south-1 (Milan)', backup: 'LiveU LU800 → LiveU Matrix (EU)',
       cloud: 'MediaLive Standard eu-south-1 (2 pipelines)', loudness: '-23 LUFS ±1 (EBU R128) · true peak -1 dBTP', captions: 'Italian + English (CART) → WebVTT',
-      ladder: LADDER_169, streams: [['Program · archive (VOD)', 'program', yt('connect26')]]
+      ladder: LADDER_169, streams: [['Program · archive (VOD)', 'program', FEEDS.vodAngel]]
     }
   };
   function defaultShow(key) {
@@ -280,6 +280,12 @@
     f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture'); f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
     return players[slotKey] = { video: f, yt: info, url: 'yt:' + info.id, stats: { state: 'playing', stalls: 0, errors: 0 }, muted: true };
   }
+  // Slate = the poster behind every monitor; hidden once a frame plays, labelled when the feed never arrives.
+  function slate(p, state) {
+    p.stats.state = state; var s = p.video.parentNode; if (!s) return;
+    s.classList.toggle('is-playing', state === 'playing' || state === 'buffering');
+    if (state === 'slate') { var e = s.querySelector('.ms-slate span'); if (e) e.textContent = 'Simulated feed'; }
+  }
   function ytCmd(p, func, args) { try { p.video.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*'); } catch (e) {} }
   function makePlayer(slotKey, url, live) {
     var info = parseYt(url); if (info) return makeYt(slotKey, info, live);
@@ -289,29 +295,30 @@
     var p = players[slotKey] = { video: v, hls: null, url: url, stats: { stalls: 0, errors: 0, state: 'loading' },
       qoe: { session: Math.random().toString(36).slice(2, 10), created: Date.now(), startup_ms: null, rebuffer_ms: 0, play_ms: 0, rebuffer_events: 0, switches: 0, errors: 0, waitSince: 0, playSince: 0 } };
     var q = p.qoe;
-    v.addEventListener('waiting', function () { p.stats.stalls++; p.stats.state = 'buffering'; if (q.startup_ms != null) { q.rebuffer_events++; q.waitSince = Date.now(); } if (q.playSince) { q.play_ms += Date.now() - q.playSince; q.playSince = 0; } });
-    v.addEventListener('playing', function () { p.stats.state = 'playing'; if (q.startup_ms == null) q.startup_ms = Date.now() - q.created; if (q.waitSince) { q.rebuffer_ms += Date.now() - q.waitSince; q.waitSince = 0; } q.playSince = Date.now(); });
+    v.addEventListener('waiting', function () { p.stats.stalls++; if (p.played) p.stats.state = 'buffering'; if (q.startup_ms != null) { q.rebuffer_events++; q.waitSince = Date.now(); } if (q.playSince) { q.play_ms += Date.now() - q.playSince; q.playSince = 0; } });
+    v.addEventListener('playing', function () { p.played = true; slate(p, 'playing'); if (q.startup_ms == null) q.startup_ms = Date.now() - q.created; if (q.waitSince) { q.rebuffer_ms += Date.now() - q.waitSince; q.waitSince = 0; } q.playSince = Date.now(); });
     v.addEventListener('pause', function () { if (q.playSince) { q.play_ms += Date.now() - q.playSince; q.playSince = 0; } });
-    v.addEventListener('error', function () { p.stats.errors++; q.errors++; p.stats.state = 'error'; });
+    v.addEventListener('error', function () { p.stats.errors++; q.errors++; slate(p, 'slate'); });
+    setTimeout(function () { if (players[slotKey] === p && !p.played) slate(p, 'slate'); }, 10000); // never leave a tile on "connecting"
     // iOS Safari has no MediaSource: use its native HLS player. Everywhere else, hls.js.
     if (!(root.MediaSource || root.ManagedMediaSource) && v.canPlayType('application/vnd.apple.mpegurl')) { v.src = url; v.play().catch(function () {}); return p; }
     ensureHls().then(function (Hls) {
       if (!Hls.isSupported()) { v.src = url; return; }
       // CMCD (CTA-5004) as query args so origins / CDNs can correlate requests with this session.
-      var h = p.hls = new Hls({ lowLatencyMode: true, capLevelToPlayerSize: true, maxBufferLength: 12, backBufferLength: 10, liveSyncDurationCount: 3, enableWorker: true,
+      var h = p.hls = new Hls({ lowLatencyMode: true, capLevelToPlayerSize: true, maxBufferLength: 12, backBufferLength: 10, liveSyncDurationCount: 3, enableWorker: true, subtitleDisplay: false,
         cmcd: { sessionId: q.session, contentId: slotKey.split(':')[1] || slotKey, useHeaders: false } });
       h.on(Hls.Events.LEVEL_SWITCHED, function () { q.switches++; });
       h.on(Hls.Events.ERROR, function (e, d) {
         p.stats.errors++; if (d && d.fatal) q.errors++;
         if (d && d.fatal) {
-          p.stats.state = 'error'; p.stats.lastError = d.details;
+          slate(p, 'slate'); p.stats.lastError = d.details;
           if (d.type === Hls.ErrorTypes.NETWORK_ERROR) setTimeout(function () { try { h.startLoad(); } catch (x) {} }, 3000);
           else if (d.type === Hls.ErrorTypes.MEDIA_ERROR) { try { h.recoverMediaError(); } catch (x) {} }
         }
       });
       h.loadSource(url); h.attachMedia(v);
       h.on(Hls.Events.MANIFEST_PARSED, function () { v.play().catch(function () {}); });
-    }).catch(function () { p.stats.state = 'error'; p.stats.lastError = 'player library unavailable'; });
+    }).catch(function () { slate(p, 'slate'); p.stats.lastError = 'player library unavailable'; });
     return p;
   }
   function destroy(slotKey) {
@@ -350,7 +357,7 @@
       var p = players[k];
       if (p && p.url !== url) { destroy(k); p = null; }
       if (!p) p = makePlayer(k, url, slot.getAttribute('data-live') === '1');
-      if (p.video.parentNode !== slot) slot.insertBefore(p.video, slot.firstChild);
+      if (p.video.parentNode !== slot) { slot.insertBefore(p.video, slot.firstChild); slate(p, p.stats.state); }
       if (!p.yt && p.video.paused && !p.userPaused) p.video.play().catch(function () {});
     });
   }
@@ -397,6 +404,7 @@
     return '<figure class="ms-tile' + (opts.big ? ' is-big' : '') + (st.role === 'vertical' || (opts.vertical) ? ' is-vertical' : '') + '" data-sid="' + st.id + '">' +
       '<div class="ms-screen" data-hls-slot="' + esc(slot) + '" data-url="' + esc(st.url) + '"' + (t.live ? ' data-live="1"' : '') + (defer ? ' data-defer="1"' : '') + '>' +
         (st.role === 'vertical' ? '<span class="ms-vframe" aria-hidden="true"></span>' : '') +
+        '<div class="ms-slate" aria-hidden="true"><b>' + esc(st.name) + '</b><span>' + (defer ? 'Off air' : 'Connecting') + '</span></div>' +
         (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
         '<div class="ms-osd">' + badge(stateOf(key)) + '<span class="ms-health" data-tm="' + st.id + ':health">' + dot(g.overall) + LEVEL_TXT[g.overall] + '</span></div>' +
         '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(\'' + esc(slot) + '\',this)" aria-pressed="false" aria-label="Listen to ' + esc(st.name) + '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>' +
@@ -498,7 +506,7 @@
         (programOf(key) && anyDemo(teleFor(key, programOf(key))) ? '<span class="ms-src" title="Simulated telemetry — see Data sources">Demo data</span>' : '') + '</span>' +
         (rec(key).failover ? '<button type="button" class="ms-btn" onclick="MuseStreaming.returnToPrimary(\'' + key + '\')">Return to primary input</button>' : '')) +
       '<div class="ms-two">' +
-        section('Measured QoE · your players', '<div data-qoe="' + key + '"><p class="ms-empty">Loading…</p></div>', '<span class="ms-src is-live">Real</span>') +
+        section('Measured QoE · your players', '<div data-qoe="' + key + '"><p class="ms-empty is-loading">Loading…</p></div>', '<span class="ms-src is-live">Real</span>') +
         section('SLO · ' + SLO_TARGET + '% availability', sloHTML(key)) +
       '</div>' +
       section('Pre-flight', '<div data-preflight="' + key + '">' + preflightBody(key) + '</div>', '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseStreaming.preflight(\'' + key + '\')">Run pre-flight</button>', false) +
@@ -525,7 +533,7 @@
     ks.forEach(function (k) { var g = healthOf(k); if (g.m && liveOf(k)) { live++; totalV += g.m.viewers; reb.push(g.m.rebuffer); } });
     try { openInc = root.MuseIncidents.all().filter(function (i) { return i.status === 'Open' || i.status === 'Monitoring'; }).length; } catch (e) {}
     var avgReb = reb.length ? reb.reduce(function (a, b) { return a + b; }, 0) / reb.length : 0;
-    var sorted = ks.slice().sort(function (a, b) { var o = { LIVE: 0, REHEARSAL: 1, STANDBY: 2, SCHEDULED: 3, ENDED: 4 }; return (o[stateOf(a)] || 9) - (o[stateOf(b)] || 9); });
+    var sorted = ks.slice().sort(function (a, b) { var o = { LIVE: 0, REHEARSAL: 1, STANDBY: 2, SCHEDULED: 3, ENDED: 4 }; var x = o[stateOf(a)], y = o[stateOf(b)]; return (x == null ? 9 : x) - (y == null ? 9 : y); });
     var tiles = sorted.map(function (k) {
       var pr = programOf(k); if (!pr) return '';
       return tileHTML(k, pr, 'wall', { showName: true, actions: '<button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + k + '\')">Open streaming plan →</button>' });
@@ -654,7 +662,7 @@
   function refreshQoe() {
     Array.prototype.forEach.call(document.querySelectorAll('[data-qoe]'), function (el) {
       var k = el.getAttribute('data-qoe');
-      api('/api/qoe?show=' + encodeURIComponent(k)).then(function (j) { el.innerHTML = qoeBody(k, j); }).catch(function () { el.innerHTML = '<p class="ms-empty">The QoE service is not reachable from this host.</p>'; });
+      api('/api/qoe?show=' + encodeURIComponent(k)).then(function (j) { el.innerHTML = qoeBody(k, j); }).catch(function () { el.innerHTML = '<p class="ms-empty">No player beacons in demo mode.</p>'; });
     });
   }
 
@@ -970,7 +978,7 @@
       var el = document.querySelector('[data-pm="' + k + '"]'); if (!el) return;
       var x = measure(players[k]);
       if (players[k].yt) { el.textContent = 'Source: ' + x.title + ' · YouTube'; return; }
-      el.textContent = x.state === 'error' ? 'Player: stream unavailable' + (players[k].stats.lastError ? ' (' + players[k].stats.lastError + ')' : '') :
+      el.textContent = x.state === 'slate' ? 'Simulated feed · live stream not reachable from this network' + (players[k].stats.lastError ? ' (' + players[k].stats.lastError + ')' : '') : x.state === 'error' ? 'Player: stream unavailable' + (players[k].stats.lastError ? ' (' + players[k].stats.lastError + ')' : '') :
         'Player: ' + (x.resolution || '…') + (x.rendition_kbps ? ' @ ' + (x.rendition_kbps / 1000).toFixed(1) + ' Mbps' : '') +
         ' · buffer ' + (x.buffer_s != null ? x.buffer_s + ' s' : '—') + (x.live_latency_s ? ' · latency ' + x.live_latency_s + ' s' : '') +
         ' · stalls ' + x.stalls + (x.dropped_frames ? ' · dropped ' + x.dropped_frames : '');
@@ -982,7 +990,8 @@
     try { trackAnomalies(); } catch (e) {}
     var every = function (sec) { return tickN % Math.round(sec * 1000 / TICK_MS) === 0; };
     if (every(10) && root.MuseSync && typeof root.MuseSync.put === 'function') { try { root.MuseSync.put('live-status', liveStatus()); } catch (e) {} }
-    if (every(15)) { sendBeacons(); refreshQoe(); }
+    if (every(15)) sendBeacons();
+    if (every(15) || document.querySelector('[data-qoe] .is-loading')) refreshQoe();
     if (every(30)) { pollReal(); keys().forEach(function (k) { if (document.querySelector('[data-fb-out="' + k + '"]')) loadFb(k); }); }
   }
 

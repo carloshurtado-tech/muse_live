@@ -1287,8 +1287,8 @@ function renderNavRail(){
   var engN=0; /* ENG requests in flight are informational, not a call to action */
   var omniN=(typeof commsUnreadCritical==='function')?commsUnreadCritical():0;
   var apN=(typeof apExceptionCount==='function')?apExceptionCount():0;
-  var schedConflicts=(typeof schedConflictTotal==='function')?schedConflictTotal():((typeof npcAlertConflicts==='function')?npcAlertConflicts().length:0);
-  var npcN=0;try{npcN=(typeof npcAlertConflicts==='function')?npcAlertConflicts().length:0;}catch(e){}
+  var schedConflicts=0;try{schedConflicts=MuseSchedule.conflicts().length;}catch(e){} // same count as the Muse Schedule drawer
+  var npcN=schedConflicts;
 
   prim.innerHTML=primary.map(function(it){
     var id=it[0],label=it[1],icon=it[2];
@@ -1301,7 +1301,7 @@ function renderNavRail(){
     return '<button type="button" data-nav="'+id+'" class="nav-rail-btn'+(onNav?' is-active':'')+'" onclick="navGo(\''+id+'\')" title="'+label.replace(/"/g,'&quot;')+'" aria-label="'+label.replace(/"/g,'&quot;')+'" aria-current="'+(onNav?'page':'false')+'">'+
       '<span class="nav-rail-ico">'+_navSvg(icon)+'</span><span class="nav-rail-label">'+label+'</span>'+badge+'</button>';
   }).join('')+(npcN?
-    '<button type="button" data-nav="schedule" class="nav-rail-btn nav-rail-btn-warn" onclick="navGo(\'schedule\')" title="⚠ '+npcN+' conflict'+(npcN>1?'s':'')+'" aria-label="Conflicts">'+
+    '<button type="button" data-nav="schedule" class="nav-rail-btn nav-rail-btn-warn" onclick="navGo(\'schedule\');MuseSchedule.openFor(\'\',\'conflicts\')" title="⚠ '+npcN+' conflict'+(npcN>1?'s':'')+'" aria-label="Conflicts">'+
       '<span class="nav-rail-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>'+
       '<span class="nav-rail-label">Conflicts</span>'+_navRailBadge(npcN,'live')+'</button>':'');
 

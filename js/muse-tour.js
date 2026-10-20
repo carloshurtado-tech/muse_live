@@ -78,7 +78,7 @@
     { secs: 9, title: 'Today, at a glance', body: 'What is on air right now, live viewers, shows at risk and open incidents. Every number is a shortcut into the detail.',
       before: function () { go('dashboard'); }, target: ['#dashHome'], top: true },
     { secs: 10, title: 'Every live stream, one wall', body: 'Each show\'s program feed with end-to-end health: concurrent viewers, rebuffering ratio, glass-to-glass latency and errors. One glance tells an engineer where to look and an executive whether to worry.',
-      before: function () { go('streams'); }, target: ['#streamsHost .ms-tile:has([data-live="1"])', '#streamsHost .ms-tile'], top: true },
+      before: function () { go('streams'); }, target: ['#streamsHost .ms-tile:has([data-live="1"])', '#streamsHost .ms-tile'], top: true, stay: true },
     { secs: 10, title: 'Muse on Ray-Ban Display', body: 'The same tally, alerts and Ask Muse on Meta Ray-Ban Display, for engineers on the floor: a glanceable 600 × 600 app built with Meta\'s UI Toolkit, fed by this desktop app every 5 seconds. Swipe with the wristband, pinch to select.',
       before: function () { go('streams'); }, frame: true, target: ['#mtGlasses'], wait: 900, action: { label: 'Open full screen ↗', run: openGlasses } },
     { secs: 11, title: 'Inside a show: the streaming chain', body: 'Encoder → contribution (SRT) → cloud transcode → CDN → viewer, with health at every hop. Below it: the ABR encoding ladder, destinations, captions, loudness and the go-live checklist.',
@@ -285,7 +285,7 @@
     var el = targetEl(s);
     call(function () {
       if (s.top && scrollY) scrollTo(0, 0);
-      if (!el) return;
+      if (!el || s.stay) return; // stay: the page top is the view, never scroll to the target
       var r = el.getBoundingClientRect(), head = headBottom() + 12, ch = ui ? ui.card.offsetHeight : 0;
       var roomUnder = innerHeight - r.bottom - 12 - ch - 16 >= 0 || r.height + head + 12 + ch + 16 > innerHeight; // no scroll can help a target taller than the window
       if (r.top >= head && r.bottom <= innerHeight && roomUnder) return;

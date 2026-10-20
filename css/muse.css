@@ -4850,7 +4850,7 @@ html.dark body > header.sticky.glass-panel{background:#1F1F1F !important;box-sha
   .omni-drawer.open{transform:translateX(0);}
 }
 /* Guided tour: a steady dim while a step changes view, so view switches and jumps are never seen. */
-.mt-glasses{position:fixed;z-index:93;top:76px;left:16px;width:calc(100vw - 32px);height:calc(100vh - 92px);border:0;border-radius:24px;background:#000;}
+.mt-glasses{position:fixed;z-index:93;top:76px;left:16px;width:min(calc(100vw - 32px),max(60vw,calc(100vw - 440px)));height:calc(100vh - 92px);border:0;border-radius:24px;background:#000;}
 .mt-veil{position:fixed;inset:0;z-index:94;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .18s ease;}
 html.mt-moving .mt-veil{opacity:1;}
 @media (min-width:640px){main.muse-main{padding-top:12px;}} /* match the floating banner's 12px gap above, below and on every page (view panes' first tile has no top margin) */

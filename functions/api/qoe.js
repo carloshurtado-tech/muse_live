@@ -7,6 +7,7 @@
 // resets when the isolate recycles).
 
 import { who, canWrite } from '../_lib/who.js';
+import { sameOrigin } from '../_lib/session.js';
 
 const TTL_MS = 6 * 3600 * 1000, MAX_SESSIONS = 300;
 const mem = (globalThis.__museQoe = globalThis.__museQoe || new Map());
@@ -27,6 +28,7 @@ const num = (v, max) => (typeof v === 'number' && isFinite(v) && v >= 0 ? Math.m
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
   // Read-only sessions (the public guest demo) can't write to the panel labelled "Real"; accepted and dropped.
   if (!canWrite(await who(context))) return json({ ok: true, stored: false });
   let b;

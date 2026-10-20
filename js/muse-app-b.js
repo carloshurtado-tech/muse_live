@@ -4764,16 +4764,16 @@ function buildSearchIndex(){
   var idx=[];
   // productions
   order.forEach(function(k){var p=productions[k];
-    idx.push({type:'Production',label:p.name,sub:(p.venue||'')+' · '+(p.date||''),icon:'🎬',action:"openProject('"+k+"')",kw:(p.name+' '+(p.venue||'')+' '+(p.customer||'')+' '+(p.tag||'')).toLowerCase()});
+    idx.push({type:'Production',label:p.name,sub:(p.venue||'')+' · '+(p.date||''),icon:'🎬',action:['openProject',k],kw:(p.name+' '+(p.venue||'')+' '+(p.customer||'')+' '+(p.tag||'')).toLowerCase()});
   });
   // personnel (full directory incl. custom + PER ids/categories — v31)
   var seen={};var allCrew=(typeof personnelRoster==='function')?personnelRoster():CREW_FIELD.concat(CREW_IT,CREW_PCR,CREW_EXEC);
   allCrew.forEach(function(m){if(seen[m.name])return;seen[m.name]=1;
-    idx.push({type:'Personnel',label:m.name,sub:m.pos+(m.prov?' · '+m.prov:''),icon:'👤',action:"globalOpenCrew('"+m.name.replace(/'/g,"\\'")+"')",kw:(m.name+' '+m.pos+' '+(m.email||'')+' '+(m.prov||'')+' '+(m.id||'')+' '+(m.category||'')).toLowerCase()});
+    idx.push({type:'Personnel',label:m.name,sub:m.pos+(m.prov?' · '+m.prov:''),icon:'👤',action:['globalOpenCrew',m.name],kw:(m.name+' '+m.pos+' '+(m.email||'')+' '+(m.prov||'')+' '+(m.id||'')+' '+(m.category||'')).toLowerCase()});
   });
   // flights (role-scoped: restricted roles only index their own itinerary)
   if(typeof crewFlights!=='undefined'){Object.keys(crewFlights).filter(function(nm){return (typeof permScope!=='function'||permScope('travel')!=='own')||nm===permUser();}).forEach(function(nm){var f=crewFlights[nm];var al=airline(f.airlineCode);
-    idx.push({type:'Flight',label:f.flightNumber+' · '+nm,sub:al.name+' · '+f.dep.code+'→'+f.arr.code,icon:'✈️',action:"globalOpenTicket('"+nm.replace(/'/g,"\\'")+"')",kw:(f.flightNumber+' '+nm+' '+al.name+' '+f.dep.code+' '+f.arr.code+' '+airport(f.dep.code).city+' '+airport(f.arr.code).city).toLowerCase()});
+    idx.push({type:'Flight',label:f.flightNumber+' · '+nm,sub:al.name+' · '+f.dep.code+'→'+f.arr.code,icon:'✈️',action:['globalOpenTicket',nm],kw:(f.flightNumber+' '+nm+' '+al.name+' '+f.dep.code+' '+f.arr.code+' '+airport(f.dep.code).city+' '+airport(f.arr.code).city).toLowerCase()});
   });}
   // ENG requests
   if(typeof engRequests!=='undefined'){engRequests.forEach(function(e){var p=productions[e.prod]||{name:e.prod};
@@ -4781,25 +4781,25 @@ function buildSearchIndex(){
     var camKw=camAll.map(function(c){return (c.camera||'')+' '+(c.lens||'')+' '+(c.opname||'');}).join(' ');
     var lgtKw=(e.lighting||[]).map(function(g){return g.model;}).join(' ');
     var sub=p.name+' · '+camAll.length+' cam · '+(camAll[0].camera||'camera TBD')+' · '+e.status;
-    idx.push({type:'ENG Request',label:e.id+' · '+e.name,sub:sub,icon:'🎥',action:"globalOpenEng('"+e.id+"')",kw:(e.id+' '+e.name+' '+camKw+' '+lgtKw+' '+((e.liveus||[]).map(function(u){return u.model+' '+u.serial+(u.multicam?' multicam multi-cam':'');}).join(' '))+' '+((e.rems||[]).concat(e.tiffs||[]).map(function(l){return (l.talent||l.person||'');}).join(' '))+' '+p.name+' '+e.status).toLowerCase()});
+    idx.push({type:'ENG Request',label:e.id+' · '+e.name,sub:sub,icon:'🎥',action:['globalOpenEng',e.id],kw:(e.id+' '+e.name+' '+camKw+' '+lgtKw+' '+((e.liveus||[]).map(function(u){return u.model+' '+u.serial+(u.multicam?' multicam multi-cam':'');}).join(' '))+' '+((e.rems||[]).concat(e.tiffs||[]).map(function(l){return (l.talent||l.person||'');}).join(' '))+' '+p.name+' '+e.status).toLowerCase()});
   });}
   // vendors (hidden for roles without vendor access)
   if(typeof vendors!=='undefined'&&(typeof permCan!=='function'||permCan('vendors'))){vendors.forEach(function(v){
-    idx.push({type:'Vendor',label:v.name,sub:(v.category||'')+(v.contact?' · '+v.contact:''),icon:'🏢',action:"globalOpenVendor('"+v.id+"')",kw:(v.name+' '+(v.category||'')+' '+(v.contact||'')+' '+(v.email||'')).toLowerCase()});
+    idx.push({type:'Vendor',label:v.name,sub:(v.category||'')+(v.contact?' · '+v.contact:''),icon:'🏢',action:['globalOpenVendor',v.id],kw:(v.name+' '+(v.category||'')+' '+(v.contact||'')+' '+(v.email||'')).toLowerCase()});
   });}
   // finance docs (PO / WO / Invoice) — hidden for roles without finance access
   var _permFin=(typeof permCan!=='function'||permCan('finance'));
   if(typeof finPOs!=='undefined'&&_permFin){finPOs.forEach(function(po){var p=productions[po.prod]||{name:po.prod};
-    idx.push({type:'Purchase Order',label:po.id+' · '+po.vendor,sub:p.name+' · '+$fmt(po.amount)+' · '+po.status,icon:'📄',action:"globalOpenFin('po','"+po.id+"','"+po.prod+"')",kw:(po.id+' '+po.vendor+' '+p.name+' '+(po.desc||'')).toLowerCase()});});}
+    idx.push({type:'Purchase Order',label:po.id+' · '+po.vendor,sub:p.name+' · '+$fmt(po.amount)+' · '+po.status,icon:'📄',action:['globalOpenFin','po',po.id,po.prod],kw:(po.id+' '+po.vendor+' '+p.name+' '+(po.desc||'')).toLowerCase()});});}
   if(typeof workOrders!=='undefined'&&_permFin){workOrders.forEach(function(w){var p=productions[w.prod]||{name:w.prod};
-    idx.push({type:'Work Order',label:w.id+' · '+(w.desc||'').slice(0,40),sub:p.name+' · '+$fmt(w.cost||0)+' · '+w.status,icon:'🛠',action:"globalOpenFin('wo','"+w.id+"','"+w.prod+"')",kw:(w.id+' '+(w.desc||'')+' '+p.name).toLowerCase()});});}
+    idx.push({type:'Work Order',label:w.id+' · '+(w.desc||'').slice(0,40),sub:p.name+' · '+$fmt(w.cost||0)+' · '+w.status,icon:'🛠',action:['globalOpenFin','wo',w.id,w.prod],kw:(w.id+' '+(w.desc||'')+' '+p.name).toLowerCase()});});}
   if(typeof finInvoices!=='undefined'&&_permFin){finInvoices.forEach(function(iv){var p=productions[iv.prod]||{name:iv.prod};
-    idx.push({type:'Invoice',label:iv.id+' · '+iv.vendor,sub:p.name+' · '+$fmt(iv.amount)+' · '+iv.status,icon:'💵',action:"globalOpenFin('inv','"+iv.id+"','"+iv.prod+"')",kw:(iv.id+' '+iv.vendor+' '+p.name).toLowerCase()});});}
+    idx.push({type:'Invoice',label:iv.id+' · '+iv.vendor,sub:p.name+' · '+$fmt(iv.amount)+' · '+iv.status,icon:'💵',action:['globalOpenFin','inv',iv.id,iv.prod],kw:(iv.id+' '+iv.vendor+' '+p.name).toLowerCase()});});}
   // equipment lines across productions
   order.forEach(function(k){var p=productions[k];if(!p.tbEquip)return;
     Object.keys(p.tbEquip).forEach(function(dep){(p.tbEquip[dep]||[]).forEach(function(ln){
       var nm=ln.model||ln.item||'';if(!nm)return;
-      idx.push({type:'Equipment · packlist lines',label:nm,sub:p.name+' · '+dep,icon:'📦',action:"openProjPack('"+k+"')",kw:(nm+' '+dep+' '+p.name+' '+(ln.lens||'')+' '+(ln.notes||'')).toLowerCase()});
+      idx.push({type:'Equipment · packlist lines',label:nm,sub:p.name+' · '+dep,icon:'📦',action:['openProjPack',k],kw:(nm+' '+dep+' '+p.name+' '+(ln.lens||'')+' '+(ln.notes||'')).toLowerCase()});
     });});
   });
   // departments per production
@@ -4808,11 +4808,11 @@ function buildSearchIndex(){
   });});
   // communications (email + teams) — role-scoped: exec threads invisible to restricted roles
   if(typeof comms!=='undefined'){((typeof permComms==='function')?permComms():comms).forEach(function(m){
-    idx.push({type:'Message',label:(m.subject||('Teams · '+m.from)),sub:(m.channel==='teams'?'Teams':'Outlook')+' · '+(m.dir==='out'?'to '+m.to:m.from)+' · '+commsLinkLabel(m.linkType,m.linkId),icon:(m.channel==='teams'?'💬':'✉️'),action:"globalOpenComms('"+(m.thread||m.id)+"')",kw:(m.subject+' '+m.from+' '+m.to+' '+museRichPlain(m.body)+' '+commsLinkLabel(m.linkType,m.linkId)).toLowerCase()});
+    idx.push({type:'Message',label:(m.subject||('Teams · '+m.from)),sub:(m.channel==='teams'?'Teams':'Outlook')+' · '+(m.dir==='out'?'to '+m.to:m.from)+' · '+commsLinkLabel(m.linkType,m.linkId),icon:(m.channel==='teams'?'💬':'✉️'),action:['globalOpenComms',m.thread||m.id],kw:(m.subject+' '+m.from+' '+m.to+' '+museRichPlain(m.body)+' '+commsLinkLabel(m.linkType,m.linkId)).toLowerCase()});
   });}
   // inventory (barcode-tracked equipment) — role-scoped to own gear for restricted roles
   if(typeof inventory!=='undefined'){((typeof permInventory==='function')?permInventory():inventory).forEach(function(it){var st=(INV_STATUSES[it.status]||{}).label||it.status;
-    idx.push({type:'Inventory',label:it.name,sub:it.barcode+' · '+it.category+' · '+st,icon:'📦',action:"globalOpenInv('"+it.id+"')",kw:(it.name+' '+it.barcode+' '+(it.serial||'')+' '+it.category+' '+(it.assignedTo||'')+' '+(it.location||'')).toLowerCase()});
+    idx.push({type:'Inventory',label:it.name,sub:it.barcode+' · '+it.category+' · '+st,icon:'📦',action:['globalOpenInv',it.id],kw:(it.name+' '+it.barcode+' '+(it.serial||'')+' '+it.category+' '+(it.assignedTo||'')+' '+(it.location||'')).toLowerCase()});
   });}
   return idx;
 }
@@ -5106,7 +5106,8 @@ function globalSearchRunAI(q, hits){
   });
 }
 function globalSearchGo(i){if(!_searchIdx||!_searchIdx[i])return;var r=_searchIdx[i];globalSearchClose();
-  try{eval(r.action);}catch(e){console.error(e);}}
+  // action = [globalFunctionName, ...args]: data from the index, never evaluated as code
+  var fn=window[r.action[0]];if(typeof fn==='function'){try{fn.apply(null,r.action.slice(1));}catch(e){console.error(e);}}}
 
 /* navigation helpers used by search actions */
 function globalOpenCrew(name){var m=crewMember(name);if(!m)return;
@@ -10282,7 +10283,7 @@ function finBarRow(label,val,max,color,rightTxt){var w=max>0?Math.max(1,Math.min
 function finAgingStrip(b,payTerm){var mx=Math.max(1,b.cur,b.b30,b.b60,b.b90,b.b90p);
   var cell=function(l,v,c){return '<div class="flex-1 min-w-[84px] rounded-xl border border-gray-100 bg-gray-50/60 p-2 text-center"><p class="text-[8px] font-bold uppercase tracking-wider text-gray-400">'+l+'</p><p class="text-[13px] font-bold mono '+c+' mt-0.5">'+$fmt(v)+'</p></div>';};
   return '<div class="flex flex-wrap gap-2">'+cell('Current',b.cur,'text-emerald-700')+cell('1–30',b.b30,'text-gray-800')+cell('31–60',b.b60,'text-amber-600')+cell('61–90',b.b90,'text-orange-600')+cell('90+',b.b90p,'text-red-600')+
-    '<div class="flex-1 min-w-[100px] rounded-xl border border-gray-200 p-2 text-center" style="background:#0866FF;border-color:transparent"><p class="text-[8px] font-bold uppercase tracking-wider" style="color:rgba(255,255,255,.85)">Total Open</p><p class="text-[13px] font-bold mono text-white mt-0.5">'+$fmt(b.total)+'</p></div></div>';}
+    '<div class="flex-1 min-w-[100px] rounded-xl border border-gray-200 p-2 text-center" style="background:#0866FF;border-color:transparent"><p class="text-[8px] font-bold uppercase tracking-wider text-white">Total Open</p><p class="text-[13px] font-bold mono text-white mt-0.5">'+$fmt(b.total)+'</p></div></div>';}
 
 /* ---- COCKPIT ---------------------------------------------------------------- */
 function finCockpitHTML(scope){var isAll=(scope==='all');var t=finAgg(scope);var apA=finAPAging(scope),arA=finARAging(scope);var gl=finGLRollup(scope);

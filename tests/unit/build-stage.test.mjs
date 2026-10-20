@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { bumpText, newTag } from '../../scripts/build.mjs';
-import { excluded } from '../../scripts/stage.mjs';
+import { excluded, stripMapLink } from '../../scripts/stage.mjs';
 
 test('cache tags bump everywhere and keep their shape', () => {
   const tag = newTag(new Date('2026-10-17T12:00:00Z'));
@@ -14,4 +14,5 @@ test('deploy staging never ships dev files, sources, maps or secrets', () => {
   for (const p of ['index.html', 'js/muse-app-a.min.js', 'js/muse-sync.js', 'ops/health.html', 'glasses/index.html', '_headers'])
     assert.ok(!excluded(p), p);
   assert.ok(!excluded('js/muse-app-a.min.js.map', true));
+  assert.equal(stripMapLink('var a=1;\n//# sourceMappingURL=muse-app-a.min.js.map\n'), 'var a=1;\n'); // no 404 link when the map is not shipped
 });

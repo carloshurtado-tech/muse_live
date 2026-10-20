@@ -7,6 +7,8 @@
 //   multipart: request = {"mode","model","audioEncoding":"WAV","keywords"} (JSON part), audio = the WAV
 // Response → { ok, text, durationMs }.
 
+import { takeToken, sessionKey } from './museai.js';
+
 const MAX_BYTES = 2 * 1024 * 1024;
 const MAX_MS = 31000;
 const DEFAULT_BASE = 'https://api.meta.ai/v1';
@@ -35,9 +37,13 @@ function inspectWav(buf) {
   return { durationMs: Math.round(dataLen / 2 / fmt.rate * 1000) };
 }
 
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   const key = env && env.MODEL_API_KEY;
   if (!key) return json({ ok: false, configured: false, error: 'Voice needs the Muse model to be connected.' }, 503);
+  const user = context.data && context.data.user;
+  const rl = await takeToken(env, sessionKey(request), !!user && user.u === 'guest');
+  if (!rl.ok) return json({ ok: false, error: 'Voice is pacing itself. Try again in ' + rl.retryS + ' s.' }, 429);
   const len = Number(request.headers.get('Content-Length') || 0);
   if (len > MAX_BYTES) return json({ ok: false, error: 'That recording is too long. Keep it under 30 seconds.' }, 413);
   const audio = await request.arrayBuffer();

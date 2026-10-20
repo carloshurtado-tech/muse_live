@@ -223,12 +223,12 @@ function cleanMessages(list) {
 const mem = globalThis.__museaiMem || (globalThis.__museaiMem = { buckets: new Map(), usage: new Map() });
 async function kvGet(env, k) { try { if (env && env.MUSE_KV) { const v = await env.MUSE_KV.get(k); return v == null ? null : JSON.parse(v); } } catch (e) {} return null; }
 async function kvPut(env, k, v, ttl) { try { if (env && env.MUSE_KV) await env.MUSE_KV.put(k, JSON.stringify(v), { expirationTtl: ttl }); } catch (e) {} }
-function sessionKey(request) {
+export function sessionKey(request) {
   const c = request.headers.get('Cookie') || '';
   const m = /(?:^|;\s*)muse_session=([^;]+)/.exec(c);
   return (m ? 's:' + m[1].slice(-24) : 'ip:' + (request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local'));
 }
-async function takeToken(env, sk, guest) {
+export async function takeToken(env, sk, guest) {
   const perMin = Math.max(1, Number(env && (guest ? env.MUSE_GUEST_RATE_PER_MIN : env.MUSE_RATE_PER_MIN)) || (guest ? 10 : 30));
   const cap = perMin, refillPerMs = perMin / 60000, now = Date.now(), k = 'museai:rl:' + sk;
   let b = (await kvGet(env, k)) || mem.buckets.get(k) || { t: cap, at: now };

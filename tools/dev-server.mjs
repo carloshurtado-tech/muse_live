@@ -54,11 +54,22 @@ function makeKV(file) {
 if (!process.env.NO_KV) env.MUSE_KV = makeKV(process.env.DEV_KV_FILE || path.join(ROOT, '.dev-kv.json'));
 
 const MIME = { html:'text/html; charset=utf-8', js:'text/javascript; charset=utf-8', mjs:'text/javascript', css:'text/css; charset=utf-8', svg:'image/svg+xml', png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', webm:'video/webm', json:'application/json', wasm:'application/wasm', woff2:'font/woff2', webmanifest:'application/manifest+json', txt:'text/plain', ico:'image/x-icon', pdf:'application/pdf', dwg:'application/octet-stream', xml:'application/xml', map:'application/json', ics:'text/calendar; charset=utf-8' };
-let globalHeaders = [];
+const headerRules = []; // [{ rx, lines: [[name, value|null]] }] in file order, as Pages applies them
 try {
-  const h = fs.readFileSync(path.join(PUB, '_headers'), 'utf8').split('\n'); let on = false;
-  for (const l of h) { if (/^\s*#/.test(l)) continue; if (/^\S/.test(l)) on = l.trim() === '/*'; else if (on && l.includes(':')) { const i = l.indexOf(':'); globalHeaders.push([l.slice(0, i).trim(), l.slice(i + 1).trim()]); } }
+  for (const l of fs.readFileSync(path.join(PUB, '_headers'), 'utf8').split('\n')) {
+    if (/^\s*#/.test(l) || !l.trim()) continue;
+    if (/^\S/.test(l)) { headerRules.push({ rx: new RegExp('^' + l.trim().replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$'), lines: [] }); continue; }
+    const t = l.trim(), cur = headerRules[headerRules.length - 1];
+    if (!cur) continue;
+    if (t.startsWith('!')) cur.lines.push([t.slice(1).trim(), null]);
+    else if (t.includes(':')) { const i = t.indexOf(':'); cur.lines.push([t.slice(0, i).trim(), t.slice(i + 1).trim()]); }
+  }
 } catch {}
+function staticHeaders(pathname) {
+  const h = {};
+  for (const r of headerRules) if (r.rx.test(pathname)) for (const [k, v] of r.lines) { if (v === null) delete h[k]; else h[k] = v; }
+  return h;
+}
 const bust = () => '?t=' + Date.now();
 async function load(file) { return import(pathToFileURL(file).href + bust()); }
 function staticResponse(p) {
@@ -103,8 +114,7 @@ http.createServer(async (req, res) => {
     if (fs.existsSync(mw)) { const mod = await load(mw); resp = await mod.onRequest({ request, env, next: () => route(request, data), waitUntil() {}, data }); }
     else resp = await route(request, data);
     /** @type {Record<string, any>} */
-    const headers = {};
-    for (const [k, v] of globalHeaders) headers[k] = v;
+    const headers = staticHeaders(new URL(request.url).pathname);
     delete headers['Strict-Transport-Security'];
     resp.headers.forEach((v, k) => { if (k.toLowerCase() !== 'set-cookie') headers[k] = v; });
     const cookies = resp.headers.getSetCookie ? resp.headers.getSetCookie() : [];

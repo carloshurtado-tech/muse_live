@@ -3992,6 +3992,7 @@ html.dark details.bops-fold > summary:hover{background:#3A3D43;}
 .ms-btn{font-size:13px;font-weight:600;padding:7px 14px;border-radius:999px;background:var(--ms-soft);color:var(--ms-ink);white-space:nowrap;}
 .ms-btn:hover{filter:brightness(.96);}
 .ms-btn-primary{background:var(--ms-blue);color:#fff;}
+.ms-btn-soft,html.dark .ms-btn-soft{background:#E7F3FF;color:#0A58CA;}
 .ms-btn:focus-visible,.ms-link:focus-visible,.mi-row:focus-visible,.ms-play:focus-visible,.ms-audio:focus-visible{outline:2px solid var(--ms-blue);outline-offset:2px;}
 .ms-link{font-size:12.5px;font-weight:600;color:var(--ms-blue);background:none;padding:0;}
 .ms-link:hover{text-decoration:underline;}
@@ -4827,12 +4828,14 @@ html.dark .text-gray-300{color:#AAAFB9 !important;}
 html.dark .view-pane [class*="hover:bg-blue-"][class*="text-blue"],html.dark .view-pane [class*="hover:bg-blue-"][class*="text-blue"] *{color:#8EC5FF !important;}
 html.dark .view-pane .bg-amber-100{background:#3A2E14 !important;}
 html:not(.dark) .muse-sync-text{color:#4B4F56 !important;}
+html:not(.dark) .muse-sync-pill.is-stale .muse-sync-text{color:#fff !important;}
 html.dark body .view-pane .text-blue-700.bg-blue-50,html.dark body .view-pane button.text-blue-700,html.dark body .view-pane a.text-blue-700{color:#8EC5FF !important;}
 html.dark body .view-pane button.bg-blue-600,html.dark body .view-pane button.bg-gray-900{color:#fff !important;}
 html.dark body .view-pane button.bg-blue-600 *,html.dark body .view-pane button.bg-gray-900 *{color:#fff !important;}
 html.dark button[title^="Scheduling conflicts"]{background:#D21F3C !important;color:#fff !important;border-color:transparent !important;}
 html:not(.dark) button[title^="Scheduling conflicts"]{color:#B3122E !important;}
 html.dark .muse-sync-text{color:#AAAFB9 !important;}
+html.dark .muse-sync-pill.is-stale .muse-sync-text{color:#000 !important;}
 html.dark .view-pane h3.uppercase,html.dark .view-pane h3.text-gray-700,html.dark .view-pane h3.text-gray-800{color:#FFFFFF !important;}
 /* Native <progress>: Firefox paints the track on the element itself (Chrome on ::-webkit-progress-bar), so both get the toolkit track and full radius. */
 progress{border:0;border-radius:var(--uit-corner-radius-full);overflow:hidden;background:var(--uit-color-background-elevation2);}
@@ -4847,6 +4850,7 @@ html.dark body > header.sticky.glass-panel{background:#1F1F1F !important;box-sha
   .omni-drawer.open{transform:translateX(0);}
 }
 /* Guided tour: a steady dim while a step changes view, so view switches and jumps are never seen. */
+.mt-glasses{position:fixed;z-index:93;top:76px;left:16px;width:calc(100vw - 32px);height:calc(100vh - 92px);border:0;border-radius:24px;background:#000;}
 .mt-veil{position:fixed;inset:0;z-index:94;background:rgba(0,0,0,.55);opacity:0;pointer-events:none;transition:opacity .18s ease;}
 html.mt-moving .mt-veil{opacity:1;}
 @media (min-width:640px){main.muse-main{padding-top:12px;}} /* match the floating banner's 12px gap above, below and on every page (view panes' first tile has no top margin) */

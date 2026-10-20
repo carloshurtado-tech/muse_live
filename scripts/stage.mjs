@@ -29,13 +29,18 @@ export function excluded(rel, withMaps = false) {
   if (!withMaps && /\.map$/.test(rel)) return true;
   return EXCLUDE.some((rx) => rx.test(rel));
 }
+export function stripMapLink(js) { return js.replace(/\n\/\/# sourceMappingURL=\S+\s*$/, '\n'); }
 function copyTree(src, dst, rel = '') {
   for (const name of fs.readdirSync(src)) {
     const r = rel ? rel + '/' + name : name;
     const s = path.join(src, name);
     const st = fs.statSync(s);
     if (st.isDirectory()) { if (!excluded(r + '/', WITH_MAPS) && !excluded(r, WITH_MAPS)) copyTree(s, path.join(dst, name), r); }
-    else if (!excluded(r, WITH_MAPS)) { fs.mkdirSync(dst, { recursive: true }); fs.copyFileSync(s, path.join(dst, name)); }
+    else if (!excluded(r, WITH_MAPS)) {
+      fs.mkdirSync(dst, { recursive: true });
+      if (!WITH_MAPS && /\.min\.js$/.test(name)) fs.writeFileSync(path.join(dst, name), stripMapLink(fs.readFileSync(s, 'utf8'))); // the .map is not shipped
+      else fs.copyFileSync(s, path.join(dst, name));
+    }
   }
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

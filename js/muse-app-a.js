@@ -6256,7 +6256,7 @@ function downloadTechbook(key,opts){
 function txt(s){return s==null?'':''+s;}
 /* Show names reach many templates (some unescaped) and other browsers via MuseSync: markup characters never belong in one. */
 function museCleanName(s){return String(s==null?'':s).replace(/[<>`]/g,'').replace(/'/g,'\u2019').replace(/"/g,'\u201D').trim();}
-function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function spectrumSVGmarkup(sz,bodyFill){
   /* Official Muse Live Spectrum from assets/brand — natural aspect (~1.727:1) */
   var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(290/191);

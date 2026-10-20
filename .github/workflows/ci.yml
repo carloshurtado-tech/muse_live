@@ -20,6 +20,8 @@ jobs:
       - run: npm test
       - name: Bundles rebuild cleanly
         run: node scripts/build.mjs --out /tmp/build
+      - name: Committed bundles match their sources
+        run: for n in a b; do cmp /tmp/build/muse-app-$n.min.js js/muse-app-$n.min.js || { echo "js/muse-app-$n.min.js is stale — run npm run build and commit"; exit 1; }; done
 
   e2e:
     name: End-to-end (${{ matrix.browser }})

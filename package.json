@@ -2,7 +2,7 @@
   "name": "muse-live",
   "version": "4.8.0",
   "private": true,
-  "description": "Muse Live \u2014 broadcast & live-streaming operations platform with the Muse AI agent (Cloudflare Pages + Functions).",
+  "description": "Muse Live — broadcast & live-streaming operations platform with the Muse AI agent (Cloudflare Pages + Functions).",
   "type": "module",
   "engines": {
     "node": ">=18.18"
@@ -19,6 +19,7 @@
     "check": "npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "9.39.5",
     "@playwright/test": "1.56.1",
     "@types/node": "22.10.2",

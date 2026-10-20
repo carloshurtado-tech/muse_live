@@ -23,7 +23,7 @@ export async function onRequestGet({ request, env }) {
     if (!tok.access_token) throw new Error(tok.error_description || tok.error || 'Token exchange failed');
     const info = await fetch(meta.userinfo_endpoint, { headers: { Authorization: 'Bearer ' + tok.access_token }, signal: AbortSignal.timeout(8000) }).then((r) => r.json());
     const email = normEmail(info.email);
-    if (!email || info.email_verified === false) throw new Error('The identity provider did not return a verified email.');
+    if (!email || info.email_verified !== true) throw new Error('The identity provider did not return a verified email.');
     const domains = String(env.OIDC_ALLOWED_DOMAINS || '').split(/[\s,]+/).filter(Boolean);
     if (domains.length && !domains.includes(email.split('@')[1])) throw new Error('This account’s domain is not allowed.');
     const account = await getUser(env, email);

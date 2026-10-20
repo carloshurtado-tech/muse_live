@@ -31,7 +31,7 @@
   function esc(s) {
     if (typeof global.esc === 'function') return global.esc(s);
     return String(s == null ? '' : s)
-      .replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>').replace(/"/g, '"');
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function actor() {
     try { if (typeof global.permUser === 'function' && global.permUser()) return String(global.permUser()); } catch (e) {}

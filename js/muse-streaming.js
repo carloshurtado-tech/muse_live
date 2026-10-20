@@ -540,7 +540,7 @@
     }).join('');
     return '<div class="ms-wrap">' +
       '<div class="ms-page-h"><div><h1>Live Streams</h1><p>Every program feed across Meta live events, with end-to-end health. For executives and engineers.</p></div>' +
-        '<div class="ms-head-r"><button type="button" class="ms-btn" onclick="window.open(\'glasses/preview.html\',\'_blank\',\'noopener\')">Muse on Ray-Ban Display ↗</button>' +
+        '<div class="ms-head-r"><button type="button" class="ms-btn ms-btn-soft" onclick="window.open(\'glasses/preview.html\',\'_blank\',\'noopener\')">Muse on Ray-Ban Display ↗</button>' +
         '<button type="button" class="ms-btn ms-btn-primary" onclick="museaiAsk(\'Give me a health check on every live stream right now\')">Ask Muse for a health check</button></div></div>' +
       '<p class="ms-note ms-demo-note"><span class="ms-src">Demo data</span> Viewer and pipeline numbers are simulated until real sources are connected per stream (AWS CloudWatch, Mux Data, Facebook Live). Video monitors and pre-flight checks are real.</p>' +
       '<div class="ms-kpis"><div><span>Live now</span><b id="msK-live">' + live + '</b></div><div><span>Concurrent viewers</span><b id="msK-viewers">' + fmtN(totalV) + '</b></div>' +

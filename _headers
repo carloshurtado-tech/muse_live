@@ -18,11 +18,17 @@
   Cross-Origin-Opener-Policy: same-origin
   Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.sheetjs.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://data.jsdelivr.com https://unpkg.com https://esm.run https://esm.sh https://*.esm.sh https://*.maplibre.org https://*.carto.com https://*.cartocdn.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com https://*.maplibre.org; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com data:; img-src 'self' data: blob: https:; connect-src 'self' blob: data: https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com https://worldtimeapi.org https://timeapi.io https://api.open-meteo.com https://*.open-meteo.com https://geocoding-api.open-meteo.com https://site.api.espn.com https://*.api.espn.com https://cdn.espn.com https://*.carto.com https://*.cartocdn.com https://basemaps.cartocdn.com https://tiles.openfreemap.org https://*.openfreemap.org https://*.openstreetmap.org https://nominatim.openstreetmap.org https://*.maplibre.org https://unpkg.com https://cdn.jsdelivr.net https://data.jsdelivr.com https://esm.run https://esm.sh https://*.esm.sh https://*.convex.site https://*.convex.cloud https://server.arcgisonline.com https://*.arcgisonline.com https://overpass-api.de https://*.overpass-api.de https://overpass.kumi.systems https://*.kumi.systems https://photon.komoot.io https://*.komoot.io https://s3.amazonaws.com https://*.amazonaws.com https://elevation-tiles-prod.s3.amazonaws.com https://*.shademap.app https://shademap.app; worker-src 'self' blob: data:; media-src 'self' blob: data: https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com; child-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
+# The tour shows the Ray-Ban Display preview in a same-origin iframe; everything else stays unframeable.
+/glasses/*
+  ! X-Frame-Options
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'
+
 /
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
 /index.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
-  Link: </css/muse.css?v=20261020-6jy3>; rel=preload; as=style
+  Link: </css/muse.css?v=20261020-6o3z>; rel=preload; as=style
   Link: </assets/brand/meta-mark-animated.svg>; rel=preload; as=image
 
 /*.html

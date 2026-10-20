@@ -14,6 +14,15 @@
   function go(view) { call(function () { root.navGo ? root.navGo(view) : root.switchView(view); }); }
   function openShow(key, tab) { call(function () { root.projSubTab[key] = tab; }); go(key); call(function () { root.setProjTab(key, tab); }); }
   function closeMuse() { call(function () { if (root.museaiOpen) root.toggleMuseAi(); }); }
+  // The Ray-Ban Display preview, framed over the app for one step (a timer can't open a tab; a click can).
+  function glasses(on) {
+    var f = $('#mtGlasses');
+    if (!on) { if (f) f.remove(); return; }
+    if (f) return;
+    f = document.createElement('iframe'); f.id = 'mtGlasses'; f.className = 'mt-glasses'; f.title = 'Muse on Ray-Ban Display'; f.src = 'glasses/preview.html';
+    document.body.appendChild(f);
+  }
+  function openGlasses() { root.open('glasses/preview.html', '_blank', 'noopener'); }
   function closeOmni() { call(function () { if (root.omniDrawerOpen) root.closeOmniDrawer(); }); }
   var ASK = 'What happened at the Ray-Ban event, and what did we change afterwards?';
   /* Techbook PDF → a new tab. Browsers only allow new tabs from a recent click, so a click reserves the tab
@@ -64,12 +73,14 @@
 
   // secs: how long the step stays up in auto-play (null = wait for the viewer).
   var STEPS = [
-    { secs: 7, title: 'Welcome to Muse Live', body: 'An operations platform for live events that are broadcast and streamed. In the next 90 seconds: the live stream wall, one show\'s end-to-end streaming chain, incident post-mortems, finance, Omni and Muse, the AI agent on comms.',
+    { secs: 7, title: 'Welcome to Muse Live', body: 'An operations platform for live events that are broadcast and streamed. In the next 90 seconds: the live stream wall, Muse on Ray-Ban Display, one show\'s end-to-end streaming chain, incident post-mortems, finance, Omni and Muse, the AI agent on comms.',
       before: function () { closeMuse(); closeOmni(); go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: [] },
     { secs: 9, title: 'Today, at a glance', body: 'What is on air right now, live viewers, shows at risk and open incidents. Every number is a shortcut into the detail.',
       before: function () { go('dashboard'); }, target: ['#dashHome'], top: true },
     { secs: 10, title: 'Every live stream, one wall', body: 'Each show\'s program feed with end-to-end health: concurrent viewers, rebuffering ratio, glass-to-glass latency and errors. One glance tells an engineer where to look and an executive whether to worry.',
       before: function () { go('streams'); }, target: ['#streamsHost .ms-tile:has([data-live="1"])', '#streamsHost .ms-tile'], top: true },
+    { secs: 10, title: 'Muse on Ray-Ban Display', body: 'The same tally, alerts and Ask Muse on Meta Ray-Ban Display, for engineers on the floor: a glanceable 600 × 600 app built with Meta\'s UI Toolkit, fed by this desktop app every 5 seconds. Swipe with the wristband, pinch to select.',
+      before: function () { go('streams'); }, frame: true, target: ['#mtGlasses'], wait: 900, action: { label: 'Open full screen ↗', run: openGlasses } },
     { secs: 11, title: 'Inside a show: the streaming chain', body: 'Encoder → contribution (SRT) → cloud transcode → CDN → viewer, with health at every hop. Below it: the ABR encoding ladder, destinations, captions, loudness and the go-live checklist.',
       before: function () { openShow('museaitour', 'streaming'); }, target: ['#view-museaitour .ms-card:has(.ms-chain)', '#view-museaitour .ms-chain'], wait: 700 },
     { secs: 10, title: 'Incidents that teach', body: 'Blameless post-mortems with impact, timeline, root cause and owned action items. Here: everything that went wrong at the Ray-Ban Meta Gen 3 launch, and what was changed so it can\'t happen twice.',
@@ -212,15 +223,15 @@
     if (n < 0) return;
     if (n >= STEPS.length) { end(); return; }
     build(); i = n; clearClock(); curEl = null; posKey = '';
-    var s = STEPS[i];
-    call(s.before);
+    var s = STEPS[i], last = i === STEPS.length - 1, count = STEPS.length - 1; // the finale is a bow, not a stop
+    glasses(!!s.frame); call(s.before);
     jump(s); // same task as the render: off-screen monitors never start loading
     var c = ui.card;
-    c.querySelector('#mtCount').textContent = (auto ? 'Demo · ' : 'Step ') + (i + 1) + ' of ' + STEPS.length;
+    c.querySelector('#mtCount').textContent = last ? '' : (auto ? 'Demo · ' : 'Step ') + (i + 1) + ' of ' + count;
     c.querySelector('#mtTitle').textContent = s.title;
     c.querySelector('#mtBody').textContent = s.body;
     c.querySelector('#mtBack').disabled = i === 0;
-    c.querySelector('#mtNext').textContent = i === STEPS.length - 1 ? 'Finish' : 'Next';
+    c.querySelector('#mtNext').textContent = last ? 'Finish' : 'Next';
     var a = c.querySelector('#mtAction');
     var showAction = s.action && !(auto && s.auto); // auto-play runs it for the viewer
     if (showAction) { a.hidden = false; a.textContent = s.action.label; a.onclick = s.action.run; } else { a.hidden = true; a.onclick = null; }
@@ -228,7 +239,7 @@
     c.querySelector('#mtProg').hidden = !timed;
     c.querySelector('#mtPause').hidden = !timed;
     c.querySelector('#mtHint').hidden = !auto;
-    ui.live.textContent = 'Step ' + (i + 1) + ' of ' + STEPS.length + ': ' + s.title + '. ' + s.body;
+    ui.live.textContent = (last ? '' : 'Step ' + (i + 1) + ' of ' + count + ': ') + s.title + '. ' + s.body;
     var de = document.documentElement; de.classList.add('mt-on', 'mt-moving'); // hidden while the view changes, shown once placed
     var wait = s.wait || 300, n0 = i;
     setTimeout(function () {
@@ -290,6 +301,7 @@
   function end() {
     clearClock();
     i = -1;
+    glasses(false);
     if (ui) { ui.veil.remove(); ui.spot.remove(); ui.card.remove(); ui.live.remove(); ui = null; }
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('visibilitychange', onVisibility);

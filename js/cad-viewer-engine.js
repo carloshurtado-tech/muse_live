@@ -84,7 +84,7 @@
   function uid() { return 'n' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36); }
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function esc(s) {
-    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   /* ---------- shell ---------- */

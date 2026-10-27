@@ -1,0 +1,233 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import fs from 'node:fs';
+import path from 'node:path';
+import { loadBrowserModule, ROOT } from './helpers.mjs';
+
+// Day 2 eval set: 14 failure scenarios (single-module + cross-module). Each one
+// asserts what Show Caller must detect AND what fix it must propose — nothing
+// here executes anything. Scenario 14 runs against the real seed modules.
+const productions = { demo: { name: 'Demo Show', tab: 'Demo' } };
+
+// A show with one problem in every module: live stream alert, double-book,
+// open SEV-2, open crew slot, unpacked gear. Nothing here writes anywhere.
+function base() {
+  return {
+    productions,
+    order: ['demo'],
+    MuseSchedule: {
+      byProduction: () => [{ id: 'b1', res: 'CRK 4' }, { id: 'b2', res: 'CRK 4' }],
+      conflicts: () => [{ kind: 'double-book', res: 'CRK 4', ids: ['b1', 'b2'], text: 'CRK 4 booked twice Sunday 18:00' }],
+      ruleFindings: () => [],
+    },
+    MuseStreaming: {
+      stateOf: () => 'LIVE',
+      health: () => ({ state: 'LIVE', health: 'Degraded', viewers: 1000, alerts: [{ text: 'SRT loss 2.1% on primary' }] }),
+      anomalies: () => [],
+    },
+    MuseIncidents: {
+      byProduction: () => [{ id: 'INC-1', title: 'Encoder dropped', severity: 'SEV-2', status: 'Open' }],
+      brief: (i) => ({ id: i.id, title: i.title, severity: i.severity, status: i.status }),
+    },
+    museaiCrewFull: () => [{ pos: 'A1', name: 'Sam' }, { pos: 'A2', name: '' }],
+    museaiCheckinsFull: () => ({ on_count: 1, total_named: 1 }),
+    museaiPacklist: () => [{ name: 'Encoder', status: 'Packed' }, { name: 'Cable', status: 'Draft' }],
+    buildMuseAiContext: () => JSON.stringify({ ops_backbone: { transmission_conflicts: ['Demo Show uplink clash'] } }),
+  };
+}
+function makeWin(over = {}) {
+  const g = base();
+  for (const k of Object.keys(over)) {
+    g[k] = over[k] === null ? undefined : (typeof over[k] === 'object' && typeof g[k] === 'object' && !Array.isArray(over[k]) && typeof over[k] !== 'function'
+      ? Object.assign({}, g[k], over[k]) : over[k]);
+  }
+  return loadBrowserModule('js/muse-showcaller.js', g);
+}
+const healthyStreams = { stateOf: () => 'STANDBY', health: () => ({ state: 'STANDBY', health: 'Healthy', viewers: 0, alerts: [] }), anomalies: () => [] };
+const quietSchedule = { byProduction: () => [], conflicts: () => [], ruleFindings: () => [] };
+const quietIncidents = { byProduction: () => [] };
+const fullCrew = () => [{ pos: 'A1', name: 'Sam' }, { pos: 'A2', name: 'Jo' }];
+const packedGear = () => [{ name: 'Encoder', status: 'Packed' }];
+const emptyOps = () => JSON.stringify({ ops_backbone: {} });
+
+test('snapshot gathers every area without writing', () => {
+  const s = makeWin().MuseShowCaller.snapshot('demo');
+  assert.equal(s.show, 'Demo Show');
+  for (const a of ['schedule', 'streams', 'incidents', 'crew', 'equipment', 'ops']) {
+    assert.ok(!s[a].unavailable, a + ' unavailable: ' + (s[a].unavailable || ''));
+  }
+  assert.equal(makeWin().MuseShowCaller.readOnly, true);
+});
+
+test('brief ranks high first and cites a source per risk', () => {
+  const b = makeWin().MuseShowCaller.brief('demo');
+  assert.ok(b.risks.length >= 5, 'expected risks from every area, got ' + b.risks.length);
+  const rank = { high: 0, med: 1, low: 2 };
+  for (let i = 1; i < b.risks.length; i++) assert.ok(rank[b.risks[i - 1].level] <= rank[b.risks[i].level], 'not ranked');
+  assert.equal(b.risks[0].level, 'high');
+  for (const r of b.risks) assert.ok(r.sources && r.sources.length >= 1, 'risk without source: ' + r.text);
+  assert.equal(b.unknown.length, 0, 'unexpected unknowns: ' + JSON.stringify(b.unknown));
+  assert.ok(b.risks.some((r) => r.sources.join(' ').includes('INC-1')), 'incident source missing');
+  assert.ok(b.risks.some((r) => r.sources.join(' ').includes('b1')), 'booking source missing');
+});
+
+test('missing modules become unknowns, never guesses', () => {
+  const w = loadBrowserModule('js/muse-showcaller.js', { productions, order: ['demo'] });
+  const b = w.MuseShowCaller.brief('demo');
+  assert.equal(b.risks.length, 0);
+  assert.equal(b.unknown.length, 6);
+});
+
+test('unknown show is an error, not an empty brief', () => {
+  assert.ok(makeWin().MuseShowCaller.brief('nope').error);
+});
+
+// --- Day 2: detection → proposed fix (nothing executes) ---
+
+function schedFixStubs(free) {
+  return {
+    byProduction: () => [{ id: 'b1' }, { id: 'b2' }],
+    conflicts: () => [{ kind: 'double-booking', res: 'CRK 4', ids: ['b1', 'b2'], text: 'CRK 4 overlap Sunday 18:00' }],
+    ruleFindings: () => [],
+    get: (id) => id === 'b1'
+      ? { id: 'b1', res: 'crk4', title: 'Keynote uplink', start: '2026-11-01T17:00', end: '2026-11-01T21:30', onAir: true }
+      : { id: 'b2', res: 'crk4', title: 'Summit line-up test', start: '2026-11-01T18:00', end: '2026-11-01T19:00', onAir: false },
+    types: () => [{ id: 'circuit', label: 'Circuits' }],
+    resources: () => [{ id: 'crk4', name: 'CRK 4', type: 'circuit' }, { id: 'crk6', name: 'CRK 6', type: 'circuit' }],
+    isFree: (id) => free.indexOf(id) >= 0,
+  };
+}
+
+test('1. sched-reassign: double-book moves the non-on-air booking to a verified-free resource', () => {
+  const w = makeWin({ MuseSchedule: schedFixStubs(['crk6']) });
+  const p = w.MuseShowCaller.propose('demo');
+  const mv = p.plans.filter((x) => x.action === 'reassign_booking');
+  assert.equal(mv.length, 1, 'expected one reassign plan: ' + JSON.stringify(p.plans));
+  assert.ok(/Summit line-up/.test(mv[0].detail.booking), 'wrong booking moved');
+  assert.equal(mv[0].detail.to, 'CRK 6');
+  assert.ok(mv[0].sources.join(' ').includes('b2'));
+  assert.ok(!JSON.stringify(p.plans).includes('b1'), 'on-air booking touched');
+});
+
+test('2. sched-push-noalt: with nothing free, the fix pushes after the on-air booking', () => {
+  const w = makeWin({ MuseSchedule: schedFixStubs([]) });
+  const p = w.MuseShowCaller.propose('demo');
+  const mv = p.plans.filter((x) => x.action === 'push_booking');
+  assert.equal(mv.length, 1, 'expected one push plan: ' + JSON.stringify(p.plans));
+  assert.ok(/Summit line-up/.test(mv[0].detail.booking));
+  assert.ok(mv[0].detail.after, 'push has no after time');
+});
+
+test('3. sched-both-onair: two on-air bookings are uncovered, never auto-moved', () => {
+  const s = schedFixStubs(['crk6']);
+  const g = s.get;
+  s.get = (id) => Object.assign({}, g(id), { onAir: true });
+  const p = makeWin({ MuseSchedule: s }).MuseShowCaller.propose('demo');
+  assert.equal(p.plans.filter((x) => /booking/.test(x.action)).length, 0, 'auto-moved an on-air booking');
+  assert.ok(p.uncovered.some((u) => /on-air|on air/i.test(u.why)), 'no human-escalation note');
+});
+
+test('4. stream-apply: anomaly recommendation becomes an apply plan with its kind', () => {
+  const w = makeWin({ MuseStreaming: {
+    stateOf: () => 'LIVE',
+    health: () => ({ state: 'LIVE', health: 'Degraded', viewers: 100, alerts: [] }),
+    anomalies: () => [{ key: 'demo', stage: 'CDN', level: 'high', text: 'Edge 5xx 2%', recommendation: { kind: 'cdn_shift', label: 'Shift EU to CloudFront', args: { cloudfront: 80, akamai: 20 } } }],
+  } });
+  const p = w.MuseShowCaller.propose('demo');
+  const fx = p.plans.filter((x) => x.action === 'apply_stream_fix');
+  assert.equal(fx.length, 1);
+  assert.equal(fx[0].detail.kind, 'cdn_shift');
+});
+
+test('5. stream-alert-no-rec: alert without a recommendation is uncovered for diagnosis', () => {
+  const p = makeWin().MuseShowCaller.propose('demo');
+  assert.ok(p.uncovered.some((u) => /diagnos/i.test(u.why)), 'alert silently planned or dropped: ' + JSON.stringify(p.uncovered));
+});
+
+test('6. incident-review: open incident yields a review plan citing similar precedent', () => {
+  const w = makeWin({ MuseIncidents: {
+    byProduction: () => [{ id: 'INC-9', title: 'Encoder dropped', severity: 'SEV-2', status: 'Open' }],
+    brief: (i) => ({ id: i.id, title: i.title, severity: i.severity, status: i.status }),
+    get: (id) => ({ id, title: 'Encoder dropped', severity: 'SEV-2', status: 'Open', actions: [{ text: 'Fix it', status: 'Open' }] }),
+    similar: () => [{ id: 'INC-1', title: 'Encoder dropped before' }],
+  } });
+  const p = w.MuseShowCaller.propose('demo');
+  const rv = p.plans.filter((x) => x.action === 'review_incident');
+  assert.equal(rv.length, 1);
+  assert.ok(rv[0].detail.similar.join(' ').includes('INC-1'), 'precedent missing');
+});
+
+test('7. crew-uncovered: open position needs a human pick, never an auto-assign', () => {
+  const p = makeWin().MuseShowCaller.propose('demo');
+  assert.equal(p.plans.filter((x) => x.area === 'crew').length, 0, 'auto-assigned crew');
+  assert.ok(p.uncovered.some((u) => /crew|position/i.test(u.for)), 'open position not escalated');
+});
+
+test('8. equip-packcheck: unpacked gear becomes a pack-check task, not an execution', () => {
+  const p = makeWin().MuseShowCaller.propose('demo');
+  const pk = p.plans.filter((x) => x.action === 'pack_check');
+  assert.equal(pk.length, 1);
+  assert.equal(pk[0].detail.count, 1);
+});
+
+test('9. x-onair-all: live show with conflict + alert + incident plans each area', () => {
+  const w = makeWin({ MuseSchedule: schedFixStubs(['crk6']) });
+  const b = w.MuseShowCaller.brief('demo');
+  assert.ok(b.risks.filter((r) => r.level === 'high').length >= 3, 'expected 3+ highs');
+  const areas = new Set(w.MuseShowCaller.propose('demo').plans.map((x) => x.area));
+  assert.ok(areas.has('schedule') && areas.has('incidents'), 'missing area plan: ' + [...areas]);
+});
+
+test('10. quiet: healthy show has no risks and no plans', () => {
+  const w = makeWin({ MuseSchedule: quietSchedule, MuseStreaming: healthyStreams, MuseIncidents: quietIncidents,
+    museaiCrewFull: fullCrew, museaiPacklist: packedGear, buildMuseAiContext: emptyOps });
+  assert.equal(w.MuseShowCaller.brief('demo').risks.length, 0);
+  const p = w.MuseShowCaller.propose('demo');
+  assert.equal(p.plans.length, 0);
+  assert.equal(p.uncovered.length, 0);
+});
+
+test('11. missing: no modules means no plans and preserved unknowns', () => {
+  const w = loadBrowserModule('js/muse-showcaller.js', { productions, order: ['demo'] });
+  const p = w.MuseShowCaller.propose('demo');
+  assert.equal(p.plans.length, 0);
+  assert.equal(p.uncovered.length, 0);
+  assert.equal(w.MuseShowCaller.brief('demo').unknown.length, 6);
+});
+
+test('12. rule-uncovered: labor finding without booking ids escalates, not guesses', () => {
+  const w = makeWin({ MuseSchedule: { byProduction: () => [], conflicts: () => [],
+    ruleFindings: () => [{ kind: 'turnaround', res: 'Alex M', rule: 'crew-10h', text: 'Demo Show: Alex M has 8 h turnaround' }] } });
+  const p = w.MuseShowCaller.propose('demo');
+  assert.equal(p.plans.filter((x) => /Alex M|Labor rule/.test(x.for)).length, 0, 'guessed a labor fix');
+  assert.ok(p.uncovered.some((u) => /Alex M/.test(u.for) && /booking/i.test(u.why)), 'labor finding not escalated');
+});
+
+test('13. tx-uncovered: transmission conflict stays human-decided', () => {
+  const p = makeWin().MuseShowCaller.propose('demo');
+  assert.equal(p.plans.filter((x) => x.area === 'ops').length, 0, 'auto-planned a transmission move');
+  assert.ok(p.uncovered.some((u) => /transmission/i.test(u.for)), 'transmission risk not escalated');
+});
+
+test('14. headline: real seed CRK-4 contention moves the non-on-air booking', () => {
+  const w = loadBrowserModule('js/muse-showcaller.js', {
+    productions: {
+      museailaunch: { name: 'Muse AI Launch' }, whatsapp: { name: 'WhatsApp Summit' },
+      museaitour: { name: 'Muse AI Tour' }, raybangen3: { name: 'Ray-Ban' }, orion: { name: 'Orion' },
+    },
+    order: ['museailaunch', 'whatsapp', 'museaitour', 'raybangen3', 'orion'],
+    setTimeout: () => 0, // neuter deferred boots; seeds still build on demand
+  });
+  for (const f of ['js/muse-schedule.js', 'js/muse-incidents.js', 'js/muse-streaming.js']) {
+    vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), w, { filename: f });
+  }
+  const SC = w.MuseShowCaller;
+  const risks = SC.brief('museailaunch').risks;
+  assert.ok(risks.some((r) => r.level === 'high' && r.area === 'schedule' && /CRK 4/.test(r.text)),
+    'CRK-4 risk missing: ' + JSON.stringify(risks.map((r) => r.text)));
+  const plans = SC.propose('museailaunch').plans.filter((x) => /booking/.test(x.action));
+  assert.ok(plans.length >= 1, 'no schedule plan proposed');
+  assert.ok(!plans.some((x) => /Primary uplink/.test(x.detail.booking)), 'touched the on-air booking');
+  assert.ok(plans.some((x) => /WhatsApp/.test(x.detail.booking)), 'fix moves the wrong booking: ' + JSON.stringify(plans));
+});

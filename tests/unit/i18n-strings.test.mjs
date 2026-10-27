@@ -13,7 +13,7 @@ test('resolveLang maps en/es/pt with fallback', () => {
 });
 
 test('t covers every key in every locale with English fallback', () => {
-  const enKeys = ['signIn', 'adminsOnly', 'readOnly', 'forbiddenOrigin', 'badBody', 'badId', 'badDate', 'methodNotAllowed', 'needD1Transcripts', 'needD1Media', 'needR2Media', 'needAuditBinding', 'showRequired', 'titleRequired', 'transcriptTooBig', 'noSuchTranscript', 'noSuchMedia', 'blobMissing', 'storageWriteFailed', 'emptyUpload', 'fileTooBig'];
+  const enKeys = ['signIn', 'adminsOnly', 'readOnly', 'forbiddenOrigin', 'badBody', 'badId', 'badDate', 'methodNotAllowed', 'needD1Transcripts', 'needD1Media', 'needR2Media', 'needAuditBinding', 'showRequired', 'titleRequired', 'transcriptTooBig', 'noSuchTranscript', 'noSuchMedia', 'blobMissing', 'storageWriteFailed', 'emptyUpload', 'fileTooBig', 'enterPassword', 'loginMismatch', 'needEmailLogin', 'wrongPassword', 'tooManyLogins', 'tooManyAttempts', 'guestClosed', 'voiceOffGuest', 'misconfigured'];
   for (const lang of ['en', 'es', 'pt', 'xx']) {
     for (const key of enKeys) {
       const s = t(lang, key);

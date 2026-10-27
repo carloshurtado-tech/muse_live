@@ -220,14 +220,19 @@
     // Tasks: blocked chains and overdue owners surface as ops risks.
     try {
       if (root.MuseTasks && scopeOn(s.key, 'ops')) {
+        var crit = {};
+        try {
+          if (root.MuseLaunch && typeof root.MuseLaunch.criticalPath === 'function')
+            (root.MuseLaunch.criticalPath(s.key).chain || []).forEach(function (id) { crit[id] = 1; });
+        } catch (e2) {}
         root.MuseTasks.blocked(s.key).slice(0, 3).forEach(function (t) {
-          risks.push({ level: 'med', area: 'tasks',
-            text: 'Blocked: "' + t.title + '" waits on ' + t.deps.length + ' unfinished dependenc' + (t.deps.length === 1 ? 'y' : 'ies'),
+          risks.push({ level: crit[t.id] ? 'high' : 'med', area: 'tasks',
+            text: 'Blocked: "' + t.title + '" waits on ' + t.deps.length + ' unfinished dependenc' + (t.deps.length === 1 ? 'y' : 'ies') + (crit[t.id] ? ' — ON THE CRITICAL PATH' : ''),
             sources: ['task chain · ' + s.show] });
         });
         root.MuseTasks.overdue(s.key).slice(0, 3).forEach(function (t) {
-          risks.push({ level: 'med', area: 'tasks',
-            text: 'Overdue: "' + t.title + '"' + (t.owner ? ' (' + t.owner + ')' : ''),
+          risks.push({ level: crit[t.id] ? 'high' : 'med', area: 'tasks',
+            text: 'Overdue: "' + t.title + '"' + (t.owner ? ' (' + t.owner + ')' : '') + (crit[t.id] ? ' — ON THE CRITICAL PATH' : ''),
             sources: ['task chain · ' + s.show] });
         });
       }
@@ -259,7 +264,13 @@
     var s = typeof x === 'string' || !x ? snapshot(x) : x;
     if (s.error) return s;
     var plans = [], uncovered = [];
-    function plan(area, ft, action, detail, sources) { plans.push({ area: area, for: ft, action: action, detail: detail, sources: sources }); }
+    function plan(area, ft, action, detail, sources) {
+      var rule = null;
+      try { if (root.MuseLaunch && typeof root.MuseLaunch.ruleFor === 'function') rule = root.MuseLaunch.ruleFor(action); } catch (e) {}
+      var p = { area: area, for: ft, action: action, detail: detail, sources: sources };
+      if (rule) p.rule = rule;
+      plans.push(p);
+    }
     function uncov(ft, why) { uncovered.push({ for: ft, why: why }); }
 
     // Schedule double-books: move the booking that is NOT on air.

@@ -447,6 +447,17 @@
     if (ndcX < -1.2 || ndcX > 1.2 || ndcY < -1.2 || ndcY > 1.2) return null;
     return { x: (ndcX * 0.5 + 0.5) * W, y: (0.5 - ndcY * 0.5) * H };
   }
+  function richHtml(text) {
+    try {
+      if (global.MuseSurvey && typeof global.MuseSurvey.renderRich === 'function') return global.MuseSurvey.renderRich(text);
+    } catch (e) {}
+    return esc(text);
+  }
+  function logV2(action, detail) {
+    try {
+      if (ctx.key && global.MuseSurvey && typeof global.MuseSurvey.logEvent === 'function') global.MuseSurvey.logEvent(ctx.key, action, detail);
+    } catch (e) {}
+  }
   function showNotePop(n, sx, sy) {
     var pop = el.querySelector('#cvPop');
     pop.style.display = 'block';
@@ -460,8 +471,9 @@
         '<button type="button" class="cvb" id="cvClosePop" style="padding:3px 8px">✕</button></div>' +
       '<label style="font-size:9px;color:#8a8d91;display:block;margin-bottom:3px">Author</label>' +
       '<input id="cvAuthor" value="' + esc(n.author || '') + '">' +
-      '<label style="font-size:9px;color:#8a8d91;display:block;margin:8px 0 3px">Message</label>' +
+      '<label style="font-size:9px;color:#8a8d91;display:block;margin:8px 0 3px">Message · **bold** *italic* `code` - lists</label>' +
       '<textarea id="cvText">' + esc(n.text || '') + '</textarea>' +
+      '<div id="cvRichPreview" style="font-size:11px;line-height:1.5;color:#e4e6eb;background:#1c1e21;border:1px solid #242526;border-radius:8px;padding:8px;margin-top:6px;max-height:120px;overflow:auto">' + (n.html || richHtml(n.text || '')) + '</div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="cvColors"></div>' +
       '<button type="button" class="cvb ok" id="cvSaveNote" style="width:100%;margin-top:10px">Update note</button>' +
       '<div style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#65676b;margin-top:6px">' + esc(n.ts || '') + '</div>';
@@ -473,15 +485,20 @@
       pop.querySelector('#cvColors').appendChild(b);
     });
     pop.querySelector('#cvClosePop').onclick = function () { selectedNote = null; hidePop(); projectNotes(); };
+    var cvText = pop.querySelector('#cvText'), cvPrev = pop.querySelector('#cvRichPreview');
+    if (cvText && cvPrev) cvText.oninput = function () { try { cvPrev.innerHTML = richHtml(cvText.value); } catch (e) {} };
     pop.querySelector('#cvDelNote').onclick = function () {
       notes = notes.filter(function (x) { return x.id !== n.id; });
       selectedNote = null; hidePop(); ctx.dirty = true; paint();
+      logV2('cad-note-remove', n.author + ': ' + String(n.text || '').slice(0, 80));
     };
     pop.querySelector('#cvSaveNote').onclick = function () {
       n.author = pop.querySelector('#cvAuthor').value.trim() || 'Anon';
       n.text = pop.querySelector('#cvText').value;
+      n.html = richHtml(n.text);
       n.ts = new Date().toLocaleString();
       ctx.dirty = true; hidePop(); selectedNote = null; paint();
+      logV2('cad-note', n.author + ': ' + String(n.text).slice(0, 80));
       setStatus('Note updated — click Save notes to persist');
     };
   }
@@ -493,7 +510,7 @@
     var list = el.querySelector('#cvNoteList');
     el.querySelector('#cvNoteCount').textContent = String(notes.length);
     if (!notes.length) {
-      list.innerHTML = '<div style="color:#65676b;padding:8px;font-size:11px;line-height:1.4">No notes yet. Click <b style="color:#f5832a">● Add note</b>, then click the drawing.</div>';
+      list.innerHTML = '<div style="color:#65676b;padding:8px;font-size:11px;line-height:1.4">No notes yet. Click <b style="color:#f5832a">● Add note</b>, then ⌘/Ctrl-click the drawing.</div>';
       return;
     }
     list.innerHTML = notes.map(function (n, i) {

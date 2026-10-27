@@ -163,6 +163,7 @@
         '<button type="button" class="pb" data-a="import">Import JSON</button>' +
         '<input type="file" id="ppeJson" accept=".json" style="display:none">' +
         '<button type="button" class="pb" data-a="snap">Snapshot</button>' +
+        '<button type="button" class="pb ok" data-a="pack" title="Save this frame plus its markers into the show pack">Pack still</button>' +
         '<button type="button" class="pb bad" data-a="clear">Clear</button>' +
         '<span style="flex:1"></span>' +
         '<span id="ppeStatus" style="font:600 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8a8d91"></span>' +
@@ -259,6 +260,7 @@
         else if (a === 'clear') clearAll();
         else if (a === 'apply') applyProps();
         else if (a === 'snap') snapshot();
+        else if (a === 'pack') packStill();
         else if (a === 'finish') finishDraw();
         else if (a === 'flipv') { flipV = !flipV; setStatus('Flip V ' + (flipV ? 'ON' : 'OFF')); paint(); }
         else if (a === 'fliph') { flipH = !flipH; setStatus('Flip H ' + (flipH ? 'ON' : 'OFF')); paint(); }
@@ -1180,19 +1182,45 @@
     };
     r.readAsText(file);
   }
+  // Annotated still: the frame plus its markers as data, for the show pack.
+  function stillData(packSize) {
+    var canvas = el.querySelector('#ppeCanvas');
+    var drawC = el.querySelector('#ppeDraw');
+    var out = document.createElement('canvas');
+    var scale = 1;
+    if (packSize && canvas.width > 960) scale = 960 / canvas.width;
+    out.width = Math.max(1, Math.round(canvas.width * scale));
+    out.height = Math.max(1, Math.round(canvas.height * scale));
+    var ctx = out.getContext('2d');
+    ctx.drawImage(canvas, 0, 0, out.width, out.height);
+    if (drawC) ctx.drawImage(drawC, 0, 0, out.width, out.height);
+    return {
+      img: out.toDataURL('image/jpeg', packSize ? 0.8 : 0.92),
+      ts: Date.now(), key: state.key,
+      marks: state.items.slice(0, 200).map(function (m) {
+        return { kind: m.kind, type: m.type, label: m.label, yaw: m.yaw, pitch: m.pitch };
+      })
+    };
+  }
   function snapshot() {
     try {
-      var canvas = el.querySelector('#ppeCanvas');
-      var drawC = el.querySelector('#ppeDraw');
-      var out = document.createElement('canvas');
-      out.width = canvas.width; out.height = canvas.height;
-      var ctx = out.getContext('2d');
-      ctx.drawImage(canvas, 0, 0);
-      if (drawC) ctx.drawImage(drawC, 0, 0);
       var a = document.createElement('a');
-      a.href = out.toDataURL('image/jpeg', 0.92);
+      a.href = stillData(false).img;
       a.download = 'muse360_block.jpg'; a.click();
     } catch (e) { setStatus('Snapshot failed'); }
+  }
+  // One tap into the tech-plot pack: frame + markers land on the survey
+  // record when the app hook is present, otherwise fall back to a download.
+  function packStill() {
+    try {
+      var still = stillData(true);
+      if (typeof global.MusePackStill === 'function') {
+        var r = global.MusePackStill(still);
+        setStatus(r && r.ok === false ? ('Pack failed: ' + (r.error || '')) : 'Still packed — ' + (r && r.count != null ? r.count + ' in pack' : 'saved'));
+        return;
+      }
+    } catch (e) { setStatus('Pack failed'); return; }
+    snapshot();
   }
   function setStatus(msg) {
     var s = el && el.querySelector('#ppeStatus');

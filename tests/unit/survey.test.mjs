@@ -91,6 +91,37 @@ test('rich-text notes render a safe subset and resolve like findings', () => {
   for (const a of ['note', 'note-resolve', 'note-reopen', 'note-edit']) assert.ok(h.some((e) => e.action === a), a + ' not logged');
 });
 
+test('v2 pins render into pano hotspots, idempotent and hand-placed-safe', () => {
+  const store = { demo: { name: 'Demo', survey: { pano: { img: '', hotspots: [{ id: 'h1', type: 'camera', label: 'Hand' }], marks: [], paths: [] } } } };
+  const w = loadBrowserModule('js/muse-survey.js', {
+    productions: store, order: ['demo'],
+    getSurvey: (k) => store[k].survey,
+  });
+  vm.runInContext(fs.readFileSync(path.join(ROOT, 'js/muse-utils.js'), 'utf8'), w, { filename: 'js/muse-utils.js' });
+  const S = w.MuseSurvey;
+  S.addPin('demo', { label: 'Fiber demarc', category: 'network', yaw: 10, pitch: -5, link: { kind: 'asset', id: 'FB-1' } });
+  S.addPin('demo', { label: 'No position yet', category: 'hazard' });
+  const r = S.syncPinsToPano('demo');
+  assert.deepEqual(JSON.parse(JSON.stringify(r)), { ok: true, synced: 1 }, 'position-less pin synced');
+  const hs = store.demo.survey.pano.hotspots;
+  assert.equal(hs.length, 2, 'hand-placed hotspot lost');
+  const v2 = hs.find((h) => String(h.id).indexOf('v2:') === 0);
+  assert.equal(v2.type, 'fiber', 'network did not map to fiber');
+  assert.ok(v2.note.includes('Linked asset FB-1'), 'link missing from hotspot note: ' + v2.note);
+  assert.equal(v2.yaw, 10);
+  const r2 = S.syncPinsToPano('demo');
+  assert.equal(r2.synced, 1);
+  assert.equal(store.demo.survey.pano.hotspots.filter((h) => String(h.id).indexOf('v2:') === 0).length, 1, 're-sync duplicated');
+  assert.equal(S.syncPinsToPano('nope').ok, false);
+});
+
+test('logEvent appends to the survey activity log', () => {
+  const S = win().MuseSurvey;
+  assert.equal(S.logEvent('demo', 'cad-note', 'Cam 2 here').ok, true);
+  const h = S.history('demo');
+  assert.ok(h.some((e) => e.action === 'cad-note'), 'CAD note missing from v2 log');
+});
+
 test('history caps and newest-first order hold under volume', () => {
   const S = win().MuseSurvey;
   for (let i = 0; i < 5; i++) S.addNote('demo', 'note ' + i);

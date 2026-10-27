@@ -62,6 +62,49 @@ test('global results section escapes hostile names and routes clicks', () => {
   assert.deepEqual(JSON.parse(JSON.stringify(opened)), JSON.parse(JSON.stringify([['project', 'demo'], ['view', 'vendors']])));
 });
 
+test('register: adopt, checkout refuses doubles, fields and history tracked', () => {
+  const w = win();
+  const T = w.MuseAssets;
+  assert.equal(T.adoptFromPacklist('nope').ok, false);
+  assert.deepEqual(JSON.parse(JSON.stringify(T.adoptFromPacklist('demo'))), { ok: true, adopted: 1 });
+  assert.deepEqual(JSON.parse(JSON.stringify(T.adoptFromPacklist('demo'))), { ok: true, adopted: 0 }, 'adopt is not idempotent');
+  assert.equal(T.registerList().length, 1);
+  assert.equal(T.checkout('ENC-0042', '').ok, false);
+  assert.equal(T.checkout('NOPE', 'Sam').ok, false);
+  assert.equal(T.checkout('ENC-0042', 'Maya Chen').ok, true);
+  assert.equal(T.checkout('ENC-0042', 'Sam').ok, false, 'double checkout allowed');
+  assert.equal(T.setCondition('ENC-0042', 'bogus').ok, false);
+  assert.equal(T.setCondition('ENC-0042', 'fair').ok, true);
+  const iso60 = new Date(Date.now() + 60 * 864e5).toISOString().slice(0, 10);
+  assert.equal(T.setMaintenance('ENC-0042', iso60).ok, true);
+  assert.equal(T.setFirmware('ENC-0042', 'v2.1').ok, true);
+  assert.equal(T.addAssetNote('ENC-0042', '  ').ok, false);
+  assert.equal(T.addAssetNote('ENC-0042', 'Fan rattles at high load').ok, true);
+  assert.equal(T.checkin('ENC-0042').ok, true);
+  const rec = T.registerGet('ENC-0042');
+  assert.equal(rec.status, 'available');
+  assert.equal(rec.firmware, 'v2.1');
+  const acts = T.registerHistory('ENC-0042').map((h) => h.action);
+  for (const a of ['created', 'checkout', 'condition', 'maintenance', 'firmware', 'note', 'checkin']) assert.ok(acts.includes(a), a + ' missing from history');
+  const due = T.maintenanceDue(90);
+  assert.equal(due.length, 1);
+  assert.equal(T.maintenanceDue(30).length, 0, 'far-future maintenance flagged as due');
+});
+
+test('vendor profile aggregates shows, comms, and rate history', () => {
+  const w = win({ productions: { demo: { name: 'Demo', vendors: [{ id: 'v1' }] }, other: { name: 'Other', vendors: [] } }, order: ['demo', 'other'] });
+  const T = w.MuseAssets;
+  assert.ok(T.vendorProfile('nope').error);
+  const p = T.vendorProfile('v1');
+  assert.deepEqual(JSON.parse(JSON.stringify(p.pastShows)), ['demo']);
+  assert.equal(p.comms.length, 0, 'unrelated comms leaked in');
+  assert.equal(T.setVendorExtras('v1', { rate: 1200, reliability: 'Always early', notes: 'Prefers calls' }).ok, true);
+  const p2 = T.vendorProfile('v1');
+  assert.equal(p2.extras.rates.length, 1);
+  assert.equal(p2.extras.rates[0].amount, 1200);
+  assert.equal(p2.extras.reliability, 'Always early');
+});
+
 test('search finds people, serials, venues, and incidents with the show attached', () => {
   const A = win().MuseAssets;
   assert.ok(A.search('maya').some((h) => h.kind === 'person' && h.show === 'demo'), 'person hit missing');

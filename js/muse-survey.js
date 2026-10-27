@@ -248,9 +248,42 @@
       log: r.v.log.length };
   }
 
-  root.MuseSurvey = { version: '0.1.0', CHECK_AREAS: CHECK_AREAS.slice(), PIN_STYLE: JSON.parse(JSON.stringify(PIN_STYLE)),
+  // v2 categories → pano hotspot types. Unmapped categories become notes.
+  var PIN_TYPE = { camera: 'camera', power: 'power', network: 'fiber', audio: 'mic',
+    rf: 'rf', ifb: 'ifb', cable: 'cable', access: 'exit', hazard: 'hazard',
+    talent: 'talent', rigging: 'jib' };
+  // Render the record into the 360 view: v2 pins with a position become pano
+  // hotspots (tagged v2:), so the existing viewer — tooltips, zones, tours,
+  // snapshots — shows them with zero engine changes. Idempotent: a re-sync
+  // replaces the previous v2: set and leaves hand-placed hotspots alone.
+  function syncPinsToPano(key) {
+    var synced = 0;
+    try {
+      var s = (typeof root.getSurvey === 'function') ? root.getSurvey(key) : (prods()[key] && prods()[key].survey);
+      if (!s) return { ok: false, error: 'No survey for "' + key + '"' };
+      if (!s.pano) s.pano = { img: '', hotspots: [], marks: [], paths: [] };
+      if (!s.pano.hotspots) s.pano.hotspots = [];
+      s.pano.hotspots = s.pano.hotspots.filter(function (h) { return String(h.id || '').indexOf('v2:') !== 0; });
+      (get(key).pins || []).forEach(function (p) {
+        if (typeof p.yaw !== 'number' || typeof p.pitch !== 'number') return;
+        var type = PIN_TYPE[p.category] || 'equipment';
+        var note = p.note || '';
+        if (p.link && p.link.kind && p.link.id) note += (note ? '\n' : '') + 'Linked ' + p.link.kind + ' ' + p.link.id;
+        s.pano.hotspots.push({ id: 'v2:' + p.id, type: type, kind: type, label: p.label,
+          note: note, yaw: p.yaw, pitch: p.pitch, u: null, v: null,
+          gearId: '', body: '', lens: '', mount: '', operator: p.owner || '' });
+        synced++;
+      });
+      stamp(key);
+    } catch (e) { return { ok: false, error: String((e && e.message) || e).slice(0, 120) }; }
+    return { ok: true, synced: synced };
+  }
+
+  root.MuseSurvey = { version: '0.2.0', CHECK_AREAS: CHECK_AREAS.slice(), PIN_STYLE: JSON.parse(JSON.stringify(PIN_STYLE)), PIN_TYPE: Object.assign({}, PIN_TYPE),
     record: get, setCheck: setCheck, addPhoto: addPhoto, removePhoto: removePhoto,
     addPin: addPin, updatePin: updatePin, setPinStatus: setPinStatus, removePin: removePin,
     dangling: dangling, addNote: addNote, editNote: editNote, setNoteStatus: setNoteStatus,
-    renderRich: renderRich, history: history, counts: counts };
+    renderRich: renderRich, history: history, counts: counts,
+    logEvent: function (key, action, detail) { return log(key, action, detail); },
+    syncPinsToPano: syncPinsToPano };
 })(typeof window !== 'undefined' ? window : globalThis);

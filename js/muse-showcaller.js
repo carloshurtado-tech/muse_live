@@ -217,6 +217,22 @@
         sources: ['transmission book · ' + s.show] });
     });
 
+    // Tasks: blocked chains and overdue owners surface as ops risks.
+    try {
+      if (root.MuseTasks && scopeOn(s.key, 'ops')) {
+        root.MuseTasks.blocked(s.key).slice(0, 3).forEach(function (t) {
+          risks.push({ level: 'med', area: 'tasks',
+            text: 'Blocked: "' + t.title + '" waits on ' + t.deps.length + ' unfinished dependenc' + (t.deps.length === 1 ? 'y' : 'ies'),
+            sources: ['task chain · ' + s.show] });
+        });
+        root.MuseTasks.overdue(s.key).slice(0, 3).forEach(function (t) {
+          risks.push({ level: 'med', area: 'tasks',
+            text: 'Overdue: "' + t.title + '"' + (t.owner ? ' (' + t.owner + ')' : ''),
+            sources: ['task chain · ' + s.show] });
+        });
+      }
+    } catch (e) {}
+
     // Stream Check: visual flags from the last frame run.
     try {
       var chk = scopeOn(s.key, 'streams') && root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;

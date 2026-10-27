@@ -210,6 +210,150 @@ test('13. tx-uncovered: transmission conflict stays human-decided', () => {
   assert.ok(p.uncovered.some((u) => /transmission/i.test(u.for)), 'transmission risk not escalated');
 });
 
+test('15. approve executes the reassign and files the Slack send in Omni', async () => {
+  const comms = [], saved = [];
+  const w = makeWin({ MuseSchedule: Object.assign(schedFixStubs(['crk6']), { update: (id, patch) => { saved.push([id, patch]); } }),
+    comms, saveComms: () => {},
+    fetch: async (url) => ({ status: 200, json: async () => /slack/.test(url) ? { ok: true, ts: 'ts1', channel: 'C1', path: 'bot' } : { ok: false } }) });
+  const SC = w.MuseShowCaller;
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'reassign_booking')[0];
+  const a = SC.requestApproval(plan, 'demo');
+  const r = SC.approve(a.id, { by: 'Cara', targets: { slack: 'C1' } });
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.equal(JSON.stringify(saved), JSON.stringify([['b2', { res: 'crk6' }]]));
+  await new Promise((done) => setTimeout(done, 20)); // let the fire-and-forget notify land
+  assert.equal(comms.length, 1);
+  assert.equal(comms[0].channel, 'slack');
+  assert.equal(comms[0].status, 'sent');
+  assert.equal(comms[0].ext_id, 'ts1');
+  assert.equal(comms[0].thread, 'showcaller-demo');
+  assert.equal(comms[0].linkId, 'demo');
+  assert.ok(comms[0].payload, 'no retry payload stored');
+});
+
+test('16. approve pushes with the proposed window', () => {
+  const saved = [];
+  const w = makeWin({ MuseSchedule: Object.assign(schedFixStubs([]), { update: (id, patch) => { saved.push([id, patch]); } }) });
+  const SC = w.MuseShowCaller;
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'push_booking')[0];
+  const r = SC.approve(SC.requestApproval(plan, 'demo').id, {});
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.equal(saved[0][0], 'b2');
+  assert.equal(saved[0][1].start, plan.detail.new_start);
+  assert.equal(saved[0][1].end, plan.detail.new_end);
+});
+
+test('17. stale world refuses: changed booking and taken alternative never execute', () => {
+  const saved = [];
+  // booking moved since the proposal
+  const moved = schedFixStubs(['crk6']);
+  moved.get = (id) => ({ id, res: 'crk4', title: 'x', start: '2026-11-01T19:00', end: '2026-11-01T20:00', onAir: false });
+  moved.update = (id, patch) => { saved.push([id, patch]); };
+  const w1 = makeWin({ MuseSchedule: Object.assign(schedFixStubs(['crk6']), {}) });
+  const plan = w1.MuseShowCaller.propose('demo').plans.filter((x) => x.action === 'reassign_booking')[0];
+  const w2 = makeWin({ MuseSchedule: moved });
+  const r1 = w2.MuseShowCaller.approve(w2.MuseShowCaller.requestApproval(plan, 'demo').id, {});
+  assert.equal(r1.ok, false);
+  assert.equal(r1.stale, true);
+  // alternative taken since the proposal
+  const taken = schedFixStubs([]);
+  taken.update = (id, patch) => { saved.push([id, patch]); };
+  const w3 = makeWin({ MuseSchedule: taken });
+  const r2 = w3.MuseShowCaller.approve(w3.MuseShowCaller.requestApproval(plan, 'demo').id, {});
+  assert.equal(r2.ok, false);
+  assert.equal(saved.length, 0, 'executed despite stale state');
+});
+
+test('18. live stream fix needs explicit confirmation, then runs with the show key', () => {
+  const applied = [];
+  const streams = { stateOf: () => 'LIVE', health: () => ({ state: 'LIVE', alerts: [] }),
+    anomalies: () => [{ key: 'demo', stage: 'CDN', text: 'Edge 5xx', recommendation: { kind: 'cdn_shift', label: 'Shift', args: { cloudfront: 80 } } }],
+    apply: (r) => { applied.push(r); return { ok: true, text: 'shifted' }; } };
+  const w = makeWin({ MuseSchedule: quietSchedule, MuseStreaming: streams });
+  const SC = w.MuseShowCaller;
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'apply_stream_fix')[0];
+  const id = SC.requestApproval(plan, 'demo').id;
+  const r1 = SC.approve(id, {});
+  assert.equal(r1.needsLiveConfirm, true);
+  assert.equal(applied.length, 0);
+  const r2 = SC.approve(id, { liveConfirmed: true });
+  assert.equal(r2.ok, true);
+  assert.equal(JSON.stringify(applied[0]), JSON.stringify({ kind: 'cdn_shift', args: { cloudfront: 80, key: 'demo' } }));
+});
+
+test('19. reject logs the reason and executes nothing', () => {
+  let updated = 0;
+  const w = makeWin({ MuseSchedule: Object.assign(schedFixStubs(['crk6']), { update: () => { updated++; } }) });
+  const SC = w.MuseShowCaller;
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'reassign_booking')[0];
+  const r = SC.reject(SC.requestApproval(plan, 'demo').id, 'holding for the director', 'Cara');
+  assert.equal(r.ok, true);
+  assert.equal(updated, 0);
+  assert.equal(SC.pendingList().length, 0);
+  const r2 = SC.approve(r.id, {});
+  assert.equal(r2.ok, false, 'rejected approval executed');
+});
+
+test('20. dead notify channel never rolls back the fix; one-click retry recovers', async () => {
+  const comms = [];
+  let live = false;
+  const w = makeWin({ MuseSchedule: Object.assign(schedFixStubs(['crk6']), { update: () => {} }),
+    comms, saveComms: () => {},
+    fetch: async () => { if (!live) throw new Error('down'); return { status: 200, json: async () => ({ ok: true, ts: 'ts9', channel: 'C1', path: 'bot' }) }; } });
+  const SC = w.MuseShowCaller;
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'reassign_booking')[0];
+  const a = SC.requestApproval(plan, 'demo');
+  const r = SC.approve(a.id, { targets: { slack: 'C1' } });
+  assert.equal(r.ok, true, 'execution rolled back by notify failure');
+  await SC.notify(Object.assign({}, a, { by: 'Cara' }), r.result, { slack: 'C1' });
+  assert.equal(comms[0].status, 'failed');
+  assert.ok(comms[0].error, 'failure stored without the error');
+  live = true;
+  assert.equal((await SC.retry(comms[0].id)).ok, true);
+  assert.equal(comms[0].status, 'sent');
+  assert.equal(comms[0].ext_id, 'ts9');
+});
+
+test('21. gmail notify posts recipients/subject/body and files the gmail id', async () => {
+  const comms = [], posts = [];
+  const w = makeWin({ comms, saveComms: () => {},
+    fetch: async (url, init) => { posts.push([url, JSON.parse(init.body)]); return { status: 200, json: async () => ({ ok: true, id: 'm1', threadId: 't1' }) }; } });
+  const SC = w.MuseShowCaller;
+  const out = await SC.notify({ show: 'demo', by: 'Cara' }, 'Moved it.', { mail: ['ops@example.com'] });
+  assert.equal(out.mail.sent, true);
+  assert.equal(posts[0][0], '/api/omni/mail');
+  assert.deepEqual(posts[0][1].to, ['ops@example.com']);
+  assert.equal(comms[0].channel, 'gmail');
+  assert.equal(comms[0].ext_id, 'm1');
+  assert.equal(comms[0].ext_thread, 't1');
+  assert.equal(comms[0].thread, 'showcaller-demo');
+});
+
+test('22. pushTally republishes live status for the glasses', () => {
+  const puts = [];
+  const w = makeWin({ MuseStreaming: { liveStatus: () => ({ ts: 1 }), stateOf: () => 'LIVE' }, MuseSync: { put: (k, v) => { puts.push([k, v]); } } });
+  assert.equal(w.MuseShowCaller.pushTally('demo').ok, true);
+  assert.deepEqual(puts, [['live-status', { ts: 1 }]]);
+  const w2 = makeWin({ MuseStreaming: null });
+  assert.equal(w2.MuseShowCaller.pushTally('demo').ok, false);
+});
+
+test('23. approval card escapes hostile titles', () => {
+  const w = makeWin({});
+  const html = w.MuseShowCaller.cardHTML({ id: 'SC-1', show: 'demo', plan: { action: 'reassign_booking', detail: { booking: '"><script>x</script>', from: 'a', to: 'b' }, sources: ['booking b1'] } });
+  assert.ok(!html.includes('<script>'), 'unescaped title in card');
+  assert.ok(html.includes('role="dialog"'));
+});
+
+test('24. advisory approvals close the loop without module writes', () => {
+  const w = makeWin({});
+  const SC = w.MuseShowCaller;
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'review_incident')[0];
+  const r = SC.approve(SC.requestApproval(plan, 'demo').id, { by: 'Cara' });
+  assert.equal(r.ok, true);
+  assert.equal(SC.pendingList().length, 0);
+});
+
 test('14. headline: real seed CRK-4 contention moves the non-on-air booking', () => {
   const w = loadBrowserModule('js/muse-showcaller.js', {
     productions: {
@@ -230,4 +374,28 @@ test('14. headline: real seed CRK-4 contention moves the non-on-air booking', ()
   assert.ok(plans.length >= 1, 'no schedule plan proposed');
   assert.ok(!plans.some((x) => /Primary uplink/.test(x.detail.booking)), 'touched the on-air booking');
   assert.ok(plans.some((x) => /WhatsApp/.test(x.detail.booking)), 'fix moves the wrong booking: ' + JSON.stringify(plans));
+});
+
+test('25. gate: approve moves the real seed booking end to end', () => {
+  const w = loadBrowserModule('js/muse-showcaller.js', {
+    productions: {
+      museailaunch: { name: 'Muse AI Launch' }, whatsapp: { name: 'WhatsApp Summit' },
+      museaitour: { name: 'Muse AI Tour' }, raybangen3: { name: 'Ray-Ban' }, orion: { name: 'Orion' },
+    },
+    order: ['museailaunch', 'whatsapp', 'museaitour', 'raybangen3', 'orion'],
+    setTimeout: () => 0,
+  });
+  for (const f of ['js/muse-schedule.js', 'js/muse-incidents.js', 'js/muse-streaming.js']) {
+    vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), w, { filename: f });
+  }
+  const SC = w.MuseShowCaller, S = w.MuseSchedule;
+  const plan = SC.propose('museailaunch').plans.filter((x) => /booking/.test(x.action))[0];
+  assert.ok(plan, 'no booking plan');
+  const r = SC.approve(SC.requestApproval(plan, 'museailaunch').id, { by: 'gate' });
+  assert.equal(r.ok, true, JSON.stringify(r));
+  const after = S.get(plan.detail.booking_id);
+  if (plan.action === 'reassign_booking') assert.equal(after.res, plan.detail.to_id, 'booking did not move');
+  else assert.equal(String(after.start), String(plan.detail.new_start), 'booking was not pushed');
+  // approving twice is an error, not a double execution
+  assert.equal(SC.approve(r.id, {}).ok, false);
 });

@@ -255,11 +255,13 @@
           })[0] || null;
         } catch (e) { alt = null; }
       }
+      var want = { res: mover.res, start: mover.start, end: mover.end };
       if (alt) plan('schedule', ft, 'reassign_booking',
-        { booking: mover.title || mover.id, booking_id: mover.id, from: c.res, to: alt.name, window: [mover.start, mover.end] },
+        { booking: mover.title || mover.id, booking_id: mover.id, from: c.res, to: alt.name, to_id: alt.id, window: [mover.start, mover.end], expected: want },
         ['booking ' + mover.id]);
       else if (other) plan('schedule', ft, 'push_booking',
-        { booking: mover.title || mover.id, booking_id: mover.id, after: other.end },
+        { booking: mover.title || mover.id, booking_id: mover.id, after: other.end, other_id: other.id,
+          new_start: other.end, new_end: new Date(Date.parse(other.end) + (Date.parse(mover.end) - Date.parse(mover.start))).toISOString(), expected: want },
         ['booking ' + mover.id, 'booking ' + other.id]);
       else uncov(ft, 'no free alternative and no reference booking');
     });
@@ -317,6 +319,244 @@
     return { ts: s.ts, show: s.show, key: s.key, plans: plans, uncovered: uncovered };
   }
 
-  var SC = root.MuseShowCaller = { version: '0.2.0', snapshot: snapshot, brief: brief, propose: propose };
-  SC.readOnly = true; // hard rule: this module gathers, it never changes show data.
+  /* ---------- approval + execution (Day 3): nothing runs without a human ----------
+     propose() output is data. requestApproval() parks it; approve() re-verifies
+     every expectation against live state (the world may have moved since the
+     proposal) and only then calls the existing module actions. notify() posts
+     the outcome to Slack/Gmail and files both in the Omni thread; a dead
+     channel never rolls back an executed fix. */
+  var LS_KEY = 'muselive_showcaller_v1', seq = 0;
+  function store() {
+    try { var s = JSON.parse(root.localStorage.getItem(LS_KEY) || 'null'); if (s && s.pending && s.log) return s; } catch (e) {}
+    return { pending: {}, log: [] };
+  }
+  function saveStore(s) { try { root.localStorage.setItem(LS_KEY, JSON.stringify(s)); } catch (e) {} }
+  function stamp() { try { if (typeof root.nowStamp === 'function') return root.nowStamp(); } catch (e) {} return new Date().toISOString(); }
+  function escH(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function same(a, b) { return String(a == null ? '' : a) === String(b == null ? '' : b); }
+
+  function requestApproval(plan, key, extra) {
+    var st = store();
+    seq += 1;
+    var id = 'SC-' + Date.now().toString(36) + '-' + seq;
+    st.pending[id] = { id: id, plan: plan, show: key, ts: stamp(), status: 'pending', note: (extra && extra.note) || '' };
+    saveStore(st);
+    return st.pending[id];
+  }
+  function pendingList() {
+    var st = store();
+    return Object.keys(st.pending).map(function (k) { return st.pending[k]; }).filter(function (a) { return a.status === 'pending'; });
+  }
+  function reject(id, reason, by) {
+    var st = store(), a = st.pending[id];
+    if (!a || a.status !== 'pending') return { ok: false, error: 'No pending approval ' + id + '.' };
+    a.status = 'rejected'; a.reason = String(reason || 'no reason given').slice(0, 500); a.by = by || ''; a.decided = stamp();
+    st.log.unshift({ id: id, action: a.plan.action, status: 'rejected', reason: a.reason, by: a.by, ts: a.decided });
+    st.log = st.log.slice(0, 100);
+    saveStore(st);
+    return { ok: true, id: id };
+  }
+
+  function liveNow(key) {
+    try { var s = root.MuseStreaming && root.MuseStreaming.stateOf(key); return s === 'LIVE' || s === 'REHEARSAL'; } catch (e) { return false; }
+  }
+  function execute(a, opts) {
+    var d = a.plan.detail || {}, S = root.MuseSchedule, M = root.MuseStreaming;
+    if (a.plan.action === 'reassign_booking') {
+      if (!S || !has(S.get) || !has(S.update) || !has(S.isFree)) return { ok: false, error: 'Schedule actions are not loaded.' };
+      var b = S.get(d.booking_id);
+      if (!b) return { ok: false, error: 'Booking ' + d.booking_id + ' is gone.' };
+      if (!same(b.res, d.expected.res) || !same(b.start, d.expected.start) || !same(b.end, d.expected.end))
+        return { ok: false, stale: true, error: 'Booking changed since the proposal — re-propose instead of executing.' };
+      if (!S.isFree(d.to_id, b.start, b.end)) return { ok: false, stale: true, error: d.to + ' is no longer free in that window.' };
+      S.update(d.booking_id, { res: d.to_id });
+      return { ok: true, text: 'Moved "' + (d.booking || d.booking_id) + '" to ' + d.to + '.' };
+    }
+    if (a.plan.action === 'push_booking') {
+      if (!S || !has(S.get) || !has(S.update)) return { ok: false, error: 'Schedule actions are not loaded.' };
+      var m = S.get(d.booking_id), o = S.get(d.other_id);
+      if (!m) return { ok: false, error: 'Booking ' + d.booking_id + ' is gone.' };
+      if (!same(m.res, d.expected.res) || !same(m.start, d.expected.start) || !same(m.end, d.expected.end))
+        return { ok: false, stale: true, error: 'Booking changed since the proposal — re-propose instead of executing.' };
+      if (!o || !same(o.end, d.after)) return { ok: false, stale: true, error: 'The blocking booking moved — re-propose instead of executing.' };
+      S.update(d.booking_id, { start: d.new_start, end: d.new_end });
+      return { ok: true, text: 'Pushed "' + (d.booking || d.booking_id) + '" to start ' + d.new_start + '.' };
+    }
+    if (a.plan.action === 'apply_stream_fix') {
+      if (!M || !has(M.apply)) return { ok: false, error: 'Stream actions are not loaded.' };
+      if (liveNow(a.show) && !(opts && opts.liveConfirmed)) return { ok: false, needsLiveConfirm: true, error: 'This touches a live show — confirm explicitly.' };
+      var args = Object.assign({}, d.args, { key: a.show });
+      var r = M.apply({ kind: d.kind, args: args });
+      if (!r || !r.ok) return { ok: false, error: (r && r.text) || 'Stream action refused.' };
+      return { ok: true, text: r.text };
+    }
+    if (a.plan.action === 'review_incident' || a.plan.action === 'pack_check') {
+      return { ok: true, advisory: true, text: 'Acknowledged: ' + (d.id || d.count + ' lines') + '.' };
+    }
+    return { ok: false, error: 'Unknown action ' + a.plan.action + '.' };
+  }
+
+  function approve(id, opts) {
+    var st = store(), a = st.pending[id];
+    if (!a || a.status !== 'pending') return { ok: false, error: 'No pending approval ' + id + '.' };
+    var r = execute(a, opts || {});
+    if (!r.ok && !r.stale && !r.needsLiveConfirm) { /* hard failure still closes the loop below */ }
+    if (r.ok) {
+      a.status = 'approved'; a.by = (opts && opts.by) || ''; a.decided = stamp(); a.result = r.text;
+      st.log.unshift({ id: id, action: a.plan.action, status: 'executed', by: a.by, ts: a.decided, result: r.text });
+    } else if (r.stale) {
+      a.status = 'stale'; a.error = r.error; a.decided = stamp();
+      st.log.unshift({ id: id, action: a.plan.action, status: 'refused-stale', ts: a.decided, result: r.error });
+    } else if (r.needsLiveConfirm) {
+      saveStore(st);
+      return { ok: false, needsLiveConfirm: true, error: r.error }; // stays pending
+    } else {
+      a.status = 'failed'; a.error = r.error; a.decided = stamp();
+      st.log.unshift({ id: id, action: a.plan.action, status: 'failed', ts: a.decided, result: r.error });
+    }
+    st.log = st.log.slice(0, 100);
+    saveStore(st);
+    if (r.ok) {
+      try { pushTally(a.show); } catch (e) {}
+      var t = (opts && opts.targets) || {};
+      try { var n = notify(a, r.text, t); if (n && typeof n.catch === 'function') n.catch(function () {}); } catch (e) {}
+    }
+    return r.ok ? { ok: true, id: id, result: r.text } : { ok: false, id: id, error: r.error, stale: !!r.stale };
+  }
+
+  /* ----- Omni notifications: real sends, filed in the existing comms thread ----- */
+  function http() { return root.fetch || (typeof fetch !== 'undefined' ? fetch : null); }
+  function nextMsgId() {
+    var n = 0;
+    try {
+      (root.comms || []).forEach(function (m) { var x = parseInt(String(m.id || '').replace('MSG-', ''), 10); if (x > n) n = x; });
+    } catch (e) {}
+    return 'MSG-' + (n + 1);
+  }
+  function logOmni(rec) {
+    if (!root.comms || !root.comms.unshift) return { logged: false };
+    root.comms.unshift(rec);
+    try { if (typeof root.saveComms === 'function') root.saveComms(); } catch (e) {}
+    try { if (typeof root.renderComms === 'function') root.renderComms(); } catch (e) {}
+    return { logged: true, id: rec.id };
+  }
+  function fixLine(a, result) {
+    return 'Show Caller: ' + result + ' (' + a.show + ', approved by ' + (a.by || 'the team') + ').';
+  }
+  async function post(url, payload) {
+    var F = http();
+    if (!F) return { ok: false, error: 'network unavailable' };
+    try {
+      var r = await F(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      var j = await r.json();
+      return j && j.ok ? { ok: true, data: j } : { ok: false, error: (j && j.error) || ('HTTP ' + (r.status || '?')) };
+    } catch (e) { return { ok: false, error: String((e && e.message) || e).slice(0, 160) }; }
+  }
+  async function notify(a, result, t) {
+    t = t || {};
+    var out = {};
+    var show = a.show || '', thread = 'showcaller-' + show;
+    if (t.slack) {
+      var body = fixLine(a, result);
+      var r = await post('/api/omni/slack', { channel: t.slack, text: body, show: show });
+      out.slack = r.ok ? { sent: true, ts: r.data.ts, path: r.data.path } : { sent: false, error: r.error };
+      logOmni({ id: nextMsgId(), channel: 'slack', dir: 'out', from: 'Show Caller', to: String(t.slack),
+        subject: '', body: body, ts: stamp(), linkType: 'production', linkId: show, prod: show, read: true,
+        thread: thread, ext_id: r.ok ? r.data.ts : '', ext_thread: '', status: r.ok ? 'sent' : 'failed',
+        error: r.ok ? '' : r.error, payload: { channel: 'slack', to: String(t.slack), body: body } });
+    }
+    if (t.mail && t.mail.length) {
+      var to = [].concat(t.mail), subject = 'Show Caller fix — ' + show, mbody = fixLine(a, result);
+      var m = await post('/api/omni/mail', { to: to, subject: subject, body: mbody, show: show });
+      out.mail = m.ok ? { sent: true, id: m.data.id } : { sent: false, error: m.error };
+      logOmni({ id: nextMsgId(), channel: 'gmail', dir: 'out', from: 'Show Caller', to: to.join(', '),
+        subject: subject, body: mbody, ts: stamp(), linkType: 'production', linkId: show, prod: show, read: true,
+        thread: thread, ext_id: m.ok ? m.data.id : '', ext_thread: m.ok ? m.data.threadId : '', status: m.ok ? 'sent' : 'failed',
+        error: m.ok ? '' : m.error, payload: { channel: 'gmail', to: to, subject: subject, body: mbody } });
+    }
+    return out;
+  }
+  async function retry(msgId) {
+    var rec = null;
+    try { (root.comms || []).forEach(function (m) { if (m.id === msgId) rec = m; }); } catch (e) {}
+    if (!rec || !rec.payload) return { ok: false, error: 'No stored payload for ' + msgId + '.' };
+    var p = rec.payload, r;
+    if (p.channel === 'slack') r = await post('/api/omni/slack', { channel: p.to, text: p.body });
+    else r = await post('/api/omni/mail', { to: [].concat(p.to), subject: p.subject, body: p.body });
+    if (r.ok) {
+      rec.status = 'sent'; rec.error = '';
+      rec.ext_id = p.channel === 'slack' ? r.data.ts : r.data.id;
+      if (p.channel === 'gmail') rec.ext_thread = r.data.threadId || '';
+      try { if (typeof root.saveComms === 'function') root.saveComms(); } catch (e) {}
+      return { ok: true, id: msgId };
+    }
+    rec.status = 'failed'; rec.error = r.error;
+    try { if (typeof root.saveComms === 'function') root.saveComms(); } catch (e) {}
+    return { ok: false, error: r.error };
+  }
+
+  /* ----- glasses tally: republish live status the moment a fix lands ----- */
+  function pushTally(key) {
+    try {
+      var M = root.MuseStreaming, SY = root.MuseSync;
+      if (!M || typeof M.liveStatus !== 'function' || !SY || typeof SY.put !== 'function') return { ok: false };
+      SY.put('live-status', M.liveStatus());
+      return { ok: true };
+    } catch (e) { return { ok: false }; }
+  }
+
+  /* ----- approval card ----- */
+  function planWords(plan) {
+    var d = plan.detail || {};
+    if (plan.action === 'reassign_booking') return 'Move "' + d.booking + '" from ' + d.from + ' to ' + d.to + '.';
+    if (plan.action === 'push_booking') return 'Push "' + d.booking + '" to start ' + d.new_start + '.';
+    if (plan.action === 'apply_stream_fix') return 'Stream fix: ' + (d.label || d.kind) + '.';
+    if (plan.action === 'review_incident') return 'Review incident ' + d.id + (d.similar && d.similar.length ? ' (similar: ' + d.similar.join(', ') + ')' : '') + '.';
+    if (plan.action === 'pack_check') return 'Pack check: ' + d.count + ' lines still open.';
+    return plan.action;
+  }
+  function cardHTML(a) {
+    var live = a.plan.action === 'apply_stream_fix' && liveNow(a.show);
+    return '<div class="sc-card" role="dialog" aria-label="Approve Show Caller fix">' +
+      '<h3>Show Caller proposes a fix — ' + escH(a.show) + '</h3>' +
+      '<p class="sc-plan">' + escH(planWords(a.plan)) + '</p>' +
+      '<p class="sc-src">Sources: ' + escH((a.plan.sources || []).join(' · ')) + '</p>' +
+      (live ? '<label class="sc-live"><input type="checkbox" id="scLive-' + escH(a.id) + '"> This touches a live show — I confirm explicitly.</label>' : '') +
+      '<label class="sc-reason">Reason (for rejections)<input id="scReason-' + escH(a.id) + '" maxlength="500" placeholder="Why reject this fix?"></label>' +
+      '<div class="sc-btns"><button onclick="MuseShowCaller.approveUI(\'' + escH(a.id) + '\')">Approve &amp; run</button>' +
+      '<button onclick="MuseShowCaller.rejectUI(\'' + escH(a.id) + '\')">Reject</button></div>' +
+      '<p class="sc-note" id="scNote-' + escH(a.id) + '" aria-live="polite"></p></div>';
+  }
+  function openCard(id) {
+    if (!root.document || !root.document.body) return false;
+    var st = store(), a = st.pending[id];
+    if (!a) return false;
+    var ov = root.document.createElement('div');
+    ov.id = 'scApproval'; ov.className = 'sc-overlay';
+    ov.innerHTML = cardHTML(a);
+    root.document.body.appendChild(ov);
+    try { var b = ov.querySelector('button'); if (b) b.focus(); } catch (e) {}
+    return true;
+  }
+  function note(id, msg) { try { var el = root.document.getElementById('scNote-' + id); if (el) el.textContent = msg; } catch (e) {} }
+  function approveUI(id) {
+    var live = false;
+    try { var c = root.document.getElementById('scLive-' + id); live = !!(c && c.checked); } catch (e) {}
+    var r = SC.approve(id, { liveConfirmed: live });
+    if (r.ok) { note(id, 'Done: ' + r.result); setTimeout(function () { try { root.document.getElementById('scApproval').remove(); } catch (e) {} }, 1200); }
+    else if (r.needsLiveConfirm) note(id, r.error);
+    else note(id, 'Refused: ' + r.error);
+  }
+  function rejectUI(id) {
+    var reason = '';
+    try { reason = root.document.getElementById('scReason-' + id).value; } catch (e) {}
+    var r = SC.reject(id, reason);
+    note(id, r.ok ? 'Rejected and logged.' : r.error);
+  }
+
+  var SC = root.MuseShowCaller = { version: '0.3.0', snapshot: snapshot, brief: brief, propose: propose,
+    requestApproval: requestApproval, pendingList: pendingList, approve: approve, reject: reject,
+    notify: notify, retry: retry, pushTally: pushTally, cardHTML: cardHTML, openCard: openCard,
+    approveUI: approveUI, rejectUI: rejectUI };
+  SC.readOnly = true; // no write except through approve(), and every approval is logged.
 })(typeof window !== 'undefined' ? window : globalThis);

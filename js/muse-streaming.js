@@ -374,7 +374,6 @@
   }
 
   /* ---------------- helpers ---------------- */
-  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function P() { return root.productions || {}; }
   function keys() { return (root.order || Object.keys(P())).filter(function (k) { return P()[k]; }); }
   function nameOf(key) { var p = P()[key]; return p ? (p.name || key) : key; }
@@ -1110,7 +1109,8 @@
     probeIntegrations();
     keys().forEach(function (k) { streamsFor(k).forEach(function (st) { var t = teleFor(k, st); for (var i = 0; i < 40; i++) stepTele(t); }); });
     MS.renderDash();
-    setInterval(tick, TICK_MS);
+    if (root.MuseHeartbeat && typeof root.MuseHeartbeat.every === 'function') root.MuseHeartbeat.every('streams:tick', tick, TICK_MS);
+    else setInterval(tick, TICK_MS);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 300); });
   else setTimeout(boot, 300);

@@ -92,17 +92,18 @@
     if (el) return;
     el = document.createElement('div');
     el.id = 'museCadView';
+    el.setAttribute('data-ax', 'dark');
     el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#050505;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e4e6eb';
     el.innerHTML =
       '<style>' +
-      '#museCadView .cvb{padding:6px 11px;background:#242526;border:1px solid #3a3b3c;color:#ced0d4;border-radius:8px;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;cursor:pointer;white-space:nowrap}' +
-      '#museCadView .cvb:hover{background:#3A3B3C;color:#ffffff}' +
-      '#museCadView .cvb.on{background:#0866ff;border-color:#0866ff;color:#ffffff}' +
-      '#museCadView .cvb.note{border-color:#f5832a}' +
-      '#museCadView .cvb.note.on{background:#f5832a;border-color:#f5832a;color:#18191A}' +
-      '#museCadView .cvb.ok{background:#1E7B34;border-color:#1e7b34;color:#ffffff}' +
-      '#museCadView .cvb.bad{background:#3d1219;border-color:#b3122e;color:#f5a3b1}' +
-      '#museCadView .ndot{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #ffffff;box-shadow:0 2px 10px rgba(0,0,0,.55);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
+      '#museCadView .cvb{padding:6px 11px;font:700 11px var(--ax-font);background:var(--ax-bg-surface);border:1px solid var(--ax-border);color:var(--ax-text-primary);border-radius:var(--ax-radius-element);cursor:pointer;white-space:nowrap;transition:background var(--ax-motion-fast)}' +
+      '#museCadView .cvb:hover{background:var(--ax-accent-muted);color:var(--ax-text-primary)}' +
+      '#museCadView .cvb.on{background:var(--ax-accent);border-color:var(--ax-accent);color:var(--ax-on-accent)}' +
+      '#museCadView .cvb.note{border-color:var(--ax-status-orange-text)}' +
+      '#museCadView .cvb.note.on{background:var(--ax-status-orange-text);border-color:var(--ax-status-orange-text);color:#101214}' +
+      '#museCadView .cvb.ok{background:var(--ax-status-green-bg);border-color:var(--ax-status-green-text);color:var(--ax-status-green-text)}' +
+      '#museCadView .cvb.bad{background:var(--ax-bg-surface);border-color:var(--ax-error);color:var(--ax-error)}' +
+      '#museCadView .ndot{position:absolute;min-width:22px;height:22px;border-radius:9999px;border:2px solid #ffffff;display:flex;align-items:center;justify-content:center;font:800 11px var(--ax-font);color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.8);box-shadow:0 2px 10px rgba(0,0,0,.55),inset 0 -2px 4px rgba(0,0,0,.25);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
       '#museCadView .ndot:hover{transform:translate(-50%,-50%) scale(1.25)}' +
       '#museCadView .ndot.sel{box-shadow:0 0 0 3px rgba(255,255,255,.85),0 2px 12px rgba(0,0,0,.6)}' +
       '#museCadView .npop{position:absolute;z-index:10;width:280px;max-width:90vw;background:rgba(28,30,33,.98);border:1px solid #3A3B3C;border-radius:12px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}' +
@@ -185,7 +186,7 @@
         el.querySelectorAll('[data-tool]').forEach(function (x) { x.classList.remove('on'); });
         b.classList.add('on');
         canvas2d.style.cursor = tool === 'note' ? 'crosshair' : 'grab';
-        setStatus(tool === 'note' ? 'Click the drawing to place a note dot' : 'Drag to pan · wheel zoom · 2D/3D toggle');
+        setStatus(tool === 'note' ? 'Hold ⌘ (Ctrl) + click the drawing to place a note' : 'Drag to pan · wheel zoom · 2D/3D toggle');
       };
     });
     el.querySelector('#cvFile').onchange = onUpload;
@@ -411,13 +412,14 @@
     if (!box) return;
     box.innerHTML = '';
     box.style.pointerEvents = 'none';
-    notes.forEach(function (n) {
+    notes.forEach(function (n, idx) {
       var p;
       if (viewMode === '2d') p = worldToScreen2d(n.x, n.y);
       else p = projectNote3d(n);
       if (!p) return;
       var d = document.createElement('div');
       d.className = 'ndot' + (selectedNote && selectedNote.id === n.id ? ' sel' : '');
+      d.textContent = String(idx + 1);
       d.style.left = p.x + 'px';
       d.style.top = p.y + 'px';
       d.style.background = n.color || '#0866ff';
@@ -513,10 +515,12 @@
 
   /* ---------- input ---------- */
   function activeCanvas() { return viewMode === '3d' ? canvas3d : canvas2d; }
+  var noteHinted = false;
   function onDown(e) {
     dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY;
+    noteHinted = (tool === 'note' && e.button === 0 && !e.metaKey && !e.ctrlKey);
     try { activeCanvas().setPointerCapture(e.pointerId); } catch (err) {}
-    if (tool === 'note' && e.button === 0) {
+    if (tool === 'note' && e.button === 0 && (e.metaKey || e.ctrlKey)) {
       var rect = wrap.getBoundingClientRect();
       var sx = e.clientX - rect.left, sy = e.clientY - rect.top;
       var w = viewMode === '2d' ? screenToWorld2d(sx, sy) : { x: cam3d.target[0], y: cam3d.target[2] };
@@ -553,7 +557,7 @@
     }
     paint();
   }
-  function onUp() { dragging = false; }
+  function onUp() { dragging = false; if (noteHinted && !moved) setStatus('Hold ⌘ (Ctrl) + click to place a note — plain clicks just pan'); noteHinted = false; }
   function onWheel(e) {
     e.preventDefault();
     if (viewMode === '2d') {

@@ -143,7 +143,7 @@ test('client: runShow stores latest and Show Caller raises each flag high', asyn
     buildMuseAiContext: () => JSON.stringify({ ops_backbone: {} }),
     document: { createElement: () => ({ width: 0, height: 0, getContext: () => ({ drawImage() {}, getImageData: () => black }), toDataURL: () => 'data:image/jpeg;base64,x' }) },
     fetch: async (url, init) => ({ status: 200, json: async () =>
-      JSON.parse(init.body).concept === 'lower-third graphic'
+      JSON.parse(init.body).concept === 'caption bar'
         ? { ok: true, matches: [{ x1: 1, y1: 1, x2: 2, y2: 2, w: 9, h: 9, confidence: 0.9 }], count: 1 }
         : { ok: true, matches: [], count: 0, noMatch: true } }),
   });

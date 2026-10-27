@@ -82,10 +82,14 @@
       return j && j.ok ? { ok: true, data: j } : { ok: false, error: (j && j.error) || ('HTTP ' + (r.status || '?')) };
     } catch (e) { return { ok: false, error: String((e && e.message) || e).slice(0, 160) }; }
   }
+  // SAM vocabulary: 'caption bar' segments a name strap reliably; the
+  // broadcast-jargon phrasings ('lower-third graphic', 'name strap') return
+  // nothing. Verified against a generated strap frame, Day 6.
+  var LT_CONCEPT = 'caption bar';
   async function checkLowerThird(slot, expected) {
     var cap = captureFrame(slot);
     if (!cap.ok) return { check: 'lower-third', pass: false, error: cap.error };
-    var s = await segment(cap.dataUrl, 'lower-third graphic');
+    var s = await segment(cap.dataUrl, LT_CONCEPT);
     if (!s.ok) return { check: 'lower-third', pass: false, error: s.error };
     var present = s.data.count > 0, ok = present === !!expected;
     var top = s.data.matches[0];

@@ -286,17 +286,49 @@
     });
   }
 
+  // Guided tour: deferred until someone actually takes it (?tour=, the
+  // profile button, or the home button). Lazy scripts skip the static ?v tag,
+  // so stamp the running build's tag — js/* ships immutable-cached.
+  function versioned(rel) {
+    try {
+      var scripts = document.querySelectorAll ? document.querySelectorAll('script[src*="?v="]') : [];
+      for (var i = 0; i < scripts.length; i++) {
+        var m = /(\?v=[A-Za-z0-9-]+)/.exec(scripts[i].getAttribute('src') || '');
+        if (m) return rel + m[1];
+      }
+    } catch (e) {}
+    return rel;
+  }
+  function tourWanted() {
+    try {
+      if (/[?&]tour=(1|auto)\b/.test(location.search || '')) return true;
+      if (global.sessionStorage && global.sessionStorage.getItem('muse_tour')) return true;
+    } catch (e) {}
+    return false;
+  }
+  function ensureTour() {
+    if (typeof global.MuseTour !== 'undefined') return Promise.resolve(global.MuseTour);
+    return loadScript(versioned('js/muse-tour.js'), 'muse-tour').then(function () { return global.MuseTour || null; }).catch(function () { return null; });
+  }
+
   global.MuseLazy = {
-    version: '1.4.0',
+    version: '1.5.0',
     ensureCad: ensureCad,
     ensurePano: ensurePano,
     ensurePdf: ensurePdf,
     ensureFuse: ensureFuse,
     ensureBOps: ensureBOps,
     ensureTB: ensureTB,
+    ensureTour: ensureTour,
     loadScript: loadScript,
     candidateUrls: candidateUrls,
-    abs: abs
+    abs: abs,
+    _tourWanted: tourWanted,
+    _versioned: versioned
   };
+
+  // The tour's own boot (query param / session flag) lives in the tour module;
+  // kick the load here so ?tour=auto still works with no static script tag.
+  try { if (tourWanted()) ensureTour(); } catch (e) {}
 })(typeof window !== 'undefined' ? window : global);
 

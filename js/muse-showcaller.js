@@ -143,6 +143,13 @@
     };
   }
 
+  // Template scope: a module the show's template disables is out of
+  // scope — not read as a risk, not proposed on. No template module (or
+  // no assignment) means the full stack, as before.
+  function scopeOn(key, mod) {
+    try { return !root.MuseTemplates || root.MuseTemplates.enabled(key, mod); } catch (e) { return true; }
+  }
+
   function sevRank(s) { var m = /SEV-(\d)/.exec(String(s || '')); return m ? +m[1] : 5; }
 
   function brief(x) {
@@ -150,11 +157,11 @@
     if (s.error) return s;
     var risks = [], unknown = [];
     ['schedule', 'streams', 'incidents', 'crew', 'equipment', 'ops'].forEach(function (a) {
-      if (isOut(s[a])) unknown.push(a + ' (' + s[a].unavailable + ')');
+      if (scopeOn(s.key, a) && isOut(s[a])) unknown.push(a + ' (' + s[a].unavailable + ')');
     });
 
     // Streams: alerts on a live show are the highest line.
-    var st = s.streams || {};
+    var st = scopeOn(s.key, 'streams') ? (s.streams || {}) : {};
     var live = st.state === 'LIVE' || st.state === 'REHEARSAL';
     ((st.health && st.health.alerts) || []).forEach(function (al) {
       risks.push({ level: live ? 'high' : 'med', area: 'streams',
@@ -169,7 +176,7 @@
     });
 
     // Schedule: double-books touching this show; labor findings behind them.
-    var sch = s.schedule || {};
+    var sch = scopeOn(s.key, 'schedule') ? (s.schedule || {}) : {};
     (sch.conflicts || []).forEach(function (c) {
       risks.push({ level: /double|overlap|clash/i.test(c.kind || c.text || '') ? 'high' : 'med', area: 'schedule',
         text: 'Booking conflict on ' + (c.res || 'a resource') + ': ' + (c.text || c.kind),
@@ -181,7 +188,7 @@
     });
 
     // Incidents: open ones, most severe first.
-    var inc = s.incidents || {};
+    var inc = scopeOn(s.key, 'incidents') ? (s.incidents || {}) : {};
     (inc.open || []).slice().sort(function (a, b) { return sevRank(a.severity) - sevRank(b.severity); }).forEach(function (i) {
       risks.push({ level: sevRank(i.severity) <= 2 ? 'high' : 'med', area: 'incidents',
         text: i.id + ' (' + i.severity + ', ' + i.status + '): ' + i.title,
@@ -189,14 +196,14 @@
     });
 
     // Crew: unfilled positions.
-    var crew = s.crew || {};
+    var crew = scopeOn(s.key, 'crew') ? (s.crew || {}) : {};
     (crew.open || []).forEach(function (pos) {
       risks.push({ level: 'med', area: 'crew', text: 'Open position: ' + pos + ' has nobody assigned',
         sources: ['crew roster · ' + s.show] });
     });
 
     // Equipment: gear not yet packed (one aggregate line, not one per item).
-    var eq = s.equipment || {};
+    var eq = scopeOn(s.key, 'equipment') ? (s.equipment || {}) : {};
     if (eq.not_packed) {
       risks.push({ level: eq.not_packed > 10 ? 'med' : 'low', area: 'equipment',
         text: eq.not_packed + ' of ' + eq.lines + ' pack-list lines are not packed yet',
@@ -204,7 +211,7 @@
     }
 
     // Ops: transmission conflicts and ENG pressure naming this show.
-    var ops = s.ops || {};
+    var ops = scopeOn(s.key, 'ops') ? (s.ops || {}) : {};
     (ops.transmission_conflicts || []).forEach(function (c) {
       risks.push({ level: 'med', area: 'ops', text: 'Transmission: ' + (typeof c === 'string' ? c : JSON.stringify(c)),
         sources: ['transmission book · ' + s.show] });
@@ -212,7 +219,7 @@
 
     // Stream Check: visual flags from the last frame run.
     try {
-      var chk = root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
+      var chk = scopeOn(s.key, 'streams') && root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
       ((chk && chk.flags) || []).forEach(function (f) {
         risks.push({ level: 'high', area: 'streamcheck',
           text: 'Stream Check [' + f.check + (f.concept ? ' ' + f.concept : '') + ']: ' + (f.flag || 'flagged'),
@@ -240,7 +247,7 @@
     function uncov(ft, why) { uncovered.push({ for: ft, why: why }); }
 
     // Schedule double-books: move the booking that is NOT on air.
-    var sch = s.schedule || {}, S = root.MuseSchedule;
+    var sch = scopeOn(s.key, 'schedule') ? (s.schedule || {}) : {}, S = root.MuseSchedule;
     (sch.conflicts || []).forEach(function (c) {
       var ft = 'Booking conflict on ' + (c.res || 'a resource') + ': ' + (c.text || c.kind);
       if (!/double|overlap|clash/i.test(c.kind || c.text || '')) { uncov(ft, 'conflict kind needs a human read'); return; }
@@ -280,7 +287,7 @@
     });
 
     // Stream anomalies with a recommendation carry their own fix.
-    var st = s.streams || {};
+    var st = scopeOn(s.key, 'streams') ? (s.streams || {}) : {};
     (st.anomalies || []).forEach(function (a) {
       var ft = 'Anomaly on ' + (a.stage || 'stream') + ': ' + a.text, rc = a.recommendation;
       if (rc && rc.kind && STREAM_FIX.test(rc.kind)) plan('streams', ft, 'apply_stream_fix',
@@ -293,7 +300,7 @@
     });
 
     // Open incidents: review with similar precedent, never auto-resolve.
-    var inc = s.incidents || {}, I = root.MuseIncidents;
+    var inc = scopeOn(s.key, 'incidents') ? (s.incidents || {}) : {}, I = root.MuseIncidents;
     (inc.open || []).forEach(function (i) {
       var sim = [], open_n = null;
       try {
@@ -310,25 +317,25 @@
     });
 
     // Crew: people are picked by people.
-    var crew = s.crew || {};
+    var crew = scopeOn(s.key, 'crew') ? (s.crew || {}) : {};
     (crew.open || []).forEach(function (pos) {
       uncov('Open position: ' + pos + ' has nobody assigned', 'filling a position needs a qualified human pick — skill matching is not automated');
     });
 
     // Equipment: unpacked lines become a check task.
-    var eq = s.equipment || {};
+    var eq = scopeOn(s.key, 'equipment') ? (s.equipment || {}) : {};
     if (eq.not_packed) plan('equipment', eq.not_packed + ' of ' + eq.lines + ' pack-list lines are not packed yet',
       'pack_check', { count: eq.not_packed, lines: eq.lines }, ['pack list · ' + s.show]);
 
     // Transmission moves stay human-decided on air-critical paths.
-    var ops = s.ops || {};
+    var ops = scopeOn(s.key, 'ops') ? (s.ops || {}) : {};
     (ops.transmission_conflicts || []).forEach(function (c) {
       uncov('Transmission: ' + (typeof c === 'string' ? c : JSON.stringify(c)), 'transmission moves are human-decided on air-critical paths');
     });
 
     // Stream Check flags need human eyes on the monitor before any action.
     try {
-      var chk = root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
+      var chk = scopeOn(s.key, 'streams') && root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
       ((chk && chk.flags) || []).forEach(function (f) {
         uncov('Stream Check [' + f.check + ']: ' + (f.flag || 'flagged'), 'visual flag — confirm on the monitor before acting');
       });

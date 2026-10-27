@@ -25,8 +25,22 @@ export function newTag(now = new Date()) {
 }
 export function bumpText(text, tag) { return text.replace(/\?v=\d{8}-[a-z0-9]+/g, '?v=' + tag); }
 
+// Bundle budget ratchet (same pattern as the XSS ratchet): totals may fall,
+// never rise. Lower a cap when a cut lands; raising one needs a note here.
+export const BUDGETS = { 'muse-app-a.min.js': 660 * 1024, 'muse-app-b.min.js': 970 * 1024 };
+
+export function checkBudgets(dir = path.join(ROOT, 'js')) {
+  const over = [];
+  for (const [file, cap] of Object.entries(BUDGETS)) {
+    const size = fs.statSync(path.join(dir, file)).size;
+    if (size > cap) over.push(`${file} ${(size / 1024).toFixed(0)} KB over budget ${(cap / 1024).toFixed(0)} KB`);
+  }
+  return over;
+}
+
 async function bundles() {
   const { build } = await import('esbuild'); // lazy: the helpers above are importable without devDependencies
+  const zlib = await import('node:zlib');
   fs.mkdirSync(OUT, { recursive: true });
   for (const name of ['muse-app-a', 'muse-app-b']) {
     const t = Date.now();
@@ -35,8 +49,13 @@ async function bundles() {
       outfile: path.join(OUT, name + '.min.js'),
       minify: true, target: 'es2016', sourcemap: 'linked', legalComments: 'none', logLevel: 'warning',
     });
-    const size = fs.statSync(path.join(OUT, name + '.min.js')).size;
-    console.log(`built ${name}.min.js  ${(size / 1024).toFixed(0)} KB  (${Date.now() - t} ms)`);
+    const raw = fs.readFileSync(path.join(OUT, name + '.min.js'));
+    const gz = zlib.gzipSync(raw).length;
+    console.log(`built ${name}.min.js  ${(raw.length / 1024).toFixed(0)} KB raw / ${(gz / 1024).toFixed(0)} KB gzip  (${Date.now() - t} ms)`);
+  }
+  if (OUT === path.join(ROOT, 'js')) {
+    const over = checkBudgets(OUT);
+    if (over.length) { console.error('BUDGET FAIL:\n  ' + over.join('\n  ')); process.exitCode = 1; }
   }
 }
 function bump() {

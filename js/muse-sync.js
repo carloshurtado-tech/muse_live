@@ -37,10 +37,15 @@
   function signedIn() { try { return document.cookie.indexOf('muse_authed=1') >= 0; } catch (e) { return false; } }
 
   /* ---------------- low-level HTTP ---------------- */
+  // Reads are conditional: once a version is seen, If-None-Match turns an
+  // unchanged poll into a 304 with no body. The HEAD poll below needs no
+  // change — 304 is !ok, so it already returns early on "unchanged".
   function req(method, key, body) {
+    var headers = body !== undefined ? { 'Content-Type': 'application/json' } : {};
+    if (body === undefined && (method === 'GET' || method === 'HEAD') && seen[key]) headers['If-None-Match'] = '"' + seen[key] + '"';
     return fetch('/api/kv/' + encodeURIComponent(key) + (method === 'PUT' ? '' : '?optional=1'), {
       method: method, credentials: 'include', cache: 'no-store',
-      headers: body !== undefined ? { 'Content-Type': 'application/json' } : undefined,
+      headers: headers,
       body: body !== undefined ? body : undefined
     }).then(function (r) {
       if (r.status === 503 || r.status === 401) { enabled = false; setState('local'); }
@@ -50,6 +55,7 @@
   function get(key) {
     if (enabled === false) return Promise.resolve(null);
     return req('GET', key).then(function (r) {
+      if (r.status === 304) return { __unchanged: true };
       if (!r.ok || r.headers.get('X-Muse-Missing')) return null;
       seen[key] = +(r.headers.get('X-Muse-Updated') || 0);
       return r.json();
@@ -57,6 +63,7 @@
   }
   function getWithMeta(key) {
     return req('GET', key).then(function (r) {
+      if (r.status === 304) return { value: null, updated: seen[key] || 0, by: '', status: 304 };
       if (!r.ok || r.headers.get('X-Muse-Missing')) return { value: null, updated: 0, by: '', status: r.ok ? 404 : r.status };
       return r.json().then(function (v) { return { value: v, updated: +(r.headers.get('X-Muse-Updated') || 0), by: r.headers.get('X-Muse-By') || '', status: 200 }; });
     });
@@ -109,7 +116,7 @@
         seen[key] = up;
         var mirrored = MIRROR.filter(function (k) { return kvKey(k) === key; })[0];
         if (mirrored) remoteMirror(mirrored, by);
-        if (watchers[key] && watchers[key].length) get(key).then(function (v) { (watchers[key] || []).forEach(function (f) { try { f(v, { updated: up, by: by }); } catch (e) { /* noop */ } }); });
+        if (watchers[key] && watchers[key].length) get(key).then(function (v) { if (v && v.__unchanged) return; (watchers[key] || []).forEach(function (f) { try { f(v, { updated: up, by: by }); } catch (e) { /* noop */ } }); });
       }).catch(function () { /* offline: next tick */ });
     });
   }
@@ -136,7 +143,7 @@
     var meta = localMeta(), changed = [];
     return Promise.all(MIRROR.map(function (k) {
       return getWithMeta(kvKey(k)).then(function (r) {
-        if (r.status === 503 || r.status === 401) return;
+        if (r.status === 503 || r.status === 401 || r.status === 304) return;
         var env = r.value, localData = ls.getItem(k), localT = meta[k] || 0;
         seen[kvKey(k)] = r.updated || 0;
         if (env && typeof env === 'object' && 'data' in env && (env.updated || 0) > localT) {
@@ -222,8 +229,15 @@
         if (changed.length) { staleBy = 'another device'; setState('stale'); } else setState('synced');
         settle();
         flush();
-        setInterval(poll, POLL_MS);
-        setInterval(function () { if (Object.keys(queue()).length) flush(); }, RETRY_MS);
+        // One shared heartbeat instead of two private loops; the poll already
+        // no-ops on hidden tabs, and the heartbeat skips foreground work too.
+        if (root.MuseHeartbeat && typeof root.MuseHeartbeat.every === 'function') {
+          root.MuseHeartbeat.every('muse-sync:poll', poll, POLL_MS);
+          root.MuseHeartbeat.every('muse-sync:retry', function () { if (Object.keys(queue()).length) flush(); }, RETRY_MS);
+        } else {
+          setInterval(poll, POLL_MS);
+          setInterval(function () { if (Object.keys(queue()).length) flush(); }, RETRY_MS);
+        }
         root.addEventListener('online', function () { flush(); });
       });
     });

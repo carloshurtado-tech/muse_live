@@ -374,7 +374,6 @@
   }
 
   /* ---------------- helpers ---------------- */
-  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function P() { return root.productions || {}; }
   function keys() { return (root.order || Object.keys(P())).filter(function (k) { return P()[k]; }); }
   function nameOf(key) { var p = P()[key]; return p ? (p.name || key) : key; }
@@ -999,8 +998,9 @@
   var MS = root.MuseStreaming = {
     paneHTML: paneHTML,
     mount: function (el) { mount(el); },
+    videoFor: function (slot) { var p = players[slot]; return p && p.video && p.video.tagName === 'VIDEO' ? p.video : null; },
     renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); } },
-    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = !html; h.innerHTML = html; if (html) mount(h); },
+    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) mount(h); },
     play: function (btn) { var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
     openShow: function (key) { try { root.projSubTab[key] = 'streaming'; } catch (e) {} root.navGo(key); },
     toggleAudio: function (slot, btn) {
@@ -1109,7 +1109,8 @@
     probeIntegrations();
     keys().forEach(function (k) { streamsFor(k).forEach(function (st) { var t = teleFor(k, st); for (var i = 0; i < 40; i++) stepTele(t); }); });
     MS.renderDash();
-    setInterval(tick, TICK_MS);
+    if (root.MuseHeartbeat && typeof root.MuseHeartbeat.every === 'function') root.MuseHeartbeat.every('streams:tick', tick, TICK_MS);
+    else setInterval(tick, TICK_MS);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 300); });
   else setTimeout(boot, 300);

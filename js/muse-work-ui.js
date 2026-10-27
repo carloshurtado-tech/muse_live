@@ -45,6 +45,17 @@
     travel: ["journeys"],
     omni: ["decisions"],
   };
+  function esc(x) {
+    return String(x == null ? "" : x).replace(/[&<>"']/g, function (c) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      }[c];
+    });
+  }
   function call(name, args) {
     return esc(
       "MuseWork." + name + "(" + JSON.stringify(args || []).slice(1, -1) + ")",

@@ -5161,7 +5161,6 @@ function openCreateModal(){var m=document.getElementById('createModal');npThumb=
   var cs=document.getElementById('np_customer');if(cs){cs.innerHTML=customerList.map(function(c){return '<option value="'+c+'">'+c+'</option>';}).join('');cs.value="External Productions";}
   var tw=document.getElementById('np_thumbwrap');if(tw)tw.innerHTML='<span class="text-[9px] text-gray-500 px-1 text-center">Colored tile</span>';
   buildColorSwatches();
-  try{if(window.MuseTemplates){MuseTemplates.resetCreate();MuseTemplates.renderCreatePicker();}}catch(eT){}
   m.style.display='flex';m.classList.remove('hidden');}
 function closeCreateModal(){var m=document.getElementById('createModal');m.style.display='none';m.classList.add('hidden');}
 /* ---- multi-day date label + starter-schedule preview ---- */
@@ -5218,7 +5217,6 @@ function createProject(){
   var key=createProjectFromData({name:title,customer:cust,venue:venue,date:dateLabel,dateStart:date||'',dateEnd:dateEnd||'',
     time:time||'',desc:desc,tagColor:npColor,thumb:npThumb,locations:__locs,geo:geo,tag:tag,status:status,
     editedBy:pm||'',schedule:sched});
-  try{if(window.MuseTemplates&&key)MuseTemplates.applyToNew(key);}catch(eT){}
   closeCreateModal();
   toast('“'+title+'” created'+(__locs.length>1?(' \u00B7 '+__locs.length+' venues'):'')+(sched.length?(' \u00B7 '+sched.length+'-row schedule'):'')+' — departments set to Missing');
   openProject(key);
@@ -6258,6 +6256,7 @@ function downloadTechbook(key,opts){
 function txt(s){return s==null?'':''+s;}
 /* Show names reach many templates (some unescaped) and other browsers via MuseSync: markup characters never belong in one. */
 function museCleanName(s){return String(s==null?'':s).replace(/[<>`]/g,'').replace(/'/g,'\u2019').replace(/"/g,'\u201D').trim();}
+function esc(s){return (''+(s==null?'':s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function spectrumSVGmarkup(sz,bodyFill){
   /* Official Muse Live Spectrum from assets/brand — natural aspect (~1.727:1) */
   var ar=(typeof MUSE_SPECTRUM_AR==='number'&&MUSE_SPECTRUM_AR>0.8)?MUSE_SPECTRUM_AR:(290/191);
@@ -7470,7 +7469,7 @@ function initApp(){
   try{buildClocks();}catch(e){}
   try{cfgBannerInit();}catch(e){}
   try{if(typeof renderRoutingBoard==='function')renderRoutingBoard();}catch(e){}
-  tickClock();tickAir();if(window.MuseHeartbeat&&typeof window.MuseHeartbeat.every==='function'){try{window.MuseHeartbeat.every('clocks:tick',tickClock,1000);window.MuseHeartbeat.every('clocks:air',tickAir,1000);window.MuseHeartbeat.every('clocks:lat',tickLat,2000);}catch(eHb){setInterval(tickClock,1000);setInterval(tickAir,1000);setInterval(tickLat,2000);}}else{setInterval(tickClock,1000);setInterval(tickAir,1000);setInterval(tickLat,2000);}
+  tickClock();setInterval(tickClock,1000);tickAir();setInterval(tickAir,1000);setInterval(tickLat,2000);
   try{museHistoryInit();}catch(e){}
   try{museClockBadge();}catch(e){}
   /* Broadcast Ops + truck telemetry load when the browser is idle (not on the critical path) */
@@ -7489,7 +7488,7 @@ function initApp(){
     try{renderSchedule();}catch(e){}
     try{var nav=document.getElementById('tabNav');if(nav&&!nav.getAttribute('data-wired')){nav.setAttribute('data-wired','1');nav.addEventListener('click',function(e){var b=e.target.closest('button');if(b&&b.getAttribute('data-view'))switchView(b.getAttribute('data-view'));});}}catch(e){}
     try{renderPersonnelDir();}catch(e){}
-    try{if(window.MuseHeartbeat&&typeof window.MuseHeartbeat.every==='function')window.MuseHeartbeat.every('portal:tick',function(){if(typeof portalTick==='function')portalTick();},1000);else setInterval(function(){if(typeof portalTick==='function')portalTick();},1000);}catch(e){}
+    try{setInterval(function(){if(typeof portalTick==='function')portalTick();},1000);}catch(e){}
     try{trackInit();}catch(e){}
     try{opsInit();}catch(e){}
     try{engInit();}catch(e){}
@@ -7500,7 +7499,7 @@ function initApp(){
     try{equipInit();}catch(e){}
     try{loadPerDataOnce();}catch(e){}
     try{loadCustomPersOnce();}catch(e){}
-    try{museClockSync();if(window.MuseHeartbeat&&typeof window.MuseHeartbeat.every==='function')window.MuseHeartbeat.every('clocks:sync',museClockSync,600000);else setInterval(museClockSync,600000);
+    try{museClockSync();setInterval(museClockSync,600000);
       document.addEventListener('visibilitychange',function(){if(!document.hidden&&(Date.now()-(_pClock.at||0))>120000)museClockSync();});}catch(e){}
     try{setTimeout(mountVisibleMaps,300);}catch(e){}
     try{

@@ -28,20 +28,9 @@ export async function onRequest(context) {
       }
       return json({ ok: false, error: 'Not found' }, 404);
     }
-    // The version IS the timestamp: it changes exactly when the value does.
-    const updated = String((metadata && metadata.updated) || 0);
-    const etag = '"' + updated + '"';
-    const inm = request.headers.get('If-None-Match') || '';
-    const fresh = inm.trim() === '*' || inm.split(',').some(function (t) {
-      return t.trim().replace(/^W\//, '').replace(/^"|"$/g, '') === updated;
-    });
-    if (fresh) {
-      return new Response(null, { status: 304, headers: {
-        ETag: etag, 'X-Muse-Updated': updated, 'X-Muse-By': String((metadata && metadata.by) || '') } });
-    }
     return new Response(request.method === 'HEAD' ? null : value, {
-      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', ETag: etag,
-        'X-Muse-Updated': updated, 'X-Muse-By': String((metadata && metadata.by) || '') },
+      headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store',
+        'X-Muse-Updated': String((metadata && metadata.updated) || 0), 'X-Muse-By': String((metadata && metadata.by) || '') },
     });
   }
   if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);

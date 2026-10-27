@@ -1,22 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-35PR2RKJ51"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-35PR2RKJ51');
-</script>
-<script>
-/* Gate-hero preload: the mascot is the LCP element for signed-out visitors, so start it during
-   parse instead of after the /api/ping round-trip. Signed-in visitors skip it entirely (the href
-   must match the data-src URL below exactly, or the preload is wasted). */
-(function(){try{if(document.cookie.indexOf('muse_authed=1')<0){var l=document.createElement('link');l.rel='preload';l.as='image';l.href='assets/brand/muse-mascot-800.webp';l.setAttribute('fetchpriority','high');document.head.appendChild(l);}}catch(e){}})();
-</script>
-<script src="js/muse-observe.js?v=20261027-l9p9"></script>
+<script src="js/muse-observe.js?v=20261020-6ogm"></script>
 <meta charset="UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
@@ -46,8 +31,7 @@
   }catch(e){}
 })();
 </script>
-<script src="js/muse-heartbeat.js?v=20261027-l9p9"></script>
-<script src="js/muse-sync.js?v=20261027-l9p9"></script>
+<script src="js/muse-sync.js?v=20261020-6ogm"></script>
 <script>
 /* Gate before first paint unless this browser already holds a session. */
 (function(){try{var ok=document.cookie.indexOf('muse_authed=1')>=0;
@@ -130,46 +114,36 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
   }catch(e){}
 })();
 </script>
-<link rel="preload" href="css/muse.css?v=20261027-l9p9" as="style">
-<link rel="stylesheet" href="css/astryx-tokens.css?v=20261027-l9p9">
-<link rel="stylesheet" href="css/muse.css?v=20261027-l9p9" id="museDarkThemeLink">
-<script src="js/muse-demo.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-planet-trucks.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-platform.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-lazy.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-utils.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-kb-seed.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-records.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-wiki-schema.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-kb.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-recovery.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-app-a.min.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-app-b.min.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-schedule.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-export-gear.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-ops-os.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-live-core.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-live-ops.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-work-core.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-work-ui.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-generic-kit.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-incidents.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-streaming.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-agent.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-templates.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-tasks.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-assets.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-survey.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-media.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-launch.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-showcaller.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-streamcheck.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-captions.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-voice.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-proactive.js?v=20261027-l9p9" defer></script>
-<script src="js/muse-survey-media.js?v=20261027-l9p9" defer></script>
-<!-- Tour loads on demand via MuseLazy.ensureTour (profile button, home button, ?tour=) — never at boot. -->
-<script src="js/muse-a11y.js?v=20261027-l9p9" defer></script>
+<link rel="preload" href="css/muse.css?v=20261020-6ogm" as="style">
+<link rel="preload" href="assets/brand/meta-mark-animated.svg" as="image">
+<link rel="stylesheet" href="css/muse.css?v=20261020-6ogm" id="museDarkThemeLink">
+<script src="js/muse-demo.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-planet-trucks.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-platform.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-lazy.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-kb-seed.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-records.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-wiki-schema.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-kb.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-recovery.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-app-a.min.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-app-b.min.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-schedule.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-export-gear.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-ops-os.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-live-core.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-live-ops.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-work-core.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-work-ui.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-generic-kit.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-incidents.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-streaming.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-agent.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-voice.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-proactive.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-survey-media.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-tour.js?v=20261020-6ogm" defer></script>
+<script src="js/muse-a11y.js?v=20261020-6ogm" defer></script>
 <style id="museDashLayout">
 /* Classic dashboard + telemetry layout — desktop columns by default */
 .dash-row-main{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(0,2fr)!important;gap:1.5rem!important;align-items:start}
@@ -291,7 +265,7 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
   <div class="gate-shell">
     <div class="gate-hero">
       <img class="gate-meta" src="assets/brand/meta-mark-animated.svg?v=2" alt="Meta" width="88" height="58">
-      <div class="gate-art"><img data-src="assets/brand/muse-mascot-800.webp" alt="Muse, the Muse AI mascot, operating a broadcast camera" width="800" height="534" fetchpriority="high"></div>
+      <div class="gate-art"><img data-src="assets/brand/muse-mascot.webp?v=2" alt="Muse, the Muse AI mascot, operating a broadcast camera" width="1600" height="1067"></div>
       <p class="gate-title">Muse Live</p>
       <p class="gate-tag">Live broadcast and streaming operations. Plan every show, watch every stream end to end, learn from every incident.</p>
       <p class="gate-by">Designed and built by Carlos Hurtado</p>
@@ -510,7 +484,7 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
   </section>
 
   <!-- LIVE STREAMS (executive + engineering view of every program feed on air) -->
-  <section id="dashStreams" class="ms-dash" aria-label="Live streams" style="min-height:180px"><div class="text-center py-6 text-[10px] text-gray-400">Loading live streams…</div></section>
+  <section id="dashStreams" class="ms-dash" aria-label="Live streams" hidden></section>
 
   <!-- ROW 1 -->
 
@@ -521,7 +495,7 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
         <div class="flex items-center gap-2"><span class="inline-block w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(228,30,63,.15)"></span><h3 class="text-[10px] font-bold uppercase tracking-wide text-gray-600">Active PCR / ACR</h3></div>
         <span class="text-[9px] bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded mono font-bold tracking-wider">● LIVE</span>
       </div>
-      <div id="routingBoard" class="space-y-3" style="min-height:220px">
+      <div id="routingBoard" class="space-y-3">
         <div class="text-center py-6 text-[10px] text-gray-400">Loading room schedule…</div>
       </div>
       <div class="text-[9px] text-gray-500 mono mt-3 pt-2 border-t border-gray-100 flex justify-between"><span>Routing matrix · Muse Schedule</span><button onclick="switchView('schedule');setSchedTab('muse')" class="text-blue-700 font-bold hover:underline">Muse Schedule →</button></div>
@@ -1260,9 +1234,8 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
               <div id="np_colors" class="flex flex-wrap gap-1.5 mt-1.5"></div></div>
           </div>
           <div class="rounded-xl border border-gray-200 p-3">
-            <div class="flex items-center justify-between mb-1"><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Shoot Dates</label>
+            <div class="flex items-center justify-between mb-2"><label class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Shoot Dates <span class="text-gray-400 normal-case font-normal">— click once for a day, twice for a range</span></label>
               <span id="np_dateSpan" class="text-[10px] font-bold text-blue-700"></span></div>
-            <p class="text-[11px] text-gray-600 mb-2">Click once for a single day. Click a second day for a date range.</p>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               <div class="sm:col-span-2">
                 <label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Start → End</label>
@@ -1275,7 +1248,7 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
               </div>
               <div><label class="text-[9px] font-bold uppercase tracking-wider text-gray-500 block mb-1">Call Time</label><input id="np_time" type="time" class="w-full text-xs border border-gray-300 rounded-lg px-2.5 py-2" style="outline:none"></div>
             </div>
-            <p class="text-[10px] text-gray-500 mt-1.5">Same day clicked once = single-day shoot.</p>
+            <p class="text-[9px] text-gray-400 mt-1.5">One calendar window — first click sets start, second click sets end. Same day = single-day shoot.</p>
             <label class="flex items-center gap-2 text-[11px] text-gray-700 mt-2.5 cursor-pointer"><input id="np_buildsched" type="checkbox" checked class="rounded"> Build a starter schedule across these days <span class="text-gray-400">(load-in → show days → strike)</span></label>
           </div>
           <div>
@@ -1301,11 +1274,6 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
           <div class="rounded-xl overflow-hidden border border-gray-200 relative bg-gray-50" style="height:190px" id="np_mapHost"></div>
           <div id="npLocRows" class="space-y-1.5"></div>
         </div>
-      </div>
-      <div class="ax-card mt-5 p-3">
-        <label class="ax-label">Project template — build only what the show needs</label>
-        <p class="ax-note" style="margin-top:0;margin-bottom:8px">The template sets which modules this production loads and what Show Caller reads. Disabled modules hide — they never delete, and the template can be changed later without losing records.</p>
-        <div id="np_templateHost"><p class="ax-note">Loading templates…</p></div>
       </div>
     </div>
     <div class="px-6 py-3.5 border-t border-gray-200 flex items-center justify-between gap-2 flex-shrink-0">

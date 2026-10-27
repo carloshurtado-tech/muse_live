@@ -45,25 +45,3 @@ test('?optional=1 answers 200 + null for missing keys (no console noise)', async
   const r = await onRequest(ctx('/api/kv/nope?optional=1', { env, user: editor, params: { key: 'nope' } }));
   assert.equal(r.status, 200); assert.equal(r.headers.get('X-Muse-Missing'), '1'); assert.equal(await r.json(), null);
 });
-test('conditional reads: ETag on 200, 304 on If-None-Match, 200 on stale tag', async () => {
-  const env = { MUSE_KV: memoryKV() };
-  await onRequest(ctx('/x', { method: 'PUT', body: { shows: 3 }, env, user: editor, params: { key: 'live-status' } }));
-  const first = await onRequest(ctx('/api/kv/live-status', { env, user: editor, params: { key: 'live-status' } }));
-  assert.equal(first.status, 200);
-  const etag = first.headers.get('ETag');
-  assert.match(etag, /^"\d+"$/);
-  assert.equal(etag, '"' + first.headers.get('X-Muse-Updated') + '"');
-  const fresh = await onRequest(ctx('/api/kv/live-status', { env, user: editor, params: { key: 'live-status' }, headers: { 'If-None-Match': etag } }));
-  assert.equal(fresh.status, 304);
-  assert.equal(fresh.headers.get('ETag'), etag);
-  assert.equal(await fresh.text(), '');
-  const weak = await onRequest(ctx('/api/kv/live-status', { env, user: editor, params: { key: 'live-status' }, headers: { 'If-None-Match': 'W/' + etag + ', "other"' } }));
-  assert.equal(weak.status, 304);
-  const star = await onRequest(ctx('/api/kv/live-status', { env, user: editor, params: { key: 'live-status' }, headers: { 'If-None-Match': '*' } }));
-  assert.equal(star.status, 304);
-  const stale = await onRequest(ctx('/api/kv/live-status', { env, user: editor, params: { key: 'live-status' }, headers: { 'If-None-Match': '"1"' } }));
-  assert.equal(stale.status, 200);
-  assert.deepEqual(await stale.json(), { shows: 3 });
-  const head = await onRequest(ctx('/api/kv/live-status', { method: 'HEAD', env, user: editor, params: { key: 'live-status' }, headers: { 'If-None-Match': etag } }));
-  assert.equal(head.status, 304);
-});

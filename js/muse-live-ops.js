@@ -6,6 +6,7 @@
   var groups={ops:['resources','feeds'],schedule:['segments'],crew:['comms'],workflow:['assets','recordings'],omni:['incidents','handovers'],tracking:['closeout'],packlist:['offline']};
   var names={resources:'Path resources',feeds:'Feed and destination matrix',segments:'Live show execution',comms:'Intercom, IFB and mix-minus',assets:'Graphics and playback readiness',recordings:'Recording and deliverables',incidents:'Incident response',handovers:'Technical shift handover',closeout:'As-run and closeout',offline:'Offline field operations'};
   var cache={};
+  function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
   function clone(v){return C.clone(v);}
   function prod(key){var p=(root.productions||{})[key];if(!p)throw Error('Production not found');return p;}
   function read(key){
@@ -161,6 +162,5 @@
     try{if(a==='export')exportFile(k);else if(a==='report')download('Muse-'+k+'-closeout.json',JSON.stringify(C.report(read(k),Date.now()),null,2));else if(a==='template')template(k);else if(a==='import')importFile(k,false);else if(a==='deviceImport')importFile(k,true);else if(a==='planImport')importFile(k,false,true);else if(a==='field')fieldCopy(k).catch(function(e){tell(e.message);});else if(a==='impact'){var s=read(k);view('Failure impact',C.impact(s,{resource:id}));}else if(a==='viewHandover')view('Handover snapshot',C.item(read(k),'handovers',id));else openForm(k,a,id,t);}catch(error){tell(error.message);}
   });
   window.addEventListener('storage',function(e){if(!e.key||e.key.indexOf(PREFIX)!==0)return;var k=e.key.slice(PREFIX.length);if((root.productions||{})[k]){mirror(k,read(k));if(!dialog||!dialog.open)refresh(k);else tell('Another tab changed these records. Your draft remains open; stale saves will be rejected.');}});
-  if (root.MuseHeartbeat && typeof root.MuseHeartbeat.every === 'function') root.MuseHeartbeat.every('liveops:tick', tick, 1000);
-  else setInterval(tick,1000);
+  setInterval(tick,1000);
 })(window);

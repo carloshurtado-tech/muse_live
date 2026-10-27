@@ -77,8 +77,7 @@
 
   if (signedIn()) push({ t: 'session' });
   root.addEventListener('load', function () { setTimeout(instrument, 0); });
-  if (root.MuseHeartbeat && typeof root.MuseHeartbeat.every === 'function') root.MuseHeartbeat.every('observe:flush', function () { flush(false); }, FLUSH_MS, { background: true });
-  else setInterval(function () { flush(false); }, FLUSH_MS);
+  setInterval(function () { flush(false); }, FLUSH_MS);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(true); });
   root.addEventListener('pagehide', function () { flush(true); });
 

@@ -28,6 +28,11 @@
 
   function now() { return Date.now(); }
   function iso() { try { return new Date().toISOString(); } catch (e) { return String(now()); } }
+  function esc(s) {
+    if (typeof global.esc === 'function') return global.esc(s);
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
   function actor() {
     try { if (typeof global.permUser === 'function' && global.permUser()) return String(global.permUser()); } catch (e) {}
     try {
@@ -631,9 +636,7 @@
     document.addEventListener('visibilitychange', function () { if (!document.hidden) { hello(); flushQueue(); } });
 
     hello('dashboard');
-    helloTimer = (global.MuseHeartbeat && typeof global.MuseHeartbeat.every === 'function')
-      ? global.MuseHeartbeat.every('presence:hello', function () { hello(); }, 5000)
-      : setInterval(function () { hello(); }, 5000);
+    helloTimer = setInterval(function () { hello(); }, 5000);
     try {
       if (global.MuseLazy && global.MuseLazy.ensureBOps) global.MuseLazy.ensureBOps().then(function () { render(); }).catch(function () { render(); });
     } catch (e2) {}

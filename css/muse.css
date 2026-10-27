@@ -4044,7 +4044,6 @@ html.dark .ms-alert{color:#FF8A9A;}
 .ms-audio[aria-pressed="true"]{background:rgba(8,102,255,.55);border-color:rgba(255,255,255,.4);}
 /* Compact live-streams dashboard tile: keep health signal, shed real estate */
 .ms-dash{padding:12px;}
-.ms-cc{position:absolute;left:8px;right:8px;bottom:8px;max-height:3.2em;overflow:hidden;background:rgba(0,0,0,.72);color:#fff;font-size:12px;line-height:1.35;padding:4px 8px;border-radius:6px;pointer-events:none;}
 .ms-dash-h{margin-bottom:8px;}
 .ms-dash-grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
 .ms-dash .ms-tile{border-radius:10px;}

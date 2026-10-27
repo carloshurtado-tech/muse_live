@@ -92,18 +92,17 @@
     if (el) return;
     el = document.createElement('div');
     el.id = 'museCadView';
-    el.setAttribute('data-ax', 'dark');
     el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10000;flex-direction:column;background:#050505;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e4e6eb';
     el.innerHTML =
       '<style>' +
-      '#museCadView .cvb{padding:6px 11px;font:700 11px var(--ax-font);background:var(--ax-bg-surface);border:1px solid var(--ax-border);color:var(--ax-text-primary);border-radius:var(--ax-radius-element);cursor:pointer;white-space:nowrap;transition:background var(--ax-motion-fast)}' +
-      '#museCadView .cvb:hover{background:var(--ax-accent-muted);color:var(--ax-text-primary)}' +
-      '#museCadView .cvb.on{background:var(--ax-accent);border-color:var(--ax-accent);color:var(--ax-on-accent)}' +
-      '#museCadView .cvb.note{border-color:var(--ax-status-orange-text)}' +
-      '#museCadView .cvb.note.on{background:var(--ax-status-orange-text);border-color:var(--ax-status-orange-text);color:#101214}' +
-      '#museCadView .cvb.ok{background:var(--ax-status-green-bg);border-color:var(--ax-status-green-text);color:var(--ax-status-green-text)}' +
-      '#museCadView .cvb.bad{background:var(--ax-bg-surface);border-color:var(--ax-error);color:var(--ax-error)}' +
-      '#museCadView .ndot{position:absolute;min-width:22px;height:22px;border-radius:9999px;border:2px solid #ffffff;display:flex;align-items:center;justify-content:center;font:800 11px var(--ax-font);color:#ffffff;text-shadow:0 1px 2px rgba(0,0,0,.8);box-shadow:0 2px 10px rgba(0,0,0,.55),inset 0 -2px 4px rgba(0,0,0,.25);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
+      '#museCadView .cvb{padding:6px 11px;background:#242526;border:1px solid #3a3b3c;color:#ced0d4;border-radius:8px;font:700 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;cursor:pointer;white-space:nowrap}' +
+      '#museCadView .cvb:hover{background:#3A3B3C;color:#ffffff}' +
+      '#museCadView .cvb.on{background:#0866ff;border-color:#0866ff;color:#ffffff}' +
+      '#museCadView .cvb.note{border-color:#f5832a}' +
+      '#museCadView .cvb.note.on{background:#f5832a;border-color:#f5832a;color:#18191A}' +
+      '#museCadView .cvb.ok{background:#1E7B34;border-color:#1e7b34;color:#ffffff}' +
+      '#museCadView .cvb.bad{background:#3d1219;border-color:#b3122e;color:#f5a3b1}' +
+      '#museCadView .ndot{position:absolute;width:18px;height:18px;border-radius:50%;border:2px solid #ffffff;box-shadow:0 2px 10px rgba(0,0,0,.55);transform:translate(-50%,-50%);cursor:pointer;z-index:6;transition:transform .12s}' +
       '#museCadView .ndot:hover{transform:translate(-50%,-50%) scale(1.25)}' +
       '#museCadView .ndot.sel{box-shadow:0 0 0 3px rgba(255,255,255,.85),0 2px 12px rgba(0,0,0,.6)}' +
       '#museCadView .npop{position:absolute;z-index:10;width:280px;max-width:90vw;background:rgba(28,30,33,.98);border:1px solid #3A3B3C;border-radius:12px;padding:12px;box-shadow:0 12px 40px rgba(0,0,0,.55);font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif}' +
@@ -186,7 +185,7 @@
         el.querySelectorAll('[data-tool]').forEach(function (x) { x.classList.remove('on'); });
         b.classList.add('on');
         canvas2d.style.cursor = tool === 'note' ? 'crosshair' : 'grab';
-        setStatus(tool === 'note' ? 'Hold ⌘ (Ctrl) + click the drawing to place a note' : 'Drag to pan · wheel zoom · 2D/3D toggle');
+        setStatus(tool === 'note' ? 'Click the drawing to place a note dot' : 'Drag to pan · wheel zoom · 2D/3D toggle');
       };
     });
     el.querySelector('#cvFile').onchange = onUpload;
@@ -412,14 +411,13 @@
     if (!box) return;
     box.innerHTML = '';
     box.style.pointerEvents = 'none';
-    notes.forEach(function (n, idx) {
+    notes.forEach(function (n) {
       var p;
       if (viewMode === '2d') p = worldToScreen2d(n.x, n.y);
       else p = projectNote3d(n);
       if (!p) return;
       var d = document.createElement('div');
       d.className = 'ndot' + (selectedNote && selectedNote.id === n.id ? ' sel' : '');
-      d.textContent = String(idx + 1);
       d.style.left = p.x + 'px';
       d.style.top = p.y + 'px';
       d.style.background = n.color || '#0866ff';
@@ -447,17 +445,6 @@
     if (ndcX < -1.2 || ndcX > 1.2 || ndcY < -1.2 || ndcY > 1.2) return null;
     return { x: (ndcX * 0.5 + 0.5) * W, y: (0.5 - ndcY * 0.5) * H };
   }
-  function richHtml(text) {
-    try {
-      if (global.MuseSurvey && typeof global.MuseSurvey.renderRich === 'function') return global.MuseSurvey.renderRich(text);
-    } catch (e) {}
-    return esc(text);
-  }
-  function logV2(action, detail) {
-    try {
-      if (ctx.key && global.MuseSurvey && typeof global.MuseSurvey.logEvent === 'function') global.MuseSurvey.logEvent(ctx.key, action, detail);
-    } catch (e) {}
-  }
   function showNotePop(n, sx, sy) {
     var pop = el.querySelector('#cvPop');
     pop.style.display = 'block';
@@ -471,9 +458,8 @@
         '<button type="button" class="cvb" id="cvClosePop" style="padding:3px 8px">✕</button></div>' +
       '<label style="font-size:9px;color:#8a8d91;display:block;margin-bottom:3px">Author</label>' +
       '<input id="cvAuthor" value="' + esc(n.author || '') + '">' +
-      '<label style="font-size:9px;color:#8a8d91;display:block;margin:8px 0 3px">Message · **bold** *italic* `code` - lists</label>' +
+      '<label style="font-size:9px;color:#8a8d91;display:block;margin:8px 0 3px">Message</label>' +
       '<textarea id="cvText">' + esc(n.text || '') + '</textarea>' +
-      '<div id="cvRichPreview" style="font-size:11px;line-height:1.5;color:#e4e6eb;background:#1c1e21;border:1px solid #242526;border-radius:8px;padding:8px;margin-top:6px;max-height:120px;overflow:auto">' + (n.html || richHtml(n.text || '')) + '</div>' +
       '<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap" id="cvColors"></div>' +
       '<button type="button" class="cvb ok" id="cvSaveNote" style="width:100%;margin-top:10px">Update note</button>' +
       '<div style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#65676b;margin-top:6px">' + esc(n.ts || '') + '</div>';
@@ -485,20 +471,15 @@
       pop.querySelector('#cvColors').appendChild(b);
     });
     pop.querySelector('#cvClosePop').onclick = function () { selectedNote = null; hidePop(); projectNotes(); };
-    var cvText = pop.querySelector('#cvText'), cvPrev = pop.querySelector('#cvRichPreview');
-    if (cvText && cvPrev) cvText.oninput = function () { try { cvPrev.innerHTML = richHtml(cvText.value); } catch (e) {} };
     pop.querySelector('#cvDelNote').onclick = function () {
       notes = notes.filter(function (x) { return x.id !== n.id; });
       selectedNote = null; hidePop(); ctx.dirty = true; paint();
-      logV2('cad-note-remove', n.author + ': ' + String(n.text || '').slice(0, 80));
     };
     pop.querySelector('#cvSaveNote').onclick = function () {
       n.author = pop.querySelector('#cvAuthor').value.trim() || 'Anon';
       n.text = pop.querySelector('#cvText').value;
-      n.html = richHtml(n.text);
       n.ts = new Date().toLocaleString();
       ctx.dirty = true; hidePop(); selectedNote = null; paint();
-      logV2('cad-note', n.author + ': ' + String(n.text).slice(0, 80));
       setStatus('Note updated — click Save notes to persist');
     };
   }
@@ -510,7 +491,7 @@
     var list = el.querySelector('#cvNoteList');
     el.querySelector('#cvNoteCount').textContent = String(notes.length);
     if (!notes.length) {
-      list.innerHTML = '<div style="color:#65676b;padding:8px;font-size:11px;line-height:1.4">No notes yet. Click <b style="color:#f5832a">● Add note</b>, then ⌘/Ctrl-click the drawing.</div>';
+      list.innerHTML = '<div style="color:#65676b;padding:8px;font-size:11px;line-height:1.4">No notes yet. Click <b style="color:#f5832a">● Add note</b>, then click the drawing.</div>';
       return;
     }
     list.innerHTML = notes.map(function (n, i) {
@@ -532,12 +513,10 @@
 
   /* ---------- input ---------- */
   function activeCanvas() { return viewMode === '3d' ? canvas3d : canvas2d; }
-  var noteHinted = false;
   function onDown(e) {
     dragging = true; moved = false; lastX = e.clientX; lastY = e.clientY;
-    noteHinted = (tool === 'note' && e.button === 0 && !e.metaKey && !e.ctrlKey);
     try { activeCanvas().setPointerCapture(e.pointerId); } catch (err) {}
-    if (tool === 'note' && e.button === 0 && (e.metaKey || e.ctrlKey)) {
+    if (tool === 'note' && e.button === 0) {
       var rect = wrap.getBoundingClientRect();
       var sx = e.clientX - rect.left, sy = e.clientY - rect.top;
       var w = viewMode === '2d' ? screenToWorld2d(sx, sy) : { x: cam3d.target[0], y: cam3d.target[2] };
@@ -574,7 +553,7 @@
     }
     paint();
   }
-  function onUp() { dragging = false; if (noteHinted && !moved) setStatus('Hold ⌘ (Ctrl) + click to place a note — plain clicks just pan'); noteHinted = false; }
+  function onUp() { dragging = false; }
   function onWheel(e) {
     e.preventDefault();
     if (viewMode === '2d') {

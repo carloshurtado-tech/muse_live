@@ -26,6 +26,15 @@
   var SAT_STATUS = ['booked', 'confirmed', 'window-open', 'live', 'standby', 'released', 'failed'];
   var POWER_BUSES = ['A', 'B', 'Shore', 'Gen', 'UPS'];
 
+  function esc(s) {
+    if (typeof global.esc === 'function') return global.esc(s);
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
   function uid(pfx) {
     return (pfx || 'id') + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36);
   }

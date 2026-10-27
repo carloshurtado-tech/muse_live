@@ -232,6 +232,7 @@
   function save() { try { localStorage.setItem(STORE, JSON.stringify({ items: list })); } catch (e) {} }
 
   /* ---------------- helpers ---------------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function P() { return root.productions || {}; }
   function prodName(k) { return P()[k] ? P()[k].name : (k || '—'); }
   function fmt(iso) {

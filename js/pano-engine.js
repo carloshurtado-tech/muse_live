@@ -12,17 +12,11 @@
   var PanoEng = { open: open, close: close, loadFile: loadFilePublic, version: '4.0.2' };
   var MAX_TEX = 4096, MAX_STORE_EDGE = 4096;
 
-  /* Two-letter trade codes: identical on every platform, unlike emoji glyphs. */
-  var CODES = {
-    camera: 'CM', jib: 'JB', steadicam: 'ST', cable: 'CB', equipment: 'EQ', mic: 'MC', text: 'TX',
-    power: 'PW', rf: 'RF', fiber: 'FB', ifb: 'IF', truck: 'TR', hazard: 'HZ', talent: 'TL', exit: 'EX',
-    smpte: 'SM', zone: 'ZN', draw: 'DR'
+  var ICONS = {
+    camera: '📷', jib: '🏗️', steadicam: '🎥', cable: '🔌', equipment: '🖥️', mic: '🎤', text: '📝',
+    power: '⚡', rf: '📡', fiber: '🧵', ifb: '🎧', truck: '🚛', hazard: '⚠', talent: '🎙', exit: '🚪',
+    smpte: '🎞', zone: '⬚', draw: '✏️'
   };
-  /* Colored trade-code chip for list rows, tooltips and shot lists. */
-  function codeChip(type) {
-    var c = (typeof COLORS !== 'undefined' && COLORS[type]) || '#0866ff';
-    return '<span style="display:inline-block;min-width:26px;text-align:center;font:800 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.03em;color:#101214;background:' + c + ';border-radius:4px;padding:2px 4px;vertical-align:1px;box-shadow:inset 0 -1px 2px rgba(0,0,0,.25)">' + (CODES[type] || '••') + '</span>';
-  }
   var COLORS = {
     camera: '#0866ff', jib: '#f5832a', steadicam: '#b9d7ff', cable: '#f5832a', equipment: '#31a24c', mic: '#b9d7ff',
     text: '#e4e6eb', power: '#f7b928', rf: '#b9d7ff', fiber: '#0866ff', ifb: '#b9d7ff', truck: '#b0b3b8',
@@ -106,22 +100,21 @@
     if (el) return;
     el = document.createElement('div');
     el.id = 'musePanoEng';
-    el.setAttribute('data-ax', 'dark');
     el.style.cssText = 'display:none;position:fixed;inset:0;z-index:10001;flex-direction:column;background:#18191A;font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e4e6eb';
     el.innerHTML =
       '<style>' +
-      '#musePanoEng .pb{font:700 10px var(--ax-font);background:var(--ax-bg-surface);border:1px solid var(--ax-border);color:var(--ax-text-primary);padding:5px 9px;border-radius:var(--ax-radius-element);cursor:pointer;white-space:nowrap;transition:background var(--ax-motion-fast)}' +
-      '#musePanoEng .pb:hover{background:var(--ax-accent-muted)}' +
-      '#musePanoEng .pb.on{background:var(--ax-accent);border-color:var(--ax-accent);color:var(--ax-on-accent)}' +
-      '#musePanoEng .pb.ok{background:var(--ax-status-green-bg);border-color:var(--ax-status-green-text);color:var(--ax-status-green-text)}' +
-      '#musePanoEng .pb.bad{background:var(--ax-bg-surface);border-color:var(--ax-error);color:var(--ax-error)}' +
-      '#musePanoEng .pb.draw{border-color:var(--ax-status-orange-text)}' +
-      '#musePanoEng .pb.draw.on{background:var(--ax-status-orange-text);border-color:var(--ax-status-orange-text);color:#101214}' +
+      '#musePanoEng .pb{background:#242526;border:1px solid #3A3B3C;color:#e4e6eb;padding:5px 9px;border-radius:6px;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;cursor:pointer;white-space:nowrap}' +
+      '#musePanoEng .pb:hover{background:#3A3B3C}' +
+      '#musePanoEng .pb.on{background:#0866ff;border-color:#0866ff;color:#18191A}' +
+      '#musePanoEng .pb.ok{background:#12301c;border-color:#31a24c;color:#31a24c}' +
+      '#musePanoEng .pb.bad{background:#242526;border-color:#e41e3f;color:#e41e3f}' +
+      '#musePanoEng .pb.draw{border-color:#f5832a}' +
+      '#musePanoEng .pb.draw.on{background:#f5832a;border-color:#f5832a;color:#18191A}' +
       '#musePanoEng .mi{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;margin:2px 0}' +
       '#musePanoEng .mi:hover{background:#242526}' +
       '#musePanoEng .mi.sel{background:#0a58ca}' +
       '#musePanoEng .mk{position:absolute;transform:translate(-50%,-100%);cursor:pointer;z-index:4;pointer-events:auto}' +
-      '#musePanoEng .mk-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:800 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;letter-spacing:.02em;color:#101214;border:2px solid #ffffff;box-shadow:0 2px 10px rgba(0,0,0,.55),inset 0 -2px 4px rgba(0,0,0,.25)}' +
+      '#musePanoEng .mk-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;border:2px solid;box-shadow:0 2px 10px rgba(0,0,0,.55);background:rgba(24,25,26,.9)}' +
       '#musePanoEng .mk-lbl{position:absolute;left:50%;top:100%;transform:translateX(-50%);margin-top:3px;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;white-space:nowrap;background:rgba(24,25,26,.92);padding:2px 6px;border-radius:4px;border:1px solid #3A3B3C;max-width:150px;overflow:hidden;text-overflow:ellipsis}' +
       '#musePanoEng .mk.sel .mk-dot{box-shadow:0 0 0 2px #ffffff,0 2px 12px rgba(0,0,0,.6)}' +
       '#musePanoEng .tbx{position:absolute;transform:translate(-50%,-50%);z-index:5;pointer-events:auto;min-width:80px;max-width:200px;background:rgba(24,25,26,.92);border:1px solid #0866ff;border-radius:8px;padding:6px 8px;font:600 11px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#e4e6eb;cursor:pointer}' +
@@ -138,18 +131,18 @@
       '}' +
       '</style>' +
       '<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:#1c1e21;border-bottom:1px solid #3A3B3C;flex-wrap:wrap">' +
-        '<div style="font:700 13px var(--ax-font);color:var(--ax-text-primary);margin-right:4px">Broadcast 360 · Map Blocking</div>' +
-        '<span style="font:600 9px var(--ax-font-mono);color:var(--ax-status-green-text);border:1px solid var(--ax-status-green-text);border-radius:4px;padding:2px 6px">v' + PanoEng.version + '</span>' +
-        '<button type="button" class="pb on" data-a="modeMap" id="ppeModeMap" title="Simple L/R U/D pan — markers stick">Map pan</button>' +
-        '<button type="button" class="pb" data-a="modeLook" id="ppeModeLook" title="Optional sphere look">Sphere look</button>' +
-        '<button type="button" class="pb" data-a="load">Load 360°</button>' +
+        '<div style="font:700 13px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#0866ff;margin-right:4px">📡 Broadcast 360 · Map Blocking</div>' +
+        '<span style="font:600 9px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#31a24c;border:1px solid #1E7B34;border-radius:4px;padding:2px 6px">v' + PanoEng.version + '</span>' +
+        '<button type="button" class="pb on" data-a="modeMap" id="ppeModeMap" title="Simple L/R U/D pan — markers stick">🗺 Map pan</button>' +
+        '<button type="button" class="pb" data-a="modeLook" id="ppeModeLook" title="Optional sphere look">🌐 Sphere look</button>' +
+        '<button type="button" class="pb" data-a="load">📂 Load 360°</button>' +
         '<input type="file" id="ppeFile" accept="image/jpeg,image/jpg,image/png,image/webp,.jpg,.jpeg,.png,.webp" style="display:none">' +
         '<button type="button" class="pb" data-a="flipv">↕ Flip V</button>' +
         '<button type="button" class="pb" data-a="fliph">↔ Flip H</button>' +
         '<div style="width:1px;height:22px;background:#3A3B3C"></div>' +
         '<span style="font-size:9px;color:#8a8d91">Place</span>' +
         PLACE_TOOLS.map(function (t) {
-          return '<button type="button" class="pb' + (t[0] === 'camera' ? ' on' : '') + '" data-tool="' + t[0] + '">' + codeChip(t[0]) + ' ' + t[1] + '</button>';
+          return '<button type="button" class="pb' + (t[0] === 'camera' ? ' on' : '') + '" data-tool="' + t[0] + '">' + (ICONS[t[0]] || '') + ' ' + t[1] + '</button>';
         }).join('') +
         '<div style="width:1px;height:22px;background:#3A3B3C"></div>' +
         '<span style="font-size:9px;color:#f5832a">Draw</span>' +
@@ -158,13 +151,12 @@
         }).join('') +
         '<button type="button" class="pb" data-a="finish">✓ Finish path</button>' +
         '<div style="width:1px;height:22px;background:#3A3B3C"></div>' +
-        '<button type="button" class="pb ok" data-a="save">Save</button>' +
-        '<button type="button" class="pb" data-a="export">Export JSON</button>' +
-        '<button type="button" class="pb" data-a="import">Import JSON</button>' +
+        '<button type="button" class="pb ok" data-a="save">💾 Save</button>' +
+        '<button type="button" class="pb" data-a="export">⬇️ JSON</button>' +
+        '<button type="button" class="pb" data-a="import">⬆️ JSON</button>' +
         '<input type="file" id="ppeJson" accept=".json" style="display:none">' +
-        '<button type="button" class="pb" data-a="snap">Snapshot</button>' +
-        '<button type="button" class="pb ok" data-a="pack" title="Save this frame plus its markers into the show pack">Pack still</button>' +
-        '<button type="button" class="pb bad" data-a="clear">Clear</button>' +
+        '<button type="button" class="pb" data-a="snap">📷 Snap</button>' +
+        '<button type="button" class="pb bad" data-a="clear">🗑 Clear</button>' +
         '<span style="flex:1"></span>' +
         '<span id="ppeStatus" style="font:600 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#8a8d91"></span>' +
         '<button type="button" class="pb bad" data-a="close">✕</button>' +
@@ -211,10 +203,10 @@
 
     var typeSel = el.querySelector('#ppeType');
     PLACE_TOOLS.forEach(function (t) {
-      typeSel.innerHTML += '<option value="' + t[0] + '">' + (CODES[t[0]] || '') + ' · ' + t[1] + '</option>';
+      typeSel.innerHTML += '<option value="' + t[0] + '">' + (ICONS[t[0]] || '') + ' ' + t[1] + '</option>';
     });
     ['fiber', 'smpte', 'power', 'cable'].forEach(function (t) {
-      typeSel.innerHTML += '<option value="' + t + '">' + (CODES[t] || '') + ' path · ' + t + '</option>';
+      typeSel.innerHTML += '<option value="' + t + '">' + (ICONS[t] || '') + ' path · ' + t + '</option>';
     });
 
     el.querySelector('#ppeGearPkg').onchange = function () {
@@ -242,11 +234,11 @@
         if (String(state.tool).indexOf('draw_') === 0) {
           drawDraft = { type: state.tool.replace('draw_', ''), pts: [] };
           if (canvas) canvas.style.cursor = 'crosshair';
-          setStatus('Draw ' + drawDraft.type + ' — hold ⌘ (Ctrl) + drag freehand · Enter/✓ finish');
+          setStatus('Draw ' + drawDraft.type + ' — drag freehand · Enter/✓ finish');
         } else {
           drawDraft = null;
           if (canvas) canvas.style.cursor = 'grab';
-          setStatus('Place ' + b.textContent.trim() + ' — hold ⌘ (Ctrl) + click map (markers UV-locked)');
+          setStatus('Place ' + b.textContent.trim() + ' — click map (markers UV-locked)');
         }
       };
     });
@@ -260,7 +252,6 @@
         else if (a === 'clear') clearAll();
         else if (a === 'apply') applyProps();
         else if (a === 'snap') snapshot();
-        else if (a === 'pack') packStill();
         else if (a === 'finish') finishDraw();
         else if (a === 'flipv') { flipV = !flipV; setStatus('Flip V ' + (flipV ? 'ON' : 'OFF')); paint(); }
         else if (a === 'fliph') { flipH = !flipH; setStatus('Flip H ' + (flipH ? 'ON' : 'OFF')); paint(); }
@@ -526,7 +517,7 @@
           esc(m.label || 'Note') + '</div>';
       } else {
         html += '<div class="mk' + sel + '" data-id="' + m.id + '" style="left:' + p.x + 'px;top:' + p.y + 'px">' +
-          '<div class="mk-dot" style="background:' + col + '">' + (CODES[m.type] || '••') + '</div>' +
+          '<div class="mk-dot" style="border-color:' + col + '">' + (ICONS[m.type] || '•') + '</div>' +
           '<div class="mk-lbl">' + esc(m.label) + '</div></div>';
       }
     });
@@ -602,20 +593,12 @@
   function isDrawTool() {
     return !!(state && state.tool && String(state.tool).indexOf('draw_') === 0);
   }
-  /* Hold-to-place: an armed tool never fires on a plain click — otherwise
-     every pan plants a camera. ⌘ on Mac, Ctrl on Windows/Linux. */
-  function placeHint() {
-    var t = (state && state.tool) || 'camera';
-    var label = String(t).indexOf('draw_') === 0 ? t.replace('draw_', '') + ' path' : t;
-    return 'Hold ⌘ (Ctrl) + click to place ' + label + ' · markers UV-locked';
-  }
-  function placeArmed(e) { return !!(e && (e.metaKey || e.ctrlKey)); }
   function bindViewEvents() {
     var canvas = el.querySelector('#ppeCanvas');
     canvas.addEventListener('pointerdown', function (e) {
       if (e.button != null && e.button !== 0) return;
       try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
-      if (isDrawTool() && placeArmed(e)) {
+      if (isDrawTool()) {
         if (!imgReady) { setStatus('Load a 360° image first'); return; }
         if (!drawDraft) drawDraft = { type: state.tool.replace('draw_', ''), pts: [] };
         var uv = screenToUv(e.clientX, e.clientY);
@@ -686,8 +669,7 @@
       canvas.style.cursor = isDrawTool() ? 'crosshair' : 'grab';
       if (drag && !drag.moved) {
         if (!imgReady) setStatus('Load a 360° image first');
-        else if (e.metaKey || e.ctrlKey) clickAt(e.clientX, e.clientY);
-        else setStatus(placeHint());
+        else clickAt(e.clientX, e.clientY);
       }
       drag = null;
     });
@@ -880,7 +862,7 @@
     refreshList();
     paint();
     persistAll();
-    setStatus('Placed ' + (CODES[item.type] ? CODES[item.type] + ' · ' : '') + item.label + ' · UV-locked');
+    setStatus('Placed ' + (ICONS[item.type] || '') + ' ' + item.label + ' · UV-locked');
   }
 
   function findItem(id) {
@@ -939,7 +921,7 @@
       var div = document.createElement('div');
       div.className = 'mi' + (m.id === state.selectedId ? ' sel' : '');
       var meta = m.kind === 'path' ? ((m.pts || []).length + ' pts') : (m.body || m.kind);
-      div.innerHTML = codeChip(m.type) + '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
+      div.innerHTML = '<span>' + (ICONS[m.type] || '•') + '</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
         esc(m.label) + ' <span style="color:#65676b">· ' + esc(meta) + '</span></span>' +
         '<span style="color:#e41e3f;cursor:pointer" data-del="' + m.id + '">✕</span>';
       div.onclick = function (e) {
@@ -957,7 +939,7 @@
     box.innerHTML = '<div style="color:#8a8d91;font:700 9px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-bottom:4px">SHOT LIST · ' + cams.length + '</div>' +
       cams.map(function (m) {
         return '<div style="padding:3px 0;border-bottom:1px solid #242526;cursor:pointer" data-shot="' + m.id + '">' +
-          codeChip(m.type) + ' <b>' + esc(m.label) + '</b> · ' + esc(m.body || 'body TBD') +
+          (ICONS[m.type] || '📷') + ' <b>' + esc(m.label) + '</b> · ' + esc(m.body || 'body TBD') +
           (m.lens ? ' · ' + esc(m.lens) : '') + '</div>';
       }).join('');
     box.querySelectorAll('[data-shot]').forEach(function (row) {
@@ -970,7 +952,7 @@
     var view = el.querySelector('#ppeView');
     var rect = view.getBoundingClientRect();
     tip.style.display = 'block';
-    tip.innerHTML = codeChip(m.type) + ' <b>' + esc(m.label || m.type) + '</b>' +
+    tip.innerHTML = '<b>' + esc((ICONS[m.type] || '') + ' ' + (m.label || m.type)) + '</b>' +
       (m.body || m.lens ? ('<div style="margin:3px 0;color:#ced0d4">' + esc([m.body, m.lens, m.mount].filter(Boolean).join(' · ')) + '</div>') : '') +
       esc(m.notes || '');
     tip.style.left = Math.min(rect.width - 280, Math.max(8, cx - rect.left + 12)) + 'px';
@@ -1182,45 +1164,19 @@
     };
     r.readAsText(file);
   }
-  // Annotated still: the frame plus its markers as data, for the show pack.
-  function stillData(packSize) {
-    var canvas = el.querySelector('#ppeCanvas');
-    var drawC = el.querySelector('#ppeDraw');
-    var out = document.createElement('canvas');
-    var scale = 1;
-    if (packSize && canvas.width > 960) scale = 960 / canvas.width;
-    out.width = Math.max(1, Math.round(canvas.width * scale));
-    out.height = Math.max(1, Math.round(canvas.height * scale));
-    var ctx = out.getContext('2d');
-    ctx.drawImage(canvas, 0, 0, out.width, out.height);
-    if (drawC) ctx.drawImage(drawC, 0, 0, out.width, out.height);
-    return {
-      img: out.toDataURL('image/jpeg', packSize ? 0.8 : 0.92),
-      ts: Date.now(), key: state.key,
-      marks: state.items.slice(0, 200).map(function (m) {
-        return { kind: m.kind, type: m.type, label: m.label, yaw: m.yaw, pitch: m.pitch };
-      })
-    };
-  }
   function snapshot() {
     try {
+      var canvas = el.querySelector('#ppeCanvas');
+      var drawC = el.querySelector('#ppeDraw');
+      var out = document.createElement('canvas');
+      out.width = canvas.width; out.height = canvas.height;
+      var ctx = out.getContext('2d');
+      ctx.drawImage(canvas, 0, 0);
+      if (drawC) ctx.drawImage(drawC, 0, 0);
       var a = document.createElement('a');
-      a.href = stillData(false).img;
+      a.href = out.toDataURL('image/jpeg', 0.92);
       a.download = 'muse360_block.jpg'; a.click();
     } catch (e) { setStatus('Snapshot failed'); }
-  }
-  // One tap into the tech-plot pack: frame + markers land on the survey
-  // record when the app hook is present, otherwise fall back to a download.
-  function packStill() {
-    try {
-      var still = stillData(true);
-      if (typeof global.MusePackStill === 'function') {
-        var r = global.MusePackStill(still);
-        setStatus(r && r.ok === false ? ('Pack failed: ' + (r.error || '')) : 'Still packed — ' + (r && r.count != null ? r.count + ' in pack' : 'saved'));
-        return;
-      }
-    } catch (e) { setStatus('Pack failed'); return; }
-    snapshot();
   }
   function setStatus(msg) {
     var s = el && el.querySelector('#ppeStatus');

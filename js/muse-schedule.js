@@ -73,6 +73,7 @@
   var FALLBACK_COLORS = ['#0866FF', '#1E7B34', '#6A4BF0', '#C13584', '#0073C7', '#C25E0D', '#128C7E', '#B3122E'];
 
   /* ---------------- helpers ---------------- */
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function P() { return root.productions || {}; }
   function prodKeys() { return (root.order || Object.keys(P())).filter(function (k) { return P()[k]; }); }
   function prodName(k) { var p = P()[k]; return p ? (p.tab || p.name || k) : (k || 'Unassigned'); }

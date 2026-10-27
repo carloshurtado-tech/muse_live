@@ -36,19 +36,6 @@ Muse Live is an operations platform for live events that are both broadcast and 
 
 **Carlos Hurtado.** Designed and built Muse Live: product, front end, edge functions, the Muse agent, tests and the guided demo. [GitHub](https://github.com/carloshurtado-tech)
 
-## Built during the Meta Global AI Developer Hackathon (Oct 27 – Nov 4, 2026)
-
-Muse Live itself predates the event (engineering retrospective: [docs](docs/ARCHITECTURE.md)); everything below was designed, built and committed inside the window, on top of it. The hackathon theme is **Build for Your World** — the world here is live broadcast operations.
-
-| Feature | What it does | Code | Verified by |
-|---|---|---|---|
-| **Show Caller** | Reads every module (schedule, streams, incidents, crew, equipment, ops) into a grounded risk brief, then proposes fixes a human approves — approval re-verifies the world before executing, stale plans refuse themselves, nothing moves an on-air booking. Muse Spark reasons; deterministic rules carry the fallback. | [js/muse-showcaller.js](js/muse-showcaller.js) | [14-scenario eval + headline on real seeds](tests/unit/showcaller.test.mjs), 40/40 Muse eval |
-| **Stream Check** | SAM 3.1 segments the program frame (black frame by pixel math, lower-third presence, gear count vs checkout); Spark never sees the frame, only SAM's output. Flags flow into Show Caller's brief. | [functions/api/streamcheck.js](functions/api/streamcheck.js), [js/muse-streamcheck.js](js/muse-streamcheck.js) | 12-frame live load matrix (11/12 + probes) |
-| **Omni connectors** | Real Slack posting (bot + webhook fallback) and Gmail sending (least-privilege `gmail.send`) inside the existing per-show thread, with stored IDs, failed-send retry, and audit on both outcomes. | [functions/api/omni/](functions/api/omni/) | Live Slack + Gmail sends with provider receipts |
-| **Live captioning** | Chunked captions over Voice Transcribe with a searchable stored transcript — the post-show transcript exists by construction. | [functions/api/transcribe.js](functions/api/transcribe.js), [js/muse-captions.js](js/muse-captions.js) | 6/6-clip soak; live transcript |
-
-Meta models used through the Meta Model API: **Muse Spark 1.3** (reasoning + tool calls), **SAM 3.1** (segmentation), **Muse Voice Transcribe 1.0** (speech), and set-dressing under evaluation with **Muse Image 1.0**. Built with **Muse Code**. Gateway, auth, streaming/scheduling/incident modules and the 90-second tour predate the window and are unchanged except where the new features plug in.
-
 ## What you’ll see
 
 ![A show's live health: encode, contribute, ingest, package, deliver and watch, with sparklines for viewers, rebuffer ratio, SRT loss and CDN egress](assets/about/chain.webp)

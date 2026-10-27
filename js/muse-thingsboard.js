@@ -17,6 +17,16 @@
   var _selectedByKey = {};
   var _visBound = false;
 
+  function esc(s) {
+    if (typeof global.esc === 'function') return global.esc(s);
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   function rnd(a, b) {
     return a + Math.random() * (b - a);
   }
@@ -884,7 +894,10 @@
   function onVisibility() {
     try {
       if (document.hidden) {
-        stopDemoLoop();
+        if (_loopId != null) {
+          clearInterval(_loopId);
+          _loopId = null;
+        }
       } else if (_activeKey) {
         startDemoLoop(_activeKey);
       }
@@ -902,26 +915,10 @@
   function stopDemoLoop() {
     if (_loopId != null) {
       try {
-        if (typeof _loopId === 'function') _loopId();
-        else clearInterval(_loopId);
+        clearInterval(_loopId);
       } catch (e) {}
       _loopId = null;
     }
-  }
-
-  function demoTick() {
-    try {
-      if (typeof document !== 'undefined' && document.hidden) return;
-      var host = document.getElementById('tbTelemetryHost');
-      if (!host) return;
-      var k = host.getAttribute('data-key') || _activeKey;
-      if (!k) return;
-      _activeKey = k;
-      tick(k);
-      /* Never host.innerHTML on the 1.5s tick — patch KPI text / sparks only.
-         details[open] (CONFIG) stays put because we never rebuild the tree. */
-      patchPanelLive(host, k);
-    } catch (e) {}
   }
 
   function startDemoLoop(key) {
@@ -929,8 +926,20 @@
     bindVisibility();
     stopDemoLoop();
     if (typeof document !== 'undefined' && document.hidden) return;
-    if (global.MuseHeartbeat && typeof global.MuseHeartbeat.every === 'function') _loopId = global.MuseHeartbeat.every('tb:demo', demoTick, TICK_MS);
-    else _loopId = setInterval(demoTick, TICK_MS);
+    _loopId = setInterval(function () {
+      try {
+        if (typeof document !== 'undefined' && document.hidden) return;
+        var host = document.getElementById('tbTelemetryHost');
+        if (!host) return;
+        var k = host.getAttribute('data-key') || _activeKey;
+        if (!k) return;
+        _activeKey = k;
+        tick(k);
+        /* Never host.innerHTML on the 1.5s tick — patch KPI text / sparks only.
+           details[open] (CONFIG) stays put because we never rebuild the tree. */
+        patchPanelLive(host, k);
+      } catch (e) {}
+    }, TICK_MS);
   }
 
   function bindToOps(key) {

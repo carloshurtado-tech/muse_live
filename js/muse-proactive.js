@@ -14,6 +14,7 @@
 
   function $(id) { return document.getElementById(id); }
   function ui() { return (root.MuseAgent && root.MuseAgent.ui) || null; }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function md(s) { var u = ui(); return u ? u.md(s) : '<p>' + esc(s) + '</p>'; }
   function quiet() { try { return localStorage.getItem(QUIET_KEY) === '1'; } catch (e) { return false; } }
   function seen() { try { return JSON.parse(sessionStorage.getItem(SEEN_KEY) || '{}') || {}; } catch (e) { return {}; } }
@@ -191,6 +192,6 @@
     wrapped.__mp = true; root.toggleMuseAi = wrapped;
   }
   P.check = check;
-  function boot() { mountToggle(); mountPanel(); hookToggle(); badge(); setTimeout(function () { check(); if (global.MuseHeartbeat && typeof global.MuseHeartbeat.every === 'function') global.MuseHeartbeat.every('proactive:check', check, EVERY_MS); else setInterval(check, EVERY_MS); }, FIRST_MS); }
+  function boot() { mountToggle(); mountPanel(); hookToggle(); badge(); setTimeout(function () { check(); setInterval(check, EVERY_MS); }, FIRST_MS); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 50); }); else setTimeout(boot, 50);
 })(typeof window !== 'undefined' ? window : globalThis);

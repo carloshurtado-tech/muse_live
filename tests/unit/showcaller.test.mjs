@@ -354,6 +354,39 @@ test('24. advisory approvals close the loop without module writes', () => {
   assert.equal(SC.pendingList().length, 0);
 });
 
+test('26. expired plans refuse without executing', () => {
+  let updated = 0;
+  const w = makeWin({ MuseSchedule: Object.assign(schedFixStubs(['crk6']), { update: () => { updated++; } }) });
+  const SC = w.MuseShowCaller;
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'reassign_booking')[0];
+  const a = SC.requestApproval(plan, 'demo', { exp: Date.now() - 1000 });
+  const r = SC.approve(a.id, {});
+  assert.equal(r.ok, false);
+  assert.equal(r.expired, true);
+  assert.equal(updated, 0, 'expired plan executed');
+  assert.equal(SC.pendingList().length, 0);
+});
+
+test('27. unknown actions fail closed, never thrown', () => {
+  const SC = makeWin({}).MuseShowCaller;
+  const a = SC.requestApproval({ action: 'bogus', detail: {}, sources: [] }, 'demo');
+  const r = SC.approve(a.id, {});
+  assert.equal(r.ok, false);
+  assert.ok(/Unknown action/.test(r.error));
+});
+
+test('28. non-JSON notify responses degrade to failed records, not crashes', async () => {
+  const comms = [];
+  const w = makeWin({ comms, saveComms: () => {},
+    fetch: async () => ({ status: 200, json: async () => { throw new Error('not json'); } }) });
+  const SC = w.MuseShowCaller;
+  const out = await SC.notify({ show: 'demo', by: 'Cara' }, 'Moved it.', { slack: 'C1', mail: ['ops@example.com'] });
+  assert.equal(out.slack.sent, false);
+  assert.equal(out.mail.sent, false);
+  assert.equal(comms.filter((c) => c.status === 'failed').length, 2);
+  assert.ok(comms.every((c) => c.error), 'failures stored without errors');
+});
+
 test('14. headline: real seed CRK-4 contention moves the non-on-air booking', () => {
   const w = loadBrowserModule('js/muse-showcaller.js', {
     productions: {

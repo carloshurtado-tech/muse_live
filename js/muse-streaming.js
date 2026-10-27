@@ -999,8 +999,9 @@
   var MS = root.MuseStreaming = {
     paneHTML: paneHTML,
     mount: function (el) { mount(el); },
+    videoFor: function (slot) { var p = players[slot]; return p && p.video && p.video.tagName === 'VIDEO' ? p.video : null; },
     renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); } },
-    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = !html; h.innerHTML = html; if (html) mount(h); },
+    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) mount(h); },
     play: function (btn) { var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
     openShow: function (key) { try { root.projSubTab[key] = 'streaming'; } catch (e) {} root.navGo(key); },
     toggleAudio: function (slot, btn) {

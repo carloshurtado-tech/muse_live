@@ -210,6 +210,16 @@
         sources: ['transmission book · ' + s.show] });
     });
 
+    // Stream Check: visual flags from the last frame run.
+    try {
+      var chk = root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
+      ((chk && chk.flags) || []).forEach(function (f) {
+        risks.push({ level: 'high', area: 'streamcheck',
+          text: 'Stream Check [' + f.check + (f.concept ? ' ' + f.concept : '') + ']: ' + (f.flag || 'flagged'),
+          sources: ['streamcheck · ' + ((chk && chk.slot) || s.show)] });
+      });
+    } catch (e) {}
+
     var rank = { high: 0, med: 1, low: 2 };
     risks.sort(function (a, b) { return rank[a.level] - rank[b.level]; });
     return { ts: s.ts, show: s.show, key: s.key, risks: risks, unknown: unknown };
@@ -316,6 +326,14 @@
       uncov('Transmission: ' + (typeof c === 'string' ? c : JSON.stringify(c)), 'transmission moves are human-decided on air-critical paths');
     });
 
+    // Stream Check flags need human eyes on the monitor before any action.
+    try {
+      var chk = root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
+      ((chk && chk.flags) || []).forEach(function (f) {
+        uncov('Stream Check [' + f.check + ']: ' + (f.flag || 'flagged'), 'visual flag — confirm on the monitor before acting');
+      });
+    } catch (e) {}
+
     return { ts: s.ts, show: s.show, key: s.key, plans: plans, uncovered: uncovered };
   }
 
@@ -335,11 +353,12 @@
   function escH(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function same(a, b) { return String(a == null ? '' : a) === String(b == null ? '' : b); }
 
+  var APPROVAL_TTL = 10 * 60 * 1000; // frames and bookings move; a plan older than 10 min is stale by definition
   function requestApproval(plan, key, extra) {
     var st = store();
     seq += 1;
     var id = 'SC-' + Date.now().toString(36) + '-' + seq;
-    st.pending[id] = { id: id, plan: plan, show: key, ts: stamp(), status: 'pending', note: (extra && extra.note) || '' };
+    st.pending[id] = { id: id, plan: plan, show: key, ts: stamp(), status: 'pending', note: (extra && extra.note) || '', exp: (extra && extra.exp) || Date.now() + APPROVAL_TTL };
     saveStore(st);
     return st.pending[id];
   }
@@ -399,6 +418,13 @@
   function approve(id, opts) {
     var st = store(), a = st.pending[id];
     if (!a || a.status !== 'pending') return { ok: false, error: 'No pending approval ' + id + '.' };
+    if (a.exp && Date.now() > a.exp) {
+      a.status = 'expired'; a.decided = stamp();
+      st.log.unshift({ id: id, action: a.plan.action, status: 'expired', ts: a.decided });
+      st.log = st.log.slice(0, 100);
+      saveStore(st);
+      return { ok: false, id: id, expired: true, error: 'Plan expired (10 min) — the world moved; re-propose.' };
+    }
     var r = execute(a, opts || {});
     if (!r.ok && !r.stale && !r.needsLiveConfirm) { /* hard failure still closes the loop below */ }
     if (r.ok) {

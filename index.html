@@ -10,7 +10,13 @@
 
   gtag('config', 'G-35PR2RKJ51');
 </script>
-<script src="js/muse-observe.js?v=20261020-6ogm"></script>
+<script>
+/* Gate-hero preload: the mascot is the LCP element for signed-out visitors, so start it during
+   parse instead of after the /api/ping round-trip. Signed-in visitors skip it entirely (the href
+   must match the data-src URL below exactly, or the preload is wasted). */
+(function(){try{if(document.cookie.indexOf('muse_authed=1')<0){var l=document.createElement('link');l.rel='preload';l.as='image';l.href='assets/brand/muse-mascot-800.webp';l.setAttribute('fetchpriority','high');document.head.appendChild(l);}}catch(e){}})();
+</script>
+<script src="js/muse-observe.js?v=20261027-kty8"></script>
 <meta charset="UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5">
@@ -40,7 +46,7 @@
   }catch(e){}
 })();
 </script>
-<script src="js/muse-sync.js?v=20261020-6ogm"></script>
+<script src="js/muse-sync.js?v=20261027-kty8"></script>
 <script>
 /* Gate before first paint unless this browser already holds a session. */
 (function(){try{var ok=document.cookie.indexOf('muse_authed=1')>=0;
@@ -123,37 +129,39 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
   }catch(e){}
 })();
 </script>
-<link rel="preload" href="css/muse.css?v=20261020-6ogm" as="style">
+<link rel="preload" href="css/muse.css?v=20261027-kty8" as="style">
 <link rel="preload" href="assets/brand/meta-mark-animated.svg" as="image">
-<link rel="stylesheet" href="css/muse.css?v=20261020-6ogm" id="museDarkThemeLink">
-<script src="js/muse-demo.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-planet-trucks.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-platform.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-lazy.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-kb-seed.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-records.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-wiki-schema.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-kb.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-recovery.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-app-a.min.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-app-b.min.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-schedule.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-export-gear.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-ops-os.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-live-core.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-live-ops.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-work-core.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-work-ui.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-generic-kit.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-incidents.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-streaming.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-agent.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-showcaller.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-voice.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-proactive.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-survey-media.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-tour.js?v=20261020-6ogm" defer></script>
-<script src="js/muse-a11y.js?v=20261020-6ogm" defer></script>
+<link rel="stylesheet" href="css/muse.css?v=20261027-kty8" id="museDarkThemeLink">
+<script src="js/muse-demo.js?v=20261027-kty8" defer></script>
+<script src="js/muse-planet-trucks.js?v=20261027-kty8" defer></script>
+<script src="js/muse-platform.js?v=20261027-kty8" defer></script>
+<script src="js/muse-lazy.js?v=20261027-kty8" defer></script>
+<script src="js/muse-kb-seed.js?v=20261027-kty8" defer></script>
+<script src="js/muse-records.js?v=20261027-kty8" defer></script>
+<script src="js/muse-wiki-schema.js?v=20261027-kty8" defer></script>
+<script src="js/muse-kb.js?v=20261027-kty8" defer></script>
+<script src="js/muse-recovery.js?v=20261027-kty8" defer></script>
+<script src="js/muse-app-a.min.js?v=20261027-kty8" defer></script>
+<script src="js/muse-app-b.min.js?v=20261027-kty8" defer></script>
+<script src="js/muse-schedule.js?v=20261027-kty8" defer></script>
+<script src="js/muse-export-gear.js?v=20261027-kty8" defer></script>
+<script src="js/muse-ops-os.js?v=20261027-kty8" defer></script>
+<script src="js/muse-live-core.js?v=20261027-kty8" defer></script>
+<script src="js/muse-live-ops.js?v=20261027-kty8" defer></script>
+<script src="js/muse-work-core.js?v=20261027-kty8" defer></script>
+<script src="js/muse-work-ui.js?v=20261027-kty8" defer></script>
+<script src="js/muse-generic-kit.js?v=20261027-kty8" defer></script>
+<script src="js/muse-incidents.js?v=20261027-kty8" defer></script>
+<script src="js/muse-streaming.js?v=20261027-kty8" defer></script>
+<script src="js/muse-agent.js?v=20261027-kty8" defer></script>
+<script src="js/muse-showcaller.js?v=20261027-kty8" defer></script>
+<script src="js/muse-streamcheck.js?v=20261027-kty8" defer></script>
+<script src="js/muse-captions.js?v=20261027-kty8" defer></script>
+<script src="js/muse-voice.js?v=20261027-kty8" defer></script>
+<script src="js/muse-proactive.js?v=20261027-kty8" defer></script>
+<script src="js/muse-survey-media.js?v=20261027-kty8" defer></script>
+<script src="js/muse-tour.js?v=20261027-kty8" defer></script>
+<script src="js/muse-a11y.js?v=20261027-kty8" defer></script>
 <style id="museDashLayout">
 /* Classic dashboard + telemetry layout — desktop columns by default */
 .dash-row-main{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(0,2fr)!important;gap:1.5rem!important;align-items:start}
@@ -275,7 +283,7 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
   <div class="gate-shell">
     <div class="gate-hero">
       <img class="gate-meta" src="assets/brand/meta-mark-animated.svg?v=2" alt="Meta" width="88" height="58">
-      <div class="gate-art"><img data-src="assets/brand/muse-mascot.webp?v=2" alt="Muse, the Muse AI mascot, operating a broadcast camera" width="1600" height="1067"></div>
+      <div class="gate-art"><img data-src="assets/brand/muse-mascot-800.webp" alt="Muse, the Muse AI mascot, operating a broadcast camera" width="800" height="534" fetchpriority="high"></div>
       <p class="gate-title">Muse Live</p>
       <p class="gate-tag">Live broadcast and streaming operations. Plan every show, watch every stream end to end, learn from every incident.</p>
       <p class="gate-by">Designed and built by Carlos Hurtado</p>
@@ -494,7 +502,7 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
   </section>
 
   <!-- LIVE STREAMS (executive + engineering view of every program feed on air) -->
-  <section id="dashStreams" class="ms-dash" aria-label="Live streams" hidden></section>
+  <section id="dashStreams" class="ms-dash" aria-label="Live streams" style="min-height:180px"><div class="text-center py-6 text-[10px] text-gray-400">Loading live streams…</div></section>
 
   <!-- ROW 1 -->
 
@@ -505,7 +513,7 @@ html.muse-intro,html.muse-intro body{overflow:hidden;}
         <div class="flex items-center gap-2"><span class="inline-block w-1.5 h-1.5 rounded-full bg-red-500 flex-shrink-0" style="box-shadow:0 0 0 3px rgba(228,30,63,.15)"></span><h3 class="text-[10px] font-bold uppercase tracking-wide text-gray-600">Active PCR / ACR</h3></div>
         <span class="text-[9px] bg-red-50 text-red-700 border border-red-200 px-2 py-0.5 rounded mono font-bold tracking-wider">● LIVE</span>
       </div>
-      <div id="routingBoard" class="space-y-3">
+      <div id="routingBoard" class="space-y-3" style="min-height:220px">
         <div class="text-center py-6 text-[10px] text-gray-400">Loading room schedule…</div>
       </div>
       <div class="text-[9px] text-gray-500 mono mt-3 pt-2 border-t border-gray-100 flex justify-between"><span>Routing matrix · Muse Schedule</span><button onclick="switchView('schedule');setSchedTab('muse')" class="text-blue-700 font-bold hover:underline">Muse Schedule →</button></div>

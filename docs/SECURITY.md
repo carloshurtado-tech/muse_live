@@ -16,8 +16,8 @@
   manage accounts, delete keys, and read the audit log and telemetry.
 - **CSRF**: SameSite=Lax cookies plus an Origin check on every state-changing endpoint.
 - **Audit**: logins (and failures), logouts, account changes and shared-data writes are appended to
-  `audit:<date>` in KV (400-day TTL), visible at `/ops/audit.html`. KV has no atomic append, so
-  simultaneous writes can drop an entry (accepted for this scale; move to D1 for strict ordering).
+  the D1 `audit_log` table (strict ordering, one row per entry) and mirrored to `audit:<date>` in
+  KV (400-day TTL), visible at `/ops/audit.html`.
 
 ## Content Security Policy (`_headers`)
 

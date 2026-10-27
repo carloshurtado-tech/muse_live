@@ -21,7 +21,9 @@ already follow a "one module, one global API, data via functions" shape. They mi
   power the web theme) — one design system across web and glasses.
 - Typed domain model (`Production`, `Department`, `Booking`, `Incident`, `Stream`) shared by the
   client, Functions and Muse tool schemas (generate the JSON schemas from the TS types).
-- Server-side source of truth (KV now; D1/Durable Objects when we need queries/real-time),
+- Server-side source of truth (KV for the sync mirror; D1 `muse-live-db` for anything
+  queryable — transcripts with FTS keyword search, the R2 media registry, the audit log;
+  R2 bucket `muse-live-media` for blobs; schema in `migrations/0001_init.sql`),
   so Muse tools can run server-side.
 
 ## Strategy: strangler fig, one surface at a time

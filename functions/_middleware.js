@@ -7,9 +7,11 @@
 //   2. Per-user email + password, when accounts exist in KV (functions/api/auth/users.js)
 //   3. The shared access password — only while no per-user accounts exist
 //      (or ALLOW_SHARED_PASSWORD=true). The password is never stored: PW_HASH = sha256('muse-live:' + password).
+// User-facing strings resolve en/es/pt via functions/_lib/strings.js (Accept-Language).
 import { json, pwHash, readSession, sha256hex, signSession, sessionCookies, clearCookies, sameOrigin, usingDefaultSecrets } from './_lib/session.js';
 import { getUser, hasUsers, normEmail, verifyPassword } from './_lib/users.js';
 import { audit } from './_lib/audit.js';
+import { resolveLang, t } from './_lib/strings.js';
 
 // Served to signed-out visitors: the login page and what it needs to render.
 const PUBLIC_PATHS = new Set(['/', '/index.html', '/about', '/about.html', '/manifest.webmanifest', '/robots.txt', '/sitemap.xml', '/favicon.ico',
@@ -42,15 +44,16 @@ function loginTake(key) {
 }
 
 async function login(request, env, secure) {
-  if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
-  if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
+  const lang = resolveLang(request);
+  if (request.method !== 'POST') return json({ ok: false, error: t(lang, 'methodNotAllowed') }, 405);
+  if (!sameOrigin(request)) return json({ ok: false, error: t(lang, 'forbiddenOrigin') }, 403);
   const retry = loginTake(loginKey(request));
-  if (retry) return json({ ok: false, error: 'Too many sign-in attempts. Try again in ' + retry + ' s.' }, 429);
+  if (retry) return json({ ok: false, error: t(lang, 'tooManyLogins', { retry }) }, 429);
   let body = {};
   try { body = await request.json(); } catch (e) { /* empty body */ }
   const password = typeof body.password === 'string' ? body.password : '';
   const email = normEmail(body.email);
-  if (!password || password.length > 256) return json({ ok: false, error: 'Enter the access password.' }, 400);
+  if (!password || password.length > 256) return json({ ok: false, error: t(lang, 'enterPassword') }, 400);
 
   let who = null;
   if (email) {
@@ -61,15 +64,15 @@ async function login(request, env, secure) {
     if (active && ok) who = { u: user.email, n: user.name || user.email, r: user.role };
     if (!who) {
       await audit(env, { who: 'anonymous', action: 'login.failed', detail: 'password · ' + (await sha256hex(email)).slice(0, 10) });
-      return json({ ok: false, error: 'That email and password don’t match an active account.' }, 401);
+      return json({ ok: false, error: t(lang, 'loginMismatch') }, 401);
     }
   } else {
     if ((await hasUsers(env)) && env.ALLOW_SHARED_PASSWORD !== 'true') {
-      return json({ ok: false, error: 'Sign in with your email and password.', needEmail: true }, 401);
+      return json({ ok: false, error: t(lang, 'needEmailLogin'), needEmail: true }, 401);
     }
     if ((await sha256hex('muse-live:' + password)) !== pwHash(env)) {
       await audit(env, { who: 'anonymous', action: 'login.failed', detail: 'shared password' });
-      return json({ ok: false, error: 'The password you entered is incorrect.' }, 401);
+      return json({ ok: false, error: t(lang, 'wrongPassword') }, 401);
     }
     who = { u: 'team', n: 'Muse Live team', r: 'admin' };
   }
@@ -78,11 +81,12 @@ async function login(request, env, secure) {
 }
 
 async function guestLogin(request, env, secure) {
-  if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
-  if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
-  if (env.GUEST_DEMO === 'off') return json({ ok: false, error: 'The guest demo is closed. Use the team sign-in.' }, 403);
+  const lang = resolveLang(request);
+  if (request.method !== 'POST') return json({ ok: false, error: t(lang, 'methodNotAllowed') }, 405);
+  if (!sameOrigin(request)) return json({ ok: false, error: t(lang, 'forbiddenOrigin') }, 403);
+  if (env.GUEST_DEMO === 'off') return json({ ok: false, error: t(lang, 'guestClosed') }, 403);
   const retry = loginTake(loginKey(request));
-  if (retry) return json({ ok: false, error: 'Too many attempts. Try again in ' + retry + ' s.' }, 429);
+  if (retry) return json({ ok: false, error: t(lang, 'tooManyAttempts', { retry }) }, 429);
   await audit(env, { who: GUEST.u, role: GUEST.r, action: 'login', detail: 'guest demo' });
   return json({ ok: true, user: { email: null, name: GUEST.n, role: GUEST.r } }, 200,
     sessionCookies(await signSession(env, GUEST, GUEST_MAX_AGE), secure, GUEST_MAX_AGE).map((c) => ['Set-Cookie', c]));
@@ -90,13 +94,14 @@ async function guestLogin(request, env, secure) {
 
 export async function onRequest(context) {
   const { request, next, env } = context;
+  const lang = resolveLang(request);
   const url = new URL(request.url);
   const path = url.pathname;
   const secure = url.protocol === 'https:';
   // Refuse to run on https without a deployment-specific signing secret: otherwise session HMAC
   // keys derive from DEFAULT_PW_HASH (a public constant) and tokens can be forged offline.
   if (secure && usingDefaultSecrets(env)) {
-    return new Response('Muse Live is misconfigured: set MUSE_PASSWORD_HASH or SESSION_SECRET.',
+    return new Response(t(lang, 'misconfigured'),
       { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
   }
   const session = await readSession(request, env);
@@ -116,7 +121,7 @@ export async function onRequest(context) {
   if (path === '/api/login' || path === '/api/auth/login') return login(request, env, secure);
   if (path === '/api/auth/guest') return guestLogin(request, env, secure);
   // Voice transcription spends model credit and has no rate limit of its own: not for read-only sessions.
-  if (authed && session.r === 'viewer' && path === '/api/voice') return json({ ok: false, error: 'Voice is off in the guest demo. Type your question instead.' }, 403);
+  if (authed && session.r === 'viewer' && path === '/api/voice') return json({ ok: false, error: t(lang, 'voiceOffGuest') }, 403);
   if (path === '/logout' || path === '/api/auth/logout') {
     if (authed) await audit(env, { who: session.u, role: session.r, action: 'logout' });
     const headers = new Headers({ Location: '/', 'Cache-Control': 'no-store' });
@@ -127,7 +132,7 @@ export async function onRequest(context) {
   if (authed) return next();
 
   if (PUBLIC_PATHS.has(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p)) || path.endsWith('.css')) return next();
-  if (path.startsWith('/api/')) return json({ ok: false, error: 'Sign in required' }, 401);
+  if (path.startsWith('/api/')) return json({ ok: false, error: t(lang, 'signIn') }, 401);
   if (REDIRECT_PREFIXES.some((p) => path === p || path.startsWith(p + '/')) && !/\.(m?js|css|json|map)$/.test(path)) {
     return new Response(null, { status: 302, headers: { Location: '/?next=' + encodeURIComponent(path + url.search), 'Cache-Control': 'no-store' } });
   }
@@ -138,6 +143,5 @@ export async function onRequest(context) {
       headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' },
     });
   }
-  return new Response('Sign in required', { status: 401, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+  return new Response(t(lang, 'signIn'), { status: 401, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
 }
-

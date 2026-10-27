@@ -4193,7 +4193,7 @@ function openUserProfile(){var ov=document.getElementById('userProfileOverlay');
     '</div>'+
     '<div class="px-5 py-3 border-t border-gray-100 flex-shrink-0 flex flex-wrap items-center gap-2">'+
       '<button onclick="closeUserProfile();openCompose(\'production\',order[0],\'email\')" class="flex-1 bg-gray-900 text-white text-[12px] font-bold rounded-lg py-2 hover:bg-gray-800">New Message</button>'+
-      '<button onclick="closeUserProfile();if(window.MuseTour)MuseTour.start()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Take the tour</button>'+
+      '<button onclick="closeUserProfile();if(window.MuseLazy)MuseLazy.ensureTour().then(function(T){if(T)T.start();})" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Take the tour</button>'+
       '<button onclick="museResetDemo()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Reset demo</button>'+
       '<a href="/logout" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Sign out</a>'+
     '</div>'+
@@ -9290,10 +9290,26 @@ function psvAllMarkers(P){
 /* ============================================================================
    v37 360° — viewer lifecycle, tools, tour, gallery, snapshot, notes
    ========================================================================== */
+/* Annotated stills into the tech-plot pack: the 360 engine hands {img,marks,ts,key},
+   the record keeps them (capped — localStorage is small). */
+window.MusePackStill = function (still) {
+  try {
+    if (!still || !still.img || !still.key) return { ok: false, error: 'Empty still.' };
+    var s = getSurvey(still.key);
+    if (!s) return { ok: false, error: 'No survey for this show.' };
+    s.stills = s.stills || [];
+    s.stills.unshift({ ts: still.ts || Date.now(), img: still.img, marks: (still.marks || []).slice(0, 200) });
+    s.stills = s.stills.slice(0, 10);
+    try { if (typeof stampEdit === 'function') stampEdit(still.key); } catch (e) {}
+    try { if (typeof toast === 'function') toast('Still packed — ' + s.stills.length + ' in pack'); } catch (e2) {}
+    return { ok: true, count: s.stills.length };
+  } catch (e) { return { ok: false, error: String((e && e.message) || e).slice(0, 120) }; }
+};
 function openPanoViewer(key){
   /* v42: NATIVE Broadcast 360 Planner only — pure WebGL in pano-engine.js.
      Wave B: engine is lazy-loaded via MuseLazy on first open. */
   try{if(typeof ensurePano==='function')ensurePano(getSurvey(key));}catch(e){}
+  try{if(window.MuseSurvey&&MuseSurvey.syncPinsToPano)MuseSurvey.syncPinsToPano(key);}catch(e2){}
   function bootNative(){
     if(typeof PanoEng!=='undefined'&&PanoEng.open){
       pano.key=key;pano.open=true;

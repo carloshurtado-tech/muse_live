@@ -28,10 +28,6 @@
   /* ---------- small helpers ---------- */
   function $(id) { return document.getElementById(id); }
   function has(fnName) { return typeof root[fnName] === 'function'; }
-  function esc(s) {
-    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
   function norm(s) { return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim(); }
   function clip(s, n) { s = String(s == null ? '' : s); return s.length > n ? s.slice(0, n) + '…' : s; }
   function filled(v) {
@@ -828,6 +824,8 @@
         if (msg.tool_calls && msg.tool_calls.length) {
           if (run.onStepTools) run.onStepTools();
           if (run.onWorking) run.onWorking((WORKING[msg.tool_calls[0].function.name] || 'Checking') + '…');
+          // Parallel fan-out: every tool call gets exactly one tool response (same order),
+          // or the next API step 400s. Seen live: schedule_conflicts + get_live_status + get_production.
           return Promise.all(msg.tool_calls.map(function (c) { return runTool(c, run); })).then(function (results) {
             results.forEach(function (r, i) {
               run.thread.push({ role: 'tool', tool_call_id: msg.tool_calls[i].id, content: toolContent(r.out) });

@@ -112,6 +112,31 @@ test('mail: missing refresh token is an honest 503; bad addresses are 400', asyn
   } finally { m.done(); }
 });
 
+test('mail: non-ASCII subject is RFC 2047 encoded, ASCII stays plain', async () => {
+  const raws = [];
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const u = String(url);
+    if (/oauth2/.test(u)) return Response.json({ access_token: 'a' });
+    raws.push(JSON.parse(init.body).raw);
+    return Response.json({ id: 'm1', threadId: 't1' });
+  };
+  try {
+    const env = { GMAIL_CLIENT_ID: 'i', GMAIL_CLIENT_SECRET: 's', GMAIL_REFRESH_TOKEN: 'r', MUSE_KV: memoryKV() };
+    const send = (subject) => mailPost(ctx('/api/omni/mail', { method: 'POST', env, user: TEAM,
+      body: { to: ['ops@example.com'], subject, body: 'b' } }));
+    assert.equal((await send('gate check — Day 3')).status, 200);
+    assert.equal((await send('plain subject')).status, 200);
+    const dec = (r) => Buffer.from(r.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8');
+    const subj = (r) => dec(r).split('\r\n').find((l) => l.startsWith('Subject: '));
+    const enc = subj(raws[0]);
+    assert.ok(enc.includes('=?UTF-8?B?'), 'non-ASCII subject not encoded: ' + enc);
+    const word = enc.match(/=\?UTF-8\?B\?([^?]+)\?=/)[1];
+    assert.equal(Buffer.from(word, 'base64').toString('utf8'), 'gate check — Day 3');
+    assert.equal(subj(raws[1]), 'Subject: plain subject');
+  } finally { globalThis.fetch = real; }
+});
+
 test('mail: dead refresh token fails closed with reconnect wording', async () => {
   const m = mockFetch([[ /oauth2\.googleapis/, 400, { error: 'invalid_grant' } ]]);
   try {

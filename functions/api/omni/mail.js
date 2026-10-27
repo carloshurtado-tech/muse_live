@@ -10,6 +10,12 @@ const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,128}\.[^\s@]{1,32}$/;
 function b64url(s) {
   return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
+// Headers must be ASCII: RFC 2047-encode anything beyond it (else "—" arrives as mojibake).
+function encodeSubject(s) {
+  const flat = String(s).replace(/[\r\n]+/g, ' ').slice(0, 200);
+  if (/^[\x20-\x7e]*$/.test(flat)) return flat;
+  return '=?UTF-8?B?' + btoa(unescape(encodeURIComponent(flat))) + '?=';
+}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -42,7 +48,7 @@ export async function onRequestPost(context) {
     await audit(env, { who: user.u, role: user.r, action: 'showcaller.notify.failed', key: 'gmail', detail: 'token refresh failed' });
     return json({ ok: false, error: 'Gmail authorization lapsed. Reconnect it and retry.' }, 502);
   }
-  const raw = 'To: ' + to.join(', ') + '\r\nSubject: ' + subject.replace(/[\r\n]+/g, ' ') + '\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n' + text;
+  const raw = 'To: ' + to.join(', ') + '\r\nSubject: ' + encodeSubject(subject) + '\r\nContent-Type: text/plain; charset=utf-8\r\n\r\n' + text;
   try {
     const r = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + access },

@@ -41,9 +41,10 @@ Fictional demo data only: Harbor Lights Live. Maya Chen (producer), Jordan Reyes
 
 ## Measured numbers (Day 7 freeze, build `?v=20261027-kvyr`)
 
-- Unit: **149/149 green** (`node --test tests/unit/*.test.mjs`) — 85/85 hackathon slice at
+- Unit: **153/153 green** (`node --test tests/unit/*.test.mjs`) — 85/85 hackathon slice at
   freeze (Show Caller 15 scenario checks incl. headline on real seeds + end-to-end gate,
-  Stream Check 9, Omni 7, Transcribe 3, Captions 3, pre-existing 48). ESLint + `tsc` clean.
+  Stream Check 9, Omni 7, Transcribe 3, Captions 3, pre-existing 48) plus merged 2.0 tests and
+  the Live Streams thumbnail-click regression tests. ESLint + `tsc` clean.
 - Rehearsal cost ≈ **$0.07 vs $0.115 cap** (Show Caller loop $0.03–0.05, Stream Check ≈$0.01,
   10 caption windows ≈$0.005). Running hackathon model spend ≈ $0.14.
 - Stream Check cut gate: 12-run live matrix 11/12 + probes (mean 1.3 s/run); lower-third
@@ -65,8 +66,9 @@ Fictional demo data only: Harbor Lights Live. Maya Chen (producer), Jordan Reyes
 
 ## Open items (unchanged since Day 6)
 
-- [ ] Repo public (visibility for judges).
-- [ ] Logged-out link check of the deployed site.
+- [x] Repo public (visibility for judges).
+- [x] Logged-out link check of the deployed site — anonymous `/` and `/about` return 200,
+  and the guest-reviewer session serves the full app (write endpoints refuse viewers).
 - [ ] Harbor Lights scenario slots confirmed.
 - [ ] Gmail re-auth ~Nov 3 (7-day test-mode expiry).
 - [ ] Day 9 filming: regenerate the lower-third frame with Harbor Lights naming (1 image,

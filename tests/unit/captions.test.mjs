@@ -30,6 +30,41 @@ test('captions: transcript store searches case-insensitively', () => {
   assert.equal(w.MuseCaptions.search('demo', '').length, 0);
 });
 
+test('captions: tap never routes program audio to the speakers', async () => {
+  const connected = [];
+  const dest = { name: 'speakers' };
+  const src = { connect: (node) => connected.push(node) };
+  const actx = { destination: dest, state: 'running',
+    createMediaElementSource: () => src,
+    audioWorklet: { addModule: () => Promise.resolve() } };
+  function FakeAC() { return actx; }
+  function FakeNode() { this.port = {}; }
+  const video = { tagName: 'VIDEO', muted: true };
+  const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, AudioContext: FakeAC, AudioWorkletNode: FakeNode,
+    MuseStreaming: { videoFor: () => video } });
+  const r = w.MuseCaptions.start('demo', 'wall:backup');
+  assert.equal(r.ok, true);
+  assert.equal(await r.ready, true);
+  assert.ok(connected.length > 0, 'tap feeds the transcription worklet');
+  assert.ok(connected.indexOf(dest) < 0, 'tap must never connect to the speakers');
+  w.MuseCaptions.stop('demo');
+});
+
+test('captions: a failed tap leaves the element muted', async () => {
+  const src = { connect: () => {}, disconnect: () => {} };
+  const actx = { destination: {}, state: 'running',
+    createMediaElementSource: () => src,
+    audioWorklet: { addModule: () => Promise.reject(new Error('no worklet')) } };
+  function FakeAC() { return actx; }
+  const video = { tagName: 'VIDEO', muted: false };
+  const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, AudioContext: FakeAC,
+    MuseStreaming: { videoFor: () => video } });
+  const r = w.MuseCaptions.start('demo', 'wall:backup');
+  assert.equal(await r.ready, false);
+  assert.equal(video.muted, true, 'failed tap must not leave program audio audible');
+  w.MuseCaptions.stop('demo');
+});
+
 test('captions: start refuses honestly without tappable audio or Web Audio', () => {
   const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, MuseStreaming: {} });
   const r1 = w.MuseCaptions.start('demo', 'wall:program');

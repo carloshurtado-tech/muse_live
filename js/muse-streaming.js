@@ -268,6 +268,26 @@
   }
   // YouTube: muted autoplay, chrome hidden, and a start point that follows the wall clock so
   // every reload lands where a live broadcast would be.
+  function ytWatchUrl(id, start) { return 'https://www.youtube.com/watch?v=' + id + (start > 0 ? '&t=' + start + 's' : ''); }
+  function ytFallbackHTML(id, start) {
+    return '<div class="ms-yt-fallback" role="status"><b>Video isn’t playing here</b><span>This YouTube embed is blocked or unavailable in this browser.</span><a class="ms-link" target="_blank" rel="noopener noreferrer" href="' + esc(ytWatchUrl(id, start)) + '">Watch on YouTube ↗</a></div>';
+  }
+  // An embed that never loads (content blocker, restricted video) would otherwise
+  // sit black forever. If the player document hasn't loaded after 12 s, say so and
+  // link out instead.
+  function ytFallback(slotKey) {
+    var p = players[slotKey];
+    if (!p || !p.yt || p.ytReady) return false;
+    var s = null;
+    try { s = p.video.parentNode; } catch (e) { s = null; }
+    if (!s || !s.appendChild) return false;
+    if (s.querySelector && s.querySelector('.ms-yt-fallback')) return false;
+    var d = null;
+    try { d = document.createElement('div'); } catch (e) { return false; }
+    d.innerHTML = ytFallbackHTML(p.yt.id, p.ytStart);
+    s.appendChild(d.firstChild || d);
+    return true;
+  }
   function makeYt(slotKey, info, live) {
     var f = document.createElement('iframe');
     // Halfway point + a slice of the wall clock, so every load lands mid-broadcast (backup feed runs -8 s).
@@ -278,7 +298,12 @@
       '&start=' + start + '&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
     f.className = 'ms-video ms-yt'; f.title = info.title; f.setAttribute('tabindex', '-1'); f.loading = 'lazy'; // off-screen monitors don't boot a player
     f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture'); f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-    return players[slotKey] = { video: f, yt: info, url: 'yt:' + info.id, stats: { state: 'playing', stalls: 0, errors: 0 }, muted: true };
+    var p = players[slotKey] = { video: f, yt: info, ytStart: start, ytReady: false, url: 'yt:' + info.id, stats: { state: 'playing', stalls: 0, errors: 0 }, muted: true };
+    try {
+      var to = setTimeout(function () { if (players[slotKey] === p && !p.ytReady) { p.stats.state = 'error'; ytFallback(slotKey); } }, 12000);
+      f.addEventListener('load', function () { p.ytReady = true; try { clearTimeout(to); } catch (e) {} });
+    } catch (e) {}
+    return p;
   }
   // Slate = the poster behind every monitor; hidden once a frame plays, labelled when the feed never arrives.
   function slate(p, state) {
@@ -1252,6 +1277,8 @@
       setTimeout(function () { injectFault(key); refreshModal(); }, 1200);
     },
     openStream: openStream,
+    ytFallbackHTML: ytFallbackHTML,
+    ytFallback: ytFallback,
     closeStream: closeStream,
     injectFault: injectFault,
     clearFault: clearFault,

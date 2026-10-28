@@ -104,7 +104,8 @@
       if (actx.state === 'suspended' && actx.resume) { try { actx.resume(); } catch (e) {} }
       var src = actx.createMediaElementSource(v);
       var r = RUNS[key] = { slot: slot, ctx: actx, src: src, node: null, timer: 0, buf: [], lines: lines(key), lastError: '', gaps: 0, running: true };
-      src.connect(actx.destination);
+      // The tap feeds the transcription worklet only — it is never routed to the
+      // speakers, so program audio (test tones included) stays silent in the room.
       var ready = actx.audioWorklet ? actx.audioWorklet.addModule('js/muse-cap-worklet.js?v=' + CAPV) : Promise.reject(new Error('no worklet'));
       return { ok: true, pending: true, ready: ready.then(function () {
         var node = new root.AudioWorkletNode(actx, 'muse-cap');
@@ -113,7 +114,7 @@
         r.node = node;
         r.timer = root.setInterval ? root.setInterval(function () { flushWindow(key); }, winSec * 1000) : 0;
         return true;
-      }).catch(function (e) { r.lastError = String((e && e.message) || e).slice(0, 160); return false; }) };
+      }).catch(function (e) { r.lastError = String((e && e.message) || e).slice(0, 160); try { v.muted = true; } catch (x) {} return false; }) };
     } catch (e) {
       delete RUNS[key];
       return { ok: false, error: 'Audio tap failed: ' + String((e && e.message) || e).slice(0, 160) };

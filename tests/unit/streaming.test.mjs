@@ -140,6 +140,13 @@ test('tile buttons stop propagation so mute/CC/play never open the theater', () 
   assert.equal(n, 1, 'play click must not bubble to the tile');
 });
 
+test('dead youtube embeds fall back to a watch link, not a black box', () => {
+  const win = makeWin();
+  const html = win.MuseStreaming.ytFallbackHTML('FZ-RZ0dKO8o', 1855);
+  assert.match(html, /youtube\.com\/watch\?v=FZ-RZ0dKO8o/);
+  assert.match(html, /Watch on YouTube/);
+});
+
 test('the listen and play buttons keep their own clicks', () => {
   let opened = '';
   const win = makeWin({ navGo: (k) => { opened = k; } });

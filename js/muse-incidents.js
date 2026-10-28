@@ -326,7 +326,7 @@
         '<span class="mi-id">' + i.id + '</span><span class="mi-when">Post-mortem: ' + esc(i.postmortem || 'Draft') + '</span></div>' +
         '<h2>' + esc(i.title) + '</h2>' +
         '<p class="mi-d-meta"><button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + i.production + '\')">' + esc(prodName(i.production)) + '</button> · ' + esc(i.category) + ' · Incident commander ' + esc(i.commander || '—') + ' · Reported by ' + esc(i.reporter || '—') + (i.platforms && i.platforms.length ? ' · ' + esc(i.platforms.join(', ')) : '') + '</p>' +
-        '<div class="mi-d-actions"><button type="button" class="ms-btn ms-btn-primary" onclick="MuseIncidents.openEdit(\'' + i.id + '\')">✎ Edit report</button><button type="button" class="ms-btn" onclick="museaiAsk(\'Brief me on incident ' + i.id + '\')">Ask Muse to brief me</button><button type="button" class="ms-btn" onclick="MuseIncidents.copy(\'' + i.id + '\')">Copy post-mortem</button>' + (i.clip_url ? '<a class="ms-btn" href="' + esc(i.clip_url) + '" target="_blank" rel="noopener">Recorded clip ↗</a>' : '') + '</div>' +
+        '<div class="mi-d-actions"><button type="button" class="ms-btn ms-btn-primary" onclick="MuseIncidents.openEdit(\'' + i.id + '\')">✎ Edit report</button><button type="button" class="ms-btn" onclick="MuseIncidents.draftPostmortem(\'' + i.id + '\')">Draft post-mortem</button><button type="button" class="ms-btn" onclick="museaiAsk(\'Brief me on incident ' + i.id + '\')">Ask Muse to brief me</button><button type="button" class="ms-btn" onclick="MuseIncidents.copy(\'' + i.id + '\')">Copy post-mortem</button>' + (i.clip_url ? '<a class="ms-btn" href="' + esc(i.clip_url) + '" target="_blank" rel="noopener">Recorded clip ↗</a>' : '') + '</div>' +
       '</header>' +
       '<div class="mi-kpis">' + kpis.map(function (k) { return '<div><span>' + k[0] + '</span><b>' + esc(k[1]) + '</b></div>'; }).join('') + '</div>' +
       (im.sla ? '<p class="mi-sla">' + esc(im.sla) + '</p>' : '') +
@@ -553,6 +553,18 @@
     toggleAction: function (id, n, done) { var i = get(id); if (!i || !i.actions[n]) return; i.actions[n].status = done ? 'Done' : 'Open'; save(); rerender(); },
     openNew: openNew, create: create, createRecord: createRecord, draftFromTelemetry: draftFromTelemetry, similar: similar,
     copy: function (id) { var i = get(id); if (!i) return; try { navigator.clipboard.writeText(markdown(i)); root.toast && root.toast('Post-mortem copied as Markdown'); } catch (e) {} },
+    draftPostmortem: function (id) {
+      var i = get(id); if (!i) return;
+      var caps = 0; try { caps = root.MuseCaptions ? root.MuseCaptions.lines(i.production).filter(function (l) { return !l.gap; }).length : 0; } catch (e) {}
+      var tl = (i.timeline || []).map(function (t) { return fmt(t.t) + ' — ' + t.text; }).join('; ');
+      if (!i.summary) i.summary = i.title + ' on ' + prodName(i.production) + '. Detected ' + fmt(i.detected || i.started) + ', resolved ' + (i.resolved ? fmt(i.resolved) : 'pending') + '. Duration ' + ((i.impact || {}).duration_total || dur(i.started, i.resolved)) + '.' + (caps ? ' Caption repository holds ' + caps + ' lines for the affected window.' : '');
+      if (!i.root_cause) i.root_cause = 'Draft from telemetry: ' + (Object.keys(i.telemetry || {}).length ? Object.keys(i.telemetry).map(function (k) { return k + ' ' + (typeof i.telemetry[k] === 'object' ? JSON.stringify(i.telemetry[k]) : i.telemetry[k]); }).join(', ') : 'no telemetry captured') + '. Confirm with the incident commander before publishing.';
+      if (!i.resolution) i.resolution = 'Draft: ' + (tl ? 'Timeline — ' + tl : 'see timeline') + '. Follow-ups tracked as action items below.';
+      i.postmortem = 'Draft (auto)';
+      i.timeline.push({ t: new Date().toISOString(), text: 'Blameless post-mortem drafted from telemetry' + (caps ? ' + ' + caps + ' caption lines' : '') });
+      save(); rerender();
+      root.toast && root.toast('Post-mortem drafted — review and publish');
+    },
     // For Muse
     brief: function (i) {
       var open = (i.actions || []).filter(function (a) { return a.status !== 'Done'; });

@@ -77,7 +77,7 @@
       cloud: 'AWS Elemental MediaLive Standard channel (2 pipelines) · automatic input failover after 2 s input loss',
       loudness: '-24 LKFS ±2 (ATSC A/85) · true peak -2 dBTP',
       captions: 'CART writer → EEG Falcon (iCap) → CEA-608/708 embedded → WebVTT sidecar',
-      ladder: LADDER_169, streams: [['Program · Clean feed', 'program', FEEDS.liveA], ['Backup · LiveU bonded', 'backup', FEEDS.liveB], ['Vertical · Instagram 9:16', 'vertical', FEEDS.liveScte], ['Confidence return · HLS (CMAF)', 'return', FEEDS.liveCmaf]]
+      ladder: LADDER_169, streams: [['Meta Connect 2026 · Opening Keynote', 'program', yt('connect26')], ['Backup · LiveU bonded', 'backup', FEEDS.liveB], ['Vertical · Instagram 9:16', 'vertical', FEEDS.liveScte], ['Confidence return · HLS (CMAF)', 'return', FEEDS.liveCmaf]]
     },
     raybangen3: {
       state: 'ENDED', peak: 412000, viewers: 0, latency: 'Standard HLS · 15–20 s (6 s segments)',
@@ -103,7 +103,7 @@
       venueNet: 'Hudson Yards venue: 10 GbE fiber + Verizon 5G UWB bonded',
       primary: 'Haivision Makito X4 · SRT → MediaConnect us-east-1', backup: 'LiveU LU800 → LiveU Matrix',
       cloud: 'MediaLive Standard (2 pipelines)', loudness: '-24 LKFS (ATSC A/85)', captions: 'EEG Falcon → CEA-708 → WebVTT',
-      ladder: LADDER_169, streams: [['Program · dress rehearsal', 'program', FEEDS.liveA]]
+      ladder: LADDER_169, streams: [['LlamaCon 2025 · Closing Session', 'program', yt('llamacon')], ['Backup · LiveU bonded', 'backup', FEEDS.liveB]]
     },
     whatsapp: {
       state: 'STANDBY', peak: 0, viewers: 0, latency: 'LL-HLS target 4 s (measured 9 s in the Oct 9 stream test — INC-2026-1009)',
@@ -274,7 +274,7 @@
     var d = DURATION[info.id], now = Math.floor(Date.now() / 1000), start;
     if (d) start = Math.min(d - 30, Math.max(0, Math.floor(d / 2) + (now % Math.max(1, Math.floor(d / 4))) + info.offset));
     else start = Math.max(0, info.offset + (live ? now % 2700 : 0));
-    f.src = 'https://www.youtube-nocookie.com/embed/' + info.id + '?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=0&disablekb=1&loop=1&playlist=' + info.id +
+    f.src = 'https://www.youtube-nocookie.com/embed/' + info.id + '?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=1&disablekb=1&loop=1&playlist=' + info.id +
       '&start=' + start + '&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
     f.className = 'ms-video ms-yt'; f.title = info.title; f.setAttribute('tabindex', '-1'); f.loading = 'lazy'; // off-screen monitors don't boot a player
     f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture'); f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
@@ -334,12 +334,13 @@
       var b = v.buffered, ahead = 0;
       for (var i = 0; i < b.length; i++) if (v.currentTime >= b.start(i) && v.currentTime <= b.end(i)) ahead = b.end(i) - v.currentTime;
       out.buffer_s = +ahead.toFixed(1);
+      out.codec = (root.MediaSource || root.ManagedMediaSource) ? 'MSE (hls.js)' : 'HLS (native)';
       out.resolution = v.videoWidth ? v.videoWidth + '×' + v.videoHeight : null;
       var q = v.getVideoPlaybackQuality ? v.getVideoPlaybackQuality() : null;
       if (q) out.dropped_frames = q.droppedVideoFrames;
       if (p.hls) {
         var lv = p.hls.levels && p.hls.levels[p.hls.currentLevel];
-        if (lv) out.rendition_kbps = Math.round(lv.bitrate / 1000);
+        if (lv) { out.rendition_kbps = Math.round(lv.bitrate / 1000); if (lv.videoCodec || lv.codecs) out.codec = (lv.videoCodec || String(lv.codecs).split(',')[0]) + (lv.codecs && String(lv.codecs).indexOf('.') < 0 ? '' : ' (fMP4/CMAF)'); out.resolution = (lv.width || v.videoWidth || 0) + '×' + (lv.height || v.videoHeight || 0); }
         out.bandwidth_estimate_mbps = p.hls.bandwidthEstimate ? +(p.hls.bandwidthEstimate / 1e6).toFixed(1) : null;
         if (p.hls.latency) out.live_latency_s = +p.hls.latency.toFixed(1);
         out.renditions = (p.hls.levels || []).length;
@@ -539,6 +540,10 @@
       var pr = programOf(k); if (!pr) return '';
       return tileHTML(k, pr, 'wall', { showName: true, actions: '<button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + k + '\')">Open streaming plan →</button>' });
     }).join('');
+    var attn = sorted.filter(function (k) { if (!liveOf(k)) return false; var g = healthOf(k); return g.overall === 'warn' || g.overall === 'crit' || anomalies().some(function (a) { return a.key === k; }); });
+    var attnHTML = attn.length ? '<div class="ms-attn"><b>Needs attention</b>' + attn.map(function (k) {
+      var pr = programOf(k); return '<button type="button" class="ms-attn-chip" onclick="MuseStreaming.openStream(\'' + k + '\',\'wall:' + pr.id + '\')">' + esc(nameOf(k)) + ' · ' + esc(healthOf(k).overall.toUpperCase()) + '</button>';
+    }).join('') + '</div>' : '';
     return '<div class="ms-wrap">' +
       '<div class="ms-page-h"><div><h1>Live Streams</h1><p>Every program feed across Meta live events, with end-to-end health. For executives and engineers.</p></div>' +
         '<div class="ms-head-r"><button type="button" class="ms-btn ms-btn-soft" onclick="window.open(\'glasses/preview.html\',\'_blank\',\'noopener\')">Muse on Ray-Ban Display ↗</button>' +
@@ -546,6 +551,7 @@
       '<p class="ms-note ms-demo-note"><span class="ms-src">Demo data</span> Viewer and pipeline numbers are simulated until real sources are connected per stream (AWS CloudWatch, Mux Data, Facebook Live). Video monitors and pre-flight checks are real.</p>' +
       '<div class="ms-kpis"><div><span>Live now</span><b id="msK-live">' + live + '</b></div><div><span>Concurrent viewers</span><b id="msK-viewers">' + fmtN(totalV) + '</b></div>' +
         '<div><span>Avg rebuffer</span><b id="msK-reb">' + avgReb.toFixed(2) + '%</b></div><div><span>Open incidents</span><b>' + openInc + '</b></div></div>' +
+      attnHTML +
       '<div class="ms-wall">' + tiles + '</div>' +
       section('SLO · ' + SLO_TARGET + '% availability by show', '<div class="ms-table"><table><thead><tr><th>Show</th><th>State</th><th>Last event</th><th>Event budget left</th><th>Last 30 days</th><th>30-day budget left</th></tr></thead><tbody>' +
         sorted.map(function (k) { var o = sloFor(k), e = o.event, mo = o.last_30_days;
@@ -752,7 +758,17 @@
   }
 
   /* ---------------- anomalies → recommendations → apply (what Muse acts on) ---------------- */
-  var anomalyLogs = {}, lastAnomalies = {};
+  var anomalyLogs = {}, lastAnomalies = {}, FAULTS = {}; // FAULTS: operator-simulated program-feed drops (demo + drills)
+  function injectFault(key) {
+    if (!liveOf(key)) return { ok: false, error: 'Only a live show can drop its feed.' };
+    FAULTS[key] = true;
+    var pr = programOf(key);
+    if (pr) { var slot = 'wall:' + pr.id; destroy(slot); var el = document.querySelector('[data-hls-slot="' + slot + '"] .ms-slate span'); if (el) el.textContent = 'Signal lost'; }
+    trackAnomalies();
+    if (document.getElementById('streamsHost')) MS.renderWall();
+    return { ok: true };
+  }
+  function clearFault(key) { delete FAULTS[key]; if (document.getElementById('streamsHost')) MS.renderWall(); return { ok: true }; }
   function anomalies() {
     var out = [];
     keys().forEach(function (k) {
@@ -778,6 +794,7 @@
           out.push({ id: k + ':' + st.id + ':' + stage, key: k, show: nameOf(k), streamId: st.id, stream: st.name, stage: stage, level: lv, text: text,
             data_source: (t.src && t.src[stage]) || 'demo (simulated)', recommendation: rc });
         });
+        if (FAULTS[k] && st.role === 'program') out.push({ id: k + ':' + st.id + ':program-down', key: k, show: nameOf(k), streamId: st.id, stream: st.name, stage: 'program', level: 'crit', text: 'Program feed dark — no frames arriving from the venue encoder', data_source: 'player', recommendation: { kind: 'failover_backup', label: 'Fail over to the LiveU backup input', args: { key: k, streamId: st.id } } });
       });
     });
     return out;
@@ -805,7 +822,7 @@
     var ops = rec(k), sim = !teleOfProgramHasSource(k);
     var res;
     if (r.kind === 'cdn_shift') { var w = setCdnWeights(k, { cloudfront: a.cloudfront != null ? a.cloudfront : 80, akamai: a.akamai != null ? a.akamai : 20 }); res = 'CDN weighting for ' + nameOf(k) + ' is now CloudFront ' + w.cloudfront + ' / Akamai ' + w.akamai + '. Edge errors should settle within a minute.'; }
-    else if (r.kind === 'failover_backup') { ops.failover = true; save(); logAnomaly(k, 'Failover to LiveU backup input'); refreshChain(k); res = nameOf(k) + ' is now running on the LiveU backup input. Return to primary during a VT once SRT holds clean.'; }
+    else if (r.kind === 'failover_backup') { delete FAULTS[k]; ops.failover = true; save(); logAnomaly(k, 'Failover to LiveU backup input'); refreshChain(k); res = nameOf(k) + ' is now running on the LiveU backup input. Return to primary during a VT once SRT holds clean.'; }
     else if (r.kind === 'raise_srt_latency') { ops.srtLatency = a.ms || 2000; save(); logAnomaly(k, 'SRT latency raised to ' + ops.srtLatency + ' ms'); refreshChain(k); res = 'SRT latency on ' + nameOf(k) + ' raised to ' + ops.srtLatency.toLocaleString() + ' ms.'; }
     else return { ok: false, text: 'Unknown action ' + r.kind + '.' };
     return { ok: true, text: res + (sim ? ' (Applied to the demo telemetry: no real encoder or CDN API is connected.)' : ''), simulated: sim };
@@ -996,6 +1013,129 @@
     if (every(30)) { pollReal(); keys().forEach(function (k) { if (document.querySelector('[data-fb-out="' + k + '"]')) loadFb(k); }); }
   }
 
+  /* ---------------- in-place stream theater (click a tile: watch here, no navigation) ---------------- */
+  var modal = { key: null, slot: null, timer: 0, base: null, capsOn: false };
+  function modalEl() { return document.getElementById('msStreamModal'); }
+  function captionSlotFor(key) {
+    var ss = streamsFor(key);
+    for (var i = 0; i < ss.length; i++) if (!parseYt(ss[i].url)) return 'wall:' + ss[i].id;
+    return null;
+  }
+  function ensureModal() {
+    if (modalEl()) return;
+    var d = document.createElement('div');
+    d.id = 'msStreamModal'; d.className = 'ms-modal'; d.hidden = true;
+    d.innerHTML =
+      '<div class="ms-modal-backdrop" onclick="MuseStreaming.closeStream()"></div>' +
+      '<div class="ms-modal-card" role="dialog" aria-modal="true" aria-label="Stream monitor">' +
+        '<div class="ms-modal-head"><div class="ms-modal-title" id="msModalTitle"></div>' +
+          '<div class="ms-modal-actions">' +
+            '<button type="button" class="ms-btn" id="msModalCCBtn" onclick="MuseStreaming.modalCC()">CC · Muse captions</button>' +
+            '<button type="button" class="ms-btn" onclick="MuseStreaming.modalPiP()">Picture in picture</button>' +
+            '<button type="button" class="ms-btn" onclick="MuseStreaming.modalFs()">Fullscreen</button>' +
+            '<button type="button" class="ms-btn" onclick="MuseStreaming.modalSnap()">Snapshot</button>' +
+            '<button type="button" class="ms-btn ms-btn-soft" onclick="MuseStreaming.closeStream()">Close ✕</button>' +
+          '</div></div>' +
+        '<div class="ms-screen" id="msModalScreen"></div>' +
+        '<div id="msModalReact"></div>' +
+        '<div class="ms-modal-grid">' +
+          '<div class="ms-modal-sec"><h4>Player · live measurements</h4><div id="msModalMeas"></div><h4 class="ms-modal-sub">Stream facts</h4><div id="msModalFacts"></div></div>' +
+          '<div class="ms-modal-sec"><h4>Stream Check · vision</h4><div id="msModalCheck"></div></div>' +
+          '<div class="ms-modal-sec"><h4>Captions · repository</h4><div id="msModalCaps"></div></div>' +
+        '</div>' +
+        '<div id="msModalChain"></div><div id="msModalCharts"></div>' +
+        '<div class="ms-modal-foot">' +
+          '<button type="button" class="ms-btn" id="msModalFaultBtn" onclick="MuseStreaming.modalFault()">Simulate: drop program feed</button>' +
+          '<button type="button" class="ms-btn" onclick="MuseStreaming.modalPlan()">Open streaming plan →</button>' +
+          '<button type="button" class="ms-btn" onclick="MuseStreaming.modalIncident()">Log incident</button>' +
+          '<span class="ms-modal-hint">Esc closes · video keeps playing on the tile behind</span>' +
+        '</div>' +
+      '</div>';
+    document.body.appendChild(d);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.key) MS.closeStream(); });
+  }
+  function openStream(key, slot) {
+    ensureModal();
+    var st = null; streamsFor(key).forEach(function (x) { if ('wall:' + x.id === slot) st = x; });
+    if (!st) st = programOf(key);
+    if (!st) return;
+    modal.key = key; modal.slot = 'wall:' + st.id; modal.base = null;
+    var t = teleFor(key, st);
+    document.getElementById('msModalTitle').innerHTML = '<b>' + esc(nameOf(key)) + '</b><span>' + esc(st.name) + ' · ' + esc(st.role) + '</span>' + badge(stateOf(key));
+    var scr = document.getElementById('msModalScreen');
+    scr.setAttribute('data-hls-slot', modal.slot);
+    scr.setAttribute('data-url', st.url);
+    if (t.live) scr.setAttribute('data-live', '1'); else scr.removeAttribute('data-live');
+    scr.removeAttribute('data-defer');
+    scr.innerHTML = '<div class="ms-slate" aria-hidden="true"><b>' + esc(st.name) + '</b><span>' + (FAULTS[key] ? 'Signal lost' : 'Connecting') + '</span></div>';
+    document.getElementById('msModalChain').innerHTML = chainHTML(key);
+    document.getElementById('msModalCharts').innerHTML = chartsHTML(key);
+    document.getElementById('msModalFacts').innerHTML = kv([
+      ['Show state', stateOf(key) + (rec(key).failover ? ' · on LiveU backup' : ' · primary input')],
+      ['Source', st.url.indexOf('yt:') === 0 ? 'YouTube embed · ' + (parseYt(st.url) || {}).title : 'HLS · ' + (function () { try { return new URL(st.url).hostname; } catch (e) { return st.url; } })()],
+      ['Contribution', esc(showFor(key).primary || '—')],
+      ['Destinations', (showFor(key).destinations || []).slice(0, 2).join(' · ')],
+      ['Latency budget', esc(showFor(key).latency || '—')],
+      ['CDN weights', 'CloudFront ' + ((rec(key).cdn || {}).cloudfront || 60) + ' / Akamai ' + ((rec(key).cdn || {}).akamai || 40)],
+    ]);
+    modalEl().hidden = false;
+    mount(modalEl());
+    refreshModal();
+    if (modal.timer) clearInterval(modal.timer);
+    modal.timer = setInterval(refreshModal, 1500);
+  }
+  function closeStream() {
+    if (modal.timer) { clearInterval(modal.timer); modal.timer = 0; }
+    if (modal.key && root.MuseCaptions) { try { root.MuseCaptions.stop(modal.key); } catch (e) {} }
+    modal.key = null; modal.slot = null; modal.capsOn = false;
+    var m = modalEl(); if (m) m.hidden = true;
+    var h = document.getElementById('streamsHost'); if (h) MS.renderWall();
+  }
+  function refreshModal() {
+    if (!modal.key) return;
+    var p = players[modal.slot], m = p ? measure(p) : null;
+    document.getElementById('msModalMeas').innerHTML = m ? kv([
+      ['State', m.state || '—'], ['Resolution', m.resolution || '—'], ['Codec', m.codec || '—'],
+      ['Rendition', m.rendition_kbps ? m.rendition_kbps + ' kbps' + (m.renditions ? ' · ' + m.renditions + ' levels' : '') : '—'],
+      ['Bandwidth est.', m.bandwidth_estimate_mbps ? m.bandwidth_estimate_mbps + ' Mbps' : '—'],
+      ['Live latency', m.live_latency_s ? m.live_latency_s + ' s' : '—'], ['Buffer ahead', m.buffer_s != null ? m.buffer_s + ' s' : '—'],
+      ['Dropped frames', m.dropped_frames != null ? m.dropped_frames : '—'], ['Stalls / errors', (m.stalls || 0) + ' / ' + (m.errors || 0)],
+    ]) : '<p class="ms-note">Player is starting…</p>';
+    var ans = anomalies().filter(function (a) { return a.key === modal.key; });
+    var rx = document.getElementById('msModalReact');
+    if (rx) { var reactHTML = ans.length ? '<div class="ms-react"><b>Muse noticed</b>' + ans.map(function (a, i) {
+      return '<div class="ms-react-row"><span>' + esc(a.stream) + ' — ' + esc(a.text) + '</span>' +
+        (a.recommendation && a.recommendation.kind !== 'none' ? '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseStreaming.modalApprove(' + i + ')">' + esc(a.recommendation.label) + '</button>' : '<span class="ms-note">watch</span>') + '</div>';
+    }).join('') + '</div>' : (FAULTS[modal.key] ? '' : '<div class="ms-react is-ok"><b>Muse is watching</b><span>All stages healthy on this show.</span></div>'); rx.innerHTML = reactHTML; }
+    renderModalCaps();
+    var fb = document.getElementById('msModalFaultBtn');
+    if (fb) fb.textContent = FAULTS[modal.key] ? 'Restore program feed' : 'Simulate: drop program feed';
+  }
+  function renderModalCaps() {
+    var host = document.getElementById('msModalCaps'); if (!host || !modal.key) return;
+    var C = root.MuseCaptions, capSlot = captionSlotFor(modal.key);
+    var caveat = capSlot ? '' : '<p class="ms-note">This program is a YouTube embed — its own CC track plays in the player. Muse captions need an HLS tile.</p>';
+    if (!C) { var noCap = caveat + '<p class="ms-note">Caption module unavailable.</p>'; host.innerHTML = noCap; return; }
+    var st = C.status(modal.key), lines = C.lines(modal.key);
+    var q = (document.getElementById('msCapQ') || {}).value || '';
+    var show = q ? C.search(modal.key, q) : lines.slice(-10);
+    var html = caveat +
+      '<div class="ms-capbar"><span>' + (st.running ? 'Captioning live' : 'Captions off') + ' · ' + st.lines + ' lines stored' + (st.gaps ? ' · ' + st.gaps + ' gaps' : '') + (st.lastError ? ' · ' + esc(st.lastError) : '') + '</span>' +
+      '<input id="msCapQ" type="search" placeholder="Search captions…" value="' + esc(q).replace(/"/g, '&quot;') + '" oninput="MuseStreaming.modalCapsSearch(this.value)">' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalVtt()">Download .vtt</button></div>' +
+      '<div class="ms-caplist">' + (show.length ? show.map(function (l) {
+        return '<p><time>' + esc(String(l.ts || '').slice(11, 19)) + '</time>' + (l.gap ? '<i>— gap (no speech window) —</i>' : esc(l.text || '')) + '</p>';
+      }).join('') : '<p class="ms-note">No caption lines yet. Press CC to start (tile audio must be unmuted).</p>') + '</div>';
+    host.innerHTML = html;
+  }
+
+  function checkToolsHTML() {
+    return '<div class="ms-checktools">' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalCheck()">Run Stream Check (SAM + pixels)</button>' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalBase()">Baseline frame</button>' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalCompare()">Compare to baseline</button></div>';
+  }
+
   /* ---------------- public API ---------------- */
   var MS = root.MuseStreaming = {
     paneHTML: paneHTML,
@@ -1009,7 +1149,113 @@
       if (t && t.closest && (t.closest('.ms-audio') || t.closest('.ms-play'))) return; // buttons handle their own clicks
       var pb = screen && screen.querySelector ? screen.querySelector('.ms-play') : null;
       if (pb) { MS.play(pb); return; } // off-air tile: the whole thumbnail plays
-      MS.openShow(key);
+      openStream(key, screen && screen.getAttribute ? screen.getAttribute('data-hls-slot') : null);
+    },
+    openStream: openStream,
+    closeStream: closeStream,
+    injectFault: injectFault,
+    clearFault: clearFault,
+    applyAnomaly: function (id) {
+      var a = anomalies().filter(function (x) { return x.id === id; })[0];
+      if (!a) return { ok: false, text: 'That anomaly already cleared.' };
+      var r = apply(a.recommendation);
+      if (modal.key) refreshModal();
+      return r;
+    },
+    modalApprove: function (i) {
+      var ans = anomalies().filter(function (a) { return a.key === modal.key; });
+      var a = ans[i]; if (!a) return;
+      var r = MS.applyAnomaly(a.id);
+      if (root.toast) root.toast(r.text);
+      refreshModal();
+    },
+    modalCC: function () {
+      var C = root.MuseCaptions; if (!C || !modal.key) return;
+      var capSlot = captionSlotFor(modal.key);
+      if (!capSlot) { if (root.toast) root.toast('YouTube program — captions play in the player (CC)'); return; }
+      var st = C.status(modal.key);
+      if (st.running) { C.stop(modal.key); modal.capsOn = false; }
+      else {
+        var p = players[capSlot];
+        if (p && !p.yt) { p.video.muted = false; }
+        var r = C.start(modal.key, capSlot);
+        if (r && r.ok === false && root.toast) root.toast(r.error);
+        modal.capsOn = true;
+      }
+      refreshModal();
+    },
+    modalCapsSearch: function () { renderModalCaps(); },
+    modalVtt: function () {
+      var C = root.MuseCaptions; if (!C || !modal.key) return;
+      var lines = C.lines(modal.key), out = 'WEBVTT\n\n', n = 0;
+      lines.forEach(function (l, i) {
+        if (l.gap || !l.text) return;
+        var t0 = new Date(l.ts), t1 = new Date(t0.getTime() + 8000), f = function (d) { return d.toISOString().slice(11, 23).replace(',', '.'); };
+        out += (++n) + '\n' + f(t0) + ' --> ' + f(t1) + '\n' + l.text + '\n\n';
+      });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([out], { type: 'text/vtt' }));
+      a.download = modal.key + '-captions.vtt'; a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+    },
+    modalPiP: function () {
+      var p = players[modal.slot];
+      if (p && !p.yt && p.video.requestPictureInPicture) p.video.requestPictureInPicture().catch(function () {});
+      else if (root.toast) root.toast('Picture in picture needs an HLS tile');
+    },
+    modalFs: function () {
+      var s = document.getElementById('msModalScreen');
+      if (s && s.requestFullscreen) s.requestFullscreen().catch(function () {});
+    },
+    modalSnap: function () {
+      var SC = root.MuseStreamCheck; if (!SC || !modal.slot) return;
+      var r = SC.captureFrame(modal.slot);
+      if (!r.ok) { if (root.toast) root.toast(r.error); return; }
+      var a = document.createElement('a'); a.href = r.dataUrl; a.download = modal.slot.replace(/:/g, '-') + '-frame.jpg'; a.click();
+      if (root.toast) root.toast('Frame snapshot saved');
+    },
+    modalCheck: function () {
+      var SC = root.MuseStreamCheck, host = document.getElementById('msModalCheck');
+      if (!SC || !host || !modal.key) return;
+      host.innerHTML = '<p class="ms-note">Running Stream Check…</p>';
+      SC.runShow(modal.key, modal.slot, { expectLowerThird: true, gear: [] }).then(function (res) {
+        var html = '<div class="ms-checklist">' + (res || []).map(function (r) {
+          return '<p><b>' + esc(r.name || r.kind || 'check') + '</b> — ' + (r.pass ? '<span class="ms-ok">PASS</span>' : '<span class="ms-flag">FLAG</span>') + ' <span>' + esc(r.detail || '') + '</span></p>';
+        }).join('') + '</div>' + checkToolsHTML();
+        host.innerHTML = html;
+      }).catch(function (e) { var html = '<p class="ms-note">' + esc(String(e && e.message || e)) + '</p>' + checkToolsHTML(); host.innerHTML = html; });
+    },
+    modalBase: function () {
+      var SC = root.MuseStreamCheck; if (!SC || !modal.slot) return;
+      var r = SC.captureFrame(modal.slot);
+      if (!r.ok) { if (root.toast) root.toast(r.error); return; }
+      modal.base = r.dataUrl;
+      if (root.toast) root.toast('Baseline frame captured — compare after a change');
+      var host = document.getElementById('msModalCheck'); if (host) { var html = checkToolsHTML() + '<p class="ms-note">Baseline held. Move gear or lower a graphic, then Compare.</p>'; host.innerHTML = html; }
+    },
+    modalCompare: function () {
+      var SC = root.MuseStreamCheck, host = document.getElementById('msModalCheck');
+      if (!SC || !modal.slot || !modal.base) { if (root.toast) root.toast('Capture a baseline first'); return; }
+      SC.compareFrames(modal.slot, modal.base).then(function (r) {
+        if (!host) return;
+        var html = checkToolsHTML() + (r.ok
+          ? '<p><b>Frame diff</b> — <span class="' + (r.changedPct > 8 ? 'ms-flag' : 'ms-ok') + '">' + r.changedPct + '% of pixels changed</span> <span>(mean Δluma ' + r.meanDelta + ')</span></p>'
+          : '<p class="ms-note">' + esc(r.error) + '</p>');
+        host.innerHTML = html;
+      });
+    },
+    modalFault: function () {
+      if (!modal.key) return;
+      var r = FAULTS[modal.key] ? clearFault(modal.key) : injectFault(modal.key);
+      if (r && r.ok === false && root.toast) root.toast(r.error);
+      if (FAULTS[modal.key]) { var scr = document.getElementById('msModalScreen'); if (scr && !scr.querySelector('video')) scr.innerHTML = '<div class="ms-slate" aria-hidden="true"><b>Program feed</b><span>Signal lost</span></div>'; }
+      else mount(modalEl());
+      refreshModal();
+    },
+    modalPlan: function () { var k = modal.key; closeStream(); MS.openShow(k); },
+    modalIncident: function () {
+      var k = modal.key; closeStream();
+      if (root.MuseIncidents && root.MuseIncidents.openNew) root.MuseIncidents.openNew(k);
     },
     openShow: function (key) { try { root.projSubTab[key] = 'streaming'; } catch (e) {} root.navGo(key); },
     toggleAudio: function (slot, btn) {
@@ -1118,6 +1364,17 @@
     probeIntegrations();
     keys().forEach(function (k) { streamsFor(k).forEach(function (st) { var t = teleFor(k, st); for (var i = 0; i < 40; i++) stepTele(t); }); });
     MS.renderDash();
+    // Judge deep link (?judge=1): guest session, straight into the World Tour theater with a live fault to fix.
+    try {
+      if (/[?&]judge=1(?:&|$)/.test((root.location && root.location.search) || '')) {
+        setTimeout(function () {
+          try {
+            fetch('/api/auth/guest', { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}' }).catch(function () {});
+          } catch (e) {}
+          setTimeout(function () { try { openStream('museaitour', 'wall:museaitour-s0'); injectFault('museaitour'); refreshModal(); } catch (e) {} }, 900);
+        }, 600);
+      }
+    } catch (e) {}
     if (root.MuseHeartbeat && typeof root.MuseHeartbeat.every === 'function') root.MuseHeartbeat.every('streams:tick', tick, TICK_MS);
     else setInterval(tick, TICK_MS);
   }

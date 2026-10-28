@@ -28,7 +28,7 @@
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
 /index.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
-  Link: </css/muse.css?v=20261028-lc81>; rel=preload; as=style
+  Link: </css/muse.css?v=20261028-lf59>; rel=preload; as=style
 
 /*.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate

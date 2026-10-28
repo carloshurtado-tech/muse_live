@@ -61,6 +61,34 @@
       return { ok: true, sample: analyzePixels(g.getImageData(0, 0, 64, 36)) };
     } catch (e) { return { ok: false, error: 'Pixel read blocked: ' + (e && e.message ? e.message : 'tainted canvas') }; }
   }
+  /* What changed since a held baseline? Mean abs luma delta + share of moved pixels. */
+  function compareFrames(slot, baseDataUrl) {
+    return new Promise(function (resolve) {
+      var v = videoFor(slot);
+      if (!v || !v.videoWidth) { resolve({ ok: false, error: 'No capturable video for slot ' + slot + '.' }); return; }
+      try {
+        var c = root.document.createElement('canvas'); c.width = 160; c.height = 90;
+        var g = c.getContext('2d'); g.drawImage(v, 0, 0, 160, 90);
+        var now = g.getImageData(0, 0, 160, 90).data;
+        var img = new root.Image();
+        img.onload = function () {
+          try {
+            var c2 = root.document.createElement('canvas'); c2.width = 160; c2.height = 90;
+            var g2 = c2.getContext('2d'); g2.drawImage(img, 0, 0, 160, 90);
+            var base = g2.getImageData(0, 0, 160, 90).data;
+            var n = 160 * 90, sum = 0, changed = 0, i, d;
+            for (i = 0; i < n; i++) {
+              d = Math.abs((0.299 * now[i * 4] + 0.587 * now[i * 4 + 1] + 0.114 * now[i * 4 + 2]) - (0.299 * base[i * 4] + 0.587 * base[i * 4 + 1] + 0.114 * base[i * 4 + 2]));
+              sum += d; if (d > 24) changed++;
+            }
+            resolve({ ok: true, changedPct: +(changed / n * 100).toFixed(1), meanDelta: +(sum / n).toFixed(1) });
+          } catch (e) { resolve({ ok: false, error: 'Compare failed: ' + (e && e.message ? e.message : 'tainted canvas') }); }
+        };
+        img.onerror = function () { resolve({ ok: false, error: 'Baseline image unreadable.' }); };
+        img.src = baseDataUrl;
+      } catch (e) { resolve({ ok: false, error: 'Compare failed: ' + (e && e.message ? e.message : 'tainted canvas') }); }
+    });
+  }
   function checkBlack(slot) {
     var v = videoFor(slot);
     if (!v) return { check: 'black', pass: false, error: 'No capturable video for slot ' + slot + '.' };
@@ -124,7 +152,7 @@
   }
   function latest(key) { return LATEST[key] || null; }
 
-  root.MuseStreamCheck = { version: '0.1.0', captureFrame: captureFrame, analyzePixels: analyzePixels,
+  root.MuseStreamCheck = { version: '0.1.0', captureFrame: captureFrame, analyzePixels: analyzePixels, compareFrames: compareFrames,
     isBlack: isBlack, checkBlack: checkBlack, segment: segment, checkLowerThird: checkLowerThird,
     checkGear: checkGear, runShow: runShow, latest: latest };
 })(typeof window !== 'undefined' ? window : globalThis);

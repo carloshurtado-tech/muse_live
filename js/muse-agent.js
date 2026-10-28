@@ -83,7 +83,7 @@
     ['Power / Electrical', /power|electric|generator|ups\b|distro/],
     ['CAD', /\bcad\b|drawing|plan(s)?\b/],
     ['Monitors', /monitor|display/],
-    ['Graphics (GFX)', /graphic|gfx|chyron|viz/],
+    ['QC', /graphic|gfx|chyron|viz/],
     ['Talent / Production', /talent|production|host|producer/],
     ['Networking / IT', /network|\bit\b|internet|wifi|ip\b/],
     ['Miscellaneous / Consumables', /misc|consumable/],
@@ -872,6 +872,11 @@
       var live = $('museaiLive');
       var metric = { q: q, effort: run.effort, ms: Date.now() - run.t0, firstMs: run.firstMs || null, steps: run.steps, tools: run.traces.map(function (t) { return t.label; }), tokens: run.tokens };
       A.metrics.push(metric); if (A.metrics.length > 50) A.metrics.shift();
+      try { // session spend ticker (Spark list rates, 60/40 in/out blend ≈ $2.45/M tokens)
+        var tok = A.metrics.reduce(function (s, m) { return s + (m.tokens || 0); }, 0);
+        var el = $('museaiSpend');
+        if (el && tok) el.textContent = '· ≈$' + (tok / 1e6 * 2.45).toFixed(2) + ' · ' + Math.round(tok / 100) / 10 + 'k tok';
+      } catch (e) {}
       var html = md(text || "I didn't get an answer back. Try asking again."), row;
       if (live) { row = live; row.removeAttribute('id'); row.classList.remove('ma-live'); row.querySelector('.ma-md').innerHTML = html; }
       else row = rowBot(html);

@@ -32,12 +32,26 @@ test('wall tiles wire the thumbnail click (deferred keeps its play button)', () 
   assert.doesNotMatch(liveSlot, /data-defer="1"/);
 });
 
-test('screen click on a live tile opens the show', () => {
-  let opened = '';
-  const win = makeWin({ navGo: (k) => { opened = k; } });
-  const screen = { querySelector: () => null };
+test('screen click on a live tile opens the theater, not the product page', () => {
+  let navigated = '';
+  const els = {};
+  const mkEl = () => ({ style: {}, hidden: false, innerHTML: '', textContent: '',
+    setAttribute() {}, removeAttribute() {}, getAttribute: () => null,
+    classList: { add() {}, remove() {}, toggle() {} }, querySelector: () => null, querySelectorAll: () => [], appendChild() {} });
+  const win = makeWin({
+    navGo: (k) => { navigated = k; },
+    document: {
+      createElement: () => mkEl(),
+      getElementById: (id) => (els[id] = els[id] || mkEl()),
+      body: { appendChild() {}, contains: () => true },
+      addEventListener() {},
+      querySelector: () => null, querySelectorAll: () => [],
+    },
+  });
+  const screen = { querySelector: () => null, getAttribute: () => 'wall:museaitour-s0' };
   win.MuseStreaming.screenClick({ target: { closest: () => null } }, screen, 'museaitour');
-  assert.equal(opened, 'museaitour');
+  assert.equal(navigated, '', 'no navigation away from the wall');
+  assert.equal(els.msStreamModal.hidden, false, 'theater is open');
 });
 
 test('screen click on a deferred tile plays instead of opening', () => {
@@ -72,6 +86,43 @@ test('screen click on a deferred tile plays instead of opening', () => {
   MS.screenClick({ target: { closest: () => null } }, screen, 'orion');
   assert.equal(opened, '');
   assert.equal(videos.filter((v) => v.tagName === 'VIDEO' && v.parentNode === slot).length, 1);
+});
+
+test('injected program drop becomes a crit anomaly Muse can fail over', () => {
+  const win = makeWin();
+  const MS = win.MuseStreaming;
+  assert.equal(MS.injectFault('museaitour').ok, true);
+  const a = MS.anomalies().find((x) => x.key === 'museaitour' && x.stage === 'program');
+  assert.ok(a, 'fault surfaces as an anomaly');
+  assert.equal(a.level, 'crit');
+  assert.equal(a.recommendation.kind, 'failover_backup');
+  const r = MS.applyAnomaly(a.id);
+  assert.equal(r.ok, true);
+  assert.match(r.text, /LiveU backup/);
+  assert.equal(MS.anomalies().some((x) => x.stage === 'program'), false, 'fault cleared by failover');
+});
+
+test('stream theater opens in place and closes back to the wall', () => {
+  const els = {};
+  const mkEl = () => ({ style: {}, hidden: false, innerHTML: '', textContent: '',
+    setAttribute() {}, removeAttribute() {}, getAttribute: () => null,
+    classList: { add() {}, remove() {}, toggle() {} }, querySelector: () => null, querySelectorAll: () => [], appendChild() {} });
+  const win = makeWin({
+    document: {
+      createElement: () => mkEl(),
+      getElementById: (id) => (els[id] = els[id] || mkEl()),
+      body: { appendChild() {}, contains: () => true },
+      addEventListener() {},
+      querySelector: () => null, querySelectorAll: () => [],
+    },
+  });
+  const MS = win.MuseStreaming;
+  MS.openStream('museaitour', 'wall:museaitour-s0');
+  assert.match(els.msModalTitle.innerHTML, /Muse AI Tour/);
+  assert.match(els.msModalTitle.innerHTML, /Meta Connect 2026/, 'real event program in the title');
+  assert.equal(els.msStreamModal.hidden, false);
+  MS.closeStream();
+  assert.equal(els.msStreamModal.hidden, true);
 });
 
 test('the listen and play buttons keep their own clicks', () => {

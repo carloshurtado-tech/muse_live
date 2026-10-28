@@ -1364,3 +1364,8 @@ html:not(.dark) .omni-input,html:not(.dark) #museaiInput{
   color:#18191A;
 }
 #museOffline[hidden]{display:none !important;}
+
+/* Edge tabs (Omni / Muse): pinned to the viewport edge at all times.
+   Horizontal overscroll must never drag them off the right edge. */
+html,body{overflow-x:clip;overscroll-behavior-x:none;}
+.omni-fab,#museaiLauncher{position:fixed !important;right:0 !important;}

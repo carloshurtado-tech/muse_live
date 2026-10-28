@@ -4808,7 +4808,7 @@ function buildSearchIndex(){
   });});
   // communications (email + teams) — role-scoped: exec threads invisible to restricted roles
   if(typeof comms!=='undefined'){((typeof permComms==='function')?permComms():comms).forEach(function(m){
-    idx.push({type:'Message',label:(m.subject||('Teams · '+m.from)),sub:(m.channel==='teams'?'Teams':'Outlook')+' · '+(m.dir==='out'?'to '+m.to:m.from)+' · '+commsLinkLabel(m.linkType,m.linkId),icon:(m.channel==='teams'?'💬':'✉️'),action:['globalOpenComms',m.thread||m.id],kw:(m.subject+' '+m.from+' '+m.to+' '+museRichPlain(m.body)+' '+commsLinkLabel(m.linkType,m.linkId)).toLowerCase()});
+    idx.push({type:'Message',label:(m.subject||('Teams · '+m.from)),sub:(m.channel==='teams'?'Slack':'Gmail')+' · '+(m.dir==='out'?'to '+m.to:m.from)+' · '+commsLinkLabel(m.linkType,m.linkId),icon:(m.channel==='teams'?'💬':'✉️'),action:['globalOpenComms',m.thread||m.id],kw:(m.subject+' '+m.from+' '+m.to+' '+museRichPlain(m.body)+' '+commsLinkLabel(m.linkType,m.linkId)).toLowerCase()});
   });}
   // inventory (barcode-tracked equipment) — role-scoped to own gear for restricted roles
   if(typeof inventory!=='undefined'){((typeof permInventory==='function')?permInventory():inventory).forEach(function(it){var st=(INV_STATUSES[it.status]||{}).label||it.status;
@@ -5955,7 +5955,7 @@ function survShowImg(src,caption){var ov=document.getElementById('galLightbox');
 function surveyViewStrip(key){var v=surveyView[key]||'map';var urgent=ensureFindings(key).filter(survLogUrgent).length;
   function b(id,l){return '<button onclick="surveySetView(\''+key+'\',\''+id+'\')" class="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors '+(v===id?'bg-white text-gray-900 shadow-sm':'text-gray-500 hover:text-gray-700')+'">'+l+'</button>';}
   /* v35: Location & Map leads; Log & Findings moved to the end of the strip */
-  return '<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 flex-wrap">'+b('map','Location & Map')+b('gallery','Site Gallery')+b('cad','CAD')+b('power','Power')+b('pano','360°')+b('security','Security')+b('air','Air-readiness')+b('log','Log & Findings'+(urgent?' ('+urgent+')':''))+'</div>';}
+  return '<div class="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 flex-wrap">'+b('map','Shadow Map')+b('gallery','Site Gallery')+b('cad','CAD')+b('power','Power')+b('pano','360°')+b('security','Security')+b('air','Air-readiness')+b('log','Log & Findings'+(urgent?' ('+urgent+')':''))+'</div>';}
 
 /* ---- wrapper (call site hits this) ---- */
 function surveyByVenueBar(key){
@@ -7758,18 +7758,12 @@ function surveyMapHTML(key){var p=productions[key];var s=getSurvey(key);
   var pins=survMapPins(key);var act=(typeof activeLocation==='function')?activeLocation(key):null;
   var locs=(p.locations&&p.locations.length)?p.locations:[];
   var hide=survMapHide[key]||{};
-  /* v42: Overview already shows the primary venue map. Location & Map only adds a
-     second multi-venue map when there is more than one site — otherwise just the
-     sun & shadows map (no duplicate of the overview map). */
+  /* Shadow Map pane: shadows only. The venue map lives on Overview + the site
+     header; rendering it here too duplicated the map on multi-site projects. */
   var focus=survMapFocusOf(key);
   var focL=survMapFocusLoc(key);
   var multiVenue=locs.length>1;
-  var mapBlock='';
   var venueSel=survMapVenueSelect(key,locs,focus);
-  if(multiVenue){
-    mapBlock='<div class="mt-2 rounded-xl overflow-hidden border border-gray-200 bg-gray-50" style="min-height:420px;height:48vh;max-height:560px">'+
-      multiMapHTML({id:'mmap_'+key,pins:pins,height:'100%',focus:focus})+'</div>';
-  }
   /* Sun & shadows map — always shown when the focused / survey site has GPS */
   var shadeBlock='';
   var shLat=(focL&&typeof focL.lat==='number')?focL.lat:(typeof s.lat==='number'?s.lat:null);
@@ -7793,14 +7787,11 @@ function surveyMapHTML(key){var p=productions[key];var s=getSurvey(key);
   var shown=pins.filter(function(pp){return !pp.hidden;}).length;
   return '<div class="bg-white rounded-2xl p-4 sm:p-5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+
     '<div class="flex flex-wrap items-center justify-between gap-2 mb-3">'+
-      '<div><h4 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Location &amp; Map'+(locs.length?' <span class="text-gray-400 font-normal normal-case">— '+locs.length+' site'+(locs.length===1?'':'s')+(multiVenue?' · '+shown+' pinned':'')+'</span>':'')+'</h4>'+
-      '<p class="text-[9px] text-gray-400 mt-0.5">'+(multiVenue
-        ?'Multi-venue map below (pick a site to focus). Sun &amp; shadows tracks the focused venue. Overview still shows the primary pin.'
-        :'Primary venue map is on Overview. Here: sun &amp; shadows for this site. Add a second location to unlock the multi-venue map.')+'</p></div>'+
+      '<div><h4 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Shadow Map'+(locs.length?' <span class="text-gray-400 font-normal normal-case">— '+locs.length+' site'+(locs.length===1?'':'s')+(multiVenue?' · '+shown+' pinned':'')+'</span>':'')+'</h4>'+
+      '<p class="text-[9px] text-gray-400 mt-0.5">Sun &amp; shadows for the focused site. Venue pins live on the site header and Overview — this pane is shadows only.</p></div>'+
       '<button onclick="survLocFormToggle(\''+key+'\')" class="text-[9px] font-bold text-blue-700 border border-blue-200 bg-blue-50 rounded-lg px-2.5 py-1.5 hover:bg-blue-100">+ Add location</button></div>'+
     survMapAddFormHTML(key)+
     (multiVenue?venueSel:'')+
-    mapBlock+
     shadeBlock+
     (rows?'<div class="mt-3" id="survMapRows_'+key+'">'+rows+'</div>':'')+
     survMapSiteEditorHTML(key,s,act)+
@@ -7861,9 +7852,9 @@ function survMapSiteEditorHTML(key,s,act){
 
 /* ================================================================================
    11. COMMUNICATIONS HUB — Zoho-style unified comms woven across the platform.
-       Email (Outlook) + Teams messages linked to any record: production, invoice,
+       Gmail + Slack messages linked to any record: production, invoice,
        PO, WO, ENG request, NPC event. Unified inbox + per-record threads.
-       Draft inside Muse Live, send via Outlook/Teams deep links. Searchable.
+       Draft inside Muse Live, send via Gmail/Slack deep links. Searchable.
    ================================================================================ */
 
 /* ---- message store ---- */
@@ -7999,14 +7990,14 @@ function commsNavBadge(){var n=commsUnread();var el=document.getElementById('com
 function commsChannelChip(ch){
   if(ch==='toc')return '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#fde7ea;color:#b3122e;border:1px solid #fde7ea"><span style="width:7px;height:7px;border-radius:1px;background:#b3122e;display:inline-block"></span>TOC</span>';
   return ch==='teams'?
-  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#e7f3ff;color:#0a58ca"><span style="width:7px;height:7px;border-radius:2px;background:#0866ff;display:inline-block"></span>Teams</span>':
-  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#e7f3ff;color:#0a58ca"><span style="width:7px;height:7px;border-radius:2px;background:#0a58ca;display:inline-block"></span>Outlook</span>';}
+  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#e7f3ff;color:#0a58ca"><span style="width:7px;height:7px;border-radius:2px;background:#0866ff;display:inline-block"></span>Slack</span>':
+  '<span class="inline-flex items-center gap-1 text-[8px] font-bold px-1.5 py-0.5 rounded" style="background:#e7f3ff;color:#0a58ca"><span style="width:7px;height:7px;border-radius:2px;background:#0a58ca;display:inline-block"></span>Gmail</span>';}
 /* priority pill — drives the high-stakes operational feel */
 function commsPriorityPill(pr){
   if(pr==='critical')return '<span class="inline-flex items-center gap-1 text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background:var(--live-red);color:#ffffff">● Critical</span>';
   if(pr==='high')return '<span class="inline-flex items-center gap-1 text-[7px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded" style="background:#fff0e5;color:#b24a00;border:1px solid #fbc6a4">▲ High</span>';
   return '';}
-function commsChannelName(ch){return ch==='toc'?'TOC Alert':(ch==='teams'?'Teams':'Outlook');}
+function commsChannelName(ch){return ch==='toc'?'TOC Alert':(ch==='teams'?'Slack':'Gmail');}
 
 /* ================= UNIFIED COMMS VIEW ================= */
 var commsFilter={channel:'all',q:'',linkType:'all',status:'all'};
@@ -8029,7 +8020,7 @@ function renderComms(){
   var teamsN=vis.filter(function(m){return m.channel==='teams';}).length;
   var tocN=vis.filter(function(m){return m.channel==='toc';}).length;
   var critN=vis.filter(function(m){return m.priority==='critical'&&!m.read&&m.dir==='in';}).length;
-  if(stats)stats.textContent=total+' messages · '+unread+' unread · '+emailN+' Outlook · '+teamsN+' Teams · '+tocN+' TOC';
+  if(stats)stats.textContent=total+' messages · '+unread+' unread · '+emailN+' Gmail · '+teamsN+' Slack · '+tocN+' TOC';
   // ---- operational stat band ----
   var band=document.getElementById('commsStatBand');
   if(band){
@@ -8110,8 +8101,8 @@ function openCommsThread(tk){loadCommsOnce();
       '<div class="p-3 border-t border-gray-100 flex-shrink-0"><div class="flex items-center justify-center gap-2 text-[10px] text-gray-500 bg-gray-50 rounded-xl py-2.5"><span style="width:7px;height:7px;border-radius:1px;background:var(--live-red);display:inline-block"></span>System-generated TOC alert · acknowledge in the linked record</div></div>':
       '<div class="p-3 border-t border-gray-100 flex-shrink-0 flex items-center gap-2">'+
         '<button onclick="closeCommsMsg();openCompose(\''+head.linkType+'\',\''+head.linkId+'\',\''+(head.channel)+'\',\''+esc(head.thread||head.id)+'\')" class="flex-1 bg-gray-900 text-white text-xs font-bold rounded-xl py-2.5 hover:bg-gray-800">Reply</button>'+
-        (head.channel==='email'?'<a href="'+commsOutlookLink(head)+'" target="_blank" class="text-[10px] font-bold text-blue-700 border border-blue-200 rounded-xl px-3 py-2.5 hover:bg-blue-50">Open in Outlook ↗</a>':
-          '<a href="'+commsTeamsLink(head)+'" target="_blank" class="text-[10px] font-bold text-indigo-700 border border-indigo-200 rounded-xl px-3 py-2.5 hover:bg-indigo-50">Open in Teams ↗</a>')+
+        (head.channel==='email'?'<a href="'+commsOutlookLink(head)+'" target="_blank" class="text-[10px] font-bold text-blue-700 border border-blue-200 rounded-xl px-3 py-2.5 hover:bg-blue-50">Open in Gmail ↗</a>':
+          '<a href="'+commsTeamsLink(head)+'" target="_blank" class="text-[10px] font-bold text-indigo-700 border border-indigo-200 rounded-xl px-3 py-2.5 hover:bg-indigo-50">Open in Slack ↗</a>')+
       '</div>');
   ov.style.display='flex';
   if(document.querySelector('.view-pane.active')&&document.querySelector('.view-pane.active').id==='view-comms')renderComms();
@@ -8121,8 +8112,8 @@ function closeCommsMsg(){var ov=document.getElementById('commsMsgOverlay');if(ov
 /* deep links */
 function commsOutlookLink(m){var to=encodeURIComponent(m.dir==='out'?m.to:(m.from.match(/<(.+?)>/)?m.from.match(/<(.+?)>/)[1]:m.from));
   var sub=encodeURIComponent((m.subject&&/^re:/i.test(m.subject)?m.subject:'RE: '+(m.subject||'')));
-  return 'https://outlook.office.com/mail/deeplink/compose?to='+to+'&subject='+sub;}
-function commsTeamsLink(m){return 'https://teams.microsoft.com/l/chat/0/0?users='+encodeURIComponent('') ;}
+  return 'https://mail.google.com/mail/?view=cm&fs=1&to='+to+'&su='+sub;}
+function commsTeamsLink(m){return 'https://app.slack.com/client';}
 
 /* ================= COMPOSE ================= */
 var composeCtx={linkType:'production',linkId:'',channel:'email',thread:null};
@@ -8144,7 +8135,7 @@ function setComposeChannel(ch){composeCtx.channel=ch;
     if(c===ch)b.className='flex-1 text-[10px] font-bold py-2 rounded-lg border-2 border-gray-900 bg-gray-900 text-white';
     else b.className='flex-1 text-[10px] font-bold py-2 rounded-lg border-2 border-gray-200 text-gray-600 hover:border-gray-400';});
   var sw=document.getElementById('cmpSubjectWrap');if(sw)sw.style.display=ch==='teams'?'none':'block';
-  var sl=document.getElementById('cmpSendLabel');if(sl)sl.textContent=ch==='teams'?'Log & open in Teams':'Log & open in Outlook';
+  var sl=document.getElementById('cmpSendLabel');if(sl)sl.textContent=ch==='teams'?'Log & open in Slack':'Log & open in Gmail';
 }
 function buildComposeLinkOptions(){
   var tsel=document.getElementById('cmp_linkType');var isel=document.getElementById('cmp_linkId');if(!tsel||!isel)return;
@@ -8184,14 +8175,14 @@ function composeSend(){
   var rec={id:'MSG-'+(nmax+1),channel:ch,dir:'out',from:'Rowan Blake',to:to,subject:ch==='teams'?'':subject,body:body,
     ts:nowStamp(),linkType:t,linkId:id,prod:prod,read:true,thread:composeCtx.thread||('T-'+(nmax+1))};
   comms.unshift(rec);saveComms();
-  try{logEvent(prod||order[0],'✉ '+(ch==='teams'?'Teams':'Email')+' logged → '+commsLinkLabel(t,id));saveState();}catch(e){}
+  try{logEvent(prod||order[0],'✉ '+(ch==='teams'?'Slack':'Gmail')+' logged → '+commsLinkLabel(t,id));saveState();}catch(e){}
   // open the external client
   var url;
-  if(ch==='email'){url='https://outlook.office.com/mail/deeplink/compose?to='+encodeURIComponent(to)+'&subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);}
-  else{url='https://teams.microsoft.com/l/chat/0/0?message='+encodeURIComponent(body);}
+  if(ch==='email'){url='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(to)+'&su='+encodeURIComponent(subject)+'&body='+encodeURIComponent(body);}
+  else{url='https://app.slack.com/client';}
   try{window.open(url,'_blank');}catch(e){}
   closeCompose();
-  toast('Message logged & '+(ch==='teams'?'Teams':'Outlook')+' opened');
+  toast('Message logged & '+(ch==='teams'?'Slack':'Gmail')+' opened');
   // refresh any visible comms surfaces
   try{renderComms();}catch(e){}
   var act=document.querySelector('.view-pane.active');if(act){var k=act.id.replace('view-','');if(productions[k]){try{renderProjectView(k);}catch(e){}}}
@@ -8201,7 +8192,7 @@ function composeSend(){
 function commsPanelHTML(linkType,linkId,opts){opts=opts||{};
   loadCommsOnce();var msgs=commsForRecord(linkType,linkId);
   var compact=opts.compact;
-  var head='<div class="flex items-center justify-between mb-2"><h4 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Omni <span class="text-gray-400 font-normal normal-case">— Outlook &amp; Teams</span></h4>'+
+  var head='<div class="flex items-center justify-between mb-2"><h4 class="text-[10px] font-bold uppercase tracking-wider text-gray-600">Omni <span class="text-gray-400 font-normal normal-case">— Gmail &amp; Slack</span></h4>'+
     '<div class="flex items-center gap-1.5"><span class="text-[9px] mono text-gray-400">'+msgs.length+' linked</span>'+
     '<button onclick="openCompose(\''+linkType+'\',\''+linkId+'\',\'email\')" class="text-[9px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1 hover:bg-gray-800">✉ New</button></div></div>';
   if(!msgs.length){return '<div class="bg-white rounded-2xl p-4 border border-gray-200/60"'+(opts.shadow!==false?' style="box-shadow:0 4px 20px rgba(0,0,0,.03)"':'')+'>'+head+
@@ -12504,8 +12495,8 @@ async function syncOutlookCalendar(){
   ],'@odata.nextLink':null});
   console.log('Status   :','200 OK (mock) — 3 events merged into local schedule cache');
   console.groupEnd();
-  try{toast('Outlook calendar sync simulated — 3 events (see console)');}catch(e){}
-  try{omniLogSystem('Outlook calendar sync completed · 3 events pulled via Graph (simulated)');}catch(e){}
+  try{toast('Calendar sync simulated — 3 events (see console)');}catch(e){}
+  try{omniLogSystem('Calendar sync completed · 3 events (simulated)');}catch(e){}
   return true;
 }
 
@@ -12790,8 +12781,8 @@ function renderOmniDrawer(){
     var tocCrit=msgs.some(function(m){return m.channel==='toc'&&m.priority==='critical'&&!m.read;});
     var ic=(OMNI_CHANNELS[prod]||[]);var icActive=ic.filter(function(c){return c.s==='active';}).length;
     row.innerHTML=
-      omniStateChip('💬 Teams',teamsOn?'active':'standby')+
-      omniStateChip('📧 Outlook',mailOn?'monitored':'standby')+
+      omniStateChip('💬 Slack',teamsOn?'active':'standby')+
+      omniStateChip('📧 Gmail',mailOn?'monitored':'standby')+
       omniStateChip('📞 Intercom',icActive?'active':(ic.length?'monitored':'standby'))+
       omniStateChip('⚠ TOC',tocCrit?'active':'monitored');
   }
@@ -12897,7 +12888,7 @@ function omniSendChat(){
   /* exercise the Graph stub so IT can watch the exact payload in the console */
   try{sendTeamsNotification('ops-room-'+prod,txt);}catch(e){}
   try{logEvent(prod,'💬 Omni ops-room message logged');saveState();}catch(e){}
-  renderOmniDrawer();toast('Message logged & Teams notification simulated');
+  renderOmniDrawer();toast('Message logged');
 }
 
 /* ---- TAB 2 · Email & Alerts — priority mail, ECRs, schedule change log ---- */
@@ -12907,7 +12898,7 @@ function omniMailHTML(prod){
   var crit=((typeof permComms==='function')?permComms():comms).filter(function(m){return m.prod===prod&&m.priority==='critical'&&!m.read&&m.dir==='in';});
   var out='';
   if(crit.length){out+='<div class="omni-critband mb-3"><span class="attn-badge" style="width:8px;height:8px;border-radius:2px;background:var(--live-red);display:inline-block"></span><span class="text-[10px] font-bold" style="color:var(--live-red)">'+crit.length+' critical alert'+(crit.length>1?'s':'')+' need action</span></div>';}
-  out+='<h4 class="omni-h4">Priority Mail — Outlook</h4>';
+  out+='<h4 class="omni-h4">Priority Mail — Gmail</h4>';
   out+=mails.length?mails.slice(0,8).map(function(m){var outg=m.dir==='out';
     return '<button onclick="openCommsThread(\''+(m.thread||m.id)+'\')" class="omni-mailrow'+(m.priority==='critical'&&!m.read?' crit':'')+'">'+
       '<div class="flex items-center justify-between gap-2"><div class="flex items-center gap-1.5 min-w-0"><p class="text-[10px] font-bold text-gray-800 truncate">'+esc(outg?'You → '+m.to:m.from)+'</p>'+commsPriorityPill(m.priority)+'</div><span class="text-[8px] mono text-gray-400 flex-shrink-0">'+esc(m.ts)+'</span></div>'+
@@ -12931,7 +12922,7 @@ function omniMailHTML(prod){
 }
 function omniMailFootHTML(){
   return '<div class="flex items-center gap-2">'+
-    '<button onclick="syncOutlookCalendar()" class="flex-1 text-[10px] font-bold rounded-lg px-3 py-2 omni-m365-btn">⟳ Sync Outlook Calendar</button>'+
+    '<button onclick="syncOutlookCalendar()" class="flex-1 text-[10px] font-bold rounded-lg px-3 py-2 omni-m365-btn">⟳ Sync Calendar</button>'+
     '<button onclick="openCompose(\'production\',omniCurrentProd(),\'email\')" class="flex-1 text-[10px] font-bold text-white bg-gray-900 rounded-lg px-3 py-2 hover:bg-gray-800">✉ New Message</button></div>';
 }
 

@@ -470,15 +470,11 @@
     var gid = 'tbspg' + (++_sparkSeq);
     if (arr.length < 2) {
       return (
-        '<svg width="' +
-        w +
-        '" height="' +
-        h +
-        '" viewBox="0 0 ' +
+        '<svg width="100%" height="30" viewBox="0 0 ' +
         w +
         ' ' +
         h +
-        '" style="display:block"><polyline fill="none" stroke="' +
+        '" preserveAspectRatio="none" style="display:block"><polyline fill="none" vector-effect="non-scaling-stroke" stroke="' +
         color +
         '" stroke-width="1.5" points="0,' +
         h / 2 +
@@ -507,15 +503,11 @@
     var lx = (w - 2) + 1;
     var ly = h - 2 - ((last - min) / span) * (h - 4);
     return (
-      '<svg width="' +
-      w +
-      '" height="' +
-      h +
-      '" viewBox="0 0 ' +
+      '<svg width="100%" height="30" viewBox="0 0 ' +
       w +
       ' ' +
       h +
-      '" style="display:block">' +
+      '" preserveAspectRatio="none" style="display:block">' +
       '<defs><linearGradient id="' +
       gid +
       '" x1="0" y1="0" x2="0" y2="1">' +
@@ -534,7 +526,7 @@
       h +
       ' 1,' +
       h +
-      '"/><polyline fill="none" stroke="' +
+      '"/><polyline fill="none" vector-effect="non-scaling-stroke" stroke="' +
       color +
       '" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" points="' +
       pts.join(' ') +
@@ -565,13 +557,13 @@
     return (
       '<div class="tb-kpi" data-tb-kpi-wrap="' +
       esc(kpiKey || label) +
-      '" style="flex:1 1 140px;min-width:132px;max-width:200px;padding:10px 12px;border-radius:14px;' +
+      '" style="flex:1 1 150px;min-width:140px;max-width:220px;padding:10px 12px;border-radius:14px;' +
       'background:rgb(var(--c-surface));color:rgb(var(--c-ink));border:1px solid rgb(var(--c-line, 228 230 235))">' +
-      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px">' +
-      '<div><div style="font:700 9px/1.2 var(--font-ui),system-ui,sans-serif;letter-spacing:.06em;color:rgb(var(--c-ink-3))">' +
+      '<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;min-width:0">' +
+      '<span style="font:700 9px/1 var(--font-ui),system-ui,sans-serif;letter-spacing:.06em;color:rgb(var(--c-ink-3));white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' +
       esc(label) +
-      '</div>' +
-      '<div style="margin-top:4px;font:800 18px/1.1 var(--font-ui),system-ui,sans-serif;font-variant-numeric:tabular-nums;color:rgb(var(--c-ink))">' +
+      '</span>' +
+      '<span style="font:800 16px/1.1 var(--font-ui),system-ui,sans-serif;font-variant-numeric:tabular-nums;color:rgb(var(--c-ink));white-space:nowrap">' +
       '<span data-tb-kpi="' +
       esc(kpiKey || '') +
       '">' +
@@ -579,14 +571,14 @@
       '</span>' +
       '<span style="font-size:10px;font-weight:600;color:rgb(var(--c-ink-3));margin-left:3px">' +
       esc(unit) +
-      '</span></div></div>' +
+      '</span></span></div>' +
       '<div class="tb-spark" data-tb-spark="' +
       esc(kpiKey || '') +
       '" data-tb-spark-color="' +
       esc(color || 'var(--pk-blue)') +
-      '" style="opacity:.95">' +
+      '" style="margin-top:6px;opacity:.95">' +
       sparklineSVG(hist, color) +
-      '</div></div></div>'
+      '</div></div>'
     );
   }
 

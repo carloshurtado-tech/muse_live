@@ -2401,8 +2401,8 @@ function deptTileHTML(key,p,d,idx,alertCounts){
   var items=deptItemCount(p,dept);var alerts=alertCounts?(alertCounts[dept]||0):deptAlertCount(p,dept);
   var dot=DEPT_DOT_HEX[s.dot]||'#b0b3b8';
   if(!open){
-    return '<div id="'+aid+'" data-deptcat="'+esc(dept)+'" onclick="deptTileToggle(\''+key+'\',\''+dq+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();deptTileToggle(\''+key+'\',\''+dq+'\');}" role="button" tabindex="0" title="'+esc(dept)+' — click to expand" class="dept-t dept-t-closed '+tileBorder+' '+s.bg+'">'+
-      '<div class="flex items-center justify-between gap-2"><span class="flex items-center gap-1.5 min-w-0"><span style="width:8px;height:8px;border-radius:9999px;flex-shrink:0;background:'+dot+'"></span><span class="text-[11px] font-bold text-gray-800 truncate">'+esc(dept)+'</span>'+lockIcon+'</span><span class="text-[8px] mono font-bold uppercase tracking-wider '+s.text+' flex-shrink-0">'+s.label+'</span></div>'+
+    return '<div id="'+aid+'" data-deptcat="'+esc(dept)+'" onclick="deptTileToggle(\''+key+'\',\''+dq+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();deptTileToggle(\''+key+'\',\''+dq+'\');}" role="button" tabindex="0" title="'+esc(deptLabel(dept))+' — click to expand" class="dept-t dept-t-closed '+tileBorder+' '+s.bg+'">'+
+      '<div class="flex items-center justify-between gap-2"><span class="flex items-center gap-1.5 min-w-0"><span style="width:8px;height:8px;border-radius:9999px;flex-shrink:0;background:'+dot+'"></span><span class="text-[11px] font-bold text-gray-800 truncate">'+esc(deptLabel(dept))+'</span>'+lockIcon+'</span><span class="text-[8px] mono font-bold uppercase tracking-wider '+s.text+' flex-shrink-0">'+s.label+'</span></div>'+
       '<p class="text-[10px] text-gray-500 mt-1.5 leading-snug" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:26px">'+esc(d[2]&&d[2]!=='—'?d[2]:'No notes yet')+'</p>'+
       '<div class="flex items-center gap-1.5 mt-2 flex-wrap">'+
         '<span class="dept-chip mono">'+items+' item'+(items===1?'':'s')+'</span>'+
@@ -2437,7 +2437,7 @@ function deptTileHTML(key,p,d,idx,alertCounts){
   panes.notes+='<section class="dept-config-group"><div class="dept-config-heading">Recorded department history</div><div class="dept-note-body">'+(history.length?history.map(function(a){return '<div class="dept-history-row"><p>'+esc(a.text||'')+'</p><small>'+esc(a.actor||'')+' · '+esc(a.when||'')+'</small></div>';}).join(''):'<p>No department history recorded.</p>')+'</div></section>';
   return '<div id="'+aid+'" data-deptcat="'+esc(dept)+'" class="dept-t dept-t-open dept-workspace '+tileBorder+' '+s.bg+(locked?' ring-1 ring-inset '+(ap.state==='Locked'?'ring-blue-200':'ring-emerald-200'):'')+'" style="scroll-margin-top:90px">'+
     '<div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 mb-3 border-b border-gray-200/70">'+
-      '<span class="flex items-center gap-2 text-sm font-bold text-gray-800 cursor-pointer" onclick="deptTileToggle(\''+key+'\',\''+dq+'\')" title="Collapse">'+(locked?lockIcon:'')+esc(dept)+'</span>'+
+      '<span class="flex items-center gap-2 text-sm font-bold text-gray-800 cursor-pointer" onclick="deptTileToggle(\''+key+'\',\''+dq+'\')" title="Collapse">'+(locked?lockIcon:'')+esc(deptLabel(dept))+'</span>'+
       '<span class="flex items-center gap-2 flex-wrap">'+reapBadge+
         '<select onchange="setDeptStatus(\''+key+'\','+idx+',this.value)" class="text-[9px] font-bold uppercase tracking-wider rounded border px-1.5 py-1 '+s.badge+'" style="outline:none;cursor:pointer">'+stOpts+'</select>'+
         '<button onclick="openApproval(\''+key+'\',\''+dq+'\')" class="text-[10px] font-bold text-blue-700 hover:underline whitespace-nowrap">'+(locked?'Manage Lock →':'Section Approval →')+'</button>'+
@@ -2452,7 +2452,7 @@ function deptBoardHTML(key){var p=productions[key];var ui=deptUIGet(p);
   var alertCounts=Object.create(null);try{evalRules(p).forEach(function(r){alertCounts[r.dept]=(alertCounts[r.dept]||0)+1;});}catch(e){}
   var tiles='',hiddenChips='';
   p.dept.forEach(function(d,idx){
-    if(ui.hidden[d[0]]){hiddenChips+='<button onclick="deptTileRestore(\''+key+'\',\''+d[0].replace(/'/g,"\\'")+'\')" class="dept-chip mono hover:border-blue-300" title="Restore tile — data was kept">↺ '+esc(d[0])+'</button>';return;}
+    if(ui.hidden[d[0]]){hiddenChips+='<button onclick="deptTileRestore(\''+key+'\',\''+d[0].replace(/'/g,"\\'")+'\')" class="dept-chip mono hover:border-blue-300" title="Restore tile — data was kept">↺ '+esc(deptLabel(d[0]))+'</button>';return;}
     tiles+=deptTileHTML(key,p,d,idx,alertCounts);});
   return '<div class="dept-grid">'+(tiles||'<p class="text-xs text-gray-400 italic p-2">All departments are hidden — restore below.</p>')+'</div>'+
     (hiddenChips?'<div class="flex flex-wrap items-center gap-1.5 mt-3 pt-2.5 border-t border-gray-100"><span class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Hidden departments</span>'+hiddenChips+'</div>':'');}
@@ -2478,9 +2478,9 @@ function renderProjectView(key){try{locDeptBind(key);}catch(e){}
   // ---- v30 Module 0: Department Status renders as a tile board (see deptBoardHTML above) ----
   // Outstanding Items — system-driven: rules-engine gaps + non-approved statuses
   var ruleItems=evalRules(p).map(function(r){var col=r.severity==='risk'?'red':'amber';
-    return '<div class="flex items-start gap-2 text-xs py-1.5 border-b border-gray-50"><span class="w-1.5 h-1.5 rounded-full bg-'+col+'-500 mt-1.5 flex-shrink-0"></span><span class="flex-1"><span class="font-semibold text-gray-800">'+r.dept+'</span> <span class="text-'+col+'-700 font-bold">· '+(r.severity==='risk'?'RISK':'CHECK')+'</span><br><span class="text-gray-600">'+r.text+'</span></span></div>';});
+    return '<div class="flex items-start gap-2 text-xs py-1.5 border-b border-gray-50"><span class="w-1.5 h-1.5 rounded-full bg-'+col+'-500 mt-1.5 flex-shrink-0"></span><span class="flex-1"><span class="font-semibold text-gray-800">'+deptLabel(r.dept)+'</span> <span class="text-'+col+'-700 font-bold">· '+(r.severity==='risk'?'RISK':'CHECK')+'</span><br><span class="text-gray-600">'+r.text+'</span></span></div>';});
   var statusItems=p.dept.filter(function(d){return d[1]!=='approved';}).map(function(d){var s=statusMap[d[1]];
-    return '<div class="flex items-start gap-2 text-xs py-1.5 border-b border-gray-50"><span class="w-1.5 h-1.5 rounded-full bg-'+s.dot+'-500 mt-1.5 flex-shrink-0"></span><span class="flex-1"><span class="font-semibold text-gray-800">'+d[0]+'</span> <span class="'+s.text+' font-bold">· '+s.label+'</span><br><span class="text-gray-600">'+(d[2]==='—'?'(no notes yet)':d[2])+'</span></span></div>';});
+    return '<div class="flex items-start gap-2 text-xs py-1.5 border-b border-gray-50"><span class="w-1.5 h-1.5 rounded-full bg-'+s.dot+'-500 mt-1.5 flex-shrink-0"></span><span class="flex-1"><span class="font-semibold text-gray-800">'+deptLabel(d[0])+'</span> <span class="'+s.text+' font-bold">· '+s.label+'</span><br><span class="text-gray-600">'+(d[2]==='—'?'(no notes yet)':d[2])+'</span></span></div>';});
   var warnList=ruleItems.concat(statusItems).join('')||'<p class="text-xs text-emerald-700 font-semibold py-2">All clear — every department approved and no open risks.</p>';
   var thumb=p.thumb?'<img src="'+p.thumb+'" style="width:100%;height:100%;object-fit:cover">':'<div style="width:100%;height:100%;background:'+(barGrad[p.tagColor]||barGrad.gray)+';display:flex;align-items:center;justify-content:center"><span class="text-white text-2xl font-bold">'+(p.name?p.name.charAt(0):'?')+'</span></div>';
   ensureFields(p);
@@ -3918,6 +3918,7 @@ function tickLat(){var el=document.getElementById('latVal');if(el)el.textContent
 /* ===== CREATE / DELETE PROJECT ===== */
 /* v30 Module 5: Prompter is no longer a standalone department — it lives inside
    Cameras / Video (prompter hardware rides the camera in the field). 13 tiles total. */
+function deptLabel(n){return n==='Graphics (GFX)'?'QC':n;} /* display name only; data key unchanged */
 var DEPT_NAMES=["Audio","Cameras / Video","Transmission / Signal","Engineering","Replay / EVS","Lighting","Power / Electrical","CAD","Monitors","Graphics (GFX)","Talent / Production","Networking / IT","Miscellaneous / Consumables","Legal / Rights"];
 // ensure every production carries a tile for every canonical department (new depts added as pending)
 function ensureAllDepts(p){if(!p||!Array.isArray(p.dept))return;
@@ -6694,7 +6695,7 @@ function museaiAnswer(qRaw){
   if(/(what.?s new|whats new|new in muse|recent (change|update)|learn what.?s new)/.test(q))
     return "What's new: (1) Site Survey → Air-readiness holds the Event Check List (not GFX). Workflow is Drawings + vendor meeting, and schedule-with-venue + site survey, both feeding Tasks then LBA. (2) Graphics Playback is 16:9 — tap the video to play/pause, use ‹ Frame / Frame › to step, no color-background chips, no MIRA label. Upload fill+matte (filenames with fill and matte/key) for a Fill and Matte Tally. Each production has Open / Bumper / Wipe environment sims; soundtrack is the clip's own music/SFX (no extra sine or noise beds). (3) Left rail: native scroll with hidden scrollbar; Search/+ fades with no rounded card; Projects scroll above Search.";
   if(/(graphics playback|gfx player|fill and matte|mira tally|show open|gfx (sim|wipe|bumper)|tap.*video|click.*video.*pause)/.test(q))
-    return "Graphics Playback lives on Department Status → Graphics (GFX). Player is always 16:9. Tap or click the picture to play/pause. ‹ Frame / Frame › steps one frame. Cue / Loop still work. There is no MIRA tally and no black/white/green/checker chips. Upload one file, or a fill + matte pair (names containing fill and matte or key) to open a Fill and Matte Tally. Environment sims (Open, Bumper, Wipe) are injected per show — Muse AI World Tour, Winter Games, Orion Reveal, Ray-Ban Meta Gen 3 Launch, Muse AI Launch, WhatsApp Summit, Creator Week — and play the video's own soundtrack. Probe/preview convert uses FFmpeg (libavcodec / libavformat).";
+    return "Graphics Playback lives on Department Status → QC. Player is always 16:9. Tap or click the picture to play/pause. ‹ Frame / Frame › steps one frame. Cue / Loop still work. There is no MIRA tally and no black/white/green/checker chips. Upload one file, or a fill + matte pair (names containing fill and matte or key) to open a Fill and Matte Tally. Environment sims (Open, Bumper, Wipe) are injected per show — Muse AI World Tour, Winter Games, Orion Reveal, Ray-Ban Meta Gen 3 Launch, Muse AI Launch, WhatsApp Summit, Creator Week — and play the video's own soundtrack. Probe/preview convert uses FFmpeg (libavcodec / libavformat).";
   if(/(air.?readiness|event check list|lba|live before air)/.test(q))
     return "Air-readiness is the Event Check List nested under Site Survey → Air-readiness (not under GFX). It covers truck, fiber/ingest, switcher, cameras, audio, lighting, power, grip, schedule, data/TX, venue, labor/EHS. The mind-tree workflow is Drawings → Vendor meeting, and Schedule with venue → Site Survey; both feed Tasks → LBA (live before air). Workflow tab chips jump to those gates. Auto-tasks fire when drawings, vendor meeting, venue schedule, or the checklist are thin.";
   // Broadcast Ops / signal path / go-no-go / RF / sat / power

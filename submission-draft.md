@@ -66,7 +66,7 @@ Fictional demo data only: Harbor Lights Live. Maya Chen (producer), Jordan Reyes
 
 ## Open items (unchanged since Day 6)
 
-- [x] Repo public (visibility for judges).
+- [ ] Repo public (visibility for judges) — brief requires it; flipping shortly before submission (kept private meanwhile).
 - [x] Logged-out link check of the deployed site — anonymous `/` and `/about` return 200,
   and the guest-reviewer session serves the full app (write endpoints refuse viewers).
 - [ ] Harbor Lights scenario slots confirmed.

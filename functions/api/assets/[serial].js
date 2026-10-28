@@ -25,7 +25,9 @@ export async function onRequest(context) {
   if (request.method === 'GET') {
     const asset = await db.prepare('SELECT * FROM assets WHERE serial = ?').bind(serial).first();
     if (!asset) return json({ ok: false, error: 'Not found' }, 404);
-    const h = await db.prepare('SELECT ts, "by", action, detail FROM asset_history WHERE serial = ? ORDER BY ts DESC LIMIT 100').bind(serial).all();
+    // id DESC breaks same-millisecond ties in insertion order (fast runners
+    // execute a whole lifecycle inside 1 ms; ts alone left the order undefined).
+    const h = await db.prepare('SELECT ts, "by", action, detail FROM asset_history WHERE serial = ? ORDER BY ts DESC, id DESC LIMIT 100').bind(serial).all();
     return json({ ok: true, asset, history: (h.results || []) });
   }
 

@@ -4031,6 +4031,7 @@ html.dark .ms-alert{color:#FF8A9A;}
 @media (min-width:1100px){.ms-grid .ms-tile.is-big{grid-column:span 2;grid-row:span 2;}}
 .ms-tile{margin:0;border-radius:12px;overflow:hidden;background:var(--ms-card);box-shadow:0 0 0 1px var(--ms-line);display:flex;flex-direction:column;min-width:0;}
 .ms-screen{position:relative;aspect-ratio:16/9;background:var(--ms-screen);overflow:hidden;}
+.ms-screen.is-clickable{cursor:pointer;}
 .ms-tile.is-vertical .ms-screen .ms-video{object-fit:contain;}
 .ms-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000;}
 .ms-slate{position:absolute;inset:0;z-index:1;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:3px;padding:12px 14px;text-align:left;color:#fff;background:radial-gradient(ellipse at 30% 20%,rgba(8,102,255,.38),transparent 60%),linear-gradient(160deg,#1f2230,#0a0b0f);}

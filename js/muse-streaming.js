@@ -400,8 +400,10 @@
     opts = opts || {};
     var t = teleFor(key, st), g = grade(t.m, t.live), slot = ctx + ':' + st.id;
     var defer = !t.live && ctx !== 'proj' && !players[slot];
+    var clickable = ctx !== 'proj'; // the plan pane IS the destination; wall + dash thumbnails open it
     return '<figure class="ms-tile' + (opts.big ? ' is-big' : '') + (st.role === 'vertical' || (opts.vertical) ? ' is-vertical' : '') + '" data-sid="' + st.id + '">' +
-      '<div class="ms-screen" data-hls-slot="' + esc(slot) + '" data-url="' + esc(st.url) + '"' + (t.live ? ' data-live="1"' : '') + (defer ? ' data-defer="1"' : '') + '>' +
+      '<div class="ms-screen' + (clickable ? ' is-clickable' : '') + '" data-hls-slot="' + esc(slot) + '" data-url="' + esc(st.url) + '"' + (t.live ? ' data-live="1"' : '') + (defer ? ' data-defer="1"' : '') +
+      (clickable ? ' onclick="MuseStreaming.screenClick(event,this,\'' + esc(key) + '\')" title="' + (defer ? 'Play preview' : 'Open streaming plan') + '"' : '') + '>' +
         (st.role === 'vertical' ? '<span class="ms-vframe" aria-hidden="true"></span>' : '') +
         '<div class="ms-slate" aria-hidden="true"><b>' + esc(st.name) + '</b><span>' + (defer ? 'Off air' : 'Connecting') + '</span></div>' +
         (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
@@ -1002,6 +1004,13 @@
     renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); } },
     renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) mount(h); },
     play: function (btn) { var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
+    screenClick: function (e, screen, key) {
+      var t = e && e.target;
+      if (t && t.closest && (t.closest('.ms-audio') || t.closest('.ms-play'))) return; // buttons handle their own clicks
+      var pb = screen && screen.querySelector ? screen.querySelector('.ms-play') : null;
+      if (pb) { MS.play(pb); return; } // off-air tile: the whole thumbnail plays
+      MS.openShow(key);
+    },
     openShow: function (key) { try { root.projSubTab[key] = 'streaming'; } catch (e) {} root.navGo(key); },
     toggleAudio: function (slot, btn) {
       var p = players[slot]; if (!p) return;

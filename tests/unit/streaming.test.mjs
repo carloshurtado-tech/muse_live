@@ -27,7 +27,7 @@ test('wall tiles wire the thumbnail click (deferred keeps its play button)', () 
   assert.match(html, /ms-screen is-clickable/);
   const orionSlot = html.match(/<div class="ms-screen[^]*?data-hls-slot="wall:orion-s0"[^>]*>/)[0];
   assert.match(orionSlot, /data-defer="1"/);
-  assert.match(html, /onclick="MuseStreaming\.play\(this\)"/);
+  assert.match(html, /onclick="MuseStreaming\.play\(event,this\)"/);
   const liveSlot = html.match(/<div class="ms-screen[^]*?data-hls-slot="wall:museaitour-s0"[^>]*>/)[0];
   assert.doesNotMatch(liveSlot, /data-defer="1"/);
 });
@@ -123,6 +123,21 @@ test('stream theater opens in place and closes back to the wall', () => {
   assert.equal(els.msStreamModal.hidden, false);
   MS.closeStream();
   assert.equal(els.msStreamModal.hidden, true);
+});
+
+test('tile buttons stop propagation so mute/CC/play never open the theater', () => {
+  const win = makeWin();
+  const MS = win.MuseStreaming;
+  const slot = { removeAttribute() {}, parentNode: { querySelectorAll: () => [] } };
+  const btn = { parentNode: slot, remove() {} };
+  let n = 0;
+  const evt = () => ({ stopPropagation() { n++; } });
+  n = 0; MS.toggleAudio(evt(), 'wall:orion-s0', btn);
+  assert.equal(n, 1, 'mute click must not bubble to the tile');
+  n = 0; MS.toggleTileCC(evt(), btn, 'museaitour');
+  assert.equal(n, 1, 'CC click must not bubble to the tile');
+  n = 0; MS.play(evt(), btn);
+  assert.equal(n, 1, 'play click must not bubble to the tile');
 });
 
 test('the listen and play buttons keep their own clicks', () => {

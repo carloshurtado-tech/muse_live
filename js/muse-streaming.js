@@ -407,10 +407,10 @@
       (clickable ? ' onclick="MuseStreaming.screenClick(event,this,\'' + esc(key) + '\')" title="' + (defer ? 'Play preview' : 'Open streaming plan') + '"' : '') + '>' +
         (st.role === 'vertical' ? '<span class="ms-vframe" aria-hidden="true"></span>' : '') +
         '<div class="ms-slate" aria-hidden="true"><b>' + esc(st.name) + '</b><span>' + (defer ? 'Off air' : 'Connecting') + '</span></div>' +
-        (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
+        (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(event,this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
         '<div class="ms-osd">' + badge(stateOf(key)) + '<span class="ms-health" data-tm="' + st.id + ':health">' + dot(g.overall) + LEVEL_TXT[g.overall] + '</span></div>' +
-        '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(\'' + esc(slot) + '\',this)" aria-pressed="false" aria-label="Listen to ' + esc(st.name) + '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>' +
-        (ctx !== 'proj' && st.role === 'program' && t.live ? '<button type="button" class="ms-ccbtn" onclick="MuseStreaming.toggleTileCC(this,\'' + esc(key) + '\')" aria-label="Toggle Muse Voice Transcribe captions" title="Muse Voice Transcribe captions">CC</button>' : '') +
+        '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(event,\'' + esc(slot) + '\',this)" aria-pressed="false" aria-label="Listen to ' + esc(st.name) + '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>' +
+        (ctx !== 'proj' && st.role === 'program' && t.live ? '<button type="button" class="ms-ccbtn" onclick="MuseStreaming.toggleTileCC(event,this,\'' + esc(key) + '\')" aria-label="Toggle Muse Voice Transcribe captions" title="Muse Voice Transcribe captions">CC</button>' : '') +
       '</div>' +
       '<figcaption class="ms-cap"><div class="ms-cap-main"><b>' + esc(opts.showName ? nameOf(key) : st.name) + '</b><span>' + esc(opts.showName ? st.name : st.role) + '</span></div>' +
         '<div class="ms-cap-kpis"><span title="Concurrent viewers">👁 <b data-tm="' + st.id + ':viewers">' + (t.live ? fmtN(t.m.viewers) : '—') + '</b></span>' +
@@ -1219,15 +1219,16 @@
     videoFor: function (slot) { var p = players[slot]; return p && p.video && p.video.tagName === 'VIDEO' ? p.video : null; },
     renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); } },
     renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) mount(h); },
-    play: function (btn) { var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
+    play: function (e, btn) { if (e && e.stopPropagation) e.stopPropagation(); var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
     screenClick: function (e, screen, key) {
       var t = e && e.target;
       if (t && t.closest && (t.closest('.ms-audio') || t.closest('.ms-play') || t.closest('.ms-ccbtn'))) return; // buttons handle their own clicks
       var pb = screen && screen.querySelector ? screen.querySelector('.ms-play') : null;
-      if (pb) { MS.play(pb); return; } // off-air tile: the whole thumbnail plays
+      if (pb) { MS.play(e, pb); return; } // off-air tile: the whole thumbnail plays
       openStream(key, screen && screen.getAttribute ? screen.getAttribute('data-hls-slot') : null, { viaClick: true });
     },
-    toggleTileCC: function (btn, key) {
+    toggleTileCC: function (e, btn, key) {
+      if (e && e.stopPropagation) e.stopPropagation();
       var C = root.MuseCaptions; if (!C) return;
       var pr = programOf(key);
       if (pr && parseYt(pr.url)) { // YouTube program: captions listen to the backup feed in the theater
@@ -1371,7 +1372,8 @@
       if (root.MuseIncidents && root.MuseIncidents.openNew) root.MuseIncidents.openNew(k);
     },
     openShow: function (key) { try { root.projSubTab[key] = 'streaming'; } catch (e) {} root.navGo(key); },
-    toggleAudio: function (slot, btn) {
+    toggleAudio: function (e, slot, btn) {
+      if (e && e.stopPropagation) e.stopPropagation();
       var p = players[slot]; if (!p) return;
       var unmute = p.yt ? p.muted : p.video.muted;
       // one monitor in your ears at a time

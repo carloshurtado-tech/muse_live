@@ -5614,6 +5614,34 @@ function techbookSections(p){
       B("Addresses & Sales",["Vendor","Street Address","P.O. Box","Sales"],addrRows)]});
   }
 
+  // SHOW BIBLE — Muse appendix: risk register, stream health, run of show (live data at export time)
+  try{
+    var bible=[];
+    try{
+      var bb=(typeof MuseShowCaller!=='undefined'&&MuseShowCaller.brief)?MuseShowCaller.brief(pkey):null;
+      if(bb&&bb.risks&&bb.risks.length)bible.push(B("Risk Register — Muse Show Caller",["Level","Area","Risk","Sources"],
+        bb.risks.slice(0,12).map(function(r){return [r.level.toUpperCase(),r.area,r.text,(r.sources||[]).join(' · ')];})));
+      else bible.push(B("Risk Register — Muse Show Caller",["Level","Area","Risk","Sources"],[["—","—","No open risks at export time.","Show Caller"]]));
+    }catch(eB1){}
+    try{
+      var hl=(typeof MuseStreaming!=='undefined'&&MuseStreaming.health)?MuseStreaming.health(pkey):null;
+      if(hl)bible.push(B("Stream Health — Muse Streaming",["Field","At export"],
+        [["Overall",hl.health||'-'],["Show state",hl.state||'-'],["Concurrent viewers",String(hl.viewers||0)],["Alerts",(hl.alerts&&hl.alerts.length)?hl.alerts.join('; '):"None"]]));
+    }catch(eB2){}
+    try{
+      var bk=(typeof MuseSchedule!=='undefined'&&MuseSchedule.bookings)?MuseSchedule.bookings({prod:pkey}):[];
+      if(bk&&bk.length)bible.push(B("Run of Show — Muse Schedule",["Start","End","Booking","Resource"],
+        bk.slice(0,16).map(function(x){return [String(x.start||'').slice(0,16).replace('T',' '),String(x.end||'').slice(0,16).replace('T',' '),x.title||'',x.res||''];})));
+    }catch(eB3){}
+    bible.push(B("Comms Plan — Omni (Gmail & Slack)",["Channel","Home","Rule"],[
+      ["Slack","#showcaller-demo","Approvals, executions and failures post here first (bot)."],
+      ["Gmail","Show thread (Omni)","Vendor mail files into the same thread; re-sends keep the subject."],
+      ["Intercom / Feed","Ops room","Live floor traffic; Muse watches for caption-borne calls."],
+      ["Glasses","Muse on Ray-Ban Display","Heads-up tally mirrors the approved fix count."]
+    ]));
+    if(bible.length)sections.push({title:"Show Bible — Muse",blocks:bible});
+  }catch(eBible){}
+
   // DEPARTMENT STATUS (status overview)
   S("Department Status — Production Areas",[B(null,["Department","Status","Notes / Detail"],
     p.dept.map(function(d){return [d[0],statusMap[d[1]].label,d[2]==='—'?'':d[2]];}))]);

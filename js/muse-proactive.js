@@ -167,6 +167,22 @@
     } catch (e) {}
     Object.keys(streak).forEach(function (k) { if (k.indexOf('an|') === 0 && !live[k]) delete streak[k]; }); // cleared anomalies reset
     try {
+      var SC2 = root.MuseStreamCheck;
+      if (SC2 && typeof SC2.latest === 'function') {
+        (root.order || []).forEach(function (k) {
+          var run = SC2.latest(k); if (!run || !run.flags || !run.flags.length) return;
+          if (Date.now() - new Date(run.ts).getTime() > 600000) return; // stale runs are not news
+          var sig = 'sc|' + k + '|' + run.flags.map(function (f) { return f.check; }).sort().join(',');
+          live[sig] = 1;
+          if (!persistent(sig, 2)) return;
+          raise({ id: sig, kind: 'streamcheck', key: k, show: prodName(k), level: run.flags.some(function (f) { return /black/i.test(f.check || ''); }) ? 'crit' : 'warn',
+            short: prodName(k) + ': SAM flagged the program feed',
+            text: '**' + prodName(k) + '** — Stream Check (SAM 3.1 + pixel truth): ' + run.flags.map(function (f) { return f.flag || f.check; }).join('; ') + '. Open the stream to review with Muse.', rec: null });
+        });
+      }
+    } catch (e) {}
+    Object.keys(streak).forEach(function (k) { if (k.indexOf('sc|') === 0 && !live[k]) delete streak[k]; });
+    try {
       var S2 = root.MuseSchedule;
       if (S2 && typeof S2.conflicts === 'function') {
         var cs = S2.conflicts() || [];

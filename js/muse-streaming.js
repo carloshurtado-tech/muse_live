@@ -410,6 +410,7 @@
         (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
         '<div class="ms-osd">' + badge(stateOf(key)) + '<span class="ms-health" data-tm="' + st.id + ':health">' + dot(g.overall) + LEVEL_TXT[g.overall] + '</span></div>' +
         '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(\'' + esc(slot) + '\',this)" aria-pressed="false" aria-label="Listen to ' + esc(st.name) + '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>' +
+        (ctx !== 'proj' && st.role === 'program' && t.live ? '<button type="button" class="ms-ccbtn" onclick="MuseStreaming.toggleTileCC(this,\'' + esc(key) + '\')" aria-label="Toggle Muse Voice Transcribe captions" title="Muse Voice Transcribe captions">CC</button>' : '') +
       '</div>' +
       '<figcaption class="ms-cap"><div class="ms-cap-main"><b>' + esc(opts.showName ? nameOf(key) : st.name) + '</b><span>' + esc(opts.showName ? st.name : st.role) + '</span></div>' +
         '<div class="ms-cap-kpis"><span title="Concurrent viewers">👁 <b data-tm="' + st.id + ':viewers">' + (t.live ? fmtN(t.m.viewers) : '—') + '</b></span>' +
@@ -417,6 +418,7 @@
         '<span title="Glass-to-glass latency">⏱ <b data-tm="' + st.id + ':latency">' + (t.live ? t.m.latency.toFixed(1) + 's' : '—') + '</b></span>' +
         (t.live ? srcBadge(t, 'viewers', true) : '') + '</div>' +
         '<div class="ms-meas" data-pm="' + esc(slot) + '">' + (defer ? 'Off air · press ▶ to preview the recording' : 'Player: connecting…') + '</div>' +
+        (ctx === 'wall' && st.role === 'program' ? '<div class="ms-capstrip" id="msCapStrip-' + esc(key) + '">CC · Muse Voice Transcribe — open the stream for live captions</div>' : '') +
         (opts.actions ? '<div class="ms-cap-actions">' + opts.actions + '</div>' : '') +
       '</figcaption></figure>';
   }
@@ -540,18 +542,25 @@
       var pr = programOf(k); if (!pr) return '';
       return tileHTML(k, pr, 'wall', { showName: true, actions: '<button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + k + '\')">Open streaming plan →</button>' });
     }).join('');
+    var sitesHTML = '';
+    try {
+      var wl = root.locsOf ? root.locsOf('museaitour') : [];
+      if (wl && wl.length > 1) sitesHTML = '<div class="ms-sites"><b>Muse AI World Tour 2026 · ' + wl.length + ' sites</b>' + wl.map(function (L) { return '<span class="ms-site-chip">' + esc(L.flag || '') + ' ' + esc(L.name) + ' · ' + esc(L.city || '') + '</span>'; }).join('') + '</div>';
+    } catch (e) {}
     var attn = sorted.filter(function (k) { if (!liveOf(k)) return false; var g = healthOf(k); return g.overall === 'warn' || g.overall === 'crit' || anomalies().some(function (a) { return a.key === k; }); });
     var attnHTML = attn.length ? '<div class="ms-attn"><b>Needs attention</b>' + attn.map(function (k) {
       var pr = programOf(k); return '<button type="button" class="ms-attn-chip" onclick="MuseStreaming.openStream(\'' + k + '\',\'wall:' + pr.id + '\')">' + esc(nameOf(k)) + ' · ' + esc(healthOf(k).overall.toUpperCase()) + '</button>';
     }).join('') + '</div>' : '';
     return '<div class="ms-wrap">' +
       '<div class="ms-page-h"><div><h1>Live Streams</h1><p>Every program feed across Meta live events, with end-to-end health. For executives and engineers.</p></div>' +
-        '<div class="ms-head-r"><button type="button" class="ms-btn ms-btn-soft" onclick="window.open(\'glasses/preview.html\',\'_blank\',\'noopener\')">Muse on Ray-Ban Display ↗</button>' +
+        '<div class="ms-head-r"><button type="button" class="ms-btn" onclick="MuseStreaming.rehearse(\'museaitour\')">▶ Rehearse the incident</button>' +
+        '<button type="button" class="ms-btn ms-btn-soft" onclick="window.open(\'glasses/preview.html\',\'_blank\',\'noopener\')">Muse on Ray-Ban Display ↗</button>' +
         '<button type="button" class="ms-btn ms-btn-primary" onclick="museaiAsk(\'Give me a health check on every live stream right now\')">Ask Muse for a health check</button></div></div>' +
       '<p class="ms-note ms-demo-note"><span class="ms-src">Demo data</span> Viewer and pipeline numbers are simulated until real sources are connected per stream (AWS CloudWatch, Mux Data, Facebook Live). Video monitors and pre-flight checks are real.</p>' +
       '<div class="ms-kpis"><div><span>Live now</span><b id="msK-live">' + live + '</b></div><div><span>Concurrent viewers</span><b id="msK-viewers">' + fmtN(totalV) + '</b></div>' +
         '<div><span>Avg rebuffer</span><b id="msK-reb">' + avgReb.toFixed(2) + '%</b></div><div><span>Open incidents</span><b>' + openInc + '</b></div></div>' +
       attnHTML +
+      sitesHTML +
       '<div class="ms-wall">' + tiles + '</div>' +
       section('SLO · ' + SLO_TARGET + '% availability by show', '<div class="ms-table"><table><thead><tr><th>Show</th><th>State</th><th>Last event</th><th>Event budget left</th><th>Last 30 days</th><th>30-day budget left</th></tr></thead><tbody>' +
         sorted.map(function (k) { var o = sloFor(k), e = o.event, mo = o.last_30_days;
@@ -971,6 +980,16 @@
   }
   function tickBody() {
     keys().forEach(function (k) {
+      var strip = document.getElementById('msCapStrip-' + k);
+      if (strip && root.MuseCaptions && liveOf(k)) {
+        var cs = root.MuseCaptions.status(k), cl = root.MuseCaptions.lines(k);
+        var last = cl.length ? cl[cl.length - 1] : null;
+        var txt = cs.running ? 'CC · LIVE (Muse Voice Transcribe) — ' + (last && last.text ? last.text : 'listening…')
+          : cl.length ? 'CC · ' + cl.length + ' lines stored — ' + (last && last.text ? last.text : '')
+          : 'CC · Muse Voice Transcribe — open the stream for live captions';
+        if (strip.textContent !== txt) strip.textContent = txt;
+        strip.classList.toggle('is-live', cs.running);
+      }
       streamsFor(k).forEach(function (st) {
         var t = teleFor(k, st); stepTele(t);
         if (!t.live) return;
@@ -1037,6 +1056,7 @@
             '<button type="button" class="ms-btn ms-btn-soft" onclick="MuseStreaming.closeStream()">Close ✕</button>' +
           '</div></div>' +
         '<div class="ms-screen" id="msModalScreen"></div>' +
+        '<div class="ms-modal-conf" id="msModalConf" hidden><span>Confidence · backup feed — Muse captions listen here</span><div class="ms-screen" id="msModalBackup"></div></div>' +
         '<div id="msModalReact"></div>' +
         '<div class="ms-modal-grid">' +
           '<div class="ms-modal-sec"><h4>Player · live measurements</h4><div id="msModalMeas"></div><h4 class="ms-modal-sub">Stream facts</h4><div id="msModalFacts"></div></div>' +
@@ -1054,7 +1074,8 @@
     document.body.appendChild(d);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.key) MS.closeStream(); });
   }
-  function openStream(key, slot) {
+  function openStream(key, slot, opts) {
+    opts = opts || {};
     ensureModal();
     var st = null; streamsFor(key).forEach(function (x) { if ('wall:' + x.id === slot) st = x; });
     if (!st) st = programOf(key);
@@ -1078,8 +1099,30 @@
       ['Latency budget', esc(showFor(key).latency || '—')],
       ['CDN weights', 'CloudFront ' + ((rec(key).cdn || {}).cloudfront || 60) + ' / Akamai ' + ((rec(key).cdn || {}).akamai || 40)],
     ]);
+    // Confidence monitor: mount the backup feed too — it is the caption source
+    // whenever the program is a YouTube embed the browser cannot listen to.
+    var bk = null; streamsFor(key).forEach(function (x) { if (x.role === 'backup') bk = x; });
+    var conf = document.getElementById('msModalConf'), bs = document.getElementById('msModalBackup');
+    if (bk && bk.id !== st.id && bs) {
+      conf.hidden = false;
+      bs.setAttribute('data-hls-slot', 'wall:' + bk.id);
+      bs.setAttribute('data-url', bk.url);
+      if (t.live) bs.setAttribute('data-live', '1'); else bs.removeAttribute('data-live');
+      bs.removeAttribute('data-defer');
+      bs.innerHTML = '<div class="ms-slate" aria-hidden="true"><b>' + esc(bk.name) + '</b><span>Connecting</span></div>';
+    } else if (conf) conf.hidden = true;
     modalEl().hidden = false;
     mount(modalEl());
+    // Captions on open (click-originated only): unmute the caption source and let
+    // Muse Voice Transcribe run, so captions are visible without hunting for a switch.
+    if (opts.viaClick && root.MuseCaptions) {
+      var capSlot = captionSlotFor(key);
+      if (capSlot) {
+        var cp = players[capSlot];
+        if (cp && !cp.yt) { try { cp.video.muted = false; } catch (e) {} }
+        try { root.MuseCaptions.start(key, capSlot); modal.capsOn = true; } catch (e) {}
+      }
+    }
     refreshModal();
     if (modal.timer) clearInterval(modal.timer);
     modal.timer = setInterval(refreshModal, 1500);
@@ -1102,11 +1145,43 @@
       ['Dropped frames', m.dropped_frames != null ? m.dropped_frames : '—'], ['Stalls / errors', (m.stalls || 0) + ' / ' + (m.errors || 0)],
     ]) : '<p class="ms-note">Player is starting…</p>';
     var ans = anomalies().filter(function (a) { return a.key === modal.key; });
+    // SAM watcher: while the theater is open, Stream Check (SAM 3.1 + pixels) re-runs
+    // at most every 90 s; results alert through Muse (theater banner + Muse drawer).
+    var SC = root.MuseStreamCheck, extras = [];
+    if (SC && modal.slot) {
+      if ((!modal.watchTs || Date.now() - modal.watchTs > 90000) && MS.videoFor(modal.slot)) {
+        modal.watchTs = Date.now();
+        SC.runShow(modal.key, modal.slot, { expectLowerThird: true, gear: [] }).then(function () { refreshModal(); }).catch(function () {});
+      }
+      var last = SC.latest(modal.key);
+      if (last && Date.now() - new Date(last.ts).getTime() < 600000) {
+        extras.push(last.flags && last.flags.length
+          ? '<div class="ms-react-row"><span><b>SAM 3.1</b> — ' + last.flags.map(function (f) { return esc(f.flag || f.check); }).join('; ') + '</span><button type="button" class="ms-btn" onclick="MuseStreaming.modalCheck()">Details</button></div>'
+          : '<div class="ms-react-row"><span><b>SAM 3.1</b> — last check clean (black-frame, lower-third, pixels).</span></div>');
+      }
+    }
+    // Caption signal: the transcript itself can call the problem before telemetry does.
+    if (root.MuseCaptions) {
+      var cl2 = root.MuseCaptions.lines(modal.key).slice(-6);
+      for (var ci = cl2.length - 1; ci >= 0; ci--) {
+        if (cl2[ci].text && /dark|black|standby|silence|no audio|hold on/i.test(cl2[ci].text)) {
+          extras.push('<div class="ms-react-row"><span><b>Caption signal</b> — “' + esc(cl2[ci].text) + '”</span><span class="ms-note">from Muse Voice Transcribe</span></div>');
+          break;
+        }
+      }
+    }
+    var tpr = programOf(modal.key) ? teleFor(modal.key, programOf(modal.key)) : null;
+    if (tpr && tpr.live && tpr.m.qoe < 72) extras.push('<div class="ms-react-row"><span><b>Audience QoE ' + Math.round(tpr.m.qoe) + '</b> — viewers feel rebuffering before the encoder alarms.</span><span class="ms-note">watch</span></div>');
+    if (modal.rehearsing && modal.rehearsing.key === modal.key) {
+      var rh = modal.rehearsing, failed = !FAULTS[modal.key] && rec(modal.key).failover;
+      if (failed && !rh.done) { rh.done = true; if (root.toast) root.toast('Rehearsal complete — Muse failed over. In the show, Omni + glasses fire from Show Caller.'); }
+      extras.unshift('<div class="ms-react-row"><span><b>Rehearsal</b> — feed dropped by Muse · ' + (FAULTS[modal.key] ? 'waiting for your failover approval' : failed ? 'failover applied ✓ story complete' : 'recovering…') + '</span></div>');
+    }
     var rx = document.getElementById('msModalReact');
-    if (rx) { var reactHTML = ans.length ? '<div class="ms-react"><b>Muse noticed</b>' + ans.map(function (a, i) {
+    if (rx) { var reactHTML = (ans.length || extras.length) ? '<div class="ms-react"><b>Muse noticed</b>' + ans.map(function (a, i) {
       return '<div class="ms-react-row"><span>' + esc(a.stream) + ' — ' + esc(a.text) + '</span>' +
         (a.recommendation && a.recommendation.kind !== 'none' ? '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseStreaming.modalApprove(' + i + ')">' + esc(a.recommendation.label) + '</button>' : '<span class="ms-note">watch</span>') + '</div>';
-    }).join('') + '</div>' : (FAULTS[modal.key] ? '' : '<div class="ms-react is-ok"><b>Muse is watching</b><span>All stages healthy on this show.</span></div>'); rx.innerHTML = reactHTML; }
+    }).join('') + extras.join('') + '</div>' : (FAULTS[modal.key] ? '' : '<div class="ms-react is-ok"><b>Muse is watching</b><span>All stages healthy on this show.</span></div>'); rx.innerHTML = reactHTML; }
     renderModalCaps();
     var fb = document.getElementById('msModalFaultBtn');
     if (fb) fb.textContent = FAULTS[modal.key] ? 'Restore program feed' : 'Simulate: drop program feed';
@@ -1133,7 +1208,8 @@
     return '<div class="ms-checktools">' +
       '<button type="button" class="ms-btn" onclick="MuseStreaming.modalCheck()">Run Stream Check (SAM + pixels)</button>' +
       '<button type="button" class="ms-btn" onclick="MuseStreaming.modalBase()">Baseline frame</button>' +
-      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalCompare()">Compare to baseline</button></div>';
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalCompare()">Compare to baseline</button>' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalComparePaths()">Primary vs backup</button></div>';
   }
 
   /* ---------------- public API ---------------- */
@@ -1146,10 +1222,33 @@
     play: function (btn) { var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
     screenClick: function (e, screen, key) {
       var t = e && e.target;
-      if (t && t.closest && (t.closest('.ms-audio') || t.closest('.ms-play'))) return; // buttons handle their own clicks
+      if (t && t.closest && (t.closest('.ms-audio') || t.closest('.ms-play') || t.closest('.ms-ccbtn'))) return; // buttons handle their own clicks
       var pb = screen && screen.querySelector ? screen.querySelector('.ms-play') : null;
       if (pb) { MS.play(pb); return; } // off-air tile: the whole thumbnail plays
-      openStream(key, screen && screen.getAttribute ? screen.getAttribute('data-hls-slot') : null);
+      openStream(key, screen && screen.getAttribute ? screen.getAttribute('data-hls-slot') : null, { viaClick: true });
+    },
+    toggleTileCC: function (btn, key) {
+      var C = root.MuseCaptions; if (!C) return;
+      var pr = programOf(key);
+      if (pr && parseYt(pr.url)) { // YouTube program: captions listen to the backup feed in the theater
+        openStream(key, 'wall:' + pr.id, { viaClick: true });
+        return;
+      }
+      var capSlot = captionSlotFor(key); if (!capSlot) return;
+      var st = C.status(key);
+      if (st.running) { C.stop(key); btn.classList.remove('is-on'); }
+      else {
+        var p = players[capSlot];
+        if (p && !p.yt) { try { p.video.muted = false; } catch (e) {} }
+        var r = C.start(key, capSlot);
+        if (r && r.ok === false && root.toast) { root.toast(r.error); return; }
+        btn.classList.add('is-on');
+      }
+    },
+    rehearse: function (key) {
+      modal.rehearsing = { key: key, t0: Date.now(), done: false };
+      openStream(key, 'wall:' + (programOf(key) || {}).id, { viaClick: true });
+      setTimeout(function () { injectFault(key); refreshModal(); }, 1200);
     },
     openStream: openStream,
     closeStream: closeStream,
@@ -1251,6 +1350,20 @@
       if (FAULTS[modal.key]) { var scr = document.getElementById('msModalScreen'); if (scr && !scr.querySelector('video')) scr.innerHTML = '<div class="ms-slate" aria-hidden="true"><b>Program feed</b><span>Signal lost</span></div>'; }
       else mount(modalEl());
       refreshModal();
+    },
+    modalComparePaths: function () {
+      var SC = root.MuseStreamCheck, host = document.getElementById('msModalCheck');
+      if (!SC || !modal.key || !host) return;
+      var bk = null; streamsFor(modal.key).forEach(function (x) { if (x.role === 'backup') bk = x; });
+      if (!bk) { if (root.toast) root.toast('No backup feed on this show'); return; }
+      var base = SC.captureFrame('wall:' + bk.id);
+      if (!base.ok) { if (root.toast) root.toast(base.error); return; }
+      SC.compareFrames(modal.slot, base.dataUrl).then(function (r) {
+        var html = checkToolsHTML() + (r.ok
+          ? '<p><b>Primary vs backup</b> — <span class="' + (r.changedPct > 8 ? 'ms-flag' : 'ms-ok') + '">' + r.changedPct + '% of pixels differ</span> <span>(mean Δluma ' + r.meanDelta + ') — drift beyond noise means the paths no longer carry the same picture.</span></p>'
+          : '<p class="ms-note">' + esc(r.error) + '</p>');
+        host.innerHTML = html;
+      });
     },
     modalPlan: function () { var k = modal.key; closeStream(); MS.openShow(k); },
     modalIncident: function () {

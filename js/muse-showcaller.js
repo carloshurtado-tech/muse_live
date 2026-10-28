@@ -250,7 +250,11 @@
 
     var rank = { high: 0, med: 1, low: 2 };
     risks.sort(function (a, b) { return rank[a.level] - rank[b.level]; });
-    return { ts: s.ts, show: s.show, key: s.key, risks: risks, unknown: unknown };
+    var srcSet = {};
+    risks.forEach(function (r) { (r.sources || []).forEach(function (x) { srcSet[x] = 1; }); });
+    return { ts: s.ts, show: s.show, key: s.key, risks: risks, unknown: unknown,
+      grounding: { lines: risks.length, records: Object.keys(srcSet).length,
+        note: 'Every line cites its record; ' + (unknown.length ? unknown.length + ' area(s) unreadable and stated as unknown.' : 'all six ops areas readable.') } };
   }
 
   /* ---------- fix proposals (Day 2): data only, nothing executes ----------

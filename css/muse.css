@@ -4041,6 +4041,17 @@ html.dark .ms-alert{color:#FF8A9A;}
 .ms-osd{position:absolute;top:6px;left:6px;display:inline-flex;align-items:center;gap:4px;z-index:2;}
 .ms-health{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:600;color:#fff;background:rgba(5,5,5,.45);padding:2px 6px;border-radius:999px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
 .ms-audio{position:absolute;top:6px;right:6px;z-index:2;width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px) saturate(1.2);-webkit-backdrop-filter:blur(6px) saturate(1.2);transition:background .15s ease, transform .15s ease;}
+.ms-ccbtn{position:absolute;left:6px;bottom:6px;z-index:2;height:22px;padding:0 8px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:800;letter-spacing:.04em;border:1px solid rgba(255,255,255,.25);cursor:pointer;}
+.ms-ccbtn:hover{background:rgba(0,0,0,.75);}
+.ms-ccbtn.is-on{background:#0866FF;border-color:#0866FF;}
+.ms-capstrip{font-size:10.5px;color:rgb(var(--c-ink-3,101 103 107));white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+.ms-capstrip.is-live{color:#0866FF;font-weight:700;}
+.ms-modal-conf{margin-top:10px;}
+.ms-modal-conf>span{display:block;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:rgb(var(--c-ink-3,101 103 107));margin-bottom:4px;}
+.ms-modal-conf .ms-screen{width:230px;border-radius:8px;}
+.ms-sites{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:10px 0 2px;font-size:11px;}
+.ms-sites b{font-size:11px;margin-right:2px;}
+.ms-site-chip{border:1px solid rgb(var(--c-line,228 230 235));border-radius:999px;padding:3px 9px;font-size:10.5px;font-weight:600;background:rgb(var(--c-surface,255 255 255));}
 .ms-audio:hover{background:rgba(255,255,255,.22);}
 .ms-audio[aria-pressed="true"]{background:rgba(8,102,255,.55);border-color:rgba(255,255,255,.4);}
 /* Compact live-streams dashboard tile: keep health signal, shed real estate */

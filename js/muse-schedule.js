@@ -821,12 +821,17 @@
         var b = get(bar.getAttribute('data-id')); if (!b) return;
         st = { kind: e.target.getAttribute('data-resize') ? 'resize' : 'move', bar: bar, b: b, x0: e.clientX, y0: e.clientY, moved: false, left: parseFloat(bar.style.left), width: parseFloat(bar.style.width), row: bar.closest('.sc-row') };
         try { bar.setPointerCapture(e.pointerId); } catch (x) {}
+        /* Chromium can swallow the gesture after capture (native drag/selection,
+           re-render); window-level listeners guarantee move/up always land. */
+        e.preventDefault();
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', end);
       } else if (track && e.pointerType === 'mouse') {
         var rect = track.getBoundingClientRect();
         st = { kind: 'create', track: track, x0: e.clientX, left: e.clientX - rect.left, row: track.closest('.sc-row'), moved: false };
       }
     });
-    sc.addEventListener('pointermove', function (e) {
+    function onMove(e) {
       if (!st) return;
       var dx = e.clientX - st.x0;
       if (!st.moved && Math.abs(dx) < 4 && Math.abs((e.clientY - (st.y0 || e.clientY))) < 4) return;
@@ -845,8 +850,10 @@
         var a = Math.min(st.left, st.left + dx), w = Math.abs(dx);
         st.ghost.style.left = a + 'px'; st.ghost.style.width = w + 'px';
       }
-    });
+    }
+    sc.addEventListener('pointermove', onMove);
     function end(e) {
+      window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', end);
       if (!st) return;
       var s = st; st = null;
       if (s.kind === 'create') {
@@ -872,7 +879,7 @@
       } catch (x) { toast(x.message); renderInto(document.getElementById('scheduleGantt')); }
     }
     sc.addEventListener('pointerup', end);
-    sc.addEventListener('pointercancel', function () { if (st && st.bar) { st.bar.style.transform = ''; st.bar.classList.remove('is-dragging'); } if (st && st.ghost) st.ghost.remove(); st = null; });
+    sc.addEventListener('pointercancel', function () { window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', end); if (st && st.bar) { st.bar.style.transform = ''; st.bar.classList.remove('is-dragging'); } if (st && st.ghost) st.ghost.remove(); st = null; });
     sc.addEventListener('dblclick', function (e) {
       var track = e.target.closest('.sc-track'); if (!track || e.target.closest('.sc-bar')) return;
       var rect = track.getBoundingClientRect(), t1 = timeAtX(e.clientX - rect.left, r.from, g);

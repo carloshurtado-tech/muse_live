@@ -25,9 +25,9 @@ export async function onRequest(context) {
   if (request.method === 'GET') {
     const asset = await db.prepare('SELECT * FROM assets WHERE serial = ?').bind(serial).first();
     if (!asset) return json({ ok: false, error: 'Not found' }, 404);
-    // id DESC breaks same-millisecond ties in insertion order (fast runners
-    // execute a whole lifecycle inside 1 ms; ts alone left the order undefined).
-    const h = await db.prepare('SELECT ts, "by", action, detail FROM asset_history WHERE serial = ? ORDER BY ts DESC, id DESC LIMIT 100').bind(serial).all();
+    // Paper-trail order is insertion order: id is monotonic, while 1 ms
+    // timestamps tie across a fast lifecycle and left the order undefined.
+    const h = await db.prepare('SELECT ts, "by", action, detail FROM asset_history WHERE serial = ? ORDER BY id DESC LIMIT 100').bind(serial).all();
     return json({ ok: true, asset, history: (h.results || []) });
   }
 

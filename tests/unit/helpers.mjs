@@ -106,7 +106,7 @@ export function memoryD1() {
               return { results: hits.map((f) => ({ ...vendors.get(f.vid) })) };
             }
             if (/FROM asset_history/.test(sql)) {
-              return { results: assetHistory.filter((h) => h.serial === args[0]).sort((a, b) => b.ts - a.ts).slice(0, 100) };
+              return { results: assetHistory.filter((h) => h.serial === args[0]).sort((a, b) => b.id - a.id).slice(0, 100) };
             }
             if (/^SELECT \* FROM assets/.test(sql)) return { results: [...assets.values()] };
             if (/^SELECT \* FROM vendors/.test(sql)) return { results: [...vendors.values()] };

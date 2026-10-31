@@ -102,7 +102,7 @@ The model never sees the database and never writes on its own.
 | Result | What it measures |
 | --- | --- |
 | **40 / 40** | Muse accuracy eval on the real model, median answer 5.8 s ([eval/REPORT.md](eval/REPORT.md)) |
-| **27** | unit tests: auth, sessions, guest access and AI spend limits, KV, sync, incidents, SigV4, build |
+| **189** | unit tests (`npm test`): auth, sessions, guest access and AI spend limits, KV + conditional writes, sync, incidents, SigV4, telemetry schema, abuse guards, build |
 | **16** | Playwright end-to-end tests, including a crawl of every view and every show tab |
 | **0** | axe WCAG 2.1 AA violations on the landing page, About page and main views, light and dark |
 
@@ -120,7 +120,8 @@ The model never sees the database and never writes on its own.
 - Viewer counts, bitrates and other pipeline metrics are simulated unless a show is connected to real telemetry; every simulated number is labeled *Demo*.
 - Stream monitors play public recordings of Meta events from YouTube, standing in for live program feeds.
 - Most views are string-template JavaScript from an earlier build; newer modules are self-contained, and [docs/MIGRATION.md](docs/MIGRATION.md) plans the move to React + TypeScript.
-- Shared storage is last-write-wins per key: fine for a small team, not for a large one.
+- Shared storage is last-write-wins per key unless clients send `If-Match` / `If-None-Match`
+  (optimistic concurrency, 412 on conflict): fine for a small team, not for a large one.
 - This is a concept demo, not an official Meta product.
 
 ---
@@ -139,7 +140,9 @@ Without `MODEL_API_KEY`, Muse answers from built-in rules (offline mode).
 
 `tools/dev-server.mjs` is a small Cloudflare Pages emulator in plain Node: it runs the middleware
 and `functions/api/**`, applies `_headers`, and emulates the `MUSE_KV` binding (persisted to
-`.dev-kv.json`). It exists because `wrangler pages dev` (workerd) needs macOS 13.5+.
+`.dev-kv.json`). It exists because `wrangler pages dev` (workerd) needs macOS 13.5+. It binds
+127.0.0.1; `--host` overrides this with an explicit warning — the dev server is unhardened, so
+never expose it to the public internet (see [Security](docs/SECURITY.md)).
 
 | Command | What it does |
 | --- | --- |

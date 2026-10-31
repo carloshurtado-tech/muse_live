@@ -28,26 +28,43 @@ const REDIRECT_PREFIXES = ['/glasses', '/ops'];
 // runs PBKDF2 against it so response time doesn't leak whether an email exists.
 const DUMMY_USER = { salt: 'AAAAAAAAAAAAAAAAAAAAAA', hash: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', iter: 100000 };
 
-// Per-IP+session login throttle. shortcut: in-memory per isolate — fine for the demo team; move to MUSE_KV when it bottlenecks.
-const LOGIN_RATE = 10, LOGIN_WINDOW_MS = 60_000;
+// Login throttle, shared across isolates through MUSE_KV with an in-memory
+// fallback (local dev without KV, or a KV outage, keeps throttling per isolate
+// instead of failing open). Best-effort coordination: two isolates racing the
+// same bucket can each admit one request; the window is short (60 s) and the
+// cost of a double-admit is one extra PBKDF2, not a bypass.
+const LOGIN_RATE = 10, LOGIN_WINDOW_MS = 60_000, LOGIN_KV_TTL = 120;
 const loginBuckets = globalThis.__museLoginBuckets || (globalThis.__museLoginBuckets = new Map());
 function loginKey(request) {
   const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local';
   const c = (request.headers.get('Cookie') || '').match(/(?:^|;\s*)muse_session=([^;]+)/);
   return ip + '|' + (c ? c[1].slice(-16) : '-');
 }
-function loginTake(key) {
-  const now = Date.now(), b = loginBuckets.get(key) || { t: LOGIN_RATE, at: now };
+export async function loginTake(env, key) {
+  const now = Date.now();
+  let b = loginBuckets.get(key) || { t: LOGIN_RATE, at: now };
+  if (env && env.MUSE_KV) {
+    try {
+      const kv = await env.MUSE_KV.get('login:rl:' + key, 'json');
+      if (kv && typeof kv.t === 'number' && typeof kv.at === 'number') b = kv;
+    } catch (e) { /* fall through to the memory bucket */ }
+  }
   b.t = Math.min(LOGIN_RATE, b.t + (now - b.at) * (LOGIN_RATE / LOGIN_WINDOW_MS)); b.at = now;
-  if (b.t < 1) { loginBuckets.set(key, b); return Math.ceil((1 - b.t) * LOGIN_WINDOW_MS / LOGIN_RATE / 1000); }
-  b.t -= 1; loginBuckets.set(key, b); return 0;
+  let retry = 0;
+  if (b.t < 1) retry = Math.ceil((1 - b.t) * LOGIN_WINDOW_MS / LOGIN_RATE / 1000);
+  else b.t -= 1;
+  loginBuckets.set(key, b);
+  if (env && env.MUSE_KV) {
+    try { await env.MUSE_KV.put('login:rl:' + key, JSON.stringify(b), { expirationTtl: LOGIN_KV_TTL }); } catch (e) { /* memory bucket still applies */ }
+  }
+  return retry;
 }
 
 async function login(request, env, secure) {
   const lang = resolveLang(request);
   if (request.method !== 'POST') return json({ ok: false, error: t(lang, 'methodNotAllowed') }, 405);
   if (!sameOrigin(request)) return json({ ok: false, error: t(lang, 'forbiddenOrigin') }, 403);
-  const retry = loginTake(loginKey(request));
+  const retry = await loginTake(env, loginKey(request));
   if (retry) return json({ ok: false, error: t(lang, 'tooManyLogins', { retry }) }, 429);
   let body = {};
   try { body = await request.json(); } catch (e) { /* empty body */ }
@@ -85,7 +102,7 @@ async function guestLogin(request, env, secure) {
   if (request.method !== 'POST') return json({ ok: false, error: t(lang, 'methodNotAllowed') }, 405);
   if (!sameOrigin(request)) return json({ ok: false, error: t(lang, 'forbiddenOrigin') }, 403);
   if (env.GUEST_DEMO === 'off') return json({ ok: false, error: t(lang, 'guestClosed') }, 403);
-  const retry = loginTake(loginKey(request));
+  const retry = await loginTake(env, loginKey(request));
   if (retry) return json({ ok: false, error: t(lang, 'tooManyAttempts', { retry }) }, 429);
   await audit(env, { who: GUEST.u, role: GUEST.r, action: 'login', detail: 'guest demo' });
   return json({ ok: true, user: { email: null, name: GUEST.n, role: GUEST.r } }, 200,

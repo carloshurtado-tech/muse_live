@@ -17,6 +17,18 @@ test('GET missing key → 404, PUT then GET round-trips with metadata', async ()
   assert.ok(+got.headers.get('X-Muse-Updated') > 0);
   assert.equal(got.headers.get('X-Muse-By'), 'ana@meta.com');
 });
+test('PUT requires application/json (415) and is rate limited (429)', async () => {
+  const env = { MUSE_KV: memoryKV() };
+  const plain = new Request('https://muse.test/x', { method: 'PUT', headers: { 'Content-Type': 'text/plain' }, body: '{}' });
+  const r415 = await onRequest({ request: plain, env, params: { key: 'a' }, data: { user: editor }, next: async () => new Response('NEXT') });
+  assert.equal(r415.status, 415);
+  const ck = 'kv-rate-' + Math.random();
+  let last = null;
+  for (let i = 0; i < 121; i++) {
+    last = await onRequest(ctx('/x', { method: 'PUT', body: { i }, env, user: editor, params: { key: 'a' }, headers: { Cookie: 'muse_session=' + ck } }));
+  }
+  assert.equal(last.status, 429);
+});
 test('validation: bad key, non-JSON, too large, foreign origin', async () => {
   const env = { MUSE_KV: memoryKV() };
   assert.equal((await onRequest(ctx('/x', { env, user: editor, params: { key: 'users:ana' } }))).status, 400);

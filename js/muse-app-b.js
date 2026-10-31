@@ -6521,21 +6521,23 @@ function museRichRead(q){
 
 /* onchange is an attribute string like "surveySetFinding('museaitour','f1','text')"
    — the value is appended as the final argument. Kept as a string so the markup
-   builders stay simple template concatenation like the rest of the file. */
+   builders stay simple template concatenation like the rest of the file.
+   Dispatched through an allowlist, never compiled: museParseRichCb (shared,
+   js/muse-utils.js) extracts the callee + string literals and anything else is
+   refused, so a stored/hand-edited data-onchange value can never become code. */
+var RICH_CALLBACKS={surveySetFinding:1,survLocNote:1,powerEditDistro:1,securitySet:1,
+  panoNotesSet:1,panoEdField:1,invSetField:1,setVendor:1,setVendorPage:1,setDeptNote:1,replayEditNet:1};
 function museRichFire(expr,val){
   if(!expr)return;
-  var e=String(expr).replace(/^\s+|\s+$/g,'');
   try{
-    /* full function expression: function(v){...} */
-    if(/^function\s*\(/.test(e)){(new Function('v','return ('+e+')(v);'))(val);return;}
-    /* bare call path: setDeptNote('k',0) → append value as last arg */
-    if(/^[a-zA-Z_$][\w$.]*\s*\(/.test(e)&&e.charAt(e.length-1)!==')'){
-      (new Function('v',e+'(v);'))(val);return;}
-    if(/^[a-zA-Z_$][\w$.]*$/.test(e)){(new Function('v',e+'(v);'))(val);return;}
-    (new Function('v','return ('+e+')(v);'))(val);
+    var p=(typeof museParseRichCb==='function')?museParseRichCb(expr):null;
+    if(!p||!RICH_CALLBACKS[p.name])throw new Error('refused rich callback');
+    var scope=(typeof window!=='undefined')?window:globalThis;
+    var fn=scope[p.name];
+    if(typeof fn!=='function')throw new Error('missing rich callback '+p.name);
+    fn.apply(null,p.args.concat([val]));
   }catch(err){
-    try{(new Function('v',e))(val);}catch(err2){
-      try{console.warn('museRichFire failed',e,err2);}catch(x){}}}}
+    try{console.warn('museRichFire refused',String(expr).slice(0,80),err);}catch(x){}}}
 
 function museRichGet(id){
   var b=_richBoxes[id];
@@ -8087,7 +8089,7 @@ function openCommsThread(tk){loadCommsOnce();
   var ov=document.getElementById('commsMsgOverlay');var bx=document.getElementById('commsMsgBox');if(!ov||!bx)return;
   var head=msgs[0];
   var bubbles=msgs.map(function(m){var out=m.dir==='out';
-    return '<div class="flex '+(out?'justify-end':'justify-start')+'"><div class="max-w-[80%] '+(out?'rounded-2xl rounded-br-sm':'rounded-2xl rounded-bl-sm')+' px-3 py-2 text-xs" style="'+(out?'background:#0866FF;color:#fff':'background:#F0F2F5;color:#050505')+'">'+
+    return '<div class="flex '+(out?'justify-end':'justify-start')+'"><div class="max-w-[80%] '+(out?'comms-bubble-out rounded-2xl rounded-br-sm':'comms-bubble-in rounded-2xl rounded-bl-sm')+' px-3 py-2 text-xs">'+
       '<div class="flex items-center gap-2 mb-1"><span class="text-[9px] font-bold '+(out?'text-blue-100':'text-gray-500')+'">'+esc(out?'You':m.from)+'</span>'+commsChannelChip(m.channel)+'<span class="text-[8px] mono '+(out?'text-blue-200':'text-gray-400')+'">'+esc(m.ts)+'</span></div>'+
       (m.subject&&!out?'<p class="text-xs font-bold mb-1">'+esc(m.subject)+'</p>':'')+
       museRichView(m.body,'text-xs leading-relaxed'+(out?' rt-on-dark':''))+'</div></div>';
@@ -9611,7 +9613,10 @@ var pano={open:false,key:null,viewer:null,psv:null,markers:null,tour:null,node:n
 
 function panoId(){return 'h'+Date.now().toString(36)+Math.floor(Math.random()*1296).toString(36);}
 function panoSrc(p){return p.img||(typeof SAMPLE_PANO!=='undefined'?SAMPLE_PANO:'');}
-function escHtml(s){return (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* Delegates to the shared esc() (js/muse-utils.js, loaded first): identical output
+   for & < >, plus quote-escaping so these values are also safe inside quoted
+   attributes. Kept as a named alias because pano markup calls it throughout. */
+function escHtml(s){return esc(s);}
 function panoData(){return pano.key?ensurePano(getSurvey(pano.key)):{hotspots:[],marks:[]};}
 function panoStatus(t){var st=document.getElementById('panoStatus');if(st)st.textContent=t||'';}
 
@@ -9670,28 +9675,53 @@ function panoOpenEditor(kind,id){var obj=kind==='pin'?panoFindPin(id):panoFindMa
   var title=kind==='pin'?((PANO_TYPES[obj.type]||{}).label||'Pin'):({run:'Routed run',zone:'Zone',callout:'Callout',free:'Freehand highlight'}[obj.kind]||'Markup');
   var swatches='';
   if(kind==='mark'){swatches='<div class="pano-ed-row"><span class="pano-ed-lbl">Colour</span><div class="pano-swatches">'+
-    PANO_SWATCHES.map(function(c){return '<button class="pano-sw'+(((obj.color||'').toLowerCase()===c.toLowerCase())?' on':'')+'" style="background:'+c+'" onclick="panoEdColor(\''+c+'\')"></button>';}).join('')+'</div></div>';}
+    PANO_SWATCHES.map(function(c){return '<button class="pano-sw'+(((obj.color||'').toLowerCase()===c.toLowerCase())?' on':'')+'" style="background:'+c+'" data-act="color" data-val="'+c+'" aria-label="Colour '+c+'"></button>';}).join('')+'</div></div>';}
   var radius='';
-  if(kind==='mark'&&obj.kind==='zone'){radius='<div class="pano-ed-row"><span class="pano-ed-lbl">Radius</span><input type="range" min="3" max="40" value="'+(obj.radius||8)+'" oninput="panoEdRadius(this.value)" class="pano-range"><span id="panoRadVal" class="pano-ed-val">'+(obj.radius||8)+'°</span></div>';}
+  if(kind==='mark'&&obj.kind==='zone'){radius='<div class="pano-ed-row"><span class="pano-ed-lbl">Radius</span><input type="range" min="3" max="40" value="'+(obj.radius||8)+'" data-act="radius" class="pano-range"><span id="panoRadVal" class="pano-ed-val">'+(obj.radius||8)+'°</span></div>';}
   /* v29 (Module 6): hazard pins carry the same broadcast hazard vocabulary as the Survey Log */
   var tagRow='';
   if(kind==='pin'&&obj.type==='hazard'&&typeof SURV_TAGS!=='undefined'){
-    tagRow='<div class="pano-ed-row"><span class="pano-ed-lbl">Hazard</span><select class="pano-ed-inp" style="cursor:pointer" onchange="panoEdField(\'tag\',this.value)"><option value="">— tag —</option>'+
+    tagRow='<div class="pano-ed-row"><span class="pano-ed-lbl">Hazard</span><select class="pano-ed-inp" style="cursor:pointer" data-act="field" data-f="tag"><option value="">— tag —</option>'+
       SURV_TAGS.map(function(t){return '<option'+(obj.tag===t?' selected':'')+'>'+t+'</option>';}).join('')+'</select></div>';}
-  box.innerHTML='<div class="pano-ed-head"><span class="pano-ed-title">'+escHtml(title)+'</span><button class="pano-ed-x" onclick="panoCloseEditor()">✕</button></div>'+
-    '<div class="pano-ed-row"><span class="pano-ed-lbl">Label</span><input id="panoEdLabel" class="pano-ed-inp" value="'+escHtml(obj.label||'').replace(/"/g,'&quot;')+'" placeholder="Short label" oninput="panoEdField(\'label\',this.value)"></div>'+
+  box.innerHTML='<div class="pano-ed-head"><span class="pano-ed-title">'+escHtml(title)+'</span><button class="pano-ed-x" data-act="close">✕</button></div>'+
+    '<div class="pano-ed-row"><span class="pano-ed-lbl">Label</span><input id="panoEdLabel" class="pano-ed-inp" value="'+escHtml(obj.label||'').replace(/"/g,'&quot;')+'" placeholder="Short label" data-act="field" data-f="label"></div>'+
     tagRow+
     '<div class="pano-ed-row pano-ed-col"><span class="pano-ed-lbl">Detail</span>'+
       museRichBox({id:'panoed_'+obj.id,value:obj.detail||'',toolbar:'slim',height:'58px',placeholder:'Notes / spec',onchange:'function(v){panoEdField(\'detail\',v)}'})+'</div>'+
     swatches+radius+
-    '<div class="pano-ed-foot"><button class="pano-ed-del" onclick="panoDeleteSel()">Delete</button><button class="pano-ed-done" onclick="panoCloseEditor()">Done</button></div>';
+    '<div class="pano-ed-foot"><button class="pano-ed-del" data-act="delete">Delete</button><button class="pano-ed-done" data-act="close">Done</button></div>';
   box.style.display='block';
+  panoEditorBind(box);
   if(typeof mountRichBoxes==='function')mountRichBoxes(box);}
+/* Delegated listeners for the inline editor above: one click + one input/change
+   listener bound once per #panoEditor box (they survive innerHTML re-renders),
+   replacing the inline onclick/oninput/onchange attributes this markup used to
+   carry. Values flow through panoEdField/panoEdRadius, never through code. */
+function panoEditorBind(box){
+  if(!box||box.getAttribute('data-ed-bound'))return;
+  box.setAttribute('data-ed-bound','1');
+  box.addEventListener('click',function(ev){
+    var b=ev.target&&ev.target.closest?ev.target.closest('[data-act]'):null;
+    if(!b||!box.contains(b))return;
+    var a=b.getAttribute('data-act');
+    if(a==='close')panoCloseEditor();
+    else if(a==='delete')panoDeleteSel();
+    else if(a==='color')panoEdColor(b.getAttribute('data-val'));});
+  function field(ev){
+    var t=ev.target;
+    if(!t||!t.getAttribute||t.getAttribute('data-act')!=='field')return;
+    var f=t.getAttribute('data-f');
+    if(f)panoEdField(f,t.value);}
+  box.addEventListener('input',function(ev){
+    var t=ev.target;
+    if(t&&t.getAttribute&&t.getAttribute('data-act')==='radius'){panoEdRadius(t.value);return;}
+    field(ev);});
+  box.addEventListener('change',field);}
 function panoCloseEditor(){var box=document.getElementById('panoEditor');if(box)box.style.display='none';pano.sel=null;}
 function panoEdField(f,v){var o=pano.editKind==='pin'?panoFindPin(pano.sel):panoFindMark(pano.sel);if(!o)return;o[f]=v;stampEdit(pano.key);
   panoSync();}
 function panoEdColor(c){var o=panoFindMark(pano.sel);if(!o)return;o.color=c;stampEdit(pano.key);panoOpenEditor('mark',o.id);panoSync();}
-function panoEdRadius(v){var o=panoFindMark(pano.sel);if(!o)return;o.radius=parseInt(v,10)||8;var rv=document.getElementById('panoRadVal');if(rv)rv.textContent=o.radius+'°';stampEdit(pano.key);panoSync();}
+function panoEdRadius(v){var o=panoFindMark(pano.sel);if(!o)return;o.radius=parseInt(v,10)||8;setText(document.getElementById('panoRadVal'),o.radius+'°');stampEdit(pano.key);panoSync();}
 function panoDeleteSel(){var id=pano.sel;if(!id)return;var P=panoData();
   if(pano.editKind==='pin')P.hotspots=P.hotspots.filter(function(x){return x.id!==id;});
   else P.marks=P.marks.filter(function(x){return x.id!==id;});

@@ -255,6 +255,19 @@
 
   /* ---------------- players (hls.js pool) ---------------- */
   var players = {}; // slotKey -> {video, hls, url, stats}
+  // Test-feed slots (test:<id>, mounted by js/muse-testfeeds.js) always play through
+  // hls.js so LEVEL_SWITCHED / ERROR telemetry exists; native playback is never used
+  // for these slots — unmeasured playback would read as "no errors".
+  function isTestSlot(k) { return String(k || '').indexOf('test:') === 0; }
+  // One-way, best-effort forward into the test-feed telemetry log. A throwing or
+  // missing test module must never break the player: every call is guarded, and a
+  // degraded tile only ever updates its own record.
+  function tfEvent(slotKey, type, payload) {
+    try {
+      var TF = root.MuseTestFeeds;
+      if (isTestSlot(slotKey) && TF && typeof TF.event === 'function') TF.event(slotKey.slice(5), type, payload || {});
+    } catch (e) {}
+  }
   var hlsLoading = null;
   function ensureHls() {
     if (root.Hls) return Promise.resolve(root.Hls);
@@ -288,8 +301,84 @@
     s.appendChild(d.firstChild || d);
     return true;
   }
-  function makeYt(slotKey, info, live) {
+  /* YouTube IFrame player state over postMessage (the embeds already carry
+     enablejsapi=1, so no extra script is loaded and no CSP change is needed —
+     this is the same protocol the YT.Player wrapper speaks). After the player
+     receives 'listening' it posts infoDelivery messages carrying the real player
+     state, playback quality, loaded fraction and playhead position.
+     Documented limits: cross-origin iframes expose no pixels and no
+     dropped-frame counts, so Stream Check and dropped-frame telemetry stay
+     HLS-only; fields the player omits are reported as unknown, never filled in. */
+  var YT_STATE = { '-1': 'unstarted', 0: 'ended', 1: 'playing', 2: 'paused', 3: 'buffering', 5: 'cued' };
+  var ytWired = false, ytSeq = 0;
+  function ytNum(v) { return typeof v === 'number' && isFinite(v) ? Math.round(v * 100) / 100 : null; }
+  function ytFrac(v) { return typeof v === 'number' && isFinite(v) ? Math.max(0, Math.min(1, Math.round(v * 1000) / 1000)) : null; }
+  function wireYtMessages() {
+    if (ytWired) return; ytWired = true;
+    try {
+      root.addEventListener('message', function (ev) {
+        try {
+          var o = ev && ev.origin ? String(ev.origin) : '';
+          if (o !== 'https://www.youtube.com' && o !== 'https://www.youtube-nocookie.com') return;
+          var d = null;
+          try { d = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data; } catch (e) { return; }
+          if (!d || d.event !== 'infoDelivery' || !d.info) return;
+          var ks = Object.keys(players);
+          for (var i = 0; i < ks.length; i++) {
+            var p = players[ks[i]];
+            if (!p || !p.yt || !p.video) continue;
+            try { if (p.video.contentWindow && ev.source && p.video.contentWindow === ev.source) ytInfo(ks[i], d.info); } catch (e) {}
+          }
+        } catch (e) {}
+      });
+    } catch (e) {}
+  }
+  function ytListen(p) {
+    wireYtMessages();
+    try {
+      if (p.video && p.video.contentWindow && p.video.contentWindow.postMessage)
+        p.video.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: p.ytWid }), '*');
+    } catch (e) {}
+  }
+  // Apply one infoDelivery payload to the slot's YouTube state. Buffering is
+  // explicit (state 3, counted only mid-playback so startup doesn't read as a
+  // stall) or inferred: playing with a frozen playhead across samples means the
+  // picture is stuck even though the player says "playing".
+  function ytInfo(slotKey, info) {
+    var p = players[slotKey];
+    if (!p || !p.yt || !info) return null;
+    var st = p.ytState || (p.ytState = {});
+    var raw = typeof info.playerState !== 'undefined' ? info.playerState : null;
+    var label = raw != null && YT_STATE[raw] ? YT_STATE[raw] : (raw == null ? (st.state || 'unknown') : 'unknown(' + raw + ')');
+    if (label !== st.state) {
+      var prev = st.state || 'unknown', wasPlaying = prev === 'playing';
+      st.state = label; st.playerState = raw;
+      if (label === 'playing' || label === 'buffering' || label === 'paused' || label === 'ended') p.stats.state = label;
+      if (label === 'buffering' && wasPlaying) p.stats.stalls++;
+      tfEvent(slotKey, 'yt-state', { state: label, prev: prev, quality: info.playbackQuality || null,
+        loaded_fraction: ytFrac(info.videoLoadedFraction), t: ytNum(info.currentTime) });
+    }
+    if (info.playbackQuality) st.quality = String(info.playbackQuality);
+    if (typeof info.videoLoadedFraction === 'number') st.loadedFraction = ytFrac(info.videoLoadedFraction);
+    if (typeof info.currentTime === 'number') st.time = info.currentTime;
+    if (typeof info.duration === 'number') st.duration = info.duration;
+    try {
+      var last = p.ytLast;
+      if (label === 'playing' && last && typeof st.time === 'number' && typeof last.time === 'number') {
+        var wall = Date.now() - last.wall;
+        if (wall > 1500 && Math.abs(st.time - last.time) < 0.05 && !p.ytInferred) {
+          p.ytInferred = true; p.stats.stalls++;
+          tfEvent(slotKey, 'yt-stall', { inferred: true, frozen_s: Math.round(wall / 100) / 10, quality: st.quality || null });
+        } else if (Math.abs(st.time - last.time) >= 0.25) p.ytInferred = false;
+      }
+      p.ytLast = { time: st.time, wall: Date.now() };
+    } catch (e) {}
+    return st;
+  }
+  function makeYt(slotKey, info, live, url) {
     var f = document.createElement('iframe');
+    var wid = 'msyt' + (++ytSeq);
+    try { f.id = wid; } catch (e) {}
     // Halfway point + a slice of the wall clock, so every load lands mid-broadcast (backup feed runs -8 s).
     var d = DURATION[info.id], now = Math.floor(Date.now() / 1000), start;
     if (d) start = Math.min(d - 30, Math.max(0, Math.floor(d / 2) + (now % Math.max(1, Math.floor(d / 4))) + info.offset));
@@ -298,10 +387,14 @@
       '&start=' + start + '&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
     f.className = 'ms-video ms-yt'; f.title = info.title; f.setAttribute('tabindex', '-1'); f.loading = 'lazy'; // off-screen monitors don't boot a player
     f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture'); f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-    var p = players[slotKey] = { video: f, yt: info, ytStart: start, ytReady: false, url: 'yt:' + info.id, stats: { state: 'playing', stalls: 0, errors: 0 }, muted: true };
+    // Store the full slot URL (yt:id:offset:title), not just the video id: mount()
+    // compares p.url against the slot's data-url, and a mismatch destroys and
+    // recreates the embed on every mount — the theater would show a different
+    // position than the clicked tile instead of moving the playing iframe.
+    var p = players[slotKey] = { video: f, yt: info, ytStart: start, ytReady: false, ytWid: wid, ytState: null, url: url, stats: { state: 'playing', stalls: 0, errors: 0 }, muted: true };
     try {
       var to = setTimeout(function () { if (players[slotKey] === p && !p.ytReady) { p.stats.state = 'error'; ytFallback(slotKey); } }, 12000);
-      f.addEventListener('load', function () { p.ytReady = true; try { clearTimeout(to); } catch (e) {} });
+      f.addEventListener('load', function () { p.ytReady = true; try { clearTimeout(to); } catch (e) {} ytListen(p); });
     } catch (e) {}
     return p;
   }
@@ -313,28 +406,44 @@
   }
   function ytCmd(p, func, args) { try { p.video.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*'); } catch (e) {} }
   function makePlayer(slotKey, url, live) {
-    var info = parseYt(url); if (info) return makeYt(slotKey, info, live);
+    var info = parseYt(url); if (info) return makeYt(slotKey, info, live, url);
+    var test = isTestSlot(slotKey);
     var v = document.createElement('video');
     v.muted = true; v.playsInline = true; v.autoplay = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
     v.className = 'ms-video'; v.setAttribute('aria-label', 'Live stream monitor');
     var p = players[slotKey] = { video: v, hls: null, url: url, stats: { stalls: 0, errors: 0, state: 'loading' },
       qoe: { session: Math.random().toString(36).slice(2, 10), created: Date.now(), startup_ms: null, rebuffer_ms: 0, play_ms: 0, rebuffer_events: 0, switches: 0, errors: 0, waitSince: 0, playSince: 0 } };
     var q = p.qoe;
-    v.addEventListener('waiting', function () { p.stats.stalls++; if (p.played) p.stats.state = 'buffering'; if (q.startup_ms != null) { q.rebuffer_events++; q.waitSince = Date.now(); } if (q.playSince) { q.play_ms += Date.now() - q.playSince; q.playSince = 0; } });
-    v.addEventListener('playing', function () { p.played = true; slate(p, 'playing'); if (q.startup_ms == null) q.startup_ms = Date.now() - q.created; if (q.waitSince) { q.rebuffer_ms += Date.now() - q.waitSince; q.waitSince = 0; } q.playSince = Date.now(); });
+    v.addEventListener('waiting', function () { p.stats.stalls++; if (p.played) p.stats.state = 'buffering'; if (q.startup_ms != null) { q.rebuffer_events++; q.waitSince = Date.now(); } if (q.playSince) { q.play_ms += Date.now() - q.playSince; q.playSince = 0; } if (test && p.played) tfEvent(slotKey, 'stall', { via: 'video-waiting' }); });
+    v.addEventListener('playing', function () { p.played = true; slate(p, 'playing'); if (q.startup_ms == null) q.startup_ms = Date.now() - q.created; if (q.waitSince) { q.rebuffer_ms += Date.now() - q.waitSince; q.waitSince = 0; } q.playSince = Date.now(); if (test) tfEvent(slotKey, 'playing', { startup_ms: q.startup_ms }); });
     v.addEventListener('pause', function () { if (q.playSince) { q.play_ms += Date.now() - q.playSince; q.playSince = 0; } });
-    v.addEventListener('error', function () { p.stats.errors++; q.errors++; slate(p, 'slate'); });
+    v.addEventListener('error', function () { p.stats.errors++; q.errors++; slate(p, 'slate'); if (test) { var code = null; try { code = v.error ? v.error.code : null; } catch (e) {} tfEvent(slotKey, 'video-error', { code: code }); } });
     setTimeout(function () { if (players[slotKey] === p && !p.played) slate(p, 'slate'); }, 10000); // never leave a tile on "connecting"
     // iOS Safari has no MediaSource: use its native HLS player. Everywhere else, hls.js.
-    if (!(root.MediaSource || root.ManagedMediaSource) && v.canPlayType('application/vnd.apple.mpegurl')) { v.src = url; v.play().catch(function () {}); return p; }
+    // Test feeds are the exception: they never take the native path (see isTestSlot).
+    if (!test && !(root.MediaSource || root.ManagedMediaSource) && v.canPlayType('application/vnd.apple.mpegurl')) { v.src = url; v.play().catch(function () {}); return p; }
     ensureHls().then(function (Hls) {
-      if (!Hls.isSupported()) { v.src = url; return; }
+      if (!Hls.isSupported()) {
+        if (test) { slate(p, 'slate'); p.stats.lastError = 'hls.js needs Media Source Extensions — unavailable in this browser'; tfEvent(slotKey, 'player-unavailable', { reason: 'no-mse' }); return; }
+        v.src = url; return;
+      }
       // CMCD (CTA-5004) as query args so origins / CDNs can correlate requests with this session.
       var h = p.hls = new Hls({ lowLatencyMode: true, capLevelToPlayerSize: true, maxBufferLength: 12, backBufferLength: 10, liveSyncDurationCount: 3, enableWorker: true, subtitleDisplay: false,
         cmcd: { sessionId: q.session, contentId: slotKey.split(':')[1] || slotKey, useHeaders: false } });
-      h.on(Hls.Events.LEVEL_SWITCHED, function () { q.switches++; });
+      h.on(Hls.Events.LEVEL_SWITCHED, function (ev, data) {
+        q.switches++;
+        if (test) {
+          var lv = h.levels && data ? h.levels[data.level] : null;
+          tfEvent(slotKey, 'level', { level: data ? data.level : h.currentLevel,
+            bitrate: lv && lv.bitrate != null ? lv.bitrate : null, width: lv && lv.width != null ? lv.width : null,
+            height: lv && lv.height != null ? lv.height : null, renditions: h.levels ? h.levels.length : null });
+        }
+      });
       h.on(Hls.Events.ERROR, function (e, d) {
         p.stats.errors++; if (d && d.fatal) q.errors++;
+        if (test && d) tfEvent(slotKey, 'hls-error', { type: d.type || null, details: d.details || null, fatal: !!d.fatal,
+          frag: d.frag ? { sn: d.frag.sn != null ? d.frag.sn : null, level: d.frag.level != null ? d.frag.level : null } : null,
+          response_code: d.response && d.response.code != null ? d.response.code : null });
         if (d && d.fatal) {
           slate(p, 'slate'); p.stats.lastError = d.details;
           if (d.type === Hls.ErrorTypes.NETWORK_ERROR) setTimeout(function () { try { h.startLoad(); } catch (x) {} }, 3000);
@@ -342,18 +451,47 @@
         }
       });
       h.loadSource(url); h.attachMedia(v);
-      h.on(Hls.Events.MANIFEST_PARSED, function () { v.play().catch(function () {}); });
-    }).catch(function () { slate(p, 'slate'); p.stats.lastError = 'player library unavailable'; });
+      h.on(Hls.Events.MANIFEST_PARSED, function () {
+        v.play().catch(function () {});
+        if (test) tfEvent(slotKey, 'manifest', { renditions: (h.levels || []).length,
+          ladder: (h.levels || []).slice(0, 12).map(function (lv) { return { bitrate: lv.bitrate, width: lv.width || null, height: lv.height || null }; }) });
+      });
+    }).catch(function () { slate(p, 'slate'); p.stats.lastError = 'player library unavailable'; if (test) tfEvent(slotKey, 'player-unavailable', { reason: 'hls-load-failed' }); });
     return p;
   }
   function destroy(slotKey) {
     var p = players[slotKey]; if (!p) return;
     try { if (p.hls) p.hls.destroy(); } catch (e) {}
     try { p.video.removeAttribute('src'); p.video.load(); } catch (e) {}
+    // Pull the dead node out of its slot so a remount never stacks a live
+    // player on top of a blank iframe/video.
+    try { if (p.video.parentNode) p.video.parentNode.removeChild(p.video); } catch (e) {}
     delete players[slotKey];
   }
+  // Rebuild the player behind `slot` from its slot element(s): used when a
+  // video element is unusable but its slot is fine (e.g. a caption tap already
+  // consumed the element's one MediaElementSource). Returns the fresh player.
+  function resetSlot(slot) {
+    destroy(slot);
+    var found = null;
+    try {
+      var els = (root.document || document).querySelectorAll('[data-hls-slot="' + slot + '"]');
+      Array.prototype.forEach.call(els, function (el) { if (el && el.parentNode) mount(el.parentNode); });
+      found = players[slot] || null;
+    } catch (e) {}
+    return found;
+  }
   function measure(p) {
-    if (p.yt) return { source: 'YouTube embed', title: p.yt.title, state: 'playing' };
+    if (p.yt) {
+      var y = { source: 'YouTube embed', title: p.yt.title, state: (p.ytState && p.ytState.state) || 'playing',
+        stalls: p.stats.stalls, errors: p.stats.errors, limits: 'no pixels or dropped-frame counts cross-origin' };
+      if (p.ytState) {
+        if (p.ytState.quality) y.quality = p.ytState.quality;
+        if (p.ytState.loadedFraction != null) y.loaded_fraction = p.ytState.loadedFraction;
+        if (p.ytState.time != null) y.position_s = Math.round(p.ytState.time);
+      }
+      return y;
+    }
     var v = p.video, out = { state: p.stats.state, stalls: p.stats.stalls, errors: p.stats.errors };
     try {
       var b = v.buffered, ahead = 0;
@@ -591,15 +729,20 @@
         sorted.map(function (k) { var o = sloFor(k), e = o.event, mo = o.last_30_days;
           return '<tr><td><button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + k + '\')">' + esc(nameOf(k)) + '</button></td><td>' + badge(stateOf(k)) + '</td><td>' + (e ? e.availability_pct.toFixed(2) + '%' : '—') + '</td><td>' + (e ? '<span class="ms-dot is-' + e.status + '"></span> ' + budgetTxt(e) : '—') + '</td><td>' + mo.availability_pct.toFixed(3) + '%</td><td><span class="ms-dot is-' + mo.status + '"></span> ' + budgetTxt(mo) + '</td></tr>'; }).join('') +
         '</tbody></table></div><p class="ms-note">Error budget from incident reports (viewer-visible seconds, or duration × share of viewers affected) plus degradation measured this session.</p>') +
+      testFeedsHTML() +
     '</div>';
+  }
+  function testFeedsHTML() {
+    try { return root.MuseTestFeeds ? root.MuseTestFeeds.sectionHTML() : ''; } catch (e) { return ''; }
   }
   function dashHTML() {
     var ks = keys().filter(liveOf);
-    if (!ks.length) return '';
+    var tf = testFeedsHTML();
+    if (!ks.length && !tf) return '';
     var totalV = 0; ks.forEach(function (k) { var g = healthOf(k); if (g.m) totalV += g.m.viewers; });
     var tiles = ks.slice(0, 3).map(function (k) { var pr = programOf(k); return pr ? tileHTML(k, pr, 'dash', { showName: true }) : ''; }).join('');
     return '<div class="ms-dash-h"><div class="ms-dash-title"><span class="ms-state is-live"><i></i>LIVE NOW</span><h2>Live streams</h2><span class="ms-sub">' + ks.length + ' on air · <b id="msD-viewers">' + fmtN(totalV) + '</b> concurrent viewers</span><span class="ms-src" title="Simulated viewer and pipeline numbers">Demo data</span></div>' +
-      '<button type="button" class="ms-btn" onclick="navGo(\'streams\')">Open Live Streams wall →</button></div><div class="ms-dash-grid">' + tiles + '</div>';
+      '<button type="button" class="ms-btn" onclick="navGo(\'streams\')">Open Live Streams wall →</button></div><div class="ms-dash-grid">' + tiles + '</div>' + tf;
   }
 
   /* ---------------- dashboard home header (Meta Business Suite-style) ---------------- */
@@ -682,7 +825,8 @@
       var p = players[k]; if (p.yt || !p.qoe || p.qoe.startup_ms == null) return;
       var q = p.qoe, now = Date.now(), sid = k.split(':')[1] || k;
       var lv = p.hls && p.hls.levels && p.hls.levels[p.hls.currentLevel];
-      var body = { show: sid.split('-')[0], stream: sid, session: q.session, startup_ms: q.startup_ms,
+      // Test-feed beacons keep their own show key so QA traffic never pollutes a production's QoE panel.
+      var body = { show: isTestSlot(k) ? 'testfeeds' : sid.split('-')[0], stream: sid, session: q.session, startup_ms: q.startup_ms,
         rebuffer_ms: Math.round(q.rebuffer_ms + (q.waitSince ? now - q.waitSince : 0)), play_ms: Math.round(q.play_ms + (q.playSince ? now - q.playSince : 0)),
         rebuffer_events: q.rebuffer_events, switches: q.switches, errors: q.errors, bitrate_kbps: lv ? Math.round(lv.bitrate / 1000) : null };
       try {
@@ -693,7 +837,7 @@
   }
   function qoeBody(key, j) {
     var rows = (j && j.streams) || [];
-    if (!rows.length) return '<p class="ms-empty">No player sessions yet. HLS monitors report startup time, rebuffering, bitrate switches and errors here every 15 s (YouTube embeds can\'t be measured).</p>';
+    if (!rows.length) return '<p class="ms-empty">No player sessions yet. HLS monitors report startup time, rebuffering, bitrate switches and errors here every 15 s (YouTube embeds report player state only).</p>';
     var names = {}; streamsFor(key).forEach(function (st) { names[st.id] = st.name; });
     return '<div class="ms-table"><table><thead><tr><th>Stream</th><th>Sessions</th><th>Startup</th><th>Rebuffer</th><th>Stalls</th><th>Bitrate</th><th>Switches</th><th>Errors</th></tr></thead><tbody>' +
       rows.map(function (r) {
@@ -1039,7 +1183,7 @@
     Object.keys(players).forEach(function (k) {
       var el = document.querySelector('[data-pm="' + k + '"]'); if (!el) return;
       var x = measure(players[k]);
-      if (players[k].yt) { el.textContent = 'Source: ' + x.title + ' · YouTube'; return; }
+      if (players[k].yt) { el.textContent = 'Source: ' + x.title + ' · YouTube' + (x.state ? ' · ' + x.state : '') + (x.quality ? ' · ' + x.quality : ''); return; }
       el.textContent = x.state === 'slate' ? 'Simulated feed · live stream not reachable from this network' + (players[k].stats.lastError ? ' (' + players[k].stats.lastError + ')' : '') : x.state === 'error' ? 'Player: stream unavailable' + (players[k].stats.lastError ? ' (' + players[k].stats.lastError + ')' : '') :
         'Player: ' + (x.resolution || '…') + (x.rendition_kbps ? ' @ ' + (x.rendition_kbps / 1000).toFixed(1) + ' Mbps' : '') +
         ' · buffer ' + (x.buffer_s != null ? x.buffer_s + ' s' : '—') + (x.live_latency_s ? ' · latency ' + x.live_latency_s + ' s' : '') +
@@ -1059,11 +1203,46 @@
 
   /* ---------------- in-place stream theater (click a tile: watch here, no navigation) ---------------- */
   var modal = { key: null, slot: null, timer: 0, base: null, capsOn: false };
+  var MUTED_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
+  var LIVE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
+  // One monitor in the room's ears at a time. Mutes every player except the
+  // theater's, then sets the theater feed live or silent (HLS element or the
+  // YouTube API) and paints both the modal button and the tile icons.
+  function paintModalAudio(live) {
+    var b = null;
+    try { b = document.getElementById('msModalAudioBtn'); } catch (e) {}
+    if (!b) return;
+    b.textContent = live ? 'Listening' : 'Listen';
+    b.setAttribute('aria-pressed', live ? 'true' : 'false');
+  }
+  function modalSetAudio(live) {
+    var p = modal.slot ? players[modal.slot] : null;
+    if (!p) { paintModalAudio(false); return false; }
+    Object.keys(players).forEach(function (k) {
+      var q = players[k]; if (q === p) return;
+      if (q.yt) { if (!q.muted) { ytCmd(q, 'mute'); q.muted = true; } }
+      else { try { q.video.muted = true; } catch (e) {} }
+    });
+    try {
+      document.querySelectorAll('.ms-audio').forEach(function (x) { x.innerHTML = MUTED_SVG; x.setAttribute('aria-pressed', 'false'); });
+    } catch (e) {}
+    if (p.yt) { if (live) { ytCmd(p, 'unMute'); ytCmd(p, 'setVolume', [80]); } else ytCmd(p, 'mute'); p.muted = !live; }
+    else { try { p.video.muted = !live; if (live) p.video.play().catch(function () {}); } catch (e) {} }
+    paintModalAudio(live);
+    return true;
+  }
   function modalEl() { return document.getElementById('msStreamModal'); }
   function captionSlotFor(key) {
-    var ss = streamsFor(key);
-    for (var i = 0; i < ss.length; i++) if (!parseYt(ss[i].url)) return 'wall:' + ss[i].id;
-    return null;
+    // Prefer a non-program HLS feed for the caption tap: tapping the program
+    // would reroute the very audio the room is listening to. The program is
+    // the fallback (started with monitor:true so it stays audible).
+    var ss = streamsFor(key), fallback = null;
+    for (var i = 0; i < ss.length; i++) {
+      if (parseYt(ss[i].url)) continue;
+      if (ss[i].role === 'program') { if (!fallback) fallback = 'wall:' + ss[i].id; continue; }
+      return 'wall:' + ss[i].id;
+    }
+    return fallback;
   }
   function ensureModal() {
     if (modalEl()) return;
@@ -1074,6 +1253,7 @@
       '<div class="ms-modal-card" role="dialog" aria-modal="true" aria-label="Stream monitor">' +
         '<div class="ms-modal-head"><div class="ms-modal-title" id="msModalTitle"></div>' +
           '<div class="ms-modal-actions">' +
+            '<button type="button" class="ms-btn" id="msModalAudioBtn" onclick="MuseStreaming.modalAudio()" aria-pressed="false" aria-label="Listen to this stream">Listen</button>' +
             '<button type="button" class="ms-btn" id="msModalCCBtn" onclick="MuseStreaming.modalCC()">CC · Muse captions</button>' +
             '<button type="button" class="ms-btn" onclick="MuseStreaming.modalPiP()">Picture in picture</button>' +
             '<button type="button" class="ms-btn" onclick="MuseStreaming.modalFs()">Fullscreen</button>' +
@@ -1093,7 +1273,7 @@
           '<button type="button" class="ms-btn" id="msModalFaultBtn" onclick="MuseStreaming.modalFault()">Simulate: drop program feed</button>' +
           '<button type="button" class="ms-btn" onclick="MuseStreaming.modalPlan()">Open streaming plan →</button>' +
           '<button type="button" class="ms-btn" onclick="MuseStreaming.modalIncident()">Log incident</button>' +
-          '<span class="ms-modal-hint">Esc closes · video keeps playing on the tile behind</span>' +
+          '<span class="ms-modal-hint">Esc closes · video returns to the tile</span>' +
         '</div>' +
       '</div>';
     document.body.appendChild(d);
@@ -1102,7 +1282,10 @@
   function openStream(key, slot, opts) {
     opts = opts || {};
     ensureModal();
-    var st = null; streamsFor(key).forEach(function (x) { if ('wall:' + x.id === slot) st = x; });
+    // Match the stream id regardless of tile context (wall:/dash:) so a click
+    // always opens the clicked feed, never the program fallback.
+    var want = String(slot || '').split(':').slice(1).join(':');
+    var st = null; streamsFor(key).forEach(function (x) { if (x.id === want) st = x; });
     if (!st) st = programOf(key);
     if (!st) return;
     modal.key = key; modal.slot = 'wall:' + st.id; modal.base = null;
@@ -1138,14 +1321,20 @@
     } else if (conf) conf.hidden = true;
     modalEl().hidden = false;
     mount(modalEl());
-    // Captions on open (click-originated only): unmute the caption source and let
-    // Muse Voice Transcribe run, so captions are visible without hunting for a switch.
+    // Click-originated opens carry a user gesture, so the theater takes the
+    // room's ears at once: the clicked feed is audible without hunting for a
+    // speaker icon. Programmatic opens (deep links, rehearsals) stay muted.
+    if (opts.viaClick) modalSetAudio(true); else paintModalAudio(false);
+    // Captions on open (click-originated only): tap the caption source and let
+    // Muse Voice Transcribe run, so captions are visible without hunting for
+    // a switch. The tap itself is silent; when the tap target IS the program,
+    // monitor it so the room keeps hearing the feed.
     if (opts.viaClick && root.MuseCaptions) {
       var capSlot = captionSlotFor(key);
       if (capSlot) {
         var cp = players[capSlot];
         if (cp && !cp.yt) { try { cp.video.muted = false; } catch (e) {} }
-        try { root.MuseCaptions.start(key, capSlot); modal.capsOn = true; } catch (e) {}
+        try { var cr = root.MuseCaptions.start(key, capSlot, { monitor: capSlot === modal.slot }); modal.capsOn = !!(cr && cr.ok !== false); } catch (e) {}
       }
     }
     refreshModal();
@@ -1155,9 +1344,23 @@
   function closeStream() {
     if (modal.timer) { clearInterval(modal.timer); modal.timer = 0; }
     if (modal.key && root.MuseCaptions) { try { root.MuseCaptions.stop(modal.key); } catch (e) {} }
+    var slot = modal.slot, live = false, pl = slot ? players[slot] : null;
+    if (pl) live = pl.yt ? !pl.muted : !pl.video.muted;
     modal.key = null; modal.slot = null; modal.capsOn = false;
+    paintModalAudio(false);
     var m = modalEl(); if (m) m.hidden = true;
-    var h = document.getElementById('streamsHost'); if (h) MS.renderWall();
+    var h = document.getElementById('streamsHost');
+    if (h) {
+      MS.renderWall();
+      // The feed keeps its ears on the tile: paint that tile's speaker live.
+      if (live && slot) {
+        try {
+          var scr = h.querySelector('[data-hls-slot="' + slot + '"]');
+          var btn = scr && scr.querySelector ? scr.querySelector('.ms-audio') : null;
+          if (btn) { btn.innerHTML = LIVE_SVG; btn.setAttribute('aria-pressed', 'true'); }
+        } catch (e) {}
+      }
+    }
   }
   function refreshModal() {
     if (!modal.key) return;
@@ -1242,8 +1445,8 @@
     paneHTML: paneHTML,
     mount: function (el) { mount(el); },
     videoFor: function (slot) { var p = players[slot]; return p && p.video && p.video.tagName === 'VIDEO' ? p.video : null; },
-    renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); } },
-    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) mount(h); },
+    renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); try { if (root.MuseTestFeeds) root.MuseTestFeeds.mount(h); } catch (e) {} } },
+    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) { mount(h); try { if (root.MuseTestFeeds) root.MuseTestFeeds.mount(h); } catch (e) {} } },
     play: function (e, btn) { if (e && e.stopPropagation) e.stopPropagation(); var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
     screenClick: function (e, screen, key) {
       var t = e && e.target;
@@ -1277,8 +1480,15 @@
       setTimeout(function () { injectFault(key); refreshModal(); }, 1200);
     },
     openStream: openStream,
+    resetSlot: resetSlot,
+    modalAudio: function () {
+      if (!modal.slot) return;
+      var p = players[modal.slot];
+      modalSetAudio(p ? !!(p.yt ? p.muted : p.video.muted) : false);
+    },
     ytFallbackHTML: ytFallbackHTML,
     ytFallback: ytFallback,
+    ytInfo: ytInfo, // IFrame API infoDelivery entry point (wired to postMessage; also the test seam)
     closeStream: closeStream,
     injectFault: injectFault,
     clearFault: clearFault,
@@ -1305,7 +1515,7 @@
       else {
         var p = players[capSlot];
         if (p && !p.yt) { p.video.muted = false; }
-        var r = C.start(modal.key, capSlot);
+        var r = C.start(modal.key, capSlot, { monitor: capSlot === modal.slot });
         if (r && r.ok === false && root.toast) root.toast(r.error);
         modal.capsOn = true;
       }
@@ -1405,9 +1615,10 @@
       var unmute = p.yt ? p.muted : p.video.muted;
       // one monitor in your ears at a time
       Object.keys(players).forEach(function (k) { var q = players[k]; if (q.yt) { if (!q.muted) { ytCmd(q, 'mute'); q.muted = true; } } else q.video.muted = true; });
-      var MUTED_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
-      var LIVE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
       document.querySelectorAll('.ms-audio').forEach(function (b) { b.innerHTML = MUTED_SVG; b.setAttribute('aria-pressed', 'false'); });
+      // The tile behind the theater shares the modal's slot: keep the modal
+      // button honest when its own feed is the one being toggled.
+      try { paintModalAudio(slot === modal.slot ? !!unmute : false); } catch (e) {}
       if (unmute) { if (p.yt) { ytCmd(p, 'unMute'); ytCmd(p, 'setVolume', [80]); p.muted = false; } else { p.video.muted = false; p.video.play().catch(function () {}); } btn.innerHTML = LIVE_SVG; btn.setAttribute('aria-pressed', 'true'); }
     },
     addStream: function (key, form) {
@@ -1417,7 +1628,7 @@
       else {
         // The site's security policy only lets the browser load video from approved hosts (see docs/SECURITY.md, MUSE_MEDIA_HOSTS).
         var host = ''; try { host = new URL(url).hostname; } catch (e) {}
-        var ok = ['demo.unified-streaming.com', 'test-streams.mux.dev', 'devstreaming-cdn.apple.com', 'storage.googleapis.com'].indexOf(host) >= 0;
+        var ok = ['demo.unified-streaming.com', 'test-streams.mux.dev', 'devstreaming-cdn.apple.com', 'storage.googleapis.com', 'cph-p2p-msl.akamaized.net'].indexOf(host) >= 0;
         if (!ok) { root.toast && root.toast(host + ' isn’t an approved stream host yet. An admin adds it to MUSE_MEDIA_HOSTS (docs/SECURITY.md); YouTube links work now.'); return; }
       }
       rec(key).added.push({ id: key + '-u' + Date.now().toString(36), name: String(form.name.value || 'Stream').trim().slice(0, 60), role: form.role.value, url: url });
@@ -1488,7 +1699,7 @@
           var t = teleFor(key, st), g = grade(t.m, t.live), slot = Object.keys(players).filter(function (k) { return k.split(':')[1] === st.id; })[0];
           var y = parseYt(st.url);
           var ds = {}; ['encoder', 'contribution', 'cloud', 'origin', 'cdn', 'viewers'].forEach(function (sg) { ds[sg] = (t.src && t.src[sg]) || 'demo (simulated)'; });
-          ds.player = 'measured in the browser (HLS only)';
+          ds.player = 'measured in the browser (full QoE on HLS, player state on YouTube)';
           return { name: st.name, role: st.role, source: y ? 'YouTube · ' + y.title : 'HLS', url: y ? 'https://www.youtube.com/watch?v=' + y.id : st.url, health: LEVEL_TXT[g.overall], stage_health: g.stages, data_source: ds,
             telemetry: t.live ? roundAll(t.m) : 'off air', alerts: t.live ? alertsFor(t.m, g) : [],
             trend_last_3min: t.live ? { viewers: trend(t.hist.viewers), rebuffer_pct: trend(t.hist.rebuffer), srt_loss_pct: trend(t.hist.loss) } : null,

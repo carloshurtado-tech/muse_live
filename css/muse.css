@@ -620,6 +620,10 @@
   .rt.rt-on-dark hr{border-top-color:rgba(255,255,255,.28);}
   .comms-bubble-out .rt,.comms-bubble-out .rt *{color:#ffffff !important;}
   .comms-bubble-out .rt a{color:#e7f3ff !important;}
+  .comms-bubble-in{background:#F0F2F5;color:#050505;}
+  .comms-bubble-out{background:#0866FF;color:#ffffff;}
+  html.dark .comms-bubble-in{background:#30333A;color:#E4E6EB;}
+  html.dark .comms-bubble-out{background:#0866FF;color:#ffffff;}
   html.dark .rt{color:#ced0d4;}
   html.dark .rt blockquote{border-left-color:#30333A;color:#8a8d91;}
   html.dark .rt pre,html.dark .rt code{background:#1E1E21;}
@@ -4109,6 +4113,38 @@ html.dark .ms-alert{color:#FF8A9A;}
 .ms-attn-chip:hover{background:rgba(179,18,46,.14);}
 .ms-modal-foot{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px;border-top:1px solid rgb(var(--c-line,228 230 235));padding-top:12px;}
 .ms-modal-hint{font-size:11px;color:rgb(var(--c-ink-3,101 103 107));margin-left:auto;}
+/* Orphaned --c-* tokens (muse-tokens.css is not loaded) fall back to light
+   values, so these surfaces need explicit dark rules or they glow white. */
+html.dark .ms-site-chip{background:#30333A;border-color:rgba(255,255,255,.14);color:#fff;}
+html.dark .ms-modal-card{background:#1E1E21;color:#E4E6EB;}
+html.dark .ms-modal-title span{color:#B0B3B8;}
+html.dark .ms-modal-sec h4{color:#B0B3B8;}
+html.dark .ms-capbar input[type="search"]{border-color:#3A3B3C;}
+html.dark .ms-caplist time,html.dark .ms-caplist i{color:#8A8D91;}
+html.dark .ms-modal-foot{border-color:#30333A;}
+html.dark .ms-modal-hint{color:#8A8D91;}
+html.dark .ms-react.is-ok{border-color:#30333A;}
+html.dark .ms-capstrip{color:#B0B3B8;}
+html.dark .ms-modal-conf>span{color:#B0B3B8;}
+html.dark .ms-ok{color:#4ade80;}
+html.dark .ms-flag{color:#f87171;}
+html.dark .ms-attn-chip{color:#F5A3B1;border-color:rgba(245,163,177,.4);background:rgba(228,30,63,.12);}
+html.dark .ms-modal .ms-src{color:#CFD3D9;box-shadow:inset 0 0 0 1px rgba(255,255,255,.16);}
+html.dark .ms-modal .ms-src.is-live{color:#4ade80;}
+/* Theater density: one glance, minimal scroll. Measurements read as tight
+   rows, captions cap sooner, chain + charts sit in compact grids. */
+.ms-modal .ms-kv div{flex-direction:row;justify-content:space-between;align-items:baseline;gap:10px;padding:3px 0;}
+.ms-modal .ms-kv dt{font-size:11px;}
+.ms-modal .ms-kv dd{font-size:12px;text-align:right;}
+.ms-modal-grid{gap:10px;margin-top:10px;}
+.ms-modal-sec .ms-modal-sub{margin-top:10px;}
+.ms-caplist{max-height:140px;}
+.ms-modal .ms-chain{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:10px;}
+.ms-modal .ms-stage{padding:8px 10px;}
+.ms-modal .ms-stage dl div{font-size:11px;}
+.ms-modal .ms-charts{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px;}
+@media (max-width:900px){.ms-modal .ms-chain{grid-template-columns:repeat(3,minmax(0,1fr));}.ms-modal .ms-charts{grid-template-columns:repeat(2,minmax(0,1fr));}}
+.ms-react{margin-top:10px;padding:8px 12px;}
 .ms-cap{padding:10px 12px;display:flex;flex-direction:column;gap:5px;min-width:0;}
 .ms-cap-main{display:flex;align-items:baseline;gap:8px;min-width:0;}
 .ms-cap-main b{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -4622,6 +4658,29 @@ html.dark .mh-sub .ms-src{color:#CFD3D9;}
 .ms-pf.is-info{background:rgba(8,102,255,.10);color:#0057E0;}
 html.dark .ms-pf.is-pass{color:#26A756;} html.dark .ms-pf.is-warn{color:#C58600;} html.dark .ms-pf.is-fail{color:#FF5668;} html.dark .ms-pf.is-info{color:#2694FE;}
 .ms-table td{white-space:normal;}
+
+/* Test feeds: stand-in signals, never production programming */
+.ms-test-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 8px;border-radius:6px;color:#8A5A00;background:rgba(247,185,40,.22);box-shadow:inset 0 0 0 1px currentColor;text-transform:uppercase;white-space:nowrap;}
+html.dark .ms-test-badge{color:#F7B928;}
+.ms-test-kind{font-size:10.5px;color:#fff;opacity:.75;}
+.ms-test-health{font-size:11px;color:var(--ms-ink-2,#65676B);}
+.ms-test-health.is-up{color:var(--ms-green,#1E7B34);}
+.ms-test-health.is-down{color:var(--ms-red,#D21F3C);font-weight:700;}
+.ms-screen.is-down .ms-slate{background:linear-gradient(160deg,#3a1218,#0a0b0f);}
+.ms-retry{position:absolute;z-index:2;left:14px;bottom:44px;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;border:0;cursor:pointer;color:#fff;background:var(--ms-blue,#0866FF);}
+.ms-retry:hover{filter:brightness(1.1);}
+.ms-test-qoe{font-size:11px;color:var(--ms-ink-2,#65676B);margin-top:2px;font-variant-numeric:tabular-nums;}
+.ms-test-risks{display:flex;flex-direction:column;gap:8px;margin:0 0 10px;}
+.ms-test-risks:empty{display:none;}
+.ms-test-risk{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12px;padding:8px 10px;border-radius:8px;border:1px solid var(--ms-line,rgba(5,5,5,.09));}
+.ms-test-risk.is-high{border-color:rgba(228,30,63,.45);}
+.ms-test-risk.is-med{border-color:rgba(247,185,40,.55);}
+.ms-test-risk.is-pending{border-color:rgba(8,102,255,.45);}
+.ms-test-risk-lvl{font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 8px;border-radius:6px;background:rgba(8,102,255,.10);color:#0057E0;}
+.ms-test-risk.is-high .ms-test-risk-lvl{background:rgba(228,30,63,.12);color:#B3122E;}
+.ms-test-risk.is-med .ms-test-risk-lvl{background:rgba(247,185,40,.22);color:#8A5A00;}
+.ms-test-risk-src{flex-basis:100%;font-size:11px;color:var(--ms-ink-2,#65676B);}
+.ms-test-risk-btns{display:flex;gap:8px;}
 .ms-pf-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
 
 /* Facebook / Instagram Live */

@@ -3,7 +3,7 @@
 //   POST /api/observe {events:[...]}  (any signed-in user; also accepts sendBeacon text bodies)
 //   GET  /api/observe?date=YYYY-MM-DD → the day's aggregate (admins only)
 // Daily aggregate in KV `obs:<date>`: errors grouped by signature, views, Muse question count
-// (never the question text), feature usage, sessions.
+// (never the question text), feature usage, perf samples (n/sum/max per key), sessions.
 import { json, sameOrigin } from '../_lib/session.js';
 import { who, isAdmin } from '../_lib/who.js';
 
@@ -35,7 +35,7 @@ export async function onRequest(context) {
   try { events = JSON.parse(text).events; } catch (e) { return json({ ok: false, error: 'Bad body' }, 400); }
   if (!Array.isArray(events)) return json({ ok: false, error: 'Bad body' }, 400);
   const key = 'obs:' + day;
-  const agg = (await env.MUSE_KV.get(key, { type: 'json' })) || { errors: {}, views: {}, features: {}, muse: { asked: 0, answered: 0, failed: 0 }, sessions: 0, users: {}, updated: '' };
+  const agg = (await env.MUSE_KV.get(key, { type: 'json' })) || { errors: {}, views: {}, features: {}, muse: { asked: 0, answered: 0, failed: 0 }, perf: {}, sessions: 0, users: {}, updated: '' };
   for (const e of events.slice(0, 200)) {
     if (!e || typeof e !== 'object') continue;
     if (e.t === 'error') {
@@ -45,6 +45,12 @@ export async function onRequest(context) {
     } else if (e.t === 'view') bump(agg.views, clip(e.v, 40));
     else if (e.t === 'feature') bump(agg.features, clip(e.f, 60));
     else if (e.t === 'muse') { const k = ['asked', 'answered', 'failed'].includes(e.k) ? e.k : 'asked'; agg.muse[k] = (agg.muse[k] || 0) + 1; }
+    else if (e.t === 'perf') {
+      const k = clip(e.k, 40) || '(unknown)';
+      agg.perf = agg.perf || {};
+      const g = agg.perf[k] || (Object.keys(agg.perf).length < MAX_GROUPS ? (agg.perf[k] = { n: 0, sum: 0, max: 0 }) : null);
+      if (g) { const v = Math.max(0, Math.min(60000, Math.round(Number(e.v) || 0))); g.n++; g.sum += v; if (v > g.max) g.max = v; }
+    }
     else if (e.t === 'session') { agg.sessions++; bump(agg.users, user.u); }
   }
   agg.updated = new Date().toISOString();

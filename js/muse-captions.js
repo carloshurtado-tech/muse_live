@@ -99,23 +99,48 @@
     var AC = root.AudioContext || root.webkitAudioContext;
     if (!AC) return { ok: false, error: 'Web Audio is unavailable in this browser.' };
     var winSec = Math.min(30, Math.max(5, opts.windowSec || 10));
+    var actx = null, src = null;
     try {
-      var actx = new AC();
+      actx = new AC();
       if (actx.state === 'suspended' && actx.resume) { try { actx.resume(); } catch (e) {} }
-      var src = actx.createMediaElementSource(v);
+      src = actx.createMediaElementSource(v);
+    } catch (e) {
+      // A video element accepts exactly one MediaElementSource in its life:
+      // reopening the theater re-taps the same element and throws. Rebuild
+      // the player so the retry taps a fresh element; if that is impossible,
+      // re-mute and fail silent — never leak raw feed audio to the room.
+      if (!opts.retried && M && typeof M.resetSlot === 'function') {
+        try { M.resetSlot(slot); } catch (x) {}
+        try { v = M.videoFor(slot); if (v) v.muted = false; } catch (x) { v = null; }
+        if (v) {
+          opts.retried = true;
+          try { if (actx && actx.close) actx.close(); } catch (x) {}
+          return start(key, slot, opts);
+        }
+      }
+      try { if (actx && actx.close) actx.close(); } catch (x) {}
+      try { v.muted = true; } catch (x) {}
+      delete RUNS[key];
+      return { ok: false, error: 'Audio tap failed: ' + String((e && e.message) || e).slice(0, 160) };
+    }
+    try {
       var r = RUNS[key] = { slot: slot, ctx: actx, src: src, node: null, timer: 0, buf: [], lines: lines(key), lastError: '', gaps: 0, running: true };
       // The tap feeds the transcription worklet only — it is never routed to the
       // speakers, so program audio (test tones included) stays silent in the room.
+      // monitor:true is the one exception: the tap target is the feed the room
+      // is listening to, so it stays on the speakers as well as the worklet.
       var ready = actx.audioWorklet ? actx.audioWorklet.addModule('js/muse-cap-worklet.js?v=' + CAPV) : Promise.reject(new Error('no worklet'));
       return { ok: true, pending: true, ready: ready.then(function () {
         var node = new root.AudioWorkletNode(actx, 'muse-cap');
         node.port.onmessage = function (ev) { if (r.running && ev.data) r.buf.push(ev.data); };
         src.connect(node);
+        if (opts.monitor) { try { src.connect(actx.destination); } catch (x) {} }
         r.node = node;
         r.timer = root.setInterval ? root.setInterval(function () { flushWindow(key); }, winSec * 1000) : 0;
         return true;
       }).catch(function (e) { r.lastError = String((e && e.message) || e).slice(0, 160); try { v.muted = true; } catch (x) {} return false; }) };
     } catch (e) {
+      try { v.muted = true; } catch (x) {}
       delete RUNS[key];
       return { ok: false, error: 'Audio tap failed: ' + String((e && e.message) || e).slice(0, 160) };
     }

@@ -8,10 +8,10 @@
 // Response → { ok, text, durationMs }.
 
 import { takeToken, sessionKey } from './museai.js';
+import { resolveModelBase } from '../_lib/abuse.js';
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const MAX_MS = 31000;
-const DEFAULT_BASE = 'https://api.meta.ai/v1';
 const MODEL = 'muse-voice-transcribe-1.0';
 // Words the recognizer would otherwise mis-hear on comms.
 const KEYWORDS = ['Muse', 'Muse Live', 'Muse AI', 'World Tour', 'Muse AI World Tour', 'Creator Week', 'Launch Keynote', 'Ray-Ban', 'Ray-Ban Meta', 'Orion', 'Hacker Square', 'WhatsApp', 'Instagram', 'Charm', 'LlamaCon',
@@ -56,7 +56,9 @@ export async function onRequestPost(context) {
   const form = new FormData();
   form.append('request', new Blob([JSON.stringify({ mode: 'PUSH_TO_TALK', model: MODEL, audioEncoding: 'WAV', keywords: KEYWORDS })], { type: 'application/json' }));
   form.append('audio', new Blob([audio], { type: 'audio/wav' }), 'speech.wav');
-  const base = (env.MUSE_API_BASE || DEFAULT_BASE).replace(/\/+$/, '');
+  const resolved = resolveModelBase(env);
+  if (!resolved.ok) return json({ ok: false, error: resolved.error }, 503);
+  const base = resolved.base;
   let r, j;
   try {
     r = await fetch(base + '/asr/transcribe', { method: 'POST', headers: { Authorization: 'Bearer ' + key }, body: form });

@@ -2,11 +2,14 @@
 #
 # MUSE_MEDIA_HOSTS — streaming hosts the embedded HLS monitors may load from. They appear in BOTH
 # connect-src (hls.js fetches playlists/segments) and media-src (MSE/native playback):
-#   https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com
+#   https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com https://cph-p2p-msl.akamaized.net
 # To embed a stream from another CDN, add its origin to both directives below (see docs/SECURITY.md).
 # YouTube monitors are iframes (frame-src); Meta Graph / Meta Model API calls are server-side only.
-# 'unsafe-inline' and 'unsafe-eval' are still required by the current app code — docs/SECURITY.md
-# lists the call sites and the plan to remove them.
+# 'unsafe-inline' and 'unsafe-eval' stay in the policy below while the M5 nonce migration
+# (docs/SECURITY.md) lands: the app's own dynamic-code sink (museRichFire) is now an
+# allowlisted function-ref dispatch with no eval/new Function, and the remaining inline
+# handlers are being converted to delegated listeners. Tighten the policy only with M5 —
+# removing a source early breaks boot (Tailwind browser build, Quill, map/CDN modules).
 
 /*
   X-Content-Type-Options: nosniff
@@ -16,7 +19,7 @@
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
   Cross-Origin-Resource-Policy: same-origin
   Cross-Origin-Opener-Policy: same-origin
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.sheetjs.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://data.jsdelivr.com https://unpkg.com https://esm.run https://esm.sh https://*.esm.sh https://*.maplibre.org https://*.carto.com https://*.cartocdn.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com https://*.maplibre.org; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com data:; img-src 'self' data: blob: https:; connect-src 'self' blob: data: https://www.google-analytics.com https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com https://worldtimeapi.org https://timeapi.io https://api.open-meteo.com https://*.open-meteo.com https://geocoding-api.open-meteo.com https://site.api.espn.com https://*.api.espn.com https://cdn.espn.com https://*.carto.com https://*.cartocdn.com https://basemaps.cartocdn.com https://tiles.openfreemap.org https://*.openfreemap.org https://*.openstreetmap.org https://nominatim.openstreetmap.org https://*.maplibre.org https://unpkg.com https://cdn.jsdelivr.net https://data.jsdelivr.com https://esm.run https://esm.sh https://*.esm.sh https://*.convex.site https://*.convex.cloud https://server.arcgisonline.com https://*.arcgisonline.com https://overpass-api.de https://*.overpass-api.de https://overpass.kumi.systems https://*.kumi.systems https://photon.komoot.io https://*.komoot.io https://s3.amazonaws.com https://*.amazonaws.com https://elevation-tiles-prod.s3.amazonaws.com https://*.shademap.app https://shademap.app; worker-src 'self' blob: data:; media-src 'self' blob: data: https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com; child-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https://cdn.sheetjs.com https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://data.jsdelivr.com https://unpkg.com https://esm.run https://esm.sh https://*.esm.sh https://*.maplibre.org https://*.carto.com https://*.cartocdn.com; style-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com https://*.maplibre.org; font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com https://cdn.jsdelivr.net https://unpkg.com data:; img-src 'self' data: blob: https:; connect-src 'self' blob: data: https://www.google-analytics.com https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com https://cph-p2p-msl.akamaized.net https://worldtimeapi.org https://timeapi.io https://api.open-meteo.com https://*.open-meteo.com https://geocoding-api.open-meteo.com https://site.api.espn.com https://*.api.espn.com https://cdn.espn.com https://*.carto.com https://*.cartocdn.com https://basemaps.cartocdn.com https://tiles.openfreemap.org https://*.openfreemap.org https://*.openstreetmap.org https://nominatim.openstreetmap.org https://*.maplibre.org https://unpkg.com https://cdn.jsdelivr.net https://data.jsdelivr.com https://esm.run https://esm.sh https://*.esm.sh https://*.convex.site https://*.convex.cloud https://server.arcgisonline.com https://*.arcgisonline.com https://overpass-api.de https://*.overpass-api.de https://overpass.kumi.systems https://*.kumi.systems https://photon.komoot.io https://*.komoot.io https://s3.amazonaws.com https://*.amazonaws.com https://elevation-tiles-prod.s3.amazonaws.com https://*.shademap.app https://shademap.app; worker-src 'self' blob: data:; media-src 'self' blob: data: https://demo.unified-streaming.com https://test-streams.mux.dev https://devstreaming-cdn.apple.com https://storage.googleapis.com https://cph-p2p-msl.akamaized.net; child-src 'self' blob:; frame-src 'self' blob: https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
 # The tour shows the Ray-Ban Display preview in a same-origin iframe; everything else stays unframeable.
 /glasses/*
@@ -28,7 +31,7 @@
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
 /index.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
-  Link: </css/muse.css?v=20261028-lj19>; rel=preload; as=style
+  Link: </css/muse.css?v=20261031-rcux>; rel=preload; as=style
 
 /*.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate

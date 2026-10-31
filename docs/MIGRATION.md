@@ -43,6 +43,17 @@ already follow a "one module, one global API, data via functions" shape. They mi
    drop `'unsafe-eval'`, move to nonce-based CSP, drop `'unsafe-inline'` for scripts.
 7. **M6 — Retire `muse-app-a/b`.** CAD viewer and 360 engine stay as isolated modules.
 
+## Server-side hardening (landed, migration-relevant)
+
+- Shared KV writes are no longer blind last-write-wins: `PUT /api/kv/:key` supports
+  `If-Match` / `If-None-Match` against the `X-Muse-Updated` version (412 on mismatch), so the
+  M2 store adapter can do optimistic concurrency instead of overwriting.
+- JSON write endpoints share one abuse guard (`functions/_lib/abuse.js`: Origin → Content-Type
+  → size cap → rate limit); the telemetry POST body is strictly allowlisted. The M2 storage
+  boundary should reuse these validators rather than inventing new ones.
+- The Meta Model API base URL is pinned (`https://api.meta.ai/v1` + `MUSE_API_BASE_ALLOWLIST`,
+  loopback http for dev only); server-side Muse tools in the target architecture inherit this.
+
 ## Risks and mitigations
 
 | Risk | Mitigation |

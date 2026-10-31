@@ -172,7 +172,8 @@
       viewing_as: role ? role.label : null,
       on_screen: { view: view, production: focus && P[focus] ? P[focus].name : null, production_key: focus, tab: (root.projSubTab || {})[focus] || null },
       productions: shows,
-      unread_critical_alerts: alerts, transmission_conflicts: tx
+      unread_critical_alerts: alerts, transmission_conflicts: tx,
+      test_feeds: (function () { try { return root.MuseTestFeeds && root.MuseTestFeeds.agentBrief ? root.MuseTestFeeds.agentBrief() : null; } catch (e) { return null; } })()
     });
   }
 
@@ -284,6 +285,14 @@
       var an = []; try { an = typeof MS.anomalies === 'function' ? MS.anomalies() : []; } catch (e) {}
       st.anomalies = (an || []).map(function (x) { return { show: x.show, stage: x.stage, level: x.level, text: x.text, recommendation: x.recommendation ? x.recommendation.label : null }; });
       if (!st.openIncidents) { try { st.openIncidents = root.MuseIncidents.all().filter(function (i) { return i.status === 'Open' || i.status === 'Monitoring'; }).map(function (i) { return { id: i.id, severity: i.severity, title: i.title, show: prods()[i.production] ? prods()[i.production].name : i.production }; }); } catch (e) {} }
+      return st;
+    },
+    get_feed_status: function (a) {
+      var TF = root.MuseTestFeeds;
+      if (!TF || typeof TF.status !== 'function') throw new Error('Test feeds are not loaded.');
+      var feed = a && a.feed ? String(a.feed) : null;
+      var st = TF.status(feed);
+      if (feed && (!st.feeds || !st.feeds.length)) throw new Error('No test feed matches "' + feed + '". Known: ' + TF.defaults().map(function (f) { return f.id; }).join(', '));
       return st;
     },
     create_booking: function (a, run) {
@@ -561,6 +570,7 @@
       case 'schedule_conflicts': return 'Schedule conflicts' + (res && res.count != null ? ' (' + res.count + ')' : '');
       case 'open_in_app': return 'Opened ' + (a.tab || a.view || 'show');
       case 'get_live_status': return 'Live status · all shows';
+      case 'get_feed_status': return 'Test feeds' + (a.feed ? ' · ' + a.feed : '');
       case 'create_booking': return 'Booking proposed';
       case 'update_booking': return 'Booking change proposed';
       case 'log_incident': return 'Incident proposed';
@@ -574,7 +584,7 @@
     get_equipment: 'Counting the pack list', get_crew: 'Checking the crew roster', get_schedule: 'Reading the run of show',
     get_site: 'Reviewing the site survey', get_weather: 'Pulling the venue forecast', get_ops: 'Checking ops',
     search_knowledge: 'Searching the wiki', get_streaming: 'Reading stream telemetry', search_incidents: 'Searching incident reports', get_incident: 'Reading the post-mortem', get_bookings: 'Checking Muse Schedule', check_availability: 'Checking availability', schedule_conflicts: 'Checking for conflicts', schedule_overview: 'Reading the schedule', open_in_app: 'Opening it for you', propose_change: 'Preparing a change',
-    get_live_status: 'Checking every live show', create_booking: 'Preparing a booking', update_booking: 'Preparing a booking change', log_incident: 'Drafting an incident', apply_stream_recommendation: 'Preparing the fix'
+    get_live_status: 'Checking every live show', get_feed_status: 'Reading test-feed telemetry', create_booking: 'Preparing a booking', update_booking: 'Preparing a booking change', log_incident: 'Drafting an incident', apply_stream_recommendation: 'Preparing the fix'
   };
 
   // Where a source chip leads when clicked: the exact screen Muse read.
@@ -587,6 +597,7 @@
     if (name === 'get_bookings' || name === 'check_availability') return { kind: 'schedule', res: a.resource || '' };
     if (name === 'schedule_overview' || name === 'schedule_conflicts') return { kind: 'schedule', panel: name === 'schedule_conflicts' ? 'conflicts' : '' };
     if (name === 'get_live_status') return { kind: 'view', view: 'streams' };
+    if (name === 'get_feed_status') return { kind: 'view', view: 'streams' };
     if (name === 'search_knowledge') { var w = out && out.wiki && out.wiki[0]; return { kind: 'wiki', title: w ? w.title : '' }; }
     if (name === 'get_ops') {
       var V = { finance: 'finance', eng: 'engrequests', inventory: 'equipment', personnel: 'personnel', travel: 'portal', vendors: 'vendors', comms: 'comms', tracking: 'telemetry', transmission: 'dashboard' };

@@ -89,6 +89,33 @@
       } catch (e) { resolve({ ok: false, error: 'Compare failed: ' + (e && e.message ? e.message : 'tainted canvas') }); }
     });
   }
+  /* Pure still/silence math over {data,w,h} frames and PCM sample arrays.
+     frameDelta mirrors compareFrames (luma weights, |d| > 24 counts as moved);
+     the still/silence verdicts layer streak rules on top so one dark or quiet
+     moment never flags. Deterministic, no model. Thresholds live here so the
+     eval harness reads the shipped constants instead of copying them. */
+  var STILL = { MAX_MEAN: 2.0, MAX_MOVED_PCT: 1.0, SEC: 2 };
+  var QUIET = { FLOOR: 0.02, SEC: 2 };
+
+  function frameDelta(a, b) {
+    var n = Math.min(a.w * a.h, b.w * b.h), sum = 0, changed = 0, i, d;
+    for (i = 0; i < n; i++) {
+      d = Math.abs((0.299 * a.data[i * 4] + 0.587 * a.data[i * 4 + 1] + 0.114 * a.data[i * 4 + 2]) -
+        (0.299 * b.data[i * 4] + 0.587 * b.data[i * 4 + 1] + 0.114 * b.data[i * 4 + 2]));
+      sum += d; if (d > 24) changed++;
+    }
+    return n ? { meanDelta: +(sum / n).toFixed(2), changedPct: +(changed / n * 100).toFixed(2) } : { meanDelta: 0, changedPct: 0 };
+  }
+  function isStill(delta) { return delta.meanDelta < STILL.MAX_MEAN && delta.changedPct < STILL.MAX_MOVED_PCT; }
+  function isFrozen(stillSec) { return stillSec >= STILL.SEC; }
+  function audioEnergy(samples) {
+    var n = samples.length, sum = 0, i;
+    for (i = 0; i < n; i++) sum += samples[i] * samples[i];
+    return n ? Math.sqrt(sum / n) : 0;
+  }
+  function isSilent(rms) { return rms < QUIET.FLOOR; }
+  function silenceHeld(quietSec) { return quietSec >= QUIET.SEC; }
+
   function checkBlack(slot) {
     var v = videoFor(slot);
     if (!v) return { check: 'black', pass: false, error: 'No capturable video for slot ' + slot + '.' };
@@ -152,7 +179,9 @@
   }
   function latest(key) { return LATEST[key] || null; }
 
-  root.MuseStreamCheck = { version: '0.1.0', captureFrame: captureFrame, analyzePixels: analyzePixels, compareFrames: compareFrames,
-    isBlack: isBlack, checkBlack: checkBlack, segment: segment, checkLowerThird: checkLowerThird,
+  root.MuseStreamCheck = { version: '0.2.0', captureFrame: captureFrame, analyzePixels: analyzePixels, compareFrames: compareFrames,
+    isBlack: isBlack, frameDelta: frameDelta, isStill: isStill, isFrozen: isFrozen,
+    audioEnergy: audioEnergy, isSilent: isSilent, silenceHeld: silenceHeld, STILL: STILL, QUIET: QUIET,
+    checkBlack: checkBlack, segment: segment, checkLowerThird: checkLowerThird,
     checkGear: checkGear, runShow: runShow, latest: latest };
 })(typeof window !== 'undefined' ? window : globalThis);

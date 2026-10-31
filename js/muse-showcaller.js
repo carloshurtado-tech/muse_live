@@ -447,6 +447,17 @@
       if (!r || !r.ok) return { ok: false, error: (r && r.text) || 'Stream action refused.' };
       return { ok: true, text: r.text };
     }
+    if (a.plan.action === 'retry_feed') {
+      // Player-QA tile only: re-checks and remounts that one test feed. No live
+      // confirm is needed — test tiles never touch a live show — but like every
+      // action here it still runs only after a human approves it.
+      var TF = root.MuseTestFeeds;
+      if (!TF || typeof TF.retry !== 'function' || typeof TF.status !== 'function')
+        return { ok: false, error: 'Test feeds are not loaded.' };
+      if (!d.feed || !TF.status(d.feed).feeds.length) return { ok: false, error: 'That test feed is gone.' };
+      TF.retry(d.feed);
+      return { ok: true, text: 'Re-checking test feed "' + (d.label || d.feed) + '" on its own tile — other tiles are untouched.' };
+    }
     if (a.plan.action === 'review_incident' || a.plan.action === 'pack_check') {
       return { ok: true, advisory: true, text: 'Acknowledged: ' + (d.id || d.count + ' lines') + '.' };
     }
@@ -577,6 +588,7 @@
     if (plan.action === 'apply_stream_fix') return 'Stream fix: ' + (d.label || d.kind) + '.';
     if (plan.action === 'review_incident') return 'Review incident ' + d.id + (d.similar && d.similar.length ? ' (similar: ' + d.similar.join(', ') + ')' : '') + '.';
     if (plan.action === 'pack_check') return 'Pack check: ' + d.count + ' lines still open.';
+    if (plan.action === 'retry_feed') return 'Re-check test feed "' + (d.label || d.feed) + '" (' + (d.fix || 'remount its tile') + ').';
     return plan.action;
   }
   function cardHTML(a) {

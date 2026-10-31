@@ -23,7 +23,7 @@
 
 - `connect-src` / `media-src` list explicit hosts. Stream hosts (`MUSE_MEDIA_HOSTS`):
   `demo.unified-streaming.com`, `test-streams.mux.dev`, `devstreaming-cdn.apple.com`,
-  `storage.googleapis.com`. To embed another CDN, add its origin to **both** directives.
+  `storage.googleapis.com`, `cph-p2p-msl.akamaized.net`. To embed another CDN, add its origin to **both** directives.
 - `frame-src` allows only YouTube (`youtube-nocookie.com`, `youtube.com`) for the event monitors.
 - `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`, `form-action 'self'`.
 - `Permissions-Policy`: microphone and geolocation for this origin only (voice Muse, venue check-in).
@@ -48,9 +48,29 @@
 - Untrusted text (incident notes, wiki pages, chat) reaches the model as data; see the agent's
   injection guidance, rate limits (`MUSE_RATE_PER_MIN`) and daily cap (`MUSE_DAILY_TOKEN_CAP`) in
   `functions/api/museai.js`.
+- The model base URL is pinned: `MUSE_API_BASE` defaults to `https://api.meta.ai/v1`; extra
+  https origins are allowed only via `MUSE_API_BASE_ALLOWLIST`, plain http only for loopback
+  (local dev / e2e mock). Anything else fails closed (503, no upstream call). See
+  `resolveModelBase()` in `functions/_lib/abuse.js`; applied by `/api/museai` and `/api/voice`.
+
+## Write-endpoint guards (`functions/_lib/abuse.js`)
+
+- Every JSON write (`/api/museai` POST, `/api/kv/:key` PUT, `/api/telemetry` POST) shares one
+  guard: Origin check (403) → `Content-Type: application/json` (415) → body size cap (413) →
+  per-session rate limit (429). `/api/voice` keeps its own audio checks plus the shared rate
+  bucket and the pinned model base.
+- `/api/telemetry` POST additionally validates a strict schema: only the `aws` section
+  (`region`, `medialiveChannelId`, `mediaconnectFlowArn`, `cloudfrontDistributionId`) and the
+  `mux` section (`videoId`), all strings ≤ 256 chars; unknown keys, wrong types and overlong
+  values are rejected (400). See `validateTelemetryConfig()` in `functions/api/telemetry.js`.
+- `/api/kv/:key` PUT additionally enforces optimistic concurrency: `If-Match` /
+  `If-None-Match` against the `X-Muse-Updated` version (412 on mismatch), so concurrent
+  editors don't silently overwrite each other.
 
 ## Known gaps
 
 - XSS defence relies on `esc()` in string templates in the legacy bundles (migration removes this class).
 - Shared storage is last-write-wins per key (no field-level merge or locking).
-- The local dev server is not hardened and must never be exposed beyond 127.0.0.1.
+- The local dev server is not hardened: it binds 127.0.0.1 by default, and `--host`
+  (e.g. `--host 0.0.0.0` for trusted-LAN testing) prints an explicit warning because the dev
+  server must never be exposed to the public internet.

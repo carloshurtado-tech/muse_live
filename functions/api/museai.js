@@ -16,13 +16,15 @@
 //   MODEL_API_KEY           required — Meta Model API key (dev.meta.ai)
 //   MUSE_MODEL              optional — default muse-spark-1.3
 //   MUSE_REASONING_EFFORT   optional — default effort when the client sends none (default low)
-//   MUSE_API_BASE           optional — default https://api.meta.ai/v1
+//   MUSE_API_BASE           optional — default https://api.meta.ai/v1 (pinned; extra https
+//                           origins via MUSE_API_BASE_ALLOWLIST, http loopback for local dev only)
 //   MUSE_DAILY_TOKEN_CAP    optional — total model tokens per UTC day (default 2,000,000)
 //   MUSE_RATE_PER_MIN       optional — requests per minute per session (default 30)
 //   MUSE_KV                 optional KV binding — shares rate-limit and spend counters across isolates
 
+import { checkContentType, checkOrigin, resolveModelBase } from '../_lib/abuse.js';
+
 const DEFAULT_MODEL = 'muse-spark-1.3';
-const DEFAULT_BASE = 'https://api.meta.ai/v1';
 const MAX_BODY = 900_000;
 const GUEST_MAX_BODY = 200_000, GUEST_MAX_OUT = 4000; // bounds one guest step at ~54k tokens
 const MAX_MESSAGES = 120;
@@ -45,7 +47,7 @@ How you work:
 - Ground every fact about a show in tool results or the snapshot. If the data is missing, say so plainly, and say which tab in Muse Live would hold it. Never invent gear, people, counts, times or statuses.
 - For a readiness question ("has audio finished?", "what's missing?"), give the department status first, then exactly what is outstanding: unfilled techbook fields, open crew positions, pack-list lines not yet packed, open survey findings and approval state. End with the next action and who owns it.
 - For counts ("how many cameras?"), add up the techbook fields and pack-list quantities, and say how you counted (for example "7 Sony HDC-5500 + 2 FR7 PTZ = 9 camera chains").
-- For stream questions ("how is the stream?", "are we healthy?", "what's our ladder?"), use get_streaming. Lead with the state and overall health, then any alerts and the stage at fault (encoder, contribution, ingest, origin, CDN or viewers) with the numbers, then what to do. Thresholds: SRT loss above 0.5% or edge 5xx above 0.5% is degraded; rebuffer above 1% is viewer-visible; segment age above 6 s means the origin is stale.
+- For stream questions ("how is the stream?", "are we healthy?", "what's our ladder?"), use get_streaming. Lead with the state and overall health, then any alerts and the stage at fault (encoder, contribution, ingest, origin, CDN or viewers) with the numbers, then what to do. Thresholds: SRT loss above 0.5% or edge 5xx above 0.5% is degraded; rebuffer above 1% is viewer-visible; segment age above 6 s means the origin is stale. For the wall's player-QA test feeds (bitrate, buffer, stalls, errors, YouTube state), use get_feed_status; the snapshot also carries a one-line brief per test feed.
 - For "what happened at X" or anything about past problems, use search_incidents, then get_incident on the relevant reports. Tell it as a short post-mortem: what happened and when, viewer impact, root cause, how it was fixed, and which action items are still open and who owns them. Mention every incident for that show if there are several, most severe first.
 - For scheduling ("is PCR 4 free Friday afternoon?", "who's booked on CRK 1?", "any conflicts?"), use get_bookings, check_availability and schedule_conflicts. Give times in the venue or user time zone. When something is taken, offer the nearest free alternative of the same type.
 - For weather, use get_weather with the production so the venue coordinates are used. Translate the forecast into show impact: rain and wind for cameras on lifts or jibs, RF and dish alignment, heat for equipment and crew, lightning holds, sunset relative to call times.
@@ -69,6 +71,9 @@ const fn = (name, description, properties = {}, required = []) => ({
 
 const TOOLS = [
   fn('get_live_status', 'One call for every show at once: stream state, overall health, viewers, latency and active alerts per show, current anomalies with recommended fixes, and open incidents. Use for "how is everything?", "health check on every stream", "anything on fire?".'),
+  fn('get_feed_status', 'Live player-QA telemetry from the test feeds on the Live Streams wall (stand-in HLS signals, never production programming): per-feed health, bitrate and rendition, buffer health, stall and error counts, dropped frames, YouTube player state, active risk signals and pending human approvals. Use for "how are the test feeds?", player QA, and stall or error questions about them.', {
+    feed: { type: 'string', description: 'Optional test feed id to narrow the result.' },
+  }),
   fn('get_production', 'Overview of one production: client, venue, dates, status, readiness %, the department status board with notes, bottleneck, locations, approvals and sign-off, next milestones.', { production: PROD }, ['production']),
   fn('get_department', 'Deep readiness check for one department on one production: status, approval state, note, every techbook field (filled and unfilled), pack-list lines for that department with pack status, related open crew positions, tasks and survey findings. Use for "is X done / what is missing" questions.', {
     production: PROD,
@@ -221,30 +226,85 @@ function cleanMessages(list) {
 
 /* ---------------- rate limit + daily spend cap ---------------- */
 const mem = globalThis.__museaiMem || (globalThis.__museaiMem = { buckets: new Map(), usage: new Map() });
-async function kvGet(env, k) { try { if (env && env.MUSE_KV) { const v = await env.MUSE_KV.get(k); return v == null ? null : JSON.parse(v); } } catch (e) {} return null; }
-async function kvPut(env, k, v, ttl) { try { if (env && env.MUSE_KV) await env.MUSE_KV.put(k, JSON.stringify(v), { expirationTtl: ttl }); } catch (e) {} }
+/* KV reads/writes retry transient failures before falling back to the
+   per-isolate memory maps, so a single failed KV call neither loses accounting
+   nor fails the request. */
+async function kvGet(env, k, attempts = 3) {
+  if (!env || !env.MUSE_KV) return null;
+  for (let a = 0; a < attempts; a++) {
+    try { const v = await env.MUSE_KV.get(k); return v == null ? null : JSON.parse(v); } catch (e) { /* retry */ }
+  }
+  return null;
+}
+async function kvPut(env, k, v, ttl, attempts = 3) {
+  if (!env || !env.MUSE_KV) return false;
+  for (let a = 0; a < attempts; a++) {
+    try { await env.MUSE_KV.put(k, JSON.stringify(v), { expirationTtl: ttl }); return true; } catch (e) { /* retry */ }
+  }
+  return false;
+}
 export function sessionKey(request) {
   const c = request.headers.get('Cookie') || '';
   const m = /(?:^|;\s*)muse_session=([^;]+)/.exec(c);
   return (m ? 's:' + m[1].slice(-24) : 'ip:' + (request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local'));
 }
+/* Token bucket with an optimistic read-modify-write retry: after writing, the
+   bucket is re-read and, when another isolate won the race (or the write was
+   lost), the fresher state is adopted and the check re-runs instead of
+   double-charging. Only the first attempt consumes a token. KV has no compare-
+   and-swap, so this narrows the race rather than closing it — the memory map
+   always records the outcome, so accounting survives a KV outage either way. */
 export async function takeToken(env, sk, guest) {
   const perMin = Math.max(1, Number(env && (guest ? env.MUSE_GUEST_RATE_PER_MIN : env.MUSE_RATE_PER_MIN)) || (guest ? 10 : 30));
   const cap = perMin, refillPerMs = perMin / 60000, now = Date.now(), k = 'museai:rl:' + sk;
-  let b = (await kvGet(env, k)) || mem.buckets.get(k) || { t: cap, at: now };
-  b.t = Math.min(cap, b.t + (now - b.at) * refillPerMs); b.at = now;
-  const ok = b.t >= 1; if (ok) b.t -= 1;
-  mem.buckets.set(k, b); await kvPut(env, k, b, 3600);
-  return { ok, retryS: ok ? 0 : Math.ceil((1 - b.t) / refillPerMs / 1000) };
+  let b = mem.buckets.get(k) || null, charged = false;
+  for (let a = 0; a < 3; a++) {
+    const kv = await kvGet(env, k);
+    if (kv && typeof kv.t === 'number' && typeof kv.at === 'number' && (!b || kv.at >= b.at)) b = kv;
+    if (!b) b = { t: cap, at: now };
+    b.t = Math.min(cap, b.t + (now - b.at) * refillPerMs); b.at = now;
+    if (b.t < 1) {
+      mem.buckets.set(k, b); await kvPut(env, k, b, 3600);
+      return { ok: false, retryS: Math.ceil((1 - b.t) / refillPerMs / 1000) };
+    }
+    if (!charged) { b.t -= 1; charged = true; }
+    mem.buckets.set(k, b); await kvPut(env, k, b, 3600);
+    if (!env || !env.MUSE_KV) return { ok: true, retryS: 0 };
+    const confirm = await kvGet(env, k, 1);
+    if (!confirm || (typeof confirm.t === 'number' && Math.abs(confirm.t - b.t) < 1e-9 && confirm.at === b.at)) {
+      return { ok: true, retryS: 0 };
+    }
+    /* Lost the race: re-check against the winner's state without charging again. */
+    if (confirm && typeof confirm.t === 'number' && typeof confirm.at === 'number') b = confirm;
+    else return { ok: true, retryS: 0 };
+  }
+  return { ok: true, retryS: 0 };
 }
 function dayKey(guest) { return 'museai:tokens:' + new Date().toISOString().slice(0, 10) + (guest ? ':guest' : ''); }
 async function usedToday(env, guest) { const k = dayKey(guest); const v = await kvGet(env, k); return Math.max(Number(v) || 0, mem.usage.get(k) || 0); }
-async function addUsage(env, usage, guest) {
-  const n = usage && (usage.total_tokens || ((usage.prompt_tokens || 0) + (usage.completion_tokens || 0)));
+/* sign=1 charges, sign=-1 refunds (floored at zero). Each slice is re-read
+   before writing and the write is confirmed; a lost race is re-applied once on
+   top of the observed value so concurrent steps undercount less. */
+async function addUsage(env, usage, guest, sign = 1) {
+  const raw = usage && (usage.total_tokens || ((usage.prompt_tokens || 0) + (usage.completion_tokens || 0)));
+  const n = Number(raw) || 0;
   if (!n) return;
   for (const g of guest ? [false, true] : [false]) {
-    const k = dayKey(g), cur = (await usedToday(env, g)) + n;
-    mem.usage.set(k, cur); await kvPut(env, k, cur, 2 * 86400);
+    const k = dayKey(g);
+    let next = 0;
+    for (let a = 0; a < 3; a++) {
+      next = Math.max(0, (await usedToday(env, g)) + sign * n);
+      mem.usage.set(k, next); await kvPut(env, k, next, 2 * 86400);
+      if (!env || !env.MUSE_KV) break;
+      const confirm = await kvGet(env, k, 1);
+      const cv = Number(confirm);
+      if (confirm === null || !(cv < next - 1e-9)) break;
+      /* Our write was overwritten by a concurrent writer: re-apply the delta
+         on top of what is actually stored, once. */
+      next = Math.max(0, (Number.isFinite(cv) ? cv : 0) + sign * n);
+      mem.usage.set(k, next); await kvPut(env, k, next, 2 * 86400);
+      break;
+    }
   }
 }
 function dailyCap(env) { return Math.max(10000, Number(env && env.MUSE_DAILY_TOKEN_CAP) || 2000000); }
@@ -258,8 +318,12 @@ export async function onRequestGet({ env }) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const pre = checkOrigin(request) || checkContentType(request);
+  if (pre) return pre;
   const key = env && env.MODEL_API_KEY;
   if (!key) return json({ ok: false, configured: false, error: 'Muse is not connected to a model yet.' }, 503);
+  const resolved = resolveModelBase(env);
+  if (!resolved.ok) return json({ ok: false, error: resolved.error }, 503);
 
   const raw = await request.text();
   if (raw.length > MAX_BODY) return json({ ok: false, error: 'That conversation is too long. Start a new chat.' }, 413);
@@ -277,11 +341,18 @@ export async function onRequestPost(context) {
   if (guest && (await usedToday(env, true)) >= guestCap(env)) {
     return json({ ok: false, capped: true, error: 'Muse has answered all the guest-demo questions it can for today. It resets at midnight UTC.' }, 429);
   }
+  let guestPrecharge = 0;
   if (guest) {
     if (raw.length > GUEST_MAX_BODY) return json({ ok: false, error: 'That conversation is too long for the guest demo. Start a new chat.' }, 413);
     delete body.effort;
     // Charge a worst-case estimate before the call, so parallel guest requests can't all pass the cap at once.
-    await addUsage(env, { total_tokens: Math.ceil(raw.length / 4) + GUEST_MAX_OUT }, true);
+    guestPrecharge = Math.ceil(raw.length / 4) + GUEST_MAX_OUT;
+    await addUsage(env, { total_tokens: guestPrecharge }, true);
+  }
+  // The guest pre-charge is conservative by design; when the model is never
+  // reached (or rejects the call) it is refunded so a failed step costs nothing.
+  async function refundGuest() {
+    if (guest && guestPrecharge) await addUsage(env, { total_tokens: guestPrecharge }, true, -1);
   }
 
   const glance = body.mode === 'glance';
@@ -309,7 +380,7 @@ export async function onRequestPost(context) {
   }
 
   const effort = EFFORTS.indexOf(body.effort) >= 0 ? body.effort : (glance ? 'minimal' : (env.MUSE_REASONING_EFFORT || 'low'));
-  const base = (env.MUSE_API_BASE || DEFAULT_BASE).replace(/\/+$/, '');
+  const base = resolved.base;
   const payload = { model: env.MUSE_MODEL || DEFAULT_MODEL, messages, reasoning_effort: effort, max_completion_tokens: glance ? 400 : (guest ? GUEST_MAX_OUT : 6000) };
   if (!glance) { payload.tools = TOOLS; payload.tool_choice = 'auto'; payload.parallel_tool_calls = true; }
   const wantStream = !!body.stream && !glance;
@@ -324,6 +395,7 @@ export async function onRequestPost(context) {
       signal: AbortSignal.timeout(45000),
     });
   } catch (e) {
+    await refundGuest();
     return json({ ok: false, error: 'Muse could not reach Meta Model API.' }, 502);
   }
   if (!r.ok) {
@@ -331,6 +403,7 @@ export async function onRequestPost(context) {
     try { j = JSON.parse(text); } catch (e) { j = { raw: text.slice(0, 300) }; }
     const detail = j && j.error ? (j.error.message || j.error.code || j.error) : j && j.raw;
     console.log('museai upstream', r.status, typeof detail === 'string' ? detail : JSON.stringify(detail));
+    await refundGuest();
     return json({ ok: false, error: friendlyError(r.status, typeof detail === 'string' ? detail : '') }, r.status === 429 ? 429 : 502);
   }
 
@@ -339,7 +412,7 @@ export async function onRequestPost(context) {
   }
 
   let j;
-  try { j = await r.json(); } catch (e) { return json({ ok: false, error: 'Meta Model API returned an unreadable response.' }, 502); }
+  try { j = await r.json(); } catch (e) { await refundGuest(); return json({ ok: false, error: 'Meta Model API returned an unreadable response.' }, 502); }
   const done = guest ? Promise.resolve() : addUsage(env, j.usage); // guests were charged up front
   if (context.waitUntil) context.waitUntil(done); else await done;
   const choice = j && j.choices && j.choices[0];

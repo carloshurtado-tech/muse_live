@@ -65,6 +65,64 @@ test('captions: a failed tap leaves the element muted', async () => {
   w.MuseCaptions.stop('demo');
 });
 
+test('captions: monitor mode keeps a tapped program audible, default stays silent', async () => {
+  const mkTap = () => {
+    const connected = [];
+    const dest = { name: 'speakers' };
+    const src = { connect: (node) => connected.push(node) };
+    const actx = { destination: dest, state: 'running',
+      createMediaElementSource: () => src,
+      audioWorklet: { addModule: () => Promise.resolve() } };
+    function FakeAC() { return actx; }
+    function FakeNode() { this.port = {}; }
+    const video = { tagName: 'VIDEO', muted: false };
+    const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, AudioContext: FakeAC, AudioWorkletNode: FakeNode,
+      MuseStreaming: { videoFor: () => video } });
+    return { w, connected, dest };
+  };
+  const silent = mkTap();
+  const r1 = silent.w.MuseCaptions.start('demo', 'wall:backup');
+  assert.equal(await r1.ready, true);
+  assert.ok(silent.connected.indexOf(silent.dest) < 0, 'backup tap stays off the speakers');
+  const mon = mkTap();
+  const r2 = mon.w.MuseCaptions.start('demo2', 'wall:program', { monitor: true });
+  assert.equal(await r2.ready, true);
+  assert.ok(mon.connected.indexOf(mon.dest) >= 0, 'monitored program tap reaches the speakers');
+});
+
+test('captions: a consumed element rebuilds the player and retries the tap', () => {
+  let taps = 0, resets = 0;
+  const src = { connect: () => {} };
+  const actx = { destination: {}, state: 'running', close: () => {},
+    createMediaElementSource: () => { taps++; if (taps === 1) throw new Error('already used'); return src; },
+    audioWorklet: { addModule: () => Promise.resolve() } };
+  function FakeAC() { return actx; }
+  function FakeNode() { this.port = {}; }
+  const v1 = { tagName: 'VIDEO', muted: false }, v2 = { tagName: 'VIDEO', muted: true };
+  let cur = v1;
+  const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, AudioContext: FakeAC, AudioWorkletNode: FakeNode,
+    MuseStreaming: { videoFor: () => cur, resetSlot: () => { resets++; cur = v2; } } });
+  const r = w.MuseCaptions.start('demo', 'wall:program');
+  assert.equal(r.ok, true, 'retry on the rebuilt player succeeds');
+  assert.equal(resets, 1);
+  assert.equal(v2.muted, false, 'fresh element is unmuted for the tap signal');
+  assert.equal(w.MuseCaptions.status('demo').running, true);
+  w.MuseCaptions.stop('demo');
+});
+
+test('captions: a re-tap with no rebuild path fails silent, never audible', () => {
+  const actx = { destination: {}, state: 'running', close: () => {},
+    createMediaElementSource: () => { throw new Error('already used'); },
+    audioWorklet: { addModule: () => Promise.resolve() } };
+  function FakeAC() { return actx; }
+  const video = { tagName: 'VIDEO', muted: false };
+  const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, AudioContext: FakeAC,
+    MuseStreaming: { videoFor: () => video } });
+  const r = w.MuseCaptions.start('demo', 'wall:program');
+  assert.equal(r.ok, false);
+  assert.equal(video.muted, true, 'failed re-tap must not leak feed audio to the room');
+});
+
 test('captions: start refuses honestly without tappable audio or Web Audio', () => {
   const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, MuseStreaming: {} });
   const r1 = w.MuseCaptions.start('demo', 'wall:program');

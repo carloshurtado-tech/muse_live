@@ -82,5 +82,31 @@
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') flush(true); });
   root.addEventListener('pagehide', function () { flush(true); });
 
-  w.MuseObserve = { track: function (f) { push({ t: 'feature', f: String(f).slice(0, 60) }); }, error: recordError, flush: function () { flush(false); } };
+  /* player perf: numeric samples (INP on tile interactions, dropped-frame deltas).
+     The test-feed wall reports through these; the server aggregates per key. */
+  var lastPerf = {}, inpSeen = {};
+  function perf(k, v, label) {
+    push({ t: 'perf', k: String(k).slice(0, 40), v: Math.round(Number(v) || 0), l: String(label || '').slice(0, 60) });
+  }
+  function inp(selector) {
+    try {
+      if (inpSeen[selector] || typeof PerformanceObserver !== 'function') return;
+      inpSeen[selector] = true;
+      var po = new PerformanceObserver(function (list) {
+        var now = Date.now();
+        if (now - (lastPerf[selector] || 0) < 5000) return; // one sample per 5 s max
+        var entries = list.getEntries ? list.getEntries() : [];
+        for (var i = 0; i < entries.length; i++) {
+          var en = entries[i];
+          if (!en || !(en.duration > 16)) continue;
+          var t = /** @type {any} */ (en).target;
+          if (t && t.closest && t.closest(selector)) { lastPerf[selector] = now; perf('tile_inp', en.duration, selector); return; }
+        }
+      });
+      po.observe(/** @type {any} */ ({ type: 'event', buffered: true, durationThreshold: 16 }));
+    } catch (e) { /* unsupported — no samples */ }
+  }
+
+  w.MuseObserve = { track: function (f) { push({ t: 'feature', f: String(f).slice(0, 60) }); }, error: recordError, flush: function () { flush(false); },
+    perf: perf, inp: inp };
 })(typeof window !== 'undefined' ? window : globalThis);

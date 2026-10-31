@@ -15,8 +15,37 @@
 // Fields we return use the client's telemetry names so values replace the simulation 1:1.
 
 import { who, canWrite } from '../_lib/who.js';
+import { guardJsonWrite, readCappedBody } from '../_lib/abuse.js';
 
 const enc = new TextEncoder();
+
+// POST body allowlist: which provider sections exist and which fields each
+// accepts. Anything else is rejected (400) so a tampered client cannot smuggle
+// unexpected identifiers into server-side AWS/Mux calls.
+const TELEMETRY_FIELDS = {
+  aws: ['region', 'medialiveChannelId', 'mediaconnectFlowArn', 'cloudfrontDistributionId'],
+  mux: ['videoId'],
+};
+const MAX_FIELD_LEN = 256;
+const MAX_BODY = 16 * 1024;
+
+// Pure validator (exported for unit tests): null when valid, else an error string.
+export function validateTelemetryConfig(cfg) {
+  if (!cfg || typeof cfg !== 'object' || Array.isArray(cfg)) return 'Body must be a JSON object';
+  for (const section of Object.keys(cfg)) {
+    const allowed = TELEMETRY_FIELDS[section];
+    if (!allowed) return 'Unknown field: ' + section;
+    const sub = cfg[section];
+    if (!sub || typeof sub !== 'object' || Array.isArray(sub)) return 'Field must be an object: ' + section;
+    for (const key of Object.keys(sub)) {
+      if (!allowed.includes(key)) return 'Unknown field: ' + section + '.' + key;
+      const v = sub[key];
+      if (typeof v !== 'string') return 'Field must be a string: ' + section + '.' + key;
+      if (v.length > MAX_FIELD_LEN) return 'Field too long: ' + section + '.' + key;
+    }
+  }
+  return null;
+}
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
@@ -139,9 +168,15 @@ export async function onRequestGet({ request, env }) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const guard = guardJsonWrite(request, { maxBytes: MAX_BODY, perMin: 60, ns: 'telemetry' });
+  if (guard) return guard;
   if (!canWrite(await who(context))) return json({ ok: false, error: 'Your role is read-only.' }, 403);
+  const read = await readCappedBody(request, MAX_BODY);
+  if (typeof read !== 'string') return read;
   let cfg;
-  try { cfg = await request.json(); } catch (e) { return json({ ok: false, error: 'Bad request' }, 400); }
+  try { cfg = JSON.parse(read); } catch (e) { return json({ ok: false, error: 'Bad request' }, 400); }
+  const invalid = validateTelemetryConfig(cfg);
+  if (invalid) return json({ ok: false, error: invalid }, 400);
   const stages = {}, errors = [];
   const hasAws = env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY, hasMux = env.MUX_TOKEN_ID && env.MUX_TOKEN_SECRET;
   if (cfg && cfg.aws && hasAws) await awsStages(env, cfg.aws, stages, errors);

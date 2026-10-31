@@ -7,6 +7,11 @@
 //
 //   npm run dev                        # http://127.0.0.1:8788, env from .dev.vars
 //   node tools/dev-server.mjs --port 9000 --env .dev.vars,.dev.test.vars
+//   node tools/dev-server.mjs --host 0.0.0.0   # opt-in LAN exposure (NOT the default)
+//
+// The server binds 127.0.0.1 unless --host says otherwise. It is NOT hardened
+// (no rate limits, in-memory sessions fall back to defaults) — never expose it
+// beyond loopback except for a moment on a trusted LAN, and never to the internet.
 //
 // .dev.vars (gitignored) holds secrets, e.g. MODEL_API_KEY=… and MUSE_PASSWORD_HASH=…
 // (sha256 of "muse-live:" + your local password). It is NOT a production server.
@@ -18,7 +23,12 @@ const argv = process.argv.slice(2);
 const arg = (name, d) => { const i = argv.indexOf('--' + name); return i >= 0 ? argv[i + 1] : d; };
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = +arg('port', process.env.PORT || 8788);
+const HOST = arg('host', '127.0.0.1');
 const ENVFILE = arg('env', path.join(ROOT, '.dev.vars'));
+if (HOST !== '127.0.0.1' && HOST !== 'localhost' && HOST !== '::1') {
+  console.warn(`WARNING: Muse Live dev server binding to ${HOST} — this exposes an unhardened dev server`
+    + ' (default secrets, no rate limits). Use only on a trusted LAN, never on the public internet.');
+}
 const PUB = ROOT, FN = path.join(ROOT, 'functions');
 
 const env = {};
@@ -122,4 +132,4 @@ http.createServer(async (req, res) => {
     res.writeHead(resp.status, headers);
     res.end(Buffer.from(await resp.arrayBuffer()));
   } catch (e) { console.error(e); res.writeHead(500); res.end(String(e && e.stack || e)); }
-}).listen(PORT, '127.0.0.1', () => console.log('Muse Live dev on http://127.0.0.1:' + PORT, Object.keys(env)));
+}).listen(PORT, HOST, () => console.log('Muse Live dev on http://' + HOST + ':' + PORT, Object.keys(env)));

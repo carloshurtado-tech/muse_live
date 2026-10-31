@@ -27,6 +27,22 @@ test('every esc() escapes & < > " and \'', () => {
   }
   assert.ok(seen >= 1, 'canonical esc() missing');
 });
+// No dynamic code compilation in first-party scripts: museRichFire dispatches through an
+// allowlist (RICH_CALLBACKS + museParseRichCb) instead of new Function/eval. Comments are
+// stripped before matching so prose about the ban cannot trip the ratchet.
+test('no new Function() or eval() calls in first-party scripts', () => {
+  const hits = [];
+  for (const f of files) {
+    const src = fs.readFileSync(path.join(ROOT, 'js', f), 'utf8')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .split('\n').map((l) => l.replace(/\/\/(?![a-z]+:\/\/).*/, '')).join('\n');
+    for (const re of [/(^|[^a-zA-Z0-9_$])new\s+Function\s*\(/, /(^|[^a-zA-Z0-9_$])eval\s*\(/]) {
+      const at = src.search(re);
+      if (at >= 0) hits.push(f + ': ' + src.slice(Math.max(0, at - 60), at + 40).replace(/\n/g, ' '));
+    }
+  }
+  assert.deepEqual(hits, []);
+});
 // innerHTML sites that concatenate data without esc() on the same line. shortcut: same-line heuristic, so
 // it is a ratchet (the number may fall, never rise) rather than a precise lint; tighten when the bundles are modularised.
 test('innerHTML assignments without esc() do not multiply', () => {

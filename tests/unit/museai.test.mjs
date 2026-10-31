@@ -40,3 +40,48 @@ test('guest Muse: effort dropped, output capped, charged before the call, size a
     globalThis.fetch = realFetch;
   }
 });
+
+test('Muse checks origin and content-type before the model, and pins the API base', async () => {
+  const sent = [], realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    sent.push(String(url));
+    return new Response(JSON.stringify({ choices: [{ message: { content: 'ok' }, finish_reason: 'stop' }], usage: { total_tokens: 1 } }), { headers: { 'Content-Type': 'application/json' } });
+  };
+  try {
+    const body = { messages: [{ role: 'user', content: 'hi' }] };
+    const env = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV() };
+    assert.equal((await onRequestPost(ctx('/api/museai', { method: 'POST', body, env, user: TEAM, headers: { Origin: 'https://evil.example' } }))).status, 403);
+    const plain = new Request('https://muse.test/api/museai', { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: '{}' });
+    assert.equal((await onRequestPost({ request: plain, env, params: {}, data: { user: TEAM }, next: async () => new Response('NEXT') })).status, 415);
+    // Evil base fails closed without calling upstream.
+    const evilEnv = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_API_BASE: 'https://evil.example/v1' };
+    const refused = await onRequestPost(ctx('/api/museai', { method: 'POST', body, env: evilEnv, user: TEAM }));
+    assert.equal(refused.status, 503);
+    assert.equal(sent.length, 0);
+    // Allowlisted override is honoured.
+    const okEnv = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_API_BASE: 'https://models.example.com/v1', MUSE_API_BASE_ALLOWLIST: 'models.example.com' };
+    assert.equal((await onRequestPost(ctx('/api/museai', { method: 'POST', body, env: okEnv, user: TEAM }))).status, 200);
+    assert.ok(sent[0].startsWith('https://models.example.com/v1/chat/completions'));
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('model tools include live test-feed telemetry', async () => {
+  let tools = null;
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, init) => {
+    tools = JSON.parse(init.body).tools;
+    return new Response(JSON.stringify({ choices: [{ message: { content: 'ok' }, finish_reason: 'stop' }], usage: { total_tokens: 1 } }), { headers: { 'Content-Type': 'application/json' } });
+  };
+  try {
+    const env = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV() };
+    const body = { messages: [{ role: 'user', content: 'how are the test feeds?' }] };
+    assert.equal((await onRequestPost(ctx('/api/museai', { method: 'POST', body, env, user: TEAM }))).status, 200);
+    const feed = (tools || []).find((t) => t.function && t.function.name === 'get_feed_status');
+    assert.ok(feed, 'get_feed_status missing from the tool surface');
+    assert.ok(feed.function.parameters.properties.feed, 'optional feed narrow is missing');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});

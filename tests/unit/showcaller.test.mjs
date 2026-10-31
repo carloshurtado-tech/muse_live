@@ -432,3 +432,24 @@ test('25. gate: approve moves the real seed booking end to end', () => {
   // approving twice is an error, not a double execution
   assert.equal(SC.approve(r.id, {}).ok, false);
 });
+
+test('29. approved test-feed fixes re-check exactly that feed', () => {
+  const retried = [];
+  const win = makeWin({
+    MuseTestFeeds: {
+      retry: (id) => retried.push(id),
+      status: (id) => ({ feeds: id === 'live' ? [{ id: 'live' }] : [] }),
+    },
+  });
+  const SC = win.MuseShowCaller;
+  const plan = { area: 'streams', for: 'Test Live: stall storm — 3 playback stalls in the last minute',
+    action: 'retry_feed', detail: { feed: 'live', label: 'Test Live', kind: 'stall-storm', fix: 'Re-check the feed and remount its tile' },
+    sources: ['test feed · live', 'player telemetry · stall-storm'] };
+  const a = SC.requestApproval(plan, 'testfeed:live', {});
+  assert.match(SC.cardHTML(a), /Re-check test feed &quot;Test Live&quot;/);
+  const r = SC.approve(a.id, { by: 'qa' });
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.deepEqual(retried, ['live'], 'only the degraded tile is touched');
+  const gone = SC.requestApproval(Object.assign({}, plan, { detail: { feed: 'gone' } }), 'testfeed:gone', {});
+  assert.equal(SC.approve(gone.id, {}).ok, false, 'a feed that no longer exists refuses');
+});

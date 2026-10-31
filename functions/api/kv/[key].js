@@ -4,12 +4,41 @@
 //   PUT    /api/kv/:key   → store a JSON body (≤ 256 KB). Viewers are read-only.
 //   DELETE /api/kv/:key   → admins only.
 // Keys are [a-z0-9_-]{1,64}; internal namespaces (users:, audit:, obs:) use ':' and are not reachable here.
-import { json, sameOrigin } from '../../_lib/session.js';
+import { json } from '../../_lib/session.js';
+import { guardJsonWrite, readCappedBody } from '../../_lib/abuse.js';
 import { who, isAdmin, canWrite } from '../../_lib/who.js';
 import { audit } from '../../_lib/audit.js';
 
 const KEY = /^[a-z0-9_-]{1,64}$/;
 const MAX = 256 * 1024;
+
+/* Optimistic concurrency for PUT: clients send the X-Muse-Updated value they
+   read (as an ETag) back via If-Match / If-None-Match. Returns null when the
+   write may proceed, otherwise an error Response (412). */
+function etagList(h) {
+  return String(h || '').split(',').map((t) => t.trim().replace(/^W\//, '').replace(/^"|"$/g, ''));
+}
+export function checkPreconditions(request, updated) {
+  const im = request.headers.get('If-Match');
+  if (im !== null) {
+    const tags = etagList(im);
+    // If-Match:* requires the key to exist; a list requires one entry to equal the version.
+    if (im.trim() === '*') {
+      if (!updated) return json({ ok: false, error: 'Version mismatch' }, 412);
+    } else if (!updated || !tags.some((t) => t === updated)) {
+      return json({ ok: false, error: 'Version mismatch' }, 412);
+    }
+  }
+  const inm = request.headers.get('If-None-Match');
+  if (inm !== null) {
+    const tags = etagList(inm);
+    // If-None-Match:* fails when the key exists; a list fails on any match (PUT → 412).
+    if (inm.trim() === '*' ? !!updated : (!!updated && tags.some((t) => t === updated))) {
+      return json({ ok: false, error: 'Version mismatch' }, 412);
+    }
+  }
+  return null;
+}
 
 export async function onRequest(context) {
   const { request, env, params } = context;
@@ -44,17 +73,24 @@ export async function onRequest(context) {
         'X-Muse-Updated': updated, 'X-Muse-By': String((metadata && metadata.by) || '') },
     });
   }
-  if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
   if (request.method === 'PUT') {
+    const guard = guardJsonWrite(request, { maxBytes: MAX, perMin: 120, ns: 'kv' });
+    if (guard) return guard;
     if (!canWrite(user)) return json({ ok: false, error: 'Your role is read-only.' }, 403);
-    const text = await request.text();
-    if (new TextEncoder().encode(text).length > MAX) return json({ ok: false, error: 'Value exceeds 256 KB' }, 413);
+    const read = await readCappedBody(request, MAX);
+    if (typeof read !== 'string') return read;
+    const text = read;
     try { JSON.parse(text); } catch (e) { return json({ ok: false, error: 'Body must be JSON' }, 400); }
+    const cur = await env.MUSE_KV.getWithMetadata(key, { type: 'text' });
+    const current = cur && cur.value !== null ? String((cur.metadata && cur.metadata.updated) || 0) : null;
+    const blocked = checkPreconditions(request, current || '');
+    if (blocked) return blocked;
     const updated = Date.now();
     await env.MUSE_KV.put(key, text, { metadata: { updated, by: user.u } });
     // High-frequency telemetry keys aren't audited (they'd drown the log).
     if (!/^(live-status|presence)/.test(key)) await audit(env, { who: user.u, role: user.r, action: 'kv.put', key, detail: text.length + ' bytes' });
-    return json({ ok: true, key, updated });
+    return json({ ok: true, key, updated }, 200,
+      [['ETag', '"' + updated + '"'], ['X-Muse-Updated', String(updated)], ['X-Muse-By', user.u]]);
   }
   if (request.method === 'DELETE') {
     if (!isAdmin(user)) return json({ ok: false, error: 'Admins only' }, 403);

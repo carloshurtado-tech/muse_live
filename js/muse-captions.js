@@ -4,7 +4,7 @@
    the post-show transcript exists by construction. A failed window marks a
    gap and the loop continues; captions lag live by about a window plus the
    transcribe call. True realtime (WebSocket relay) is the stretch, not the
-   promise. YouTube iframes cannot be tapped (no element audio) and refuse
+   promise. Only HLS <video> tiles can be tapped; empty tiles refuse
    loudly instead of captioning silence. */
 (function (root) {
   'use strict';
@@ -95,7 +95,7 @@
     if (RUNS[key] && RUNS[key].running) return { ok: true, resumed: true };
     var M = root.MuseStreaming, v = null;
     try { v = M && typeof M.videoFor === 'function' ? M.videoFor(slot) : null; } catch (e) { v = null; }
-    if (!v) return { ok: false, error: 'No tappable audio for slot ' + slot + ' (YouTube and empty tiles cannot be captioned).' };
+    if (!v) return { ok: false, error: 'No tappable audio for slot ' + slot + ' (empty tiles cannot be captioned).' };
     var AC = root.AudioContext || root.webkitAudioContext;
     if (!AC) return { ok: false, error: 'Web Audio is unavailable in this browser.' };
     var winSec = Math.min(30, Math.max(5, opts.windowSec || 10));

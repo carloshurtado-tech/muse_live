@@ -6,12 +6,14 @@
    js/muse-streaming.js never carries these URLs; test tiles mount through its
    data-hls-slot machinery like any other tile.
    Player telemetry (hls.js level switches and errors, video stalls, dropped-frame
-   and buffer samples, YouTube IFrame state) lands per feed through TF.event with a
+   and buffer samples) lands per feed through TF.event with a
    timestamp, the feed id and a payload. Sustained degradation (stall storm,
    rendition collapse, repeated fragment/decoder errors) raises a Show Caller risk
    with a proposed fix — human approval only, never automatic.
-   Every test tile carries a TEST FEED badge and fictional overlay metadata — test
-   content is never presented as production programming. */
+   Synthetic tiles carry a TEST FEED badge and fictional overlay metadata;
+   real third-party broadcasts carry an EXTERNAL LIVE FEED badge naming the
+   source. Neither is ever presented as production programming. Tiles never
+   autoplay: hover previews, click expands to the theater (decoder budget). */
 (function (root) {
   'use strict';
 
@@ -30,10 +32,19 @@
   var clock = null; // test seam: override the clock, otherwise wall time
   function nowMs() { try { return clock ? clock() : Date.now(); } catch (e) { return Date.now(); } }
 
+  // Wall layout (NOC multiviewer): synthetic test pattern + two real external
+  // live broadcasts + two VOD ABR ladders. External feeds are real third-party
+  // broadcasts — badged EXTERNAL LIVE FEED, never presented as productions.
+  // Al Jazeera Arabic is configured but disabled by default: it sends no CORS
+  // headers, so it is native-playback-only with no hls.js telemetry; enable it
+  // from KV (`testfeeds`) only as a non-English live stress case.
   var DEFAULTS = [
-    { id: 'live', label: 'Test Live', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', kind: 'live', enabled: true },
-    { id: 'abr', label: 'Test ABR', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', kind: 'abr', enabled: true },
-    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: true }
+    { id: 'live', label: 'Test Live', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', kind: 'live', enabled: true, badge: 'test' },
+    { id: 'nasa', label: 'NASA TV', url: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'NASA TV' },
+    { id: 'redbull', label: 'Red Bull TV', url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'Red Bull TV' },
+    { id: 'abr', label: 'Test ABR', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', kind: 'abr', enabled: true, badge: 'test' },
+    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: true, badge: 'test' },
+    { id: 'aja', label: 'Al Jazeera Arabic', url: 'https://live-hls-web-aja.getaj.net/AJA/index.m3u8', kind: 'live', enabled: false, badge: 'external', source: 'Al Jazeera Arabic', nativeOnly: true }
   ];
 
   var KINDS = { live: 1, abr: 1, vod: 1 };
@@ -43,6 +54,19 @@
     abr: 'ABR ladder check · fictional program',
     vod: 'VOD sample · fictional title'
   };
+  function isExternal(feed) { return !!(feed && feed.badge === 'external'); }
+  function badgeHTML(feed) {
+    if (isExternal(feed)) return '<span class="ms-test-badge is-external">External live feed · ' + escHtml(feed.source || feed.label || 'External') + '</span>';
+    return '<span class="ms-test-badge">Test feed</span>';
+  }
+  function kindLabel(feed) {
+    if (isExternal(feed)) return feed.kind === 'live' ? 'External · Live' : 'External · ' + String(feed.kind || '').toUpperCase();
+    return KIND_LABEL[feed.kind] || 'Test';
+  }
+  function capMeta(feed) {
+    if (isExternal(feed)) return 'Third-party broadcast · not a Muse production' + (feed.nativeOnly ? ' · native-only (no CORS telemetry)' : '');
+    return KIND_META[feed.kind] || 'Test signal';
+  }
 
   function escHtml(s) {
     try { if (typeof root.esc === 'function' && root.esc !== escHtml) return root.esc(s); } catch (e) {}
@@ -60,12 +84,18 @@
       if (!/^[a-z0-9-]{1,32}$/.test(id) || seen[id]) continue;
       var url = String(f.url || '');
       if (!/^https:\/\/\S{1,500}$/.test(url)) continue;
+      if (url.indexOf('.m3u8') < 0) continue; // HLS only
       var kind = String(f.kind || '');
       if (!KINDS[kind]) continue;
       var label = String(f.label || '').trim().slice(0, 80);
       if (!label) continue;
       seen[id] = 1;
-      out.push({ id: id, label: label, url: url, kind: kind, enabled: f.enabled !== false });
+      var rec = { id: id, label: label, url: url, kind: kind, enabled: f.enabled !== false, badge: f.badge === 'external' ? 'external' : 'test' };
+      if (rec.badge === 'external') {
+        rec.source = String(f.source || label).trim().slice(0, 40) || label;
+        if (f.nativeOnly) rec.nativeOnly = true;
+      }
+      out.push(rec);
     }
     return out;
   }
@@ -120,14 +150,18 @@
   function videoOf(id) { var m = MS(); if (!m || !m.videoFor) return null; try { return m.videoFor(slotOf(id)); } catch (e) { return null; } }
 
   /* ---------------- tile HTML ---------------- */
+  var MUTE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
   function tileHTML(feed) {
     var live = feed.kind === 'live' ? ' data-live="1"' : '';
+    // Poster-first: data-defer keeps every decoder idle until hover/click, so
+    // five live tiles cost nothing on the dashboard until a person looks.
     return '<figure class="ms-tile ms-test" data-testfeed="' + escHtml(feed.id) + '">' +
-      '<div class="ms-screen" data-hls-slot="' + escHtml(slotOf(feed.id)) + '" data-url="' + escHtml(feed.url) + '"' + live + '>' +
-        '<div class="ms-slate" aria-hidden="true"><b>' + escHtml(feed.label) + '</b><span data-tf-slate>Checking feed…</span></div>' +
-        '<div class="ms-osd"><span class="ms-test-badge">Test feed</span><span class="ms-test-kind">' + escHtml(KIND_LABEL[feed.kind] || 'Test') + '</span></div>' +
+      '<div class="ms-screen is-clickable" data-defer="1" data-hls-slot="' + escHtml(slotOf(feed.id)) + '" data-url="' + escHtml(feed.url) + '"' + live + ' onclick="MuseTestFeeds.openTheater(event,\'' + escHtml(feed.id) + '\')" onmouseenter="MuseTestFeeds.hoverPreview(\'' + escHtml(feed.id) + '\')" onmouseleave="MuseTestFeeds.hoverEnd(\'' + escHtml(feed.id) + '\')" title="Hover to preview · click to expand">' +
+        '<div class="ms-slate" aria-hidden="true"><b>' + escHtml(feed.label) + '</b><span data-tf-slate>Hover to preview · click to expand</span></div>' +
+        '<div class="ms-osd">' + badgeHTML(feed) + '<span class="ms-test-kind">' + escHtml(kindLabel(feed)) + '</span></div>' +
+        '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(event,\'' + escHtml(slotOf(feed.id)) + '\',this)" aria-pressed="false" aria-label="Mute or unmute ' + escHtml(feed.label) + '">' + MUTE_SVG + '</button>' +
       '</div>' +
-      '<figcaption class="ms-cap"><div class="ms-cap-main"><b>' + escHtml(feed.label) + '</b><span>' + escHtml(KIND_META[feed.kind] || 'Test signal') + '</span></div>' +
+      '<figcaption class="ms-cap"><div class="ms-cap-main"><b>' + escHtml(feed.label) + '</b><span>' + escHtml(capMeta(feed)) + '</span></div>' +
         '<div class="ms-cap-kpis"><span class="ms-test-health" data-tf-health="' + escHtml(feed.id) + '">Checking…</span></div>' +
         '<div class="ms-test-qoe" data-tf-qoe="' + escHtml(feed.id) + '">' + escHtml(qoeText(feed.id)) + '</div>' +
       '</figcaption></figure>';
@@ -137,7 +171,7 @@
     var tiles = S.feeds.filter(function (f) { return f.enabled !== false; }).map(tileHTML).join('');
     return '<section class="ms-card ms-test-wrap" id="msTestFeeds"><div class="ms-card-h"><h3>Test feeds</h3>' +
       '<span class="ms-sub">Stand-in signals for player QA — not production programming</span></div>' +
-      '<p class="ms-note ms-demo-note"><span class="ms-test-badge">Test feed</span> Public sample streams used to exercise the player wall. Labels and lineup metadata here are fictional.</p>' +
+      '<p class="ms-note ms-demo-note"><span class="ms-test-badge">Test feed</span> Synthetic sample streams for player QA (fictional metadata). <span class="ms-test-badge is-external">External live feed</span> Real third-party broadcasts — not Muse productions. Tiles stay paused until hover or click, to protect the dashboard.</p>' +
       '<div class="ms-test-risks" data-tf-risks></div>' +
       '<div class="ms-grid" data-tf-grid>' + (tiles || '<p class="ms-empty">No test feeds enabled.</p>') + '</div></section>';
   }
@@ -199,13 +233,13 @@
 
   /* ---------------- telemetry: event log + per-tile QoE ----------------
      The player (js/muse-streaming.js) forwards hls.js LEVEL_SWITCHED, ERROR
-     (fatal and non-fatal), video stall/error events and YouTube IFrame state
+     (fatal and non-fatal) and video stall/error events
      here. Every entry carries a timestamp, the feed id and a payload; each feed
      keeps its own ring and QoE record, so a degraded tile never affects others. */
   function qoeFor(id) {
     return S.qoe[id] || (S.qoe[id] = { bitrate_kbps: null, rendition: null, renditions: null, resolution: null,
       buffer_s: null, stalls: 0, errors: 0, frag_errors: 0, dropped: 0, dropped_total: 0, switches: 0,
-      max_bitrate: 0, state: 'loading', player: 'hls', last_switch: null, yt: null });
+      max_bitrate: 0, state: 'loading', player: 'hls', last_switch: null });
   }
 
   function logEvent(id, type, payload) {
@@ -253,16 +287,6 @@
       case 'stall':
         q.stalls++;
         break;
-      case 'yt-state':
-        q.player = 'youtube';
-        q.yt = { state: p.state || 'unknown', quality: p.quality || null,
-          loaded_fraction: p.loaded_fraction != null ? p.loaded_fraction : null };
-        if (p.state) q.state = p.state;
-        if (p.state === 'buffering' && p.prev === 'playing') q.stalls++;
-        break;
-      case 'yt-stall':
-        q.stalls++;
-        break;
       case 'playing':
         q.state = 'playing';
         break;
@@ -293,12 +317,6 @@
   function qoeText(id) {
     var q = S.qoe[id];
     if (!q) return 'QoE: connecting…';
-    if (q.player === 'youtube') {
-      var y = q.yt || {};
-      return 'YT ' + (y.state || '…') + (y.quality ? ' · ' + y.quality : '') +
-        (y.loaded_fraction != null ? ' · loaded ' + Math.round(y.loaded_fraction * 100) + '%' : '') +
-        ' · stalls ' + q.stalls + ' · err ' + q.errors;
-    }
     var parts = [q.bitrate_kbps ? (Math.round(q.bitrate_kbps / 100) / 10) + ' Mbps' : '… Mbps'];
     if (q.resolution) parts.push(q.resolution);
     parts.push('buf ' + (q.buffer_s != null ? q.buffer_s.toFixed(1) + 's' : '—'));
@@ -340,10 +358,7 @@
   function stallEpisodes(log, now) {
     var times = [];
     since(log, 'stall', RISK.STALL_MS, now).forEach(function (e) { times.push(entryTs(e)); });
-    since(log, 'yt-stall', RISK.STALL_MS, now).forEach(function (e) { times.push(entryTs(e)); });
     since(log, 'hls-error', RISK.STALL_MS, now, function (e) { return e.payload && e.payload.details === 'bufferStalledError'; })
-      .forEach(function (e) { times.push(entryTs(e)); });
-    since(log, 'yt-state', RISK.STALL_MS, now, function (e) { return e.payload && e.payload.state === 'buffering' && e.payload.prev === 'playing'; })
       .forEach(function (e) { times.push(entryTs(e)); });
     times.sort(function (a, b) { return a - b; });
     var n = 0, last = -1e15;
@@ -518,8 +533,7 @@
         qoe: q ? { bitrate_kbps: q.bitrate_kbps, rendition: q.rendition, renditions: q.renditions,
           resolution: q.resolution, buffer_s: q.buffer_s, stalls: q.stalls, errors: q.errors,
           frag_errors: q.frag_errors, dropped: q.dropped, dropped_total: q.dropped_total,
-          switches: q.switches, max_bitrate: q.max_bitrate, state: q.state, player: q.player,
-          yt: q.yt } : null,
+          switches: q.switches, max_bitrate: q.max_bitrate, state: q.state, player: q.player } : null,
         signals: signals(f.id), recent: log.slice(-5) };
     }), pending: pendingRisks().map(function (a) {
       var pl = (a && a.plan) || {};
@@ -535,7 +549,6 @@
       return { id: f.id, label: f.label, health: S.health[f.id] || 'unknown', state: q.state || 'loading',
         player: q.player || 'hls', bitrate_kbps: q.bitrate_kbps, buffer_s: q.buffer_s,
         stalls: q.stalls || 0, errors: q.errors || 0, dropped: q.dropped || 0,
-        yt: q.yt ? (q.yt.state + (q.yt.quality ? ' · ' + q.yt.quality : '')) : null,
         signals: signals(f.id).map(function (s) { return s.text; }) };
     }), pending_fixes: pendingRisks().length };
   }
@@ -616,14 +629,22 @@
     paintQoe(id);
   }
 
-  function runCheck(id) {
+  function runCheck(id, opts) {
     var feed = feedById(id);
     if (!feed || feed.enabled === false) return;
+    var lazy = !!(opts && opts.lazy);
     resetTelemetry(id); // a fresh check starts from clean counters; approvals stay with the human
     setHealth(id, 'checking', 'Checking…');
-    setSlate(id, 'Checking feed…');
+    if (!lazy) setSlate(id, 'Checking feed…');
     check(feed).then(function (st) {
       if (st === 'down') { showDown(id); return; }
+      if (lazy) {
+        // Poster-first: playlist probed, decoder still idle. Hover previews,
+        // click expands — nothing decodes until a person looks at the tile.
+        setHealth(id, st, st === 'up' ? 'Ready · hover to preview' : 'Ready (unverified) · hover to preview');
+        setSlate(id, 'Hover to preview · click to expand');
+        return;
+      }
       setHealth(id, st, st === 'up' ? 'Feed OK' : 'Checking playback…');
       activate(id);
       verifyPlayback(id);
@@ -756,7 +777,7 @@
       var same = want.length === Object.keys(have).length && want.every(function (id) { return have[id]; });
       if (!same) rerenderGrid(host);
       S.mounted = {};
-      want.forEach(runCheck);
+      want.forEach(function (id) { runCheck(id, { lazy: true }); });
       want.forEach(paintQoe);
       renderRisks();
     });
@@ -777,7 +798,7 @@
     tileHTML: tileHTML,
     loadConfig: loadConfig,
     mount: mount,
-    event: logEvent, // player entry point: hls.js / video / YouTube telemetry lands here
+    event: logEvent, // player entry point: hls.js / video telemetry lands here
     signals: signals,
     evaluate: evaluate,
     riskBrief: riskBrief,
@@ -787,6 +808,29 @@
     rejectRisk: rejectRisk,
     qoeOf: function (id) { return S.qoe[String(id || '')] || null; },
     eventsOf: function (id) { return (S.events[String(id || '')] || []).slice(); },
+    feedById: function (id) { return feedById(String(id || '')); },
+    hoverPreview: function (id) {
+      id = String(id || '');
+      if (!feedById(id) || S.health[id] === 'down') return;
+      if (S.mounted[id]) { var v0 = videoOf(id); try { if (v0 && v0.paused) v0.play().catch(function () {}); } catch (e) {} return; }
+      activate(id);
+      verifyPlayback(id);
+    },
+    hoverEnd: function (id) {
+      id = String(id || '');
+      var v = videoOf(id);
+      try { if (v && !v.paused) v.pause(); } catch (e) {}
+    },
+    openTheater: function (e, id) {
+      var tgt = e && e.target;
+      if (tgt && tgt.closest && (tgt.closest('.ms-audio') || tgt.closest('.ms-play') || tgt.closest('.ms-retry'))) return;
+      id = String(id || '');
+      if (!feedById(id)) return;
+      try {
+        var M = MS();
+        if (M && typeof M.openTestStream === 'function') { M.openTestStream(id, { viaClick: true }); return; }
+      } catch (err) {}
+    },
     retry: function (id) {
       id = String(id || '');
       if (!feedById(id)) return;

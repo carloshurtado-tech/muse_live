@@ -1,7 +1,6 @@
 // Real stream telemetry for Muse Live's Streaming tab.
 //
 // GET  /api/telemetry?status=1        → which sources this deployment can reach
-// GET  /api/telemetry?oembed=<id>     → YouTube embeddability probe (pre-flight)
 // POST /api/telemetry  { aws: { region?, medialiveChannelId?, mediaconnectFlowArn?, cloudfrontDistributionId? },
 //                        mux: { videoId? } }
 //      → { ok, stages: { cloud|contribution|cdn|viewers: { source, metrics } }, errors }
@@ -152,17 +151,6 @@ async function muxStages(env, cfg, stages, errors) {
 }
 
 export async function onRequestGet({ request, env }) {
-  const url = new URL(request.url);
-  if (url.searchParams.has('oembed')) {
-    const id = url.searchParams.get('oembed');
-    if (!/^[\w-]{11}$/.test(id || '')) return json({ ok: false, error: 'Bad video id' }, 400);
-    try {
-      const r = await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/watch?v=' + id));
-      if (!r.ok) return json({ ok: true, embeddable: false, error: r.status === 401 || r.status === 403 ? 'The owner has disabled embedding' : 'Video unavailable (HTTP ' + r.status + ')' });
-      const j = await r.json();
-      return json({ ok: true, embeddable: true, title: j.title, author: j.author_name });
-    } catch (e) { return json({ ok: false, error: 'Could not reach YouTube' }, 502); }
-  }
   return json({ ok: true, aws: !!(env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY), region: env.AWS_REGION || null, mux: !!(env.MUX_TOKEN_ID && env.MUX_TOKEN_SECRET) });
 }
 

@@ -142,31 +142,41 @@ test('tile buttons stop propagation so mute/CC/play never open the theater', () 
   assert.equal(n, 1, 'play click must not bubble to the tile');
 });
 
-test('dead youtube embeds fall back to a watch link, not a black box', () => {
-  const win = makeWin();
-  const html = win.MuseStreaming.ytFallbackHTML('FZ-RZ0dKO8o', 1855);
-  assert.match(html, /youtube\.com\/watch\?v=FZ-RZ0dKO8o/);
-  assert.match(html, /Watch on YouTube/);
+test('HLS only: no embed machinery remains and seeded programs are .m3u8', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'js/muse-streaming.js'), 'utf8');
+  assert.doesNotMatch(src, /youtube|youtu\.be|parseYt|makeYt/i, 'player is HLS-only');
+  const wall = renderWallHTML(makeWin());
+  const urls = [...wall.matchAll(/data-url="([^"]+)"/g)].map((m) => m[1]);
+  assert.ok(urls.length >= 2);
+  for (const u of urls) assert.match(u, /\.m3u8/, 'every wall monitor is HLS: ' + u);
 });
 
-test('youtube mounts move the playing embed instead of recreating it', () => {
-  // Regression: makeYt stored url:'yt:'+id while slots carry yt:id:offset:title,
-  // so every mount saw a mismatch and rebuilt the iframe at a fresh wall-clock
-  // start — the theater showed a different scene than the clicked tile.
+test('HLS mounts move the playing video instead of recreating it', async () => {
   const wall = renderWallHTML(makeWin());
   const m = /data-hls-slot="(wall:museaitour-s0)" data-url="([^"]+)"/.exec(wall);
   assert.ok(m, 'wall renders the program tile with its slot and url');
   const [, slotKey, url] = m;
-  assert.match(url, /^yt:/, 'program under test is a YouTube embed');
-  const iframes = [];
+  assert.match(url, /\.m3u8/, 'program under test is an HLS feed');
+  const videos = [];
+  function FakeHls() { this.levels = [{ bitrate: 2400000, width: 1280, height: 720 }]; this.currentLevel = 0; }
+  FakeHls.isSupported = () => true;
+  FakeHls.Events = { LEVEL_SWITCHED: 'LEVEL_SWITCHED', ERROR: 'ERROR', MANIFEST_PARSED: 'MANIFEST_PARSED' };
+  FakeHls.ErrorTypes = { NETWORK_ERROR: 'NETWORK_ERROR', MEDIA_ERROR: 'MEDIA_ERROR' };
+  FakeHls.prototype.on = function () {};
+  FakeHls.prototype.loadSource = function () {};
+  FakeHls.prototype.attachMedia = function () {};
   const win = makeWin({
+    Hls: FakeHls,
+    MediaSource: function () {},
     document: {
       createElement(tag) {
-        const el = { tagName: String(tag).toUpperCase(), style: {}, parentNode: null,
-          setAttribute() {}, addEventListener() {}, removeAttribute() {}, load() {}, loading: '' };
-        if (el.tagName === 'IFRAME') iframes.push(el);
+        const el = { tagName: String(tag).toUpperCase(), style: {}, parentNode: null, paused: true,
+          setAttribute() {}, addEventListener() {}, removeAttribute() {}, load() {}, canPlayType: () => '',
+          play() { this.paused = false; return Promise.resolve(); } };
+        if (el.tagName === 'VIDEO') videos.push(el);
         return el;
       },
+      head: { appendChild() {} },
     },
   });
   const mkSlot = () => ({
@@ -178,11 +188,12 @@ test('youtube mounts move the playing embed instead of recreating it', () => {
   });
   const tile = mkSlot(), screen = mkSlot();
   win.MuseStreaming.mount({ querySelectorAll: () => [tile] });
-  assert.equal(iframes.length, 1);
-  assert.equal(iframes[0].parentNode, tile);
+  await new Promise((r) => setTimeout(r, 10));
+  assert.equal(videos.length, 1);
+  assert.equal(videos[0].parentNode, tile);
   win.MuseStreaming.mount({ querySelectorAll: () => [screen] });
-  assert.equal(iframes.length, 1, 'second mount moves the embed, never rebuilds it');
-  assert.equal(iframes[0].parentNode, screen, 'theater shows the playing embed, same position');
+  assert.equal(videos.length, 1, 'second mount moves the video, never rebuilds it');
+  assert.equal(videos[0].parentNode, screen, 'theater shows the playing feed, same element');
 });
 
 test('theater resolves the clicked stream whatever tile context opened it', () => {
@@ -322,49 +333,41 @@ test('hls.js level switches, errors and manifests forward per-tile telemetry', a
   assert.equal(forwarded.length, n, 'regular tiles never forward into feed telemetry');
 });
 
-test('youtube IFrame state flows into the same telemetry, with limits', async () => {
-  const forwarded = [];
-  const listeners = {};
-  const posted = [];
-  const contentWindow = { postMessage: (msg) => posted.push(JSON.parse(msg)) };
-  let loadFn = null, nowValue = 1000000000000;
+test('theater carries full transport, telemetry and manual-caption controls', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'js/muse-streaming.js'), 'utf8');
+  // Full transport: play/pause, seek, live, mute + volume, rate.
+  for (const id of ['msTPlay', 'msTSeek', 'msTTime', 'msTMute', 'msTVol', 'msTRate', 'msTLive']) assert.ok(src.includes(id), 'transport control ' + id);
+  for (const fn of ['transportPlayPause', 'transportSeek', 'transportVolume', 'transportMute', 'transportLive']) assert.ok(src.includes(fn), 'handler ' + fn);
+  // Centered theater over a blurred backdrop with the requested live telemetry.
+  assert.ok(src.includes('ms-modal-backdrop'), 'blurred backdrop');
+  for (const label of ['State', 'Resolution', 'Codec', 'Rendition', 'Bandwidth est.', 'Live latency', 'Buffer ahead', 'Dropped frames', 'Stalls / errors', 'Bitrate']) assert.ok(src.includes("'" + label + "'"), 'telemetry row ' + label);
+  assert.ok(src.includes('>Stream facts<'), 'Stream facts section');
+  // Thumbnail mute + captions show/hide + export in vtt/srt/txt.
+  assert.ok(src.includes('MuseStreaming.toggleAudio'), 'thumbnail mute');
+  assert.ok(src.includes('toggleCaptionsVisible'), 'caption hide/show');
+  assert.ok(src.includes("exportCaptions('srt')") || src.includes('exportCaptions'), 'caption export');
+});
+
+test('opening or playing a stream never auto-starts billed transcription', () => {
+  let starts = 0;
+  const els = {};
+  const mkEl = () => ({ style: {}, hidden: false, innerHTML: '', textContent: '',
+    setAttribute() {}, removeAttribute() {}, getAttribute: () => null,
+    classList: { add() {}, remove() {}, toggle() {} }, querySelector: () => null, querySelectorAll: () => [], appendChild() {} });
   const win = makeWin({
-    MuseTestFeeds: { event: (id, type, payload) => forwarded.push({ id, type, payload: JSON.parse(JSON.stringify(payload)) }) },
-    addEventListener: (type, fn) => { (listeners[type] = listeners[type] || []).push(fn); },
-    Date: { now: () => nowValue },
+    MuseCaptions: { start: () => { starts++; return { ok: true }; }, stop: () => {}, status: () => ({ running: false, lines: 0 }), lines: () => [], search: () => [] },
     document: {
-      createElement: () => ({ tagName: 'IFRAME', style: {}, parentNode: null, contentWindow,
-        setAttribute() {}, removeAttribute() {}, load() {}, addEventListener: (t, fn) => { if (t === 'load') loadFn = fn; } }),
+      createElement: () => mkEl(),
+      getElementById: (id) => (els[id] = els[id] || mkEl()),
+      body: { appendChild() {}, contains: () => true },
+      addEventListener() {},
+      querySelector: () => null, querySelectorAll: () => [],
     },
   });
-  const MS = win.MuseStreaming;
-  MS.mount({ querySelectorAll: () => [feedSlot('test:live', 'yt:dnT9cVv3Spw:0:Meta Connect 2026')] });
-  assert.ok(loadFn, 'embed waits for load before subscribing');
-  loadFn();
-  assert.equal(posted.length, 1);
-  assert.equal(posted[0].event, 'listening');
-  const msg = (info, origin = 'https://www.youtube-nocookie.com') =>
-    listeners.message[0]({ origin, data: JSON.stringify({ event: 'infoDelivery', info }), source: contentWindow });
-  msg({ playerState: 1, playbackQuality: 'hd720', videoLoadedFraction: 0.62, currentTime: 100.5 });
-  assert.deepEqual(forwarded[0], { id: 'live', type: 'yt-state',
-    payload: { state: 'playing', prev: 'unknown', quality: 'hd720', loaded_fraction: 0.62, t: 100.5 } });
-  msg({ playerState: 3, playbackQuality: 'hd720', videoLoadedFraction: 0.63, currentTime: 101 });
-  assert.equal(forwarded[1].payload.state, 'buffering');
-  assert.equal(forwarded[1].payload.prev, 'playing');
-  // Inferred stall: playing, but the playhead is frozen across samples.
-  msg({ playerState: 1, playbackQuality: 'hd720', videoLoadedFraction: 0.7, currentTime: 120 });
-  nowValue += 2000;
-  msg({ playerState: 1, playbackQuality: 'hd720', videoLoadedFraction: 0.7, currentTime: 120 });
-  const stalls = forwarded.filter((f) => f.type === 'yt-stall');
-  assert.equal(stalls.length, 1);
-  assert.equal(stalls[0].payload.inferred, true);
-  nowValue += 500;
-  msg({ playerState: 1, currentTime: 125 });
-  assert.equal(forwarded.filter((f) => f.type === 'yt-stall').length, 1, 'a moving playhead clears the inference');
-  const n = forwarded.length;
-  msg({ playerState: 2 }, 'https://evil.example');
-  assert.equal(forwarded.length, n, 'foreign origins are ignored');
-  assert.equal(MS.ytInfo('wall:missing', { playerState: 1 }), null, 'unknown slots are ignored');
+  const screen = { querySelector: () => null, getAttribute: () => 'wall:museaitour-s0' };
+  win.MuseStreaming.screenClick({ target: { closest: () => null } }, screen, 'museaitour');
+  assert.equal(els.msStreamModal.hidden, false, 'theater opened');
+  assert.equal(starts, 0, 'manual only: a click/play must never start Muse Voice Transcribe');
 });
 
 test('test-feed QoE beacons keep their own show key', () => {

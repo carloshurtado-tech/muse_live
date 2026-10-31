@@ -29,23 +29,10 @@
     vodAngel: 'https://storage.googleapis.com/shaka-demo-assets/angel-one-hls/hls.m3u8'
   };
 
-  // Official Meta event recordings on YouTube (Meta / Meta Developers channels, embeddable).
-  // [video id, title, duration in seconds] — monitors join halfway through so they read as mid-broadcast.
-  var VIDEOS = {
-    connect26: ['dnT9cVv3Spw', 'Meta Connect 2026: Opening Keynote', 3315],
-    connect25: ['80s0chTOsK0', 'Meta Connect 2025: Opening Keynote', 5415],
-    connect25b: ['Q9eLemEd9FY', 'Meta Connect 2025 Keynote', 3515],
-    devkey25: ['KWdUxc24dIw', 'Meta Connect 2025: Developer Keynote', 21980],
-    llamacon: ['FZ-RZ0dKO8o', 'LlamaCon 2025: Closing Session', 3710]
-  };
-  var DURATION = {}; Object.keys(VIDEOS).forEach(function (k) { DURATION[VIDEOS[k][0]] = VIDEOS[k][2]; });
-  function yt(name, offset) { var v = VIDEOS[name]; return 'yt:' + v[0] + ':' + (offset || 0) + ':' + v[1]; }
-  function parseYt(url) {
-    var m = /^yt:([\w-]{11}):(-?\d+):(.*)$/.exec(url || ''); if (m) return { id: m[1], offset: +m[2], title: m[3] };
-    m = /(?:youtube\.com\/(?:watch\?(?:.*&)?v=|live\/|embed\/|shorts\/)|youtu\.be\/)([\w-]{11})/.exec(url || '');
-    if (!m) return null;
-    var t = /[?&]t=(\d+)/.exec(url); return { id: m[1], offset: t ? +t[1] : 0, title: 'YouTube' };
-  }
+  // HLS only: every monitor is an HLS (.m3u8) feed played through hls.js
+  // (native HLS on Safari). No iframe embeds — cross-origin embeds expose no
+  // pixels, no dropped-frame counts and no tappable audio, so telemetry and
+  // captions stay HLS-only by construction.
 
   var STATES = {
     LIVE: { label: 'LIVE', cls: 'is-live' },
@@ -77,7 +64,7 @@
       cloud: 'AWS Elemental MediaLive Standard channel (2 pipelines) · automatic input failover after 2 s input loss',
       loudness: '-24 LKFS ±2 (ATSC A/85) · true peak -2 dBTP',
       captions: 'CART writer → EEG Falcon (iCap) → CEA-608/708 embedded → WebVTT sidecar',
-      ladder: LADDER_169, streams: [['Meta Connect 2026 · Opening Keynote', 'program', yt('connect26')], ['Backup · LiveU bonded', 'backup', FEEDS.liveB], ['Vertical · Instagram 9:16', 'vertical', FEEDS.liveScte], ['Confidence return · HLS (CMAF)', 'return', FEEDS.liveCmaf]]
+      ladder: LADDER_169, streams: [['Meta Connect 2026 · Opening Keynote', 'program', FEEDS.liveA], ['Backup · LiveU bonded', 'backup', FEEDS.liveB], ['Vertical · Instagram 9:16', 'vertical', FEEDS.liveScte], ['Confidence return · HLS (CMAF)', 'return', FEEDS.liveCmaf]]
     },
     raybangen3: {
       state: 'ENDED', peak: 412000, viewers: 0, latency: 'Standard HLS · 15–20 s (6 s segments)',
@@ -103,7 +90,7 @@
       venueNet: 'Hudson Yards venue: 10 GbE fiber + Verizon 5G UWB bonded',
       primary: 'Haivision Makito X4 · SRT → MediaConnect us-east-1', backup: 'LiveU LU800 → LiveU Matrix',
       cloud: 'MediaLive Standard (2 pipelines)', loudness: '-24 LKFS (ATSC A/85)', captions: 'EEG Falcon → CEA-708 → WebVTT',
-      ladder: LADDER_169, streams: [['LlamaCon 2025 · Closing Session', 'program', yt('llamacon')], ['Backup · LiveU bonded', 'backup', FEEDS.liveB]]
+      ladder: LADDER_169, streams: [['LlamaCon 2025 · Closing Session', 'program', FEEDS.liveA], ['Backup · LiveU bonded', 'backup', FEEDS.liveB]]
     },
     whatsapp: {
       state: 'STANDBY', peak: 0, viewers: 0, latency: 'LL-HLS target 4 s (measured 9 s in the Oct 9 stream test — INC-2026-1009)',
@@ -279,134 +266,13 @@
     });
     return hlsLoading;
   }
-  // YouTube: muted autoplay, chrome hidden, and a start point that follows the wall clock so
-  // every reload lands where a live broadcast would be.
-  function ytWatchUrl(id, start) { return 'https://www.youtube.com/watch?v=' + id + (start > 0 ? '&t=' + start + 's' : ''); }
-  function ytFallbackHTML(id, start) {
-    return '<div class="ms-yt-fallback" role="status"><b>Video isn’t playing here</b><span>This YouTube embed is blocked or unavailable in this browser.</span><a class="ms-link" target="_blank" rel="noopener noreferrer" href="' + esc(ytWatchUrl(id, start)) + '">Watch on YouTube ↗</a></div>';
-  }
-  // An embed that never loads (content blocker, restricted video) would otherwise
-  // sit black forever. If the player document hasn't loaded after 12 s, say so and
-  // link out instead.
-  function ytFallback(slotKey) {
-    var p = players[slotKey];
-    if (!p || !p.yt || p.ytReady) return false;
-    var s = null;
-    try { s = p.video.parentNode; } catch (e) { s = null; }
-    if (!s || !s.appendChild) return false;
-    if (s.querySelector && s.querySelector('.ms-yt-fallback')) return false;
-    var d = null;
-    try { d = document.createElement('div'); } catch (e) { return false; }
-    d.innerHTML = ytFallbackHTML(p.yt.id, p.ytStart);
-    s.appendChild(d.firstChild || d);
-    return true;
-  }
-  /* YouTube IFrame player state over postMessage (the embeds already carry
-     enablejsapi=1, so no extra script is loaded and no CSP change is needed —
-     this is the same protocol the YT.Player wrapper speaks). After the player
-     receives 'listening' it posts infoDelivery messages carrying the real player
-     state, playback quality, loaded fraction and playhead position.
-     Documented limits: cross-origin iframes expose no pixels and no
-     dropped-frame counts, so Stream Check and dropped-frame telemetry stay
-     HLS-only; fields the player omits are reported as unknown, never filled in. */
-  var YT_STATE = { '-1': 'unstarted', 0: 'ended', 1: 'playing', 2: 'paused', 3: 'buffering', 5: 'cued' };
-  var ytWired = false, ytSeq = 0;
-  function ytNum(v) { return typeof v === 'number' && isFinite(v) ? Math.round(v * 100) / 100 : null; }
-  function ytFrac(v) { return typeof v === 'number' && isFinite(v) ? Math.max(0, Math.min(1, Math.round(v * 1000) / 1000)) : null; }
-  function wireYtMessages() {
-    if (ytWired) return; ytWired = true;
-    try {
-      root.addEventListener('message', function (ev) {
-        try {
-          var o = ev && ev.origin ? String(ev.origin) : '';
-          if (o !== 'https://www.youtube.com' && o !== 'https://www.youtube-nocookie.com') return;
-          var d = null;
-          try { d = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data; } catch (e) { return; }
-          if (!d || d.event !== 'infoDelivery' || !d.info) return;
-          var ks = Object.keys(players);
-          for (var i = 0; i < ks.length; i++) {
-            var p = players[ks[i]];
-            if (!p || !p.yt || !p.video) continue;
-            try { if (p.video.contentWindow && ev.source && p.video.contentWindow === ev.source) ytInfo(ks[i], d.info); } catch (e) {}
-          }
-        } catch (e) {}
-      });
-    } catch (e) {}
-  }
-  function ytListen(p) {
-    wireYtMessages();
-    try {
-      if (p.video && p.video.contentWindow && p.video.contentWindow.postMessage)
-        p.video.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: p.ytWid }), '*');
-    } catch (e) {}
-  }
-  // Apply one infoDelivery payload to the slot's YouTube state. Buffering is
-  // explicit (state 3, counted only mid-playback so startup doesn't read as a
-  // stall) or inferred: playing with a frozen playhead across samples means the
-  // picture is stuck even though the player says "playing".
-  function ytInfo(slotKey, info) {
-    var p = players[slotKey];
-    if (!p || !p.yt || !info) return null;
-    var st = p.ytState || (p.ytState = {});
-    var raw = typeof info.playerState !== 'undefined' ? info.playerState : null;
-    var label = raw != null && YT_STATE[raw] ? YT_STATE[raw] : (raw == null ? (st.state || 'unknown') : 'unknown(' + raw + ')');
-    if (label !== st.state) {
-      var prev = st.state || 'unknown', wasPlaying = prev === 'playing';
-      st.state = label; st.playerState = raw;
-      if (label === 'playing' || label === 'buffering' || label === 'paused' || label === 'ended') p.stats.state = label;
-      if (label === 'buffering' && wasPlaying) p.stats.stalls++;
-      tfEvent(slotKey, 'yt-state', { state: label, prev: prev, quality: info.playbackQuality || null,
-        loaded_fraction: ytFrac(info.videoLoadedFraction), t: ytNum(info.currentTime) });
-    }
-    if (info.playbackQuality) st.quality = String(info.playbackQuality);
-    if (typeof info.videoLoadedFraction === 'number') st.loadedFraction = ytFrac(info.videoLoadedFraction);
-    if (typeof info.currentTime === 'number') st.time = info.currentTime;
-    if (typeof info.duration === 'number') st.duration = info.duration;
-    try {
-      var last = p.ytLast;
-      if (label === 'playing' && last && typeof st.time === 'number' && typeof last.time === 'number') {
-        var wall = Date.now() - last.wall;
-        if (wall > 1500 && Math.abs(st.time - last.time) < 0.05 && !p.ytInferred) {
-          p.ytInferred = true; p.stats.stalls++;
-          tfEvent(slotKey, 'yt-stall', { inferred: true, frozen_s: Math.round(wall / 100) / 10, quality: st.quality || null });
-        } else if (Math.abs(st.time - last.time) >= 0.25) p.ytInferred = false;
-      }
-      p.ytLast = { time: st.time, wall: Date.now() };
-    } catch (e) {}
-    return st;
-  }
-  function makeYt(slotKey, info, live, url) {
-    var f = document.createElement('iframe');
-    var wid = 'msyt' + (++ytSeq);
-    try { f.id = wid; } catch (e) {}
-    // Halfway point + a slice of the wall clock, so every load lands mid-broadcast (backup feed runs -8 s).
-    var d = DURATION[info.id], now = Math.floor(Date.now() / 1000), start;
-    if (d) start = Math.min(d - 30, Math.max(0, Math.floor(d / 2) + (now % Math.max(1, Math.floor(d / 4))) + info.offset));
-    else start = Math.max(0, info.offset + (live ? now % 2700 : 0));
-    f.src = 'https://www.youtube-nocookie.com/embed/' + info.id + '?autoplay=1&mute=1&controls=0&playsinline=1&rel=0&modestbranding=1&iv_load_policy=3&cc_load_policy=1&disablekb=1&loop=1&playlist=' + info.id +
-      '&start=' + start + '&enablejsapi=1&origin=' + encodeURIComponent(location.origin);
-    f.className = 'ms-video ms-yt'; f.title = info.title; f.setAttribute('tabindex', '-1'); f.loading = 'lazy'; // off-screen monitors don't boot a player
-    f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture'); f.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-    // Store the full slot URL (yt:id:offset:title), not just the video id: mount()
-    // compares p.url against the slot's data-url, and a mismatch destroys and
-    // recreates the embed on every mount — the theater would show a different
-    // position than the clicked tile instead of moving the playing iframe.
-    var p = players[slotKey] = { video: f, yt: info, ytStart: start, ytReady: false, ytWid: wid, ytState: null, url: url, stats: { state: 'playing', stalls: 0, errors: 0 }, muted: true };
-    try {
-      var to = setTimeout(function () { if (players[slotKey] === p && !p.ytReady) { p.stats.state = 'error'; ytFallback(slotKey); } }, 12000);
-      f.addEventListener('load', function () { p.ytReady = true; try { clearTimeout(to); } catch (e) {} ytListen(p); });
-    } catch (e) {}
-    return p;
-  }
   // Slate = the poster behind every monitor; hidden once a frame plays, labelled when the feed never arrives.
   function slate(p, state) {
     p.stats.state = state; var s = p.video.parentNode; if (!s) return;
     s.classList.toggle('is-playing', state === 'playing' || state === 'buffering');
     if (state === 'slate') { var e = s.querySelector('.ms-slate span'); if (e) e.textContent = 'Simulated feed'; }
   }
-  function ytCmd(p, func, args) { try { p.video.contentWindow.postMessage(JSON.stringify({ event: 'command', func: func, args: args || [] }), '*'); } catch (e) {} }
   function makePlayer(slotKey, url, live) {
-    var info = parseYt(url); if (info) return makeYt(slotKey, info, live, url);
     var test = isTestSlot(slotKey);
     var v = document.createElement('video');
     v.muted = true; v.playsInline = true; v.autoplay = true; v.setAttribute('playsinline', ''); v.setAttribute('muted', '');
@@ -482,31 +348,51 @@
     return found;
   }
   function measure(p) {
-    if (p.yt) {
-      var y = { source: 'YouTube embed', title: p.yt.title, state: (p.ytState && p.ytState.state) || 'playing',
-        stalls: p.stats.stalls, errors: p.stats.errors, limits: 'no pixels or dropped-frame counts cross-origin' };
-      if (p.ytState) {
-        if (p.ytState.quality) y.quality = p.ytState.quality;
-        if (p.ytState.loadedFraction != null) y.loaded_fraction = p.ytState.loadedFraction;
-        if (p.ytState.time != null) y.position_s = Math.round(p.ytState.time);
-      }
-      return y;
-    }
     var v = p.video, out = { state: p.stats.state, stalls: p.stats.stalls, errors: p.stats.errors };
     try {
+      // Playback state: prefer the element's real state so the theater never
+      // reports "playing" for a paused or ended element.
+      if (v) {
+        if (v.ended) out.state = 'ended';
+        else if (v.paused && p.played) out.state = 'paused';
+        else if (!v.paused && p.played) out.state = 'playing';
+        out.paused = !!v.paused;
+        out.muted = !!v.muted;
+        out.volume = typeof v.volume === 'number' ? Math.round(v.volume * 100) / 100 : null;
+        out.playback_rate = typeof v.playbackRate === 'number' ? v.playbackRate : null;
+        out.ready_state = typeof v.readyState === 'number' ? v.readyState : null;
+        out.network_state = typeof v.networkState === 'number' ? v.networkState : null;
+        out.current_time_s = typeof v.currentTime === 'number' && isFinite(v.currentTime) ? Math.round(v.currentTime * 10) / 10 : null;
+        out.duration_s = typeof v.duration === 'number' && isFinite(v.duration) ? Math.round(v.duration * 10) / 10 : null;
+        try { out.seekable_end_s = v.seekable && v.seekable.length ? Math.round(v.seekable.end(v.seekable.length - 1) * 10) / 10 : null; } catch (e) { out.seekable_end_s = null; }
+        try {
+          var ranges = [];
+          for (var ri = 0; ri < v.buffered.length; ri++) ranges.push(Math.round(v.buffered.start(ri) * 10) / 10 + '–' + Math.round(v.buffered.end(ri) * 10) / 10 + 's');
+          out.buffered_ranges = ranges;
+        } catch (e) { out.buffered_ranges = null; }
+      }
       var b = v.buffered, ahead = 0;
       for (var i = 0; i < b.length; i++) if (v.currentTime >= b.start(i) && v.currentTime <= b.end(i)) ahead = b.end(i) - v.currentTime;
       out.buffer_s = +ahead.toFixed(1);
       out.codec = (root.MediaSource || root.ManagedMediaSource) ? 'MSE (hls.js)' : 'HLS (native)';
       out.resolution = v.videoWidth ? v.videoWidth + '×' + v.videoHeight : null;
       var q = v.getVideoPlaybackQuality ? v.getVideoPlaybackQuality() : null;
-      if (q) out.dropped_frames = q.droppedVideoFrames;
+      if (q) { out.dropped_frames = q.droppedVideoFrames; out.total_frames = q.totalVideoFrames; out.dropped_pct = q.totalVideoFrames ? Math.round(1000 * q.droppedVideoFrames / q.totalVideoFrames) / 10 : 0; }
+      if (p.qoe) {
+        out.startup_ms = p.qoe.startup_ms;
+        out.rebuffer_events = p.qoe.rebuffer_events;
+        out.rebuffer_ms = Math.round(p.qoe.rebuffer_ms + (p.qoe.waitSince ? Date.now() - p.qoe.waitSince : 0));
+        out.level_switches = p.qoe.switches;
+        out.session = p.qoe.session;
+      }
       if (p.hls) {
         var lv = p.hls.levels && p.hls.levels[p.hls.currentLevel];
-        if (lv) { out.rendition_kbps = Math.round(lv.bitrate / 1000); if (lv.videoCodec || lv.codecs) out.codec = (lv.videoCodec || String(lv.codecs).split(',')[0]) + (lv.codecs && String(lv.codecs).indexOf('.') < 0 ? '' : ' (fMP4/CMAF)'); out.resolution = (lv.width || v.videoWidth || 0) + '×' + (lv.height || v.videoHeight || 0); }
-        out.bandwidth_estimate_mbps = p.hls.bandwidthEstimate ? +(p.hls.bandwidthEstimate / 1e6).toFixed(1) : null;
+        if (lv) { out.rendition_kbps = Math.round(lv.bitrate / 1000); out.bitrate_mbps = Math.round(lv.bitrate / 10000) / 100; if (lv.videoCodec || lv.codecs) out.codec = (lv.videoCodec || String(lv.codecs).split(',')[0]) + (lv.codecs && String(lv.codecs).indexOf('.') < 0 ? '' : ' (fMP4/CMAF)'); out.resolution = (lv.width || v.videoWidth || 0) + '×' + (lv.height || v.videoHeight || 0); out.rendition_index = p.hls.currentLevel; }
+        out.bandwidth_estimate_mbps = p.hls.bandwidthEstimate ? +(p.hls.bandwidthEstimate / 1e6).toFixed(2) : null;
         if (p.hls.latency) out.live_latency_s = +p.hls.latency.toFixed(1);
         out.renditions = (p.hls.levels || []).length;
+        try { out.auto_level = p.hls.autoLevelEnabled ? 'auto' : 'manual'; out.next_level = p.hls.nextLoadLevel != null ? p.hls.nextLoadLevel : null; } catch (e) {}
+        try { out.levels = (p.hls.levels || []).map(function (l) { return { kbps: Math.round((l.bitrate || 0) / 1000), res: (l.width || '?') + '×' + (l.height || '?') }; }); } catch (e) { out.levels = null; }
       }
     } catch (e) {}
     return out;
@@ -522,7 +408,7 @@
       if (p && p.url !== url) { destroy(k); p = null; }
       if (!p) p = makePlayer(k, url, slot.getAttribute('data-live') === '1');
       if (p.video.parentNode !== slot) { slot.insertBefore(p.video, slot.firstChild); slate(p, p.stats.state); }
-      if (!p.yt && p.video.paused && !p.userPaused) p.video.play().catch(function () {});
+      if (p.video.paused && !p.userPaused) { try { p.video.play().catch(function () {}); } catch (e) {} }
     });
   }
   function gcPlayers() {
@@ -531,8 +417,7 @@
       if (!document.body.contains(p.video)) { if (!p.orphanSince) p.orphanSince = Date.now(); else if (Date.now() - p.orphanSince > 6000) destroy(k); return; }
       p.orphanSince = 0;
       var visible = p.video.offsetParent !== null;
-      if (p.yt) { if (visible !== p.wasVisible) { ytCmd(p, visible ? 'playVideo' : 'pauseVideo'); p.wasVisible = visible; } return; }
-      if (!visible && !p.video.paused) p.video.pause();
+      if (!visible && !p.video.paused) { try { p.video.pause(); } catch (e) {} }
       else if (visible && p.video.paused && !p.userPaused) p.video.play().catch(function () {});
     });
   }
@@ -573,7 +458,7 @@
         (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(event,this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
         '<div class="ms-osd">' + badge(stateOf(key)) + '<span class="ms-health" data-tm="' + st.id + ':health">' + dot(g.overall) + LEVEL_TXT[g.overall] + '</span></div>' +
         '<button type="button" class="ms-audio" onclick="MuseStreaming.toggleAudio(event,\'' + esc(slot) + '\',this)" aria-pressed="false" aria-label="Listen to ' + esc(st.name) + '"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg></button>' +
-        (ctx !== 'proj' && st.role === 'program' && t.live ? '<button type="button" class="ms-ccbtn" onclick="MuseStreaming.toggleTileCC(event,this,\'' + esc(key) + '\')" aria-label="Toggle Muse Voice Transcribe captions" title="Muse Voice Transcribe captions">CC</button>' : '') +
+        (ctx !== 'proj' && st.role === 'program' && t.live ? '<button type="button" class="ms-ccbtn" onclick="MuseStreaming.toggleTileCC(event,this,\'' + esc(key) + '\')" aria-label="Toggle Muse Voice Transcribe captions" title="Muse Voice Transcribe captions — manual only, starts transcription (billed per window)">CC</button>' : '') +
       '</div>' +
       '<figcaption class="ms-cap"><div class="ms-cap-main"><b>' + esc(opts.showName ? nameOf(key) : st.name) + '</b><span>' + esc(opts.showName ? st.name : st.role) + '</span></div>' +
         '<div class="ms-cap-kpis"><span title="Concurrent viewers">👁 <b data-tm="' + st.id + ':viewers">' + (t.live ? fmtN(t.m.viewers) : '—') + '</b></span>' +
@@ -666,7 +551,7 @@
     return '<div class="ms-wrap">' + head + alertHTML +
       section('Stream monitors', '<div class="ms-grid">' + tiles + '</div>' +
         '<form class="ms-add" onsubmit="event.preventDefault();MuseStreaming.addStream(\'' + key + '\',this)"><input name="name" placeholder="Name (e.g. Program · clean)" aria-label="Stream name" required>' +
-        '<input name="url" type="url" placeholder="HLS .m3u8 or YouTube link" aria-label="HLS (.m3u8) or YouTube URL" required pattern="https://.+"><select name="role" aria-label="Role"><option value="program">Program</option><option value="backup">Backup</option><option value="iso">ISO / camera</option><option value="vertical">Vertical 9:16</option><option value="return">Return / confidence</option></select>' +
+        '<input name="url" type="url" placeholder="HLS .m3u8 URL" aria-label="HLS (.m3u8) URL" required pattern="https://.+"><select name="role" aria-label="Role"><option value="program">Program</option><option value="backup">Backup</option><option value="iso">ISO / camera</option><option value="vertical">Vertical 9:16</option><option value="return">Return / confidence</option></select>' +
         '<button type="submit" class="ms-btn ms-btn-primary">Add stream</button></form>',
         '<span class="ms-sub">Player stats are measured live in this browser</span>') +
       section('Live health · end-to-end', chainHTML(key) + chartsHTML(key), '<span class="ms-sub">Encoder → contribution → cloud → origin → CDN → viewers ' +
@@ -819,10 +704,10 @@
     var pr = programOf(k); if (!pr) return;
     var ch = document.querySelector('[data-chain="' + pr.id + '"]'); if (ch) ch.outerHTML = chainHTML(k);
   }
-  // Real player QoE from our HLS monitors (YouTube embeds expose no stats).
+  // Real player QoE from our HLS monitors.
   function sendBeacons() {
     Object.keys(players).forEach(function (k) {
-      var p = players[k]; if (p.yt || !p.qoe || p.qoe.startup_ms == null) return;
+      var p = players[k]; if (!p.qoe || p.qoe.startup_ms == null) return;
       var q = p.qoe, now = Date.now(), sid = k.split(':')[1] || k;
       var lv = p.hls && p.hls.levels && p.hls.levels[p.hls.currentLevel];
       // Test-feed beacons keep their own show key so QA traffic never pollutes a production's QoE panel.
@@ -837,7 +722,7 @@
   }
   function qoeBody(key, j) {
     var rows = (j && j.streams) || [];
-    if (!rows.length) return '<p class="ms-empty">No player sessions yet. HLS monitors report startup time, rebuffering, bitrate switches and errors here every 15 s (YouTube embeds report player state only).</p>';
+    if (!rows.length) return '<p class="ms-empty">No player sessions yet. HLS monitors report startup time, rebuffering, bitrate switches and errors here every 15 s.</p>';
     var names = {}; streamsFor(key).forEach(function (st) { names[st.id] = st.name; });
     return '<div class="ms-table"><table><thead><tr><th>Stream</th><th>Sessions</th><th>Startup</th><th>Rebuffer</th><th>Stalls</th><th>Bitrate</th><th>Switches</th><th>Errors</th></tr></thead><tbody>' +
       rows.map(function (r) {
@@ -1087,12 +972,6 @@
       });
     }, function (e) { add('fail', 'Master playlist reachable', netErr(e)); return R; });
   }
-  function checkYt(st) {
-    var y = parseYt(st.url);
-    return api('/api/telemetry?oembed=' + encodeURIComponent(y.id)).then(function (j) {
-      return [{ stream: st.name, check: 'YouTube embed allowed', status: j.embeddable ? 'pass' : 'fail', detail: j.embeddable ? (j.title || '') + (j.author ? ' · ' + j.author : '') : (j.error || 'embedding disabled or video unavailable') }];
-    }, function (e) { return [{ stream: st.name, check: 'YouTube embed allowed', status: 'warn', detail: 'could not check (' + e.message + ')' }]; });
-  }
   var MANUAL = [
     ['Venue egress UDP 5000–5010 open (SRT caller → MediaConnect)', 'Run the encoder\'s SRT test or srt-live-transmit from the venue network'],
     ['SRT handshake up on primary and backup inputs', 'Both MediaConnect sources show Connected'],
@@ -1104,7 +983,7 @@
     var r = rec(key), pf = r.preflight, man = r.manual || {};
     var counts = { pass: 0, warn: 0, fail: 0 };
     var rows = pf && pf.results ? pf.results.map(function (x) { if (counts[x.status] != null) counts[x.status]++; return '<tr class="is-' + x.status + '"><td><span class="ms-pf is-' + x.status + '">' + x.status.toUpperCase() + '</span></td><td>' + esc(x.stream) + '</td><td>' + esc(x.check) + '</td><td>' + esc(x.detail) + '</td></tr>'; }).join('') : '';
-    var head = pf ? (pf.running ? '<p class="ms-note">Running checks…</p>' : '<p class="ms-note">Last run ' + new Date(pf.ts).toLocaleString() + ' · <b>' + counts.pass + '</b> pass · <b>' + counts.warn + '</b> warn · <b>' + counts.fail + '</b> fail</p>') : '<p class="ms-note">Checks every stream from this browser: playlists, renditions, codecs, captions, LL-HLS tags, segment delivery, live-edge freshness and YouTube embed rights.</p>';
+    var head = pf ? (pf.running ? '<p class="ms-note">Running checks…</p>' : '<p class="ms-note">Last run ' + new Date(pf.ts).toLocaleString() + ' · <b>' + counts.pass + '</b> pass · <b>' + counts.warn + '</b> warn · <b>' + counts.fail + '</b> fail</p>') : '<p class="ms-note">Checks every stream from this browser: playlists, renditions, codecs, captions, LL-HLS tags, segment delivery, live-edge freshness.</p>';
     return head + (rows ? '<div class="ms-table"><table class="ms-pf-table"><thead><tr><th>Result</th><th>Stream</th><th>Check</th><th>Detail</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '') +
       '<h4 class="ms-h4">Venue checks (can\'t be tested from a browser)</h4><ol class="ms-check">' + MANUAL.map(function (m, i) {
         return '<li><label><input type="checkbox" ' + (man[i] ? 'checked ' : '') + 'onchange="MuseStreaming.manual(\'' + key + '\',' + i + ',this.checked)"><span class="ms-tminus">Manual</span><span>' + esc(m[0]) + ' <span class="ms-sub">— ' + esc(m[1]) + '</span></span></label></li>';
@@ -1115,7 +994,7 @@
   function runPreflight(key) {
     var r = rec(key), plan = showFor(key);
     r.preflight = { running: true, ts: new Date().toISOString(), results: [] }; refreshPreflight(key);
-    return Promise.all(streamsFor(key).map(function (st) { return parseYt(st.url) ? checkYt(st) : checkHls(st, plan); })).then(function (all) {
+    return Promise.all(streamsFor(key).map(function (st) { return checkHls(st, plan); })).then(function (all) {
       r.preflight = { running: false, ts: new Date().toISOString(), results: [].concat.apply([], all) }; save(); refreshPreflight(key);
       return r.preflight;
     });
@@ -1183,7 +1062,6 @@
     Object.keys(players).forEach(function (k) {
       var el = document.querySelector('[data-pm="' + k + '"]'); if (!el) return;
       var x = measure(players[k]);
-      if (players[k].yt) { el.textContent = 'Source: ' + x.title + ' · YouTube' + (x.state ? ' · ' + x.state : '') + (x.quality ? ' · ' + x.quality : ''); return; }
       el.textContent = x.state === 'slate' ? 'Simulated feed · live stream not reachable from this network' + (players[k].stats.lastError ? ' (' + players[k].stats.lastError + ')' : '') : x.state === 'error' ? 'Player: stream unavailable' + (players[k].stats.lastError ? ' (' + players[k].stats.lastError + ')' : '') :
         'Player: ' + (x.resolution || '…') + (x.rendition_kbps ? ' @ ' + (x.rendition_kbps / 1000).toFixed(1) + ' Mbps' : '') +
         ' · buffer ' + (x.buffer_s != null ? x.buffer_s + ' s' : '—') + (x.live_latency_s ? ' · latency ' + x.live_latency_s + ' s' : '') +
@@ -1202,12 +1080,12 @@
   }
 
   /* ---------------- in-place stream theater (click a tile: watch here, no navigation) ---------------- */
-  var modal = { key: null, slot: null, timer: 0, base: null, capsOn: false };
+  var modal = { key: null, slot: null, timer: 0, base: null, capsOn: false, isTest: false, testId: null, capVisible: true, capKey: null };
   var MUTED_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>';
   var LIVE_SVG = '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>';
   // One monitor in the room's ears at a time. Mutes every player except the
   // theater's, then sets the theater feed live or silent (HLS element or the
-  // YouTube API) and paints both the modal button and the tile icons.
+  // HLS element) and paints both the modal button and the tile icons.
   function paintModalAudio(live) {
     var b = null;
     try { b = document.getElementById('msModalAudioBtn'); } catch (e) {}
@@ -1220,15 +1098,14 @@
     if (!p) { paintModalAudio(false); return false; }
     Object.keys(players).forEach(function (k) {
       var q = players[k]; if (q === p) return;
-      if (q.yt) { if (!q.muted) { ytCmd(q, 'mute'); q.muted = true; } }
-      else { try { q.video.muted = true; } catch (e) {} }
+      try { q.video.muted = true; } catch (e) {}
     });
     try {
       document.querySelectorAll('.ms-audio').forEach(function (x) { x.innerHTML = MUTED_SVG; x.setAttribute('aria-pressed', 'false'); });
     } catch (e) {}
-    if (p.yt) { if (live) { ytCmd(p, 'unMute'); ytCmd(p, 'setVolume', [80]); } else ytCmd(p, 'mute'); p.muted = !live; }
-    else { try { p.video.muted = !live; if (live) p.video.play().catch(function () {}); } catch (e) {} }
+    try { p.video.muted = !live; if (live) { if (typeof p.video.volume === 'number' && p.video.volume === 0) p.video.volume = 0.8; p.video.play().catch(function () {}); } } catch (e) {}
     paintModalAudio(live);
+    syncTransport();
     return true;
   }
   function modalEl() { return document.getElementById('msStreamModal'); }
@@ -1238,7 +1115,6 @@
     // the fallback (started with monitor:true so it stays audible).
     var ss = streamsFor(key), fallback = null;
     for (var i = 0; i < ss.length; i++) {
-      if (parseYt(ss[i].url)) continue;
       if (ss[i].role === 'program') { if (!fallback) fallback = 'wall:' + ss[i].id; continue; }
       return 'wall:' + ss[i].id;
     }
@@ -1254,19 +1130,29 @@
         '<div class="ms-modal-head"><div class="ms-modal-title" id="msModalTitle"></div>' +
           '<div class="ms-modal-actions">' +
             '<button type="button" class="ms-btn" id="msModalAudioBtn" onclick="MuseStreaming.modalAudio()" aria-pressed="false" aria-label="Listen to this stream">Listen</button>' +
-            '<button type="button" class="ms-btn" id="msModalCCBtn" onclick="MuseStreaming.modalCC()">CC · Muse captions</button>' +
+            '<button type="button" class="ms-btn" id="msModalCCBtn" onclick="MuseStreaming.modalCC()" title="Manual only — starts Muse Voice Transcribe (billed per window); playback never auto-starts it">CC · Muse captions</button>' +
+            '<button type="button" class="ms-btn" id="msModalCapVisBtn" onclick="MuseStreaming.toggleCaptionsVisible()" aria-pressed="true">Captions shown</button>' +
             '<button type="button" class="ms-btn" onclick="MuseStreaming.modalPiP()">Picture in picture</button>' +
             '<button type="button" class="ms-btn" onclick="MuseStreaming.modalFs()">Fullscreen</button>' +
             '<button type="button" class="ms-btn" onclick="MuseStreaming.modalSnap()">Snapshot</button>' +
             '<button type="button" class="ms-btn ms-btn-soft" onclick="MuseStreaming.closeStream()">Close ✕</button>' +
           '</div></div>' +
         '<div class="ms-screen" id="msModalScreen"></div>' +
+        '<div class="ms-transport" id="msModalTransport" role="group" aria-label="Playback controls">' +
+          '<button type="button" class="ms-tbtn" id="msTPlay" onclick="MuseStreaming.transportPlayPause()" aria-label="Play or pause">❚❚</button>' +
+          '<button type="button" class="ms-tbtn" id="msTLive" onclick="MuseStreaming.transportLive()">● LIVE</button>' +
+          '<input type="range" class="ms-tseek" id="msTSeek" min="0" max="1000" value="0" step="1" oninput="MuseStreaming.transportSeek(this.value)" aria-label="Seek">' +
+          '<span class="ms-ttime" id="msTTime">0:00 / LIVE</span>' +
+          '<button type="button" class="ms-tbtn" id="msTMute" onclick="MuseStreaming.transportMute()" aria-label="Mute or unmute">🔊</button>' +
+          '<input type="range" class="ms-tvol" id="msTVol" min="0" max="100" value="80" step="1" oninput="MuseStreaming.transportVolume(this.value)" aria-label="Volume">' +
+          '<select class="ms-trate" id="msTRate" onchange="MuseStreaming.transportRate(this.value)" aria-label="Playback speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>' +
+        '</div>' +
         '<div class="ms-modal-conf" id="msModalConf" hidden><span>Confidence · backup feed — Muse captions listen here</span><div class="ms-screen" id="msModalBackup"></div></div>' +
         '<div id="msModalReact"></div>' +
         '<div class="ms-modal-grid">' +
-          '<div class="ms-modal-sec"><h4>Player · live measurements</h4><div id="msModalMeas"></div><h4 class="ms-modal-sub">Stream facts</h4><div id="msModalFacts"></div></div>' +
+          '<div class="ms-modal-sec"><h4>Player · live measurements</h4><div id="msModalMeas"></div><h4 class="ms-modal-sub">Stream input · live telemetry</h4><div id="msModalTele"></div><h4 class="ms-modal-sub">Stream facts</h4><div id="msModalFacts"></div></div>' +
           '<div class="ms-modal-sec"><h4>Stream Check · vision</h4><div id="msModalCheck"></div></div>' +
-          '<div class="ms-modal-sec"><h4>Captions · repository</h4><div id="msModalCaps"></div></div>' +
+          '<div class="ms-modal-sec" id="msModalCapSec"><h4>Captions · Muse Voice Transcribe</h4><div id="msModalCaps"></div></div>' +
         '</div>' +
         '<div id="msModalChain"></div><div id="msModalCharts"></div>' +
         '<div class="ms-modal-foot">' +
@@ -1279,6 +1165,38 @@
     document.body.appendChild(d);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.key) MS.closeStream(); });
   }
+  function fmtTime(s) {
+    if (s == null || !isFinite(s)) return '—';
+    s = Math.max(0, Math.floor(s));
+    var h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60), ss = s % 60;
+    return (h ? h + ':' + String(m).padStart(2, '0') : String(m)) + ':' + String(ss).padStart(2, '0');
+  }
+  function syncTransport() {
+    try {
+      var p = modal.slot ? players[modal.slot] : null, v = p ? p.video : null;
+      var playBtn = document.getElementById('msTPlay'), muteBtn = document.getElementById('msTMute'),
+        vol = document.getElementById('msTVol'), seek = document.getElementById('msTSeek'),
+        time = document.getElementById('msTTime'), liveBtn = document.getElementById('msTLive');
+      if (!v) { if (playBtn) playBtn.textContent = '▶'; return; }
+      if (playBtn) { playBtn.textContent = v.paused ? '▶' : '❚❚'; playBtn.setAttribute('aria-label', v.paused ? 'Play' : 'Pause'); }
+      if (muteBtn) muteBtn.textContent = v.muted || !v.volume ? '🔇' : '🔊';
+      if (vol && document.activeElement !== vol) vol.value = String(Math.round((v.muted ? 0 : (typeof v.volume === 'number' ? v.volume : 0.8)) * 100));
+      var dur = (typeof v.duration === 'number' && isFinite(v.duration)) ? v.duration : null;
+      var cur = typeof v.currentTime === 'number' ? v.currentTime : 0;
+      var liveEdge = null;
+      try { if (v.seekable && v.seekable.length) liveEdge = v.seekable.end(v.seekable.length - 1); } catch (e) {}
+      if (seek && document.activeElement !== seek) {
+        if (dur && dur > 0) seek.value = String(Math.round(cur / dur * 1000));
+        else if (liveEdge && liveEdge > 0) seek.value = String(Math.round(cur / liveEdge * 1000));
+      }
+      if (time) time.textContent = fmtTime(cur) + ' / ' + (dur ? fmtTime(dur) : 'LIVE');
+      if (liveBtn) {
+        var behind = liveEdge != null ? liveEdge - cur : null;
+        liveBtn.classList.toggle('is-behind', behind != null && behind > 8);
+        liveBtn.textContent = behind != null && behind > 8 ? '● Go live (−' + Math.round(behind) + 's)' : '● LIVE';
+      }
+    } catch (e) {}
+  }
   function openStream(key, slot, opts) {
     opts = opts || {};
     ensureModal();
@@ -1288,7 +1206,7 @@
     var st = null; streamsFor(key).forEach(function (x) { if (x.id === want) st = x; });
     if (!st) st = programOf(key);
     if (!st) return;
-    modal.key = key; modal.slot = 'wall:' + st.id; modal.base = null;
+    modal.key = key; modal.capKey = key; modal.slot = 'wall:' + st.id; modal.base = null; modal.isTest = false; modal.testId = null; modal.capVisible = true;
     var t = teleFor(key, st);
     document.getElementById('msModalTitle').innerHTML = '<b>' + esc(nameOf(key)) + '</b><span>' + esc(st.name) + ' · ' + esc(st.role) + '</span>' + badge(stateOf(key));
     var scr = document.getElementById('msModalScreen');
@@ -1301,14 +1219,14 @@
     document.getElementById('msModalCharts').innerHTML = chartsHTML(key);
     document.getElementById('msModalFacts').innerHTML = kv([
       ['Show state', stateOf(key) + (rec(key).failover ? ' · on LiveU backup' : ' · primary input')],
-      ['Source', st.url.indexOf('yt:') === 0 ? 'YouTube embed · ' + (parseYt(st.url) || {}).title : 'HLS · ' + (function () { try { return new URL(st.url).hostname; } catch (e) { return st.url; } })()],
+      ['Source', 'HLS · ' + (function () { try { return new URL(st.url).hostname; } catch (e) { return st.url; } })()],
       ['Contribution', esc(showFor(key).primary || '—')],
       ['Destinations', (showFor(key).destinations || []).slice(0, 2).join(' · ')],
       ['Latency budget', esc(showFor(key).latency || '—')],
       ['CDN weights', 'CloudFront ' + ((rec(key).cdn || {}).cloudfront || 60) + ' / Akamai ' + ((rec(key).cdn || {}).akamai || 40)],
     ]);
-    // Confidence monitor: mount the backup feed too — it is the caption source
-    // whenever the program is a YouTube embed the browser cannot listen to.
+    // Confidence monitor: mount the backup feed too — it is the preferred
+    // caption source (tapping the program would reroute the room's audio).
     var bk = null; streamsFor(key).forEach(function (x) { if (x.role === 'backup') bk = x; });
     var conf = document.getElementById('msModalConf'), bs = document.getElementById('msModalBackup');
     if (bk && bk.id !== st.id && bs) {
@@ -1325,28 +1243,75 @@
     // room's ears at once: the clicked feed is audible without hunting for a
     // speaker icon. Programmatic opens (deep links, rehearsals) stay muted.
     if (opts.viaClick) modalSetAudio(true); else paintModalAudio(false);
-    // Captions on open (click-originated only): tap the caption source and let
-    // Muse Voice Transcribe run, so captions are visible without hunting for
-    // a switch. The tap itself is silent; when the tap target IS the program,
-    // monitor it so the room keeps hearing the feed.
-    if (opts.viaClick && root.MuseCaptions) {
-      var capSlot = captionSlotFor(key);
-      if (capSlot) {
-        var cp = players[capSlot];
-        if (cp && !cp.yt) { try { cp.video.muted = false; } catch (e) {} }
-        try { var cr = root.MuseCaptions.start(key, capSlot, { monitor: capSlot === modal.slot }); modal.capsOn = !!(cr && cr.ok !== false); } catch (e) {}
+    // Captions are MANUAL ONLY (cost control): opening or playing a stream
+    // never starts Muse Voice Transcribe. Transcription (and its per-window
+    // charge) begins only when a person presses CC (tile CC button or the
+    // theater's "CC · Muse captions" button) and stops on Close. Playback,
+    // mute/volume and transport never trigger it.
+    refreshModal();
+    if (modal.timer) clearInterval(modal.timer);
+    modal.timer = setInterval(refreshModal, 1500);
+  }
+  function openTestStream(feedId, opts) {
+    opts = opts || {};
+    ensureModal();
+    var id = String(feedId || '');
+    var feed = null;
+    try {
+      var TF = root.MuseTestFeeds;
+      if (TF && typeof TF.feedById === 'function') feed = TF.feedById(id);
+      if (!feed && TF && typeof TF.status === 'function') {
+        var st = TF.status(id);
+        var row = st && st.feeds && st.feeds[0];
+        if (row) feed = { id: row.id, label: row.label, kind: row.kind, url: null };
       }
+    } catch (e) {}
+    var url = feed && feed.url ? feed.url : null;
+    if (!url) {
+      try {
+        var scr0 = document.querySelector('[data-testfeed="' + id + '"] .ms-screen');
+        if (scr0) url = scr0.getAttribute('data-url');
+      } catch (e) {}
     }
+    if (!url) { if (root.toast) root.toast('Test feed is unavailable'); return; }
+    modal.key = 'testfeed-' + id; modal.capKey = modal.key; modal.slot = 'test:' + id;
+    modal.base = null; modal.isTest = true; modal.testId = id; modal.capVisible = true;
+    var label = (feed && feed.label) || ('Test feed ' + id);
+    var kind = (feed && feed.kind) || 'live';
+    document.getElementById('msModalTitle').innerHTML = '<b>' + esc(label) + '</b><span>Test feed · ' + esc(kind) + ' · HLS</span><span class="ms-state is-live"><i></i>TEST FEED</span>';
+    var scr = document.getElementById('msModalScreen');
+    scr.setAttribute('data-hls-slot', modal.slot);
+    scr.setAttribute('data-url', url);
+    if (kind === 'live') scr.setAttribute('data-live', '1'); else scr.removeAttribute('data-live');
+    scr.removeAttribute('data-defer');
+    scr.innerHTML = '<div class="ms-slate" aria-hidden="true"><b>' + esc(label) + '</b><span>Connecting</span></div>';
+    document.getElementById('msModalChain').innerHTML = '';
+    document.getElementById('msModalCharts').innerHTML = '';
+    document.getElementById('msModalFacts').innerHTML = kv([
+      ['Feed', label + ' (' + id + ')'],
+      ['Kind', 'Test · ' + kind],
+      ['Source', 'HLS · ' + (function () { try { return new URL(url).hostname; } catch (e) { return url; } })()],
+      ['Playlist', url],
+      ['Player', 'hls.js (MSE) · full QoE telemetry'],
+      ['Broadcast captions', id === 'redbull' ? 'Caption track in playlist — compare with Muse Voice Transcribe below' : 'See playlist / Muse Voice Transcribe below'],
+      ['Captions', 'Muse Voice Transcribe on this HLS tile (manual CC only)'],
+    ]);
+    var conf = document.getElementById('msModalConf'); if (conf) conf.hidden = true;
+    modalEl().hidden = false;
+    mount(modalEl());
+    if (opts.viaClick) modalSetAudio(true); else paintModalAudio(false);
+    // Manual captions only (cost control): see openStream — no auto-start here either.
     refreshModal();
     if (modal.timer) clearInterval(modal.timer);
     modal.timer = setInterval(refreshModal, 1500);
   }
   function closeStream() {
     if (modal.timer) { clearInterval(modal.timer); modal.timer = 0; }
-    if (modal.key && root.MuseCaptions) { try { root.MuseCaptions.stop(modal.key); } catch (e) {} }
+    if (modal.capKey && root.MuseCaptions) { try { root.MuseCaptions.stop(modal.capKey); } catch (e) {} }
     var slot = modal.slot, live = false, pl = slot ? players[slot] : null;
-    if (pl) live = pl.yt ? !pl.muted : !pl.video.muted;
-    modal.key = null; modal.slot = null; modal.capsOn = false;
+    if (pl) { try { live = !pl.video.muted; } catch (e) {} }
+    var wasTest = modal.isTest;
+    modal.key = null; modal.capKey = null; modal.slot = null; modal.capsOn = false; modal.isTest = false; modal.testId = null;
     paintModalAudio(false);
     var m = modalEl(); if (m) m.hidden = true;
     var h = document.getElementById('streamsHost');
@@ -1365,23 +1330,48 @@
   function refreshModal() {
     if (!modal.key) return;
     var p = players[modal.slot], m = p ? measure(p) : null;
+    // Merge test-feed QoE (frag errors, switches) into the player read when open on a test slot.
+    var tfQ = null;
+    try { if (modal.isTest && root.MuseTestFeeds && root.MuseTestFeeds.qoeOf) tfQ = root.MuseTestFeeds.qoeOf(modal.testId); } catch (e) {}
     document.getElementById('msModalMeas').innerHTML = m ? kv([
       ['State', m.state || '—'], ['Resolution', m.resolution || '—'], ['Codec', m.codec || '—'],
       ['Rendition', m.rendition_kbps ? m.rendition_kbps + ' kbps' + (m.renditions ? ' · ' + m.renditions + ' levels' : '') : '—'],
-      ['Bandwidth est.', m.bandwidth_estimate_mbps ? m.bandwidth_estimate_mbps + ' Mbps' : '—'],
-      ['Live latency', m.live_latency_s ? m.live_latency_s + ' s' : '—'], ['Buffer ahead', m.buffer_s != null ? m.buffer_s + ' s' : '—'],
+      ['Bandwidth est.', m.bandwidth_estimate_mbps != null ? m.bandwidth_estimate_mbps + ' Mbps' : '—'],
+      ['Live latency', m.live_latency_s != null ? m.live_latency_s + ' s' : '—'], ['Buffer ahead', m.buffer_s != null ? m.buffer_s + ' s' : '—'],
       ['Dropped frames', m.dropped_frames != null ? m.dropped_frames : '—'], ['Stalls / errors', (m.stalls || 0) + ' / ' + (m.errors || 0)],
     ]) : '<p class="ms-note">Player is starting…</p>';
-    var ans = anomalies().filter(function (a) { return a.key === modal.key; });
+    var teleEl = document.getElementById('msModalTele');
+    if (teleEl) {
+      teleEl.innerHTML = m ? kv([
+        ['Bitrate', m.bitrate_mbps != null ? m.bitrate_mbps + ' Mbps (' + (m.rendition_kbps || '—') + ' kbps)' : (m.rendition_kbps ? m.rendition_kbps + ' kbps' : '—')],
+        ['Total frames', m.total_frames != null ? String(m.total_frames) : '—'],
+        ['Dropped %', m.dropped_pct != null ? m.dropped_pct + '%' : '—'],
+        ['Frag / decoder errors', tfQ && tfQ.frag_errors != null ? String(tfQ.frag_errors) : '—'],
+        ['Level switches', (m.level_switches != null ? m.level_switches : (tfQ && tfQ.switches != null ? tfQ.switches : '—')) + (m.renditions ? ' · ' + m.renditions + ' renditions' : '')],
+        ['Auto level', m.auto_level ? m.auto_level + (m.rendition_index != null ? ' · level ' + m.rendition_index : '') : '—'],
+        ['Startup', m.startup_ms != null ? m.startup_ms + ' ms' : '—'],
+        ['Rebuffer', (m.rebuffer_events != null ? m.rebuffer_events + ' events' : '—') + (m.rebuffer_ms != null ? ' · ' + m.rebuffer_ms + ' ms' : '')],
+        ['Playhead', m.current_time_s != null ? fmtTime(m.current_time_s) : '—'],
+        ['Duration / live edge', m.duration_s != null ? fmtTime(m.duration_s) : (m.seekable_end_s != null ? fmtTime(m.seekable_end_s) + ' (live edge)' : 'LIVE')],
+        ['Buffered ranges', m.buffered_ranges && m.buffered_ranges.length ? m.buffered_ranges.join(' · ') : '—'],
+        ['Ready / network', (m.ready_state != null ? 'ready ' + m.ready_state : '—') + ' · ' + (m.network_state != null ? 'net ' + m.network_state : '—')],
+        ['Volume', m.volume != null ? Math.round(m.volume * 100) + '%' + (m.muted ? ' · muted' : '') : '—'],
+        ['Playback rate', m.playback_rate != null ? m.playback_rate + '×' : '—'],
+        ['Session', m.session ? m.session : '—'],
+        ['Ladder', m.levels && m.levels.length ? m.levels.map(function (l) { return l.kbps + 'k ' + l.res; }).join(' · ') : '—'],
+      ]) : '<p class="ms-note">Waiting for the player…</p>';
+    }
+    syncTransport();
+    var ans = modal.isTest ? [] : anomalies().filter(function (a) { return a.key === modal.key; });
     // SAM watcher: while the theater is open, Stream Check (SAM 3.1 + pixels) re-runs
     // at most every 90 s; results alert through Muse (theater banner + Muse drawer).
     var SC = root.MuseStreamCheck, extras = [];
     if (SC && modal.slot) {
       if ((!modal.watchTs || Date.now() - modal.watchTs > 90000) && MS.videoFor(modal.slot)) {
         modal.watchTs = Date.now();
-        SC.runShow(modal.key, modal.slot, { expectLowerThird: true, gear: [] }).then(function () { refreshModal(); }).catch(function () {});
+        SC.runShow(modal.capKey || modal.key, modal.slot, { expectLowerThird: true, gear: [] }).then(function () { refreshModal(); }).catch(function () {});
       }
-      var last = SC.latest(modal.key);
+      var last = SC.latest(modal.capKey || modal.key);
       if (last && Date.now() - new Date(last.ts).getTime() < 600000) {
         extras.push(last.flags && last.flags.length
           ? '<div class="ms-react-row"><span><b>SAM 3.1</b> — ' + last.flags.map(function (f) { return esc(f.flag || f.check); }).join('; ') + '</span><button type="button" class="ms-btn" onclick="MuseStreaming.modalCheck()">Details</button></div>'
@@ -1390,7 +1380,7 @@
     }
     // Caption signal: the transcript itself can call the problem before telemetry does.
     if (root.MuseCaptions) {
-      var cl2 = root.MuseCaptions.lines(modal.key).slice(-6);
+      var cl2 = root.MuseCaptions.lines(modal.capKey || modal.key).slice(-6);
       for (var ci = cl2.length - 1; ci >= 0; ci--) {
         if (cl2[ci].text && /dark|black|standby|silence|no audio|hold on/i.test(cl2[ci].text)) {
           extras.push('<div class="ms-react-row"><span><b>Caption signal</b> — “' + esc(cl2[ci].text) + '”</span><span class="ms-note">from Muse Voice Transcribe</span></div>');
@@ -1398,7 +1388,7 @@
         }
       }
     }
-    var tpr = programOf(modal.key) ? teleFor(modal.key, programOf(modal.key)) : null;
+    var tpr = (!modal.isTest && programOf(modal.key)) ? teleFor(modal.key, programOf(modal.key)) : null;
     if (tpr && tpr.live && tpr.m.qoe < 72) extras.push('<div class="ms-react-row"><span><b>Audience QoE ' + Math.round(tpr.m.qoe) + '</b> — viewers feel rebuffering before the encoder alarms.</span><span class="ms-note">watch</span></div>');
     if (modal.rehearsing && modal.rehearsing.key === modal.key) {
       var rh = modal.rehearsing, failed = !FAULTS[modal.key] && rec(modal.key).failover;
@@ -1412,23 +1402,37 @@
     }).join('') + extras.join('') + '</div>' : (FAULTS[modal.key] ? '' : '<div class="ms-react is-ok"><b>Muse is watching</b><span>All stages healthy on this show.</span></div>'); rx.innerHTML = reactHTML; }
     renderModalCaps();
     var fb = document.getElementById('msModalFaultBtn');
-    if (fb) fb.textContent = FAULTS[modal.key] ? 'Restore program feed' : 'Simulate: drop program feed';
+    if (fb) fb.textContent = (!modal.isTest && FAULTS[modal.key]) ? 'Restore program feed' : 'Simulate: drop program feed';
   }
   function renderModalCaps() {
     var host = document.getElementById('msModalCaps'); if (!host || !modal.key) return;
-    var C = root.MuseCaptions, capSlot = captionSlotFor(modal.key);
-    var caveat = capSlot ? '' : '<p class="ms-note">This program is a YouTube embed — its own CC track plays in the player. Muse captions need an HLS tile.</p>';
+    var capKey = modal.capKey || modal.key;
+    var C = root.MuseCaptions, capSlot = modal.isTest ? modal.slot : captionSlotFor(modal.key);
+    var caveat = capSlot ? '' : '<p class="ms-note">No HLS tile is available for Muse captions on this show.</p>';
+    // Caption visibility: hide/show covers both the burned-in overlay and this list.
+    try {
+      var scr = document.getElementById('msModalScreen');
+      if (scr) scr.classList.toggle('cc-hidden', !modal.capVisible);
+      var sec = document.getElementById('msModalCapSec');
+      if (sec) sec.style.display = modal.capVisible ? '' : 'none';
+      var visBtn = document.getElementById('msModalCapVisBtn');
+      if (visBtn) { visBtn.textContent = modal.capVisible ? 'Captions shown' : 'Captions hidden'; visBtn.setAttribute('aria-pressed', modal.capVisible ? 'true' : 'false'); }
+    } catch (e) {}
+    if (!modal.capVisible) { host.innerHTML = '<p class="ms-note">Captions hidden — use “Captions hidden” above to show them again. Transcription keeps running.</p>'; return; }
     if (!C) { var noCap = caveat + '<p class="ms-note">Caption module unavailable.</p>'; host.innerHTML = noCap; return; }
-    var st = C.status(modal.key), lines = C.lines(modal.key);
+    var st = C.status(capKey), lines = C.lines(capKey);
     var q = (document.getElementById('msCapQ') || {}).value || '';
-    var show = q ? C.search(modal.key, q) : lines.slice(-10);
+    var show = q ? C.search(capKey, q) : lines.slice(-10);
     var html = caveat +
-      '<div class="ms-capbar"><span>' + (st.running ? 'Captioning live' : 'Captions off') + ' · ' + st.lines + ' lines stored' + (st.gaps ? ' · ' + st.gaps + ' gaps' : '') + (st.lastError ? ' · ' + esc(st.lastError) : '') + '</span>' +
+      '<div class="ms-capbar"><span>' + (st.running ? 'Captioning live · Muse Voice Transcribe' : 'Captions off') + ' · ' + st.lines + ' lines stored' + (st.gaps ? ' · ' + st.gaps + ' gaps' : '') + (st.lastError ? ' · ' + esc(st.lastError) : '') + '</span>' +
       '<input id="msCapQ" type="search" placeholder="Search captions…" value="' + esc(q).replace(/"/g, '&quot;') + '" oninput="MuseStreaming.modalCapsSearch(this.value)">' +
-      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalVtt()">Download .vtt</button></div>' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.toggleCaptionsVisible()">' + (modal.capVisible ? 'Hide captions' : 'Show captions') + '</button>' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.modalVtt()">Export .vtt</button>' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.exportCaptions(\'srt\')">Export .srt</button>' +
+      '<button type="button" class="ms-btn" onclick="MuseStreaming.exportCaptions(\'txt\')">Export .txt</button></div>' +
       '<div class="ms-caplist">' + (show.length ? show.map(function (l) {
         return '<p><time>' + esc(String(l.ts || '').slice(11, 19)) + '</time>' + (l.gap ? '<i>— gap (no speech window) —</i>' : esc(l.text || '')) + '</p>';
-      }).join('') : '<p class="ms-note">No caption lines yet. Press CC to start (tile audio must be unmuted).</p>') + '</div>';
+      }).join('') : '<p class="ms-note">No caption lines yet. Captions are manual only — press CC · Muse captions to start Muse Voice Transcribe (billed per window). Playback alone never transcribes.</p>') + '</div>';
     host.innerHTML = html;
   }
 
@@ -1458,17 +1462,12 @@
     toggleTileCC: function (e, btn, key) {
       if (e && e.stopPropagation) e.stopPropagation();
       var C = root.MuseCaptions; if (!C) return;
-      var pr = programOf(key);
-      if (pr && parseYt(pr.url)) { // YouTube program: captions listen to the backup feed in the theater
-        openStream(key, 'wall:' + pr.id, { viaClick: true });
-        return;
-      }
       var capSlot = captionSlotFor(key); if (!capSlot) return;
       var st = C.status(key);
       if (st.running) { C.stop(key); btn.classList.remove('is-on'); }
       else {
         var p = players[capSlot];
-        if (p && !p.yt) { try { p.video.muted = false; } catch (e) {} }
+        if (p) { try { p.video.muted = false; } catch (e) {} }
         var r = C.start(key, capSlot);
         if (r && r.ok === false && root.toast) { root.toast(r.error); return; }
         btn.classList.add('is-on');
@@ -1484,11 +1483,8 @@
     modalAudio: function () {
       if (!modal.slot) return;
       var p = players[modal.slot];
-      modalSetAudio(p ? !!(p.yt ? p.muted : p.video.muted) : false);
+      modalSetAudio(p ? !!p.video.muted : false);
     },
-    ytFallbackHTML: ytFallbackHTML,
-    ytFallback: ytFallback,
-    ytInfo: ytInfo, // IFrame API infoDelivery entry point (wired to postMessage; also the test seam)
     closeStream: closeStream,
     injectFault: injectFault,
     clearFault: clearFault,
@@ -1508,23 +1504,98 @@
     },
     modalCC: function () {
       var C = root.MuseCaptions; if (!C || !modal.key) return;
-      var capSlot = captionSlotFor(modal.key);
-      if (!capSlot) { if (root.toast) root.toast('YouTube program — captions play in the player (CC)'); return; }
-      var st = C.status(modal.key);
-      if (st.running) { C.stop(modal.key); modal.capsOn = false; }
+      var capKey = modal.capKey || modal.key;
+      var capSlot = modal.isTest ? modal.slot : captionSlotFor(modal.key);
+      if (!capSlot) { if (root.toast) root.toast('No HLS tile available for Muse captions'); return; }
+      var st = C.status(capKey);
+      if (st.running) { C.stop(capKey); modal.capsOn = false; }
       else {
         var p = players[capSlot];
-        if (p && !p.yt) { p.video.muted = false; }
-        var r = C.start(modal.key, capSlot, { monitor: capSlot === modal.slot });
+        if (p) { try { p.video.muted = false; } catch (e) {} }
+        var r = C.start(capKey, capSlot, { monitor: capSlot === modal.slot });
         if (r && r.ok === false && root.toast) root.toast(r.error);
         modal.capsOn = true;
       }
       refreshModal();
     },
-    modalCapsSearch: function () { renderModalCaps(); },
-    modalVtt: function () {
+    toggleCaptionsVisible: function () {
+      modal.capVisible = !modal.capVisible;
+      renderModalCaps();
+    },
+    exportCaptions: function (format) {
       var C = root.MuseCaptions; if (!C || !modal.key) return;
-      var lines = C.lines(modal.key), out = 'WEBVTT\n\n', n = 0;
+      var capKey = modal.capKey || modal.key;
+      var lines = C.lines(capKey);
+      var base = (modal.isTest ? 'testfeed-' + modal.testId : String(capKey)) + '-captions';
+      function stamp(d) { return d.toISOString().slice(11, 23).replace(',', '.'); }
+      function srtStamp(d) { return d.toISOString().slice(11, 23).replace('.', ','); }
+      var out = '', mime = 'text/plain', ext = format || 'vtt';
+      if (ext === 'srt') {
+        var n = 0;
+        lines.forEach(function (l) { if (l.gap || !l.text) return; var t0 = new Date(l.ts), t1 = new Date(t0.getTime() + 8000); out += (++n) + '\n' + srtStamp(t0) + ' --> ' + srtStamp(t1) + '\n' + l.text + '\n\n'; });
+        mime = 'text/plain';
+      } else if (ext === 'txt') {
+        lines.forEach(function (l) { if (l.gap || !l.text) return; out += '[' + String(l.ts || '').slice(11, 19) + '] ' + l.text + '\n'; });
+        mime = 'text/plain';
+      } else {
+        ext = 'vtt'; mime = 'text/vtt'; out = 'WEBVTT\n\n'; var n2 = 0;
+        lines.forEach(function (l) { if (l.gap || !l.text) return; var t0 = new Date(l.ts), t1 = new Date(t0.getTime() + 8000); out += (++n2) + '\n' + stamp(t0) + ' --> ' + stamp(t1) + '\n' + l.text + '\n\n'; });
+      }
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([out], { type: mime }));
+      a.download = base + '.' + ext; a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+      if (root.toast) root.toast('Captions exported (.' + ext + ')');
+    },
+    transportPlayPause: function () {
+      var p = players[modal.slot]; if (!p) return;
+      try {
+        if (p.video.paused) { p.userPaused = false; p.video.play().catch(function () {}); }
+        else { p.userPaused = true; p.video.pause(); }
+      } catch (e) {}
+      syncTransport();
+    },
+    transportLive: function () {
+      var p = players[modal.slot]; if (!p) return;
+      try {
+        var v = p.video;
+        if (p.hls && typeof p.hls.liveSyncPosition === 'number') v.currentTime = p.hls.liveSyncPosition;
+        else if (v.seekable && v.seekable.length) v.currentTime = v.seekable.end(v.seekable.length - 1);
+        p.userPaused = false; v.play().catch(function () {});
+      } catch (e) {}
+      syncTransport();
+    },
+    transportSeek: function (val) {
+      var p = players[modal.slot]; if (!p) return;
+      try {
+        var v = p.video, frac = Math.max(0, Math.min(1, (+val || 0) / 1000));
+        var dur = (typeof v.duration === 'number' && isFinite(v.duration)) ? v.duration : null;
+        if (dur && dur > 0) v.currentTime = frac * dur;
+        else if (v.seekable && v.seekable.length) v.currentTime = frac * v.seekable.end(v.seekable.length - 1);
+      } catch (e) {}
+      syncTransport();
+    },
+    transportVolume: function (val) {
+      var p = players[modal.slot]; if (!p) return;
+      try { var v = p.video, vol = Math.max(0, Math.min(100, +val || 0)) / 100; v.volume = vol; if (vol > 0) v.muted = false; paintModalAudio(!v.muted && vol > 0); } catch (e) {}
+      syncTransport();
+    },
+    transportMute: function () {
+      var p = players[modal.slot]; if (!p) return;
+      try { p.video.muted = !p.video.muted; paintModalAudio(!p.video.muted); } catch (e) {}
+      syncTransport();
+    },
+    transportRate: function (val) {
+      var p = players[modal.slot]; if (!p) return;
+      try { p.video.playbackRate = parseFloat(val) || 1; } catch (e) {}
+      syncTransport();
+    },
+    openTestStream: function (feedId) { openTestStream(feedId); },
+    modalCapsSearch: function () { renderModalCaps(); },
+    modalVtt: function () { MS.exportCaptions('vtt'); },
+    _modalVttLegacy: function () {
+      var C = root.MuseCaptions; if (!C || !modal.key) return;
+      var lines = C.lines(modal.capKey || modal.key), out = 'WEBVTT\n\n', n = 0;
       lines.forEach(function (l, i) {
         if (l.gap || !l.text) return;
         var t0 = new Date(l.ts), t1 = new Date(t0.getTime() + 8000), f = function (d) { return d.toISOString().slice(11, 23).replace(',', '.'); };
@@ -1532,13 +1603,13 @@
       });
       var a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([out], { type: 'text/vtt' }));
-      a.download = modal.key + '-captions.vtt'; a.click();
+      a.download = (modal.capKey || modal.key) + '-captions.vtt'; a.click();
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
     },
     modalPiP: function () {
       var p = players[modal.slot];
-      if (p && !p.yt && p.video.requestPictureInPicture) p.video.requestPictureInPicture().catch(function () {});
-      else if (root.toast) root.toast('Picture in picture needs an HLS tile');
+      if (p && p.video.requestPictureInPicture) p.video.requestPictureInPicture().catch(function () {});
+      else if (root.toast) root.toast('Picture in picture is unavailable for this stream');
     },
     modalFs: function () {
       var s = document.getElementById('msModalScreen');
@@ -1555,7 +1626,7 @@
       var SC = root.MuseStreamCheck, host = document.getElementById('msModalCheck');
       if (!SC || !host || !modal.key) return;
       host.innerHTML = '<p class="ms-note">Running Stream Check…</p>';
-      SC.runShow(modal.key, modal.slot, { expectLowerThird: true, gear: [] }).then(function (res) {
+      SC.runShow(modal.capKey || modal.key, modal.slot, { expectLowerThird: true, gear: [] }).then(function (res) {
         var html = '<div class="ms-checklist">' + (res || []).map(function (r) {
           return '<p><b>' + esc(r.name || r.kind || 'check') + '</b> — ' + (r.pass ? '<span class="ms-ok">PASS</span>' : '<span class="ms-flag">FLAG</span>') + ' <span>' + esc(r.detail || '') + '</span></p>';
         }).join('') + '</div>' + checkToolsHTML();
@@ -1583,6 +1654,7 @@
     },
     modalFault: function () {
       if (!modal.key) return;
+      if (modal.isTest) { if (root.toast) root.toast('Test feeds have no failover simulation — use Retry on the tile'); return; }
       var r = FAULTS[modal.key] ? clearFault(modal.key) : injectFault(modal.key);
       if (r && r.ok === false && root.toast) root.toast(r.error);
       if (FAULTS[modal.key]) { var scr = document.getElementById('msModalScreen'); if (scr && !scr.querySelector('video')) scr.innerHTML = '<div class="ms-slate" aria-hidden="true"><b>Program feed</b><span>Signal lost</span></div>'; }
@@ -1603,8 +1675,9 @@
         host.innerHTML = html;
       });
     },
-    modalPlan: function () { var k = modal.key; closeStream(); MS.openShow(k); },
+    modalPlan: function () { if (modal.isTest) { if (root.toast) root.toast('Test feed — open the Live Streams wall for the full wall'); return; } var k = modal.key; closeStream(); MS.openShow(k); },
     modalIncident: function () {
+      if (modal.isTest) { if (root.toast) root.toast('Test feed — log incidents from a show streaming plan'); return; }
       var k = modal.key; closeStream();
       if (root.MuseIncidents && root.MuseIncidents.openNew) root.MuseIncidents.openNew(k);
     },
@@ -1612,24 +1685,23 @@
     toggleAudio: function (e, slot, btn) {
       if (e && e.stopPropagation) e.stopPropagation();
       var p = players[slot]; if (!p) return;
-      var unmute = p.yt ? p.muted : p.video.muted;
-      // one monitor in your ears at a time
-      Object.keys(players).forEach(function (k) { var q = players[k]; if (q.yt) { if (!q.muted) { ytCmd(q, 'mute'); q.muted = true; } } else q.video.muted = true; });
+      var unmute = false; try { unmute = !!p.video.muted; } catch (e) {}
+      // One monitor in your ears at a time: mute every other player first.
+      Object.keys(players).forEach(function (k) { try { players[k].video.muted = true; } catch (e) {} });
       document.querySelectorAll('.ms-audio').forEach(function (b) { b.innerHTML = MUTED_SVG; b.setAttribute('aria-pressed', 'false'); });
-      // The tile behind the theater shares the modal's slot: keep the modal
-      // button honest when its own feed is the one being toggled.
       try { paintModalAudio(slot === modal.slot ? !!unmute : false); } catch (e) {}
-      if (unmute) { if (p.yt) { ytCmd(p, 'unMute'); ytCmd(p, 'setVolume', [80]); p.muted = false; } else { p.video.muted = false; p.video.play().catch(function () {}); } btn.innerHTML = LIVE_SVG; btn.setAttribute('aria-pressed', 'true'); }
+      if (unmute) { try { p.video.muted = false; if (typeof p.video.volume === 'number' && p.video.volume === 0) p.video.volume = 0.8; p.video.play().catch(function () {}); } catch (e) {} if (btn) { btn.innerHTML = LIVE_SVG; btn.setAttribute('aria-pressed', 'true'); } }
+      syncTransport();
     },
     addStream: function (key, form) {
       var url = String(form.url.value || '').trim();
-      if (!/^https:\/\/\S+$/i.test(url)) { root.toast && root.toast('Use an https:// HLS or YouTube URL'); return; }
-      var y = parseYt(url); if (y) url = 'yt:' + y.id + ':' + y.offset + ':' + (String(form.name.value || 'YouTube').trim().slice(0, 60));
-      else {
+      if (!/^https:\/\/\S+$/i.test(url)) { root.toast && root.toast('Use an https:// HLS (.m3u8) URL'); return; }
+      if (!/\.m3u8($|\?)/i.test(url)) { root.toast && root.toast('HLS only — paste an .m3u8 playlist URL'); return; }
+      {
         // The site's security policy only lets the browser load video from approved hosts (see docs/SECURITY.md, MUSE_MEDIA_HOSTS).
         var host = ''; try { host = new URL(url).hostname; } catch (e) {}
         var ok = ['demo.unified-streaming.com', 'test-streams.mux.dev', 'devstreaming-cdn.apple.com', 'storage.googleapis.com', 'cph-p2p-msl.akamaized.net'].indexOf(host) >= 0;
-        if (!ok) { root.toast && root.toast(host + ' isn’t an approved stream host yet. An admin adds it to MUSE_MEDIA_HOSTS (docs/SECURITY.md); YouTube links work now.'); return; }
+        if (!ok) { root.toast && root.toast(host + ' isn’t an approved stream host yet. An admin adds it to MUSE_MEDIA_HOSTS (docs/SECURITY.md).'); return; }
       }
       rec(key).added.push({ id: key + '-u' + Date.now().toString(36), name: String(form.name.value || 'Stream').trim().slice(0, 60), role: form.role.value, url: url });
       save(); root.toast && root.toast('Stream added'); root.renderProjectView(key);
@@ -1639,7 +1711,7 @@
       if (r.added.some(function (x) { return x.id === id; })) r.added = r.added.filter(function (x) { return x.id !== id; }); else r.removed[id] = 1;
       save(); root.renderProjectView(key);
     },
-    copyUrl: function (u) { var y = parseYt(u); if (y && /^yt:/.test(u)) u = 'https://www.youtube.com/watch?v=' + y.id; try { navigator.clipboard.writeText(u); root.toast && root.toast('Stream URL copied'); } catch (e) {} },
+    copyUrl: function (u) { try { navigator.clipboard.writeText(u); root.toast && root.toast('Stream URL copied'); } catch (e) {} },
     tick: function (key, i, on) { rec(key).checklist[i] = !!on; save(); },
     setState: function (key, st) {
       rec(key).state = st; save();
@@ -1697,10 +1769,9 @@
         facebook_live: integ.fb && integ.fb.configured ? (fbCache[key] || 'configured, no page/video id saved for this show') : 'not connected (FB_GRAPH_TOKEN not set)',
         streams: streamsFor(key).map(function (st) {
           var t = teleFor(key, st), g = grade(t.m, t.live), slot = Object.keys(players).filter(function (k) { return k.split(':')[1] === st.id; })[0];
-          var y = parseYt(st.url);
           var ds = {}; ['encoder', 'contribution', 'cloud', 'origin', 'cdn', 'viewers'].forEach(function (sg) { ds[sg] = (t.src && t.src[sg]) || 'demo (simulated)'; });
-          ds.player = 'measured in the browser (full QoE on HLS, player state on YouTube)';
-          return { name: st.name, role: st.role, source: y ? 'YouTube · ' + y.title : 'HLS', url: y ? 'https://www.youtube.com/watch?v=' + y.id : st.url, health: LEVEL_TXT[g.overall], stage_health: g.stages, data_source: ds,
+          ds.player = 'measured in the browser (full QoE on HLS)';
+          return { name: st.name, role: st.role, source: 'HLS', url: st.url, health: LEVEL_TXT[g.overall], stage_health: g.stages, data_source: ds,
             telemetry: t.live ? roundAll(t.m) : 'off air', alerts: t.live ? alertsFor(t.m, g) : [],
             trend_last_3min: t.live ? { viewers: trend(t.hist.viewers), rebuffer_pct: trend(t.hist.rebuffer), srt_loss_pct: trend(t.hist.loss) } : null,
             measured_in_browser: slot ? measure(players[slot]) : 'not open on screen' };

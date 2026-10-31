@@ -13,13 +13,17 @@ function makeWin(over = {}) {
   return loadBrowserModule('js/muse-testfeeds.js', Object.assign({ esc: ESC }, over));
 }
 
-test('defaults carry the three configured feeds, enabled', () => {
+test('defaults carry the five-tile NOC wall plus disabled native-only AJA', () => {
   const TF = makeWin().MuseTestFeeds;
   assert.deepEqual(plain(TF.defaults()), [
-    { id: 'live', label: 'Test Live', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', kind: 'live', enabled: true },
-    { id: 'abr', label: 'Test ABR', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', kind: 'abr', enabled: true },
-    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: true },
+    { id: 'live', label: 'Test Live', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', kind: 'live', enabled: true, badge: 'test' },
+    { id: 'nasa', label: 'NASA TV', url: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'NASA TV' },
+    { id: 'redbull', label: 'Red Bull TV', url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'Red Bull TV' },
+    { id: 'abr', label: 'Test ABR', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', kind: 'abr', enabled: true, badge: 'test' },
+    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: true, badge: 'test' },
+    { id: 'aja', label: 'Al Jazeera Arabic', url: 'https://live-hls-web-aja.getaj.net/AJA/index.m3u8', kind: 'live', enabled: false, badge: 'external', source: 'Al Jazeera Arabic', nativeOnly: true },
   ]);
+  assert.equal(TF.defaults().filter((f) => f.enabled !== false).length, 5, 'wall shows five tiles; AJA stays off (no CORS telemetry)');
   assert.equal(TF.MAX_ACTIVE, 4);
   assert.equal(TF.KV_KEY, 'testfeeds');
 });
@@ -35,7 +39,11 @@ test('sanitize drops invalid feeds and caps the list', () => {
     { id: 'ok', label: 'dupe', url: 'https://example.com/f.m3u8', kind: 'vod' },
     null, 'junk',
   ]);
-  assert.deepEqual(plain(out), [{ id: 'ok', label: 'Fine', url: 'https://example.com/a.m3u8', kind: 'live', enabled: true }]);
+  assert.deepEqual(plain(out), [{ id: 'ok', label: 'Fine', url: 'https://example.com/a.m3u8', kind: 'live', enabled: true, badge: 'test' }]);
+  assert.deepEqual(plain(TF.sanitize([{ id: 'dashonly', label: 'x', url: 'https://example.com/manifest.mpd', kind: 'live' }])), [], 'HLS only: non-.m3u8 URLs are dropped');
+  const ext = TF.sanitize([{ id: 'ext', label: 'NASA TV', url: 'https://example.com/nasa.m3u8', kind: 'live', badge: 'external', source: 'NASA TV' }]);
+  assert.equal(ext[0].badge, 'external');
+  assert.equal(ext[0].source, 'NASA TV');
   const many = Array.from({ length: 20 }, (_, i) => ({ id: 'f' + i, label: 'F', url: 'https://example.com/f.m3u8', kind: 'vod' }));
   assert.equal(TF.sanitize(many).length, 12);
   assert.deepEqual(plain(TF.sanitize('nope')), []);
@@ -74,19 +82,28 @@ test('chooseVictims parks offscreen first, then least-recently-touched, keeps th
   assert.deepEqual(plain(TF.chooseVictims(['a', 'b'], {}, {}, 4)), [], 'within budget parks nothing');
 });
 
-test('every test tile shows a TEST FEED badge and fictional metadata only', () => {
+test('tiles badge synthetic vs external honestly and stay poster-first', () => {
   const TF = makeWin().MuseTestFeeds;
   const html = TF.sectionHTML();
   const tiles = html.match(/data-testfeed="/g) || [];
-  assert.equal(tiles.length, 3);
-  assert.equal((html.match(/ms-test-badge/g) || []).length, 4, 'one badge per tile plus the section note');
+  assert.equal(tiles.length, 5, 'five enabled tiles; disabled AJA is not rendered');
   assert.match(html, /not production programming/);
   assert.match(html, /data-hls-slot="test:live"/);
-  assert.match(html, /fictional/);
-  assert.doesNotMatch(html, /Meta Connect|LlamaCon|Ray-Ban|program feed/i);
+  assert.match(html, /data-hls-slot="test:nasa"/);
+  assert.match(html, /data-hls-slot="test:redbull"/);
+  assert.match(html, /External live feed · NASA TV/);
+  assert.match(html, /External live feed · Red Bull TV/);
+  assert.match(html, /Third-party broadcast · not a Muse production/);
+  assert.match(html, /stay paused until hover or click/);
   const tile = TF.tileHTML(TF.defaults()[0]);
-  assert.match(tile, /TEST FEED/i);
+  assert.match(tile, /Test feed/);
   assert.match(tile, /Rehearsal loop/);
+  assert.match(tile, /data-defer="1"/, 'poster-first: no decoder until hover/click');
+  assert.match(tile, /onmouseenter="MuseTestFeeds\.hoverPreview/);
+  assert.match(tile, /MuseStreaming\.toggleAudio/, 'mute button lives on the thumbnail');
+  const nasa = TF.tileHTML(TF.defaults().find((f) => f.id === 'nasa'));
+  assert.match(nasa, /is-external/);
+  assert.doesNotMatch(nasa, /fictional/i);
 });
 
 test('health check: playlist ok → up, gone → down, network/CORS failure → unverified', async () => {
@@ -178,7 +195,7 @@ test('telemetry log carries timestamp, feed id and payload per feed, capped', ()
   assert.equal(TF.event(null), null);
 });
 
-test('level, error, stall and YouTube events update per-tile QoE', () => {
+test('level, error and stall events update per-tile QoE (HLS only)', () => {
   const TF = makeWin().MuseTestFeeds;
   TF.event('live', 'manifest', { renditions: 5 });
   TF.event('live', 'level', { level: 2, bitrate: 2400000, width: 1280, height: 720, renditions: 5 });
@@ -195,12 +212,10 @@ test('level, error, stall and YouTube events update per-tile QoE', () => {
   assert.equal(q.errors, 2);
   assert.equal(q.frag_errors, 1);
   assert.equal(q.stalls, 2, 'bufferStalledError counts as a stall too');
-  TF.event('abr', 'yt-state', { state: 'playing', prev: 'buffering', quality: 'hd720', loaded_fraction: 0.62 });
-  TF.event('abr', 'yt-state', { state: 'buffering', prev: 'playing', quality: 'hd720', loaded_fraction: 0.63 });
+  TF.event('abr', 'yt-state', { state: 'buffering', prev: 'playing' });
   q = plain(TF.qoeOf('abr'));
-  assert.equal(q.player, 'youtube');
-  assert.deepEqual(q.yt, { state: 'buffering', quality: 'hd720', loaded_fraction: 0.63 });
-  assert.equal(q.stalls, 1, 'mid-playback YouTube buffering counts');
+  assert.equal(q.player, 'hls', 'HLS only: legacy embed events never switch the player');
+  assert.equal(q.stalls, 0, 'embed state cannot fabricate HLS stalls');
   TF.event('abr', 'dropped', { dropped: 9, total: 900, delta: 9 });
   TF.event('abr', 'buffer', { buffer_s: 6.2 });
   q = plain(TF.qoeOf('abr'));
@@ -295,7 +310,7 @@ test('status and agent brief surface live feed telemetry', () => {
   TF.event('live', 'level', { level: 1, bitrate: 2400000, width: 1280, height: 720 });
   TF.event('live', 'stall', {});
   const st = plain(TF.status());
-  assert.equal(st.feeds.length, 3);
+  assert.equal(st.feeds.length, 5);
   const live = st.feeds.find((f) => f.id === 'live');
   assert.equal(live.qoe.bitrate_kbps, 2400);
   assert.equal(live.qoe.stalls, 1);
@@ -303,7 +318,7 @@ test('status and agent brief surface live feed telemetry', () => {
   assert.deepEqual(plain(TF.status('live')).feeds.map((f) => f.id), ['live']);
   assert.deepEqual(plain(TF.status('nope')).feeds, []);
   const brief = plain(TF.agentBrief());
-  assert.equal(brief.feeds.length, 3);
+  assert.equal(brief.feeds.length, 5);
   assert.equal(brief.feeds[0].stalls, 1);
   assert.equal(brief.pending_fixes, 0);
 });

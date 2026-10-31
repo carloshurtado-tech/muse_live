@@ -3,7 +3,7 @@
    Load it FIRST so it sees errors from everything after it. Sends batched events to
    /api/observe (daily aggregates in KV; admins read them at /ops/health.html):
      error   — uncaught errors / unhandled rejections from Muse Live's own code
-               (cross-origin noise such as the YouTube player is filtered out)
+               (cross-origin embed noise is filtered out)
      view    — top-level views and production tabs (wraps navGo / switchView / setProjTab)
      muse    — one count per question asked (never the question text)
      feature — which inline actions people use (the function name behind a button)

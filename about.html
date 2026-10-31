@@ -242,7 +242,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     <h2 id="limits">Honest limits</h2>
     <ul class="limits">
       <li>Viewer counts, bitrates and other pipeline metrics are simulated unless a show is connected to real telemetry. Every simulated number is labeled “Demo”.</li>
-      <li>Stream monitors play public recordings of Meta events from YouTube, standing in for live program feeds.</li>
+      <li>Stream monitors play public HLS sample streams, standing in for live program feeds.</li>
       <li>Most views are string-template JavaScript from an earlier build. Newer modules are self-contained, and <code>docs/MIGRATION.md</code> plans the move to React and TypeScript.</li>
       <li>Shared storage is last-write-wins per key. That is fine for a small team; a real deployment needs per-record merges or a database.</li>
       <li>This is a concept demo, not an official Meta product.</li>

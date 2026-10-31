@@ -4073,7 +4073,7 @@ html.dark .ms-alert{color:#FF8A9A;}
 /* in-place stream theater */
 .ms-modal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:18px;}
 .ms-modal[hidden]{display:none;}
-.ms-modal-backdrop{position:absolute;inset:0;background:rgba(10,11,15,.55);backdrop-filter:blur(10px) saturate(1.2);-webkit-backdrop-filter:blur(10px) saturate(1.2);}
+.ms-modal-backdrop{position:absolute;inset:0;background:rgba(10,11,15,.58);backdrop-filter:blur(14px) saturate(1.25);-webkit-backdrop-filter:blur(14px) saturate(1.25);}
 .ms-modal-card{position:relative;width:min(1020px,96vw);max-height:92vh;overflow-y:auto;background:rgb(var(--c-surface,255 255 255));color:rgb(var(--c-ink,28 30 33));border-radius:18px;box-shadow:0 24px 80px rgba(0,0,0,.45);padding:16px 18px 14px;}
 .ms-modal-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
 .ms-modal-title{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:15px;}
@@ -4085,11 +4085,18 @@ html.dark .ms-alert{color:#FF8A9A;}
 .ms-modal #msModalScreen{width:min(100%,calc(46vh*16/9));margin-inline:auto;}
 .ms-modal #msModalBackup{max-height:30vh;}
 .ms-modal #msModalBackup .ms-video{object-fit:contain;}
-/* Dead-embed fallback: sits above the black box, links out to YouTube. */
-.ms-yt-fallback{position:absolute;inset:auto 12px 12px 12px;z-index:3;display:flex;flex-direction:column;gap:4px;background:rgba(8,9,12,.88);color:#fff;border-radius:10px;padding:10px 12px;font-size:12px;}
-.ms-yt-fallback b{font-size:12px;}
-.ms-yt-fallback span{opacity:.75;font-size:11px;}
-.ms-yt-fallback .ms-link{color:#8AB4FF;font-size:12px;font-weight:700;width:fit-content;}
+/* Caption visibility + transport bar (HLS theater). */
+.ms-screen.cc-hidden .ms-cc{display:none;}
+.ms-transport{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border-radius:12px;background:var(--ms-soft,#F0F2F5);box-shadow:inset 0 0 0 1px var(--ms-line,rgba(5,5,5,.09));}
+.ms-tbtn{appearance:none;border:1px solid var(--ms-line,rgba(5,5,5,.12));background:rgb(var(--c-surface,255 255 255));color:inherit;border-radius:999px;min-width:38px;height:32px;padding:0 10px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
+.ms-tbtn:hover{filter:brightness(.97);}
+.ms-tbtn.is-behind{background:rgba(228,30,63,.12);border-color:rgba(228,30,63,.45);color:#B3122E;}
+.ms-tseek{flex:1 1 140px;min-width:100px;accent-color:#0866FF;}
+.ms-tvol{width:90px;accent-color:#0866FF;}
+.ms-ttime{font:11.5px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ms-ink-2,#65676B);white-space:nowrap;font-variant-numeric:tabular-nums;}
+.ms-trate{font-size:12px;border-radius:8px;padding:5px 6px;background:rgb(var(--c-surface,255 255 255));color:inherit;border:1px solid var(--ms-line,rgba(5,5,5,.12));}
+html.dark .ms-transport{background:#30333A;}
+html.dark .ms-tbtn,html.dark .ms-trate{background:#27282D;}
 .ms-react{margin-top:12px;border:1px solid rgba(8,102,255,.35);background:rgba(8,102,255,.07);border-radius:12px;padding:10px 12px;}
 .ms-react.is-ok{border-color:rgb(var(--c-line,228 230 235));background:transparent;}
 .ms-react b{font-size:12px;}
@@ -4265,8 +4272,6 @@ html.dark .mi-sla{color:#FF8A9A;}
 .mi-tc{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;color:#0866FF;letter-spacing:.02em;}
 html.dark .mi-tc{color:#88a8ff;}
 @media (prefers-reduced-motion: reduce){.ms-state.is-live i{animation:none;}}
-/* YouTube monitors: no player chrome, no interaction (our OSD sits on top), slight overscan hides the embed title bar */
-.ms-yt{border:0;pointer-events:none;transform:scale(1.18);transform-origin:center;background:#000;}
 .ms-vframe{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);aspect-ratio:9/16;z-index:1;pointer-events:none;
   box-shadow:0 0 0 999px rgba(5,5,5,.62);outline:1.5px solid rgba(255,255,255,.7);}
 
@@ -4661,6 +4666,7 @@ html.dark .ms-pf.is-pass{color:#26A756;} html.dark .ms-pf.is-warn{color:#C58600;
 
 /* Test feeds: stand-in signals, never production programming */
 .ms-test-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 8px;border-radius:6px;color:#8A5A00;background:rgba(247,185,40,.22);box-shadow:inset 0 0 0 1px currentColor;text-transform:uppercase;white-space:nowrap;}
+.ms-test-badge.is-external{color:#fff;background:#0A58CA;box-shadow:none;}
 html.dark .ms-test-badge{color:#F7B928;}
 .ms-test-kind{font-size:10.5px;color:#fff;opacity:.75;}
 .ms-test-health{font-size:11px;color:var(--ms-ink-2,#65676B);}

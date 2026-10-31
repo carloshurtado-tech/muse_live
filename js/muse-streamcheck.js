@@ -4,7 +4,7 @@
    and gear checks segment through /api/streamcheck and compare against what
    the show expects; wording cites SAM output only. Results feed Show Caller
    through latest(), where every flag becomes a high risk with its source.
-   Frame capture only works on HLS <video> tiles — YouTube iframes and
+   Frame capture only works on HLS <video> tiles — empty tiles and
    cross-origin-tainted canvases fail cleanly with a reason, never silently. */
 (function (root) {
   'use strict';
@@ -27,7 +27,7 @@
 
   function captureFrame(slot) {
     var v = videoFor(slot);
-    if (!v) return { ok: false, error: 'No capturable video for slot ' + slot + ' (YouTube and empty tiles cannot be grabbed).' };
+    if (!v) return { ok: false, error: 'No capturable video for slot ' + slot + ' (empty tiles cannot be grabbed).' };
     if (!v.videoWidth || !root.document || !root.document.createElement) return { ok: false, error: 'Video has no frame yet.' };
     try {
       var scale = CAPTURE_W / v.videoWidth, w = CAPTURE_W, h = Math.max(2, Math.round(v.videoHeight * scale));

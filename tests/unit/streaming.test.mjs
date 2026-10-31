@@ -22,16 +22,19 @@ function renderWallHTML(win) {
   return html;
 }
 
-test('wall tiles wire the thumbnail click (deferred keeps its play button)', () => {
+test('wall carries no show program decoders, only the test multiviewer', () => {
   const html = renderWallHTML(makeWin());
-  assert.match(html, /onclick="MuseStreaming\.screenClick\(event,this,'museaitour'\)"/);
-  assert.match(html, /onclick="MuseStreaming\.screenClick\(event,this,'orion'\)"/);
-  assert.match(html, /ms-screen is-clickable/);
-  const orionSlot = html.match(/<div class="ms-screen[^]*?data-hls-slot="wall:orion-s0"[^>]*>/)[0];
-  assert.match(orionSlot, /data-defer="1"/);
-  assert.match(html, /onclick="MuseStreaming\.play\(event,this\)"/);
-  const liveSlot = html.match(/<div class="ms-screen[^]*?data-hls-slot="wall:museaitour-s0"[^>]*>/)[0];
-  assert.doesNotMatch(liveSlot, /data-defer="1"/);
+  assert.doesNotMatch(html, /data-hls-slot="wall:/, 'show monitors never mount on the wall');
+  assert.doesNotMatch(html, /data-hls-slot="dash:/);
+  assert.match(html, /availability by show/, 'text-only SLO table stays');
+});
+
+test('project plan tiles stay clickable and secondary tiles are poster-first', () => {
+  const win = makeWin();
+  const html = win.MuseStreaming.paneHTML('museaitour');
+  assert.match(html, /data-hls-slot="proj:museaitour-s1"[^>]*data-defer="1"/, 'backup tile waits for Play');
+  const liveSlot = html.match(/<div class="ms-screen[^]*?data-hls-slot="proj:museaitour-s0"[^>]*>/)[0];
+  assert.doesNotMatch(liveSlot, /data-defer="1"/, 'the big program monitor still starts');
 });
 
 test('screen click on a live tile opens the theater, not the product page', () => {
@@ -145,16 +148,16 @@ test('tile buttons stop propagation so mute/CC/play never open the theater', () 
 test('HLS only: no embed machinery remains and seeded programs are .m3u8', () => {
   const src = fs.readFileSync(path.join(ROOT, 'js/muse-streaming.js'), 'utf8');
   assert.doesNotMatch(src, /youtube|youtu\.be|parseYt|makeYt/i, 'player is HLS-only');
-  const wall = renderWallHTML(makeWin());
+  const wall = makeWin().MuseStreaming.paneHTML('museaitour');
   const urls = [...wall.matchAll(/data-url="([^"]+)"/g)].map((m) => m[1]);
   assert.ok(urls.length >= 2);
-  for (const u of urls) assert.match(u, /\.m3u8/, 'every wall monitor is HLS: ' + u);
+  for (const u of urls) assert.match(u, /\.m3u8/, 'every seeded monitor is HLS: ' + u);
 });
 
 test('HLS mounts move the playing video instead of recreating it', async () => {
-  const wall = renderWallHTML(makeWin());
-  const m = /data-hls-slot="(wall:museaitour-s0)" data-url="([^"]+)"/.exec(wall);
-  assert.ok(m, 'wall renders the program tile with its slot and url');
+  const wall = makeWin().MuseStreaming.paneHTML('museaitour');
+  const m = /data-hls-slot="(proj:museaitour-s0)" data-url="([^"]+)"/.exec(wall);
+  assert.ok(m, 'plan renders the program tile with its slot and url');
   const [, slotKey, url] = m;
   assert.match(url, /\.m3u8/, 'program under test is an HLS feed');
   const videos = [];
@@ -212,7 +215,7 @@ test('theater resolves the clicked stream whatever tile context opened it', () =
       querySelector: () => null, querySelectorAll: () => [],
     },
   });
-  win.MuseStreaming.openStream('museaitour', 'dash:museaitour-s1');
+  win.MuseStreaming.openStream('museaitour', 'proj:museaitour-s1');
   assert.match(els.msModalTitle.innerHTML, /Backup · LiveU bonded/, 'backup tile opens the backup feed');
   assert.doesNotMatch(els.msModalTitle.innerHTML, /Meta Connect 2026/, 'no program fallback');
 });
@@ -373,4 +376,18 @@ test('opening or playing a stream never auto-starts billed transcription', () =>
 test('test-feed QoE beacons keep their own show key', () => {
   const src = fs.readFileSync(path.join(ROOT, 'js/muse-streaming.js'), 'utf8');
   assert.ok(src.includes("show: isTestSlot(k) ? 'testfeeds'"), 'QA traffic must not pollute a production panel');
+});
+
+test('added streams are paused posters in the shared streams store', () => {
+  let toasted = '';
+  const win = makeWin({ toast: (m) => { toasted = m; }, renderProjectView: () => {}, URL });
+  const MS = win.MuseStreaming;
+  MS.addStream('orion', { name: { value: 'Roof cam' }, url: { value: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8' }, role: { value: 'iso' } });
+  assert.match(toasted, /paused poster/);
+  const names = MS.summary('orion').streams.map((s) => s.name);
+  assert.ok(names.includes('Roof cam'), 'added stream is on the project');
+  const pane = MS.paneHTML('orion');
+  assert.match(pane, /Roof cam[^]*?data-defer="1"|data-defer="1"[^]*?Roof cam/, 'added tile never autoplays');
+  const stored = JSON.parse(win.localStorage.getItem('muselive_streams_v1'));
+  assert.ok(JSON.stringify(stored).includes('Roof cam'), 'persisted in muselive_streams_v1 (KV-synced platform-wide)');
 });

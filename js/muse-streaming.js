@@ -294,7 +294,7 @@
         v.src = url; return;
       }
       // CMCD (CTA-5004) as query args so origins / CDNs can correlate requests with this session.
-      var h = p.hls = new Hls({ lowLatencyMode: true, capLevelToPlayerSize: true, maxBufferLength: 12, backBufferLength: 10, liveSyncDurationCount: 3, enableWorker: true, subtitleDisplay: false,
+      var h = p.hls = new Hls({ lowLatencyMode: true, capLevelToPlayerSize: true, maxBufferLength: test ? 6 : 12, backBufferLength: test ? 0 : 10, liveSyncDurationCount: 3, enableWorker: true, subtitleDisplay: false,
         cmcd: { sessionId: q.session, contentId: slotKey.split(':')[1] || slotKey, useHeaders: false } });
       h.on(Hls.Events.LEVEL_SWITCHED, function (ev, data) {
         q.switches++;
@@ -448,7 +448,10 @@
   function tileHTML(key, st, ctx, opts) {
     opts = opts || {};
     var t = teleFor(key, st), g = grade(t.m, t.live), slot = ctx + ':' + st.id;
-    var defer = !t.live && ctx !== 'proj' && !players[slot];
+    // Poster-first for anything user-added and for secondary plan tiles: no
+    // decoder or segment fetches until Play/expand. Only a show's big program
+    // monitor (or an already-playing wall feed) starts on its own.
+    var defer = !st.seeded || (ctx === 'proj' ? !opts.big : (!t.live && !players[slot]));
     var clickable = ctx !== 'proj'; // the plan pane IS the destination; wall + dash thumbnails open it
     return '<figure class="ms-tile' + (opts.big ? ' is-big' : '') + (st.role === 'vertical' || (opts.vertical) ? ' is-vertical' : '') + '" data-sid="' + st.id + '">' +
       '<div class="ms-screen' + (clickable ? ' is-clickable' : '') + '" data-hls-slot="' + esc(slot) + '" data-url="' + esc(st.url) + '"' + (t.live ? ' data-live="1"' : '') + (defer ? ' data-defer="1"' : '') +
@@ -586,19 +589,10 @@
     try { openInc = root.MuseIncidents.all().filter(function (i) { return i.status === 'Open' || i.status === 'Monitoring'; }).length; } catch (e) {}
     var avgReb = reb.length ? reb.reduce(function (a, b) { return a + b; }, 0) / reb.length : 0;
     var sorted = ks.slice().sort(function (a, b) { var o = { LIVE: 0, REHEARSAL: 1, STANDBY: 2, SCHEDULED: 3, ENDED: 4 }; var x = o[stateOf(a)], y = o[stateOf(b)]; return (x == null ? 9 : x) - (y == null ? 9 : y); });
-    var tiles = sorted.map(function (k) {
-      var pr = programOf(k); if (!pr) return '';
-      return tileHTML(k, pr, 'wall', { showName: true, actions: '<button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + k + '\')">Open streaming plan →</button>' });
-    }).join('');
-    var sitesHTML = '';
-    try {
-      var wl = root.locsOf ? root.locsOf('museaitour') : [];
-      if (wl && wl.length > 1) sitesHTML = '<div class="ms-sites"><b>Muse AI World Tour 2026 · ' + wl.length + ' sites</b>' + wl.map(function (L) { return '<span class="ms-site-chip">' + esc(L.flag || '') + ' ' + esc(L.name) + ' · ' + esc(L.city || '') + '</span>'; }).join('') + '</div>';
-    } catch (e) {}
-    var attn = sorted.filter(function (k) { if (!liveOf(k)) return false; var g = healthOf(k); return g.overall === 'warn' || g.overall === 'crit' || anomalies().some(function (a) { return a.key === k; }); });
-    var attnHTML = attn.length ? '<div class="ms-attn"><b>Needs attention</b>' + attn.map(function (k) {
-      var pr = programOf(k); return '<button type="button" class="ms-attn-chip" onclick="MuseStreaming.openStream(\'' + k + '\',\'wall:' + pr.id + '\')">' + esc(nameOf(k)) + ' · ' + esc(healthOf(k).overall.toUpperCase()) + '</button>';
-    }).join('') + '</div>' : '';
+    // No show program tiles on the wall: each one held a live HLS decoder and
+    // punished the dashboard. Shows live on their streaming plans (one player
+    // on demand); the wall itself is the test/external multiviewer below.
+    var sitesHTML = '', attnHTML = '';
     return '<div class="ms-wrap">' +
       '<div class="ms-page-h"><div><h1>Live Streams</h1><p>Every program feed across Meta live events, with end-to-end health. For executives and engineers.</p></div>' +
         '<div class="ms-head-r"><button type="button" class="ms-btn" onclick="MuseStreaming.rehearse(\'museaitour\')">▶ Rehearse the incident</button>' +
@@ -607,9 +601,6 @@
       '<p class="ms-note ms-demo-note"><span class="ms-src">Demo data</span> Viewer and pipeline numbers are simulated until real sources are connected per stream (AWS CloudWatch, Mux Data, Facebook Live). Video monitors and pre-flight checks are real.</p>' +
       '<div class="ms-kpis"><div><span>Live now</span><b id="msK-live">' + live + '</b></div><div><span>Concurrent viewers</span><b id="msK-viewers">' + fmtN(totalV) + '</b></div>' +
         '<div><span>Avg rebuffer</span><b id="msK-reb">' + avgReb.toFixed(2) + '%</b></div><div><span>Open incidents</span><b>' + openInc + '</b></div></div>' +
-      attnHTML +
-      sitesHTML +
-      '<div class="ms-wall">' + tiles + '</div>' +
       section('SLO · ' + SLO_TARGET + '% availability by show', '<div class="ms-table"><table><thead><tr><th>Show</th><th>State</th><th>Last event</th><th>Event budget left</th><th>Last 30 days</th><th>30-day budget left</th></tr></thead><tbody>' +
         sorted.map(function (k) { var o = sloFor(k), e = o.event, mo = o.last_30_days;
           return '<tr><td><button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + k + '\')">' + esc(nameOf(k)) + '</button></td><td>' + badge(stateOf(k)) + '</td><td>' + (e ? e.availability_pct.toFixed(2) + '%' : '—') + '</td><td>' + (e ? '<span class="ms-dot is-' + e.status + '"></span> ' + budgetTxt(e) : '—') + '</td><td>' + mo.availability_pct.toFixed(3) + '%</td><td><span class="ms-dot is-' + mo.status + '"></span> ' + budgetTxt(mo) + '</td></tr>'; }).join('') +
@@ -621,13 +612,13 @@
     try { return root.MuseTestFeeds ? root.MuseTestFeeds.sectionHTML() : ''; } catch (e) { return ''; }
   }
   function dashHTML() {
-    var ks = keys().filter(liveOf);
+    // Dashboard carries the test/external multiviewer only. Show program
+    // monitors (three live decoders) are gone from the dashboard — they open
+    // on demand from each show's streaming plan instead.
     var tf = testFeedsHTML();
-    if (!ks.length && !tf) return '';
-    var totalV = 0; ks.forEach(function (k) { var g = healthOf(k); if (g.m) totalV += g.m.viewers; });
-    var tiles = ks.slice(0, 3).map(function (k) { var pr = programOf(k); return pr ? tileHTML(k, pr, 'dash', { showName: true }) : ''; }).join('');
-    return '<div class="ms-dash-h"><div class="ms-dash-title"><span class="ms-state is-live"><i></i>LIVE NOW</span><h2>Live streams</h2><span class="ms-sub">' + ks.length + ' on air · <b id="msD-viewers">' + fmtN(totalV) + '</b> concurrent viewers</span><span class="ms-src" title="Simulated viewer and pipeline numbers">Demo data</span></div>' +
-      '<button type="button" class="ms-btn" onclick="navGo(\'streams\')">Open Live Streams wall →</button></div><div class="ms-dash-grid">' + tiles + '</div>' + tf;
+    if (!tf) return '';
+    return '<div class="ms-dash-h"><div class="ms-dash-title"><h2>Live test &amp; external feeds</h2><span class="ms-sub">Paused until hover or click</span></div>' +
+      '<button type="button" class="ms-btn" onclick="navGo(\'streams\')">Open Live Streams wall →</button></div>' + tf;
   }
 
   /* ---------------- dashboard home header (Meta Business Suite-style) ---------------- */
@@ -1143,7 +1134,7 @@
           '<button type="button" class="ms-tbtn" id="msTLive" onclick="MuseStreaming.transportLive()">● LIVE</button>' +
           '<input type="range" class="ms-tseek" id="msTSeek" min="0" max="1000" value="0" step="1" oninput="MuseStreaming.transportSeek(this.value)" aria-label="Seek">' +
           '<span class="ms-ttime" id="msTTime">0:00 / LIVE</span>' +
-          '<button type="button" class="ms-tbtn" id="msTMute" onclick="MuseStreaming.transportMute()" aria-label="Mute or unmute">🔊</button>' +
+          '<button type="button" class="ms-tbtn" id="msTMute" onclick="MuseStreaming.transportMute()" aria-label="Mute or unmute">Mute</button>' +
           '<input type="range" class="ms-tvol" id="msTVol" min="0" max="100" value="80" step="1" oninput="MuseStreaming.transportVolume(this.value)" aria-label="Volume">' +
           '<select class="ms-trate" id="msTRate" onchange="MuseStreaming.transportRate(this.value)" aria-label="Playback speed"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select>' +
         '</div>' +
@@ -1179,7 +1170,7 @@
         time = document.getElementById('msTTime'), liveBtn = document.getElementById('msTLive');
       if (!v) { if (playBtn) playBtn.textContent = '▶'; return; }
       if (playBtn) { playBtn.textContent = v.paused ? '▶' : '❚❚'; playBtn.setAttribute('aria-label', v.paused ? 'Play' : 'Pause'); }
-      if (muteBtn) muteBtn.textContent = v.muted || !v.volume ? '🔇' : '🔊';
+      if (muteBtn) muteBtn.textContent = v.muted || !v.volume ? 'Muted' : 'Mute';
       if (vol && document.activeElement !== vol) vol.value = String(Math.round((v.muted ? 0 : (typeof v.volume === 'number' ? v.volume : 0.8)) * 100));
       var dur = (typeof v.duration === 'number' && isFinite(v.duration)) ? v.duration : null;
       var cur = typeof v.currentTime === 'number' ? v.currentTime : 0;
@@ -1189,7 +1180,13 @@
         if (dur && dur > 0) seek.value = String(Math.round(cur / dur * 1000));
         else if (liveEdge && liveEdge > 0) seek.value = String(Math.round(cur / liveEdge * 1000));
       }
-      if (time) time.textContent = fmtTime(cur) + ' / ' + (dur ? fmtTime(dur) : 'LIVE');
+      if (time) {
+        var isLiveEdge = !!(p && p.hls && p.hls.latency != null);
+        var behindS = liveEdge != null ? Math.max(0, Math.round(liveEdge - cur)) : null;
+        time.textContent = isLiveEdge
+          ? fmtTime(cur) + ' / ' + fmtTime(liveEdge != null ? liveEdge : cur) + (behindS != null && behindS > 2 ? ' · ' + behindS + 's behind live' : ' · at live edge')
+          : fmtTime(cur) + ' / ' + (dur ? fmtTime(dur) : 'LIVE');
+      }
       if (liveBtn) {
         var behind = liveEdge != null ? liveEdge - cur : null;
         liveBtn.classList.toggle('is-behind', behind != null && behind > 8);
@@ -1278,7 +1275,9 @@
     modal.base = null; modal.isTest = true; modal.testId = id; modal.capVisible = true;
     var label = (feed && feed.label) || ('Test feed ' + id);
     var kind = (feed && feed.kind) || 'live';
-    document.getElementById('msModalTitle').innerHTML = '<b>' + esc(label) + '</b><span>Test feed · ' + esc(kind) + ' · HLS</span><span class="ms-state is-live"><i></i>TEST FEED</span>';
+    var isExt = !!(feed && feed.badge === 'external');
+    document.getElementById('msModalTitle').innerHTML = '<b>' + esc(label) + '</b><span>' + (isExt ? 'External live feed' : 'Test feed') + ' · ' + esc(kind) + ' · HLS</span>' +
+      (isExt ? '<span class="ms-test-badge is-external">External live feed · ' + esc((feed && feed.source) || label) + '</span>' : '<span class="ms-state is-live"><i></i>TEST FEED</span>');
     var scr = document.getElementById('msModalScreen');
     scr.setAttribute('data-hls-slot', modal.slot);
     scr.setAttribute('data-url', url);
@@ -1366,7 +1365,7 @@
     // SAM watcher: while the theater is open, Stream Check (SAM 3.1 + pixels) re-runs
     // at most every 90 s; results alert through Muse (theater banner + Muse drawer).
     var SC = root.MuseStreamCheck, extras = [];
-    if (SC && modal.slot) {
+    if (SC && modal.slot && !modal.isTest) {
       if ((!modal.watchTs || Date.now() - modal.watchTs > 90000) && MS.videoFor(modal.slot)) {
         modal.watchTs = Date.now();
         SC.runShow(modal.capKey || modal.key, modal.slot, { expectLowerThird: true, gear: [] }).then(function () { refreshModal(); }).catch(function () {});
@@ -1396,7 +1395,7 @@
       extras.unshift('<div class="ms-react-row"><span><b>Rehearsal</b> — feed dropped by Muse · ' + (FAULTS[modal.key] ? 'waiting for your failover approval' : failed ? 'failover applied ✓ story complete' : 'recovering…') + '</span></div>');
     }
     var rx = document.getElementById('msModalReact');
-    if (rx) { var reactHTML = (ans.length || extras.length) ? '<div class="ms-react"><b>Muse noticed</b>' + ans.map(function (a, i) {
+    if (rx) { var reactHTML = (modal.isTest && !ans.length && !extras.length) ? '' : (ans.length || extras.length) ? '<div class="ms-react"><b>Muse noticed</b>' + ans.map(function (a, i) {
       return '<div class="ms-react-row"><span>' + esc(a.stream) + ' — ' + esc(a.text) + '</span>' +
         (a.recommendation && a.recommendation.kind !== 'none' ? '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseStreaming.modalApprove(' + i + ')">' + esc(a.recommendation.label) + '</button>' : '<span class="ms-note">watch</span>') + '</div>';
     }).join('') + extras.join('') + '</div>' : (FAULTS[modal.key] ? '' : '<div class="ms-react is-ok"><b>Muse is watching</b><span>All stages healthy on this show.</span></div>'); rx.innerHTML = reactHTML; }
@@ -1421,6 +1420,12 @@
     if (!modal.capVisible) { host.innerHTML = '<p class="ms-note">Captions hidden — use “Captions hidden” above to show them again. Transcription keeps running.</p>'; return; }
     if (!C) { var noCap = caveat + '<p class="ms-note">Caption module unavailable.</p>'; host.innerHTML = noCap; return; }
     var st = C.status(capKey), lines = C.lines(capKey);
+    if (!st.running && !lines.length) {
+      var emptyCaps = caveat;
+      emptyCaps += '<p class="ms-note">Captions off. Playback never transcribes — press <b>CC · Muse captions</b> above to start Muse Voice Transcribe manually (billed per window). Lines, search and export appear here once captioning runs.</p>';
+      host.innerHTML = emptyCaps;
+      return;
+    }
     var q = (document.getElementById('msCapQ') || {}).value || '';
     var show = q ? C.search(capKey, q) : lines.slice(-10);
     var html = caveat +
@@ -1449,6 +1454,8 @@
     paneHTML: paneHTML,
     mount: function (el) { mount(el); },
     videoFor: function (slot) { var p = players[slot]; return p && p.video && p.video.tagName === 'VIDEO' ? p.video : null; },
+    suspendSlot: function (slot) { var p = players[slot]; if (!p) return; try { p.video.pause(); } catch (e) {} try { if (p.hls && p.hls.stopLoad) p.hls.stopLoad(); } catch (e) {} },
+    resumeSlot: function (slot) { var p = players[slot]; if (!p) return false; try { if (p.hls && p.hls.startLoad) p.hls.startLoad(); } catch (e) {} try { p.video.play().catch(function () {}); } catch (e) {} return true; },
     renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); try { if (root.MuseTestFeeds) root.MuseTestFeeds.mount(h); } catch (e) {} } },
     renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) { mount(h); try { if (root.MuseTestFeeds) root.MuseTestFeeds.mount(h); } catch (e) {} } },
     play: function (e, btn) { if (e && e.stopPropagation) e.stopPropagation(); var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
@@ -1703,8 +1710,9 @@
         var ok = ['demo.unified-streaming.com', 'test-streams.mux.dev', 'devstreaming-cdn.apple.com', 'storage.googleapis.com', 'cph-p2p-msl.akamaized.net'].indexOf(host) >= 0;
         if (!ok) { root.toast && root.toast(host + ' isn’t an approved stream host yet. An admin adds it to MUSE_MEDIA_HOSTS (docs/SECURITY.md).'); return; }
       }
+      if ((rec(key).added || []).length >= 8) { root.toast && root.toast('This project already has 8 added streams — remove one first'); return; }
       rec(key).added.push({ id: key + '-u' + Date.now().toString(36), name: String(form.name.value || 'Stream').trim().slice(0, 60), role: form.role.value, url: url });
-      save(); root.toast && root.toast('Stream added'); root.renderProjectView(key);
+      save(); root.toast && root.toast('Stream added — paused poster, synced to the platform; press play or expand when you need it'); root.renderProjectView(key);
     },
     removeStream: function (key, id) {
       var r = rec(key);

@@ -812,12 +812,14 @@
     hoverPreview: function (id) {
       id = String(id || '');
       if (!feedById(id) || S.health[id] === 'down') return;
-      if (S.mounted[id]) { var v0 = videoOf(id); try { if (v0 && v0.paused) v0.play().catch(function () {}); } catch (e) {} return; }
+      if (S.mounted[id]) { try { var M0 = MS(); if (M0 && typeof M0.resumeSlot === 'function' && M0.resumeSlot(slotOf(id))) return; } catch (e) {} var v0 = videoOf(id); try { if (v0 && v0.paused) v0.play().catch(function () {}); } catch (e) {} return; }
       activate(id);
       verifyPlayback(id);
     },
     hoverEnd: function (id) {
       id = String(id || '');
+      // Pause + stop segment loading: a hovered-away tile costs no network/CPU.
+      try { var M = MS(); if (M && typeof M.suspendSlot === 'function') { M.suspendSlot(slotOf(id)); return; } } catch (e) {}
       var v = videoOf(id);
       try { if (v && !v.paused) v.pause(); } catch (e) {}
     },

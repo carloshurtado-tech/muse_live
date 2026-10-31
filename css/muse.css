@@ -4985,9 +4985,7 @@ html.mt-moving .mt-veil{opacity:1;}
 @media (min-width:640px){main.muse-main{padding-top:12px;}} /* match the floating banner's 12px gap above, below and on every page (view panes' first tile has no top margin) */
 @media (max-width:639px){html body > header.sticky.glass-panel{margin:8px 12px 0;top:8px;}}
 
-/* Density pass: tighter dashboard, narrower rail, 90% dashboard scale. */
+/* Site-wide 90% scale with spacing intact + narrower nav rail. */
+body{zoom:.9;}
+@supports not (zoom:1){body{font-size:90%;}}
 :root{--nav-rail-w:48px;--nav-rail-w-exp:192px;}
-#view-dashboard{zoom:.9;}
-#view-dashboard section{margin-bottom:0;}
-#dashRowMain{gap:10px;}
-.ms-dash{padding:8px;}

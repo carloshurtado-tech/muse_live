@@ -13,17 +13,17 @@ function makeWin(over = {}) {
   return loadBrowserModule('js/muse-testfeeds.js', Object.assign({ esc: ESC }, over));
 }
 
-test('defaults carry the five-tile NOC wall plus disabled native-only AJA', () => {
+test('defaults carry the four-tile NOC wall plus disabled extras', () => {
   const TF = makeWin().MuseTestFeeds;
   assert.deepEqual(plain(TF.defaults()), [
     { id: 'live', label: 'Test Live', url: 'https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8', kind: 'live', enabled: true, badge: 'test' },
     { id: 'nasa', label: 'NASA TV', url: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'NASA TV' },
     { id: 'redbull', label: 'Red Bull TV', url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'Red Bull TV' },
     { id: 'abr', label: 'Test ABR', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', kind: 'abr', enabled: true, badge: 'test' },
-    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: true, badge: 'test' },
+    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: false, badge: 'test' },
     { id: 'aja', label: 'Al Jazeera Arabic', url: 'https://live-hls-web-aja.getaj.net/AJA/index.m3u8', kind: 'live', enabled: false, badge: 'external', source: 'Al Jazeera Arabic', nativeOnly: true },
   ]);
-  assert.equal(TF.defaults().filter((f) => f.enabled !== false).length, 5, 'wall shows five tiles; AJA stays off (no CORS telemetry)');
+  assert.equal(TF.defaults().filter((f) => f.enabled !== false).length, 4, 'wall shows at most four tiles; VOD2 and AJA stay off');
   assert.equal(TF.MAX_ACTIVE, 4);
   assert.equal(TF.KV_KEY, 'testfeeds');
 });
@@ -86,7 +86,7 @@ test('tiles badge synthetic vs external honestly and stay poster-first', () => {
   const TF = makeWin().MuseTestFeeds;
   const html = TF.sectionHTML();
   const tiles = html.match(/data-testfeed="/g) || [];
-  assert.equal(tiles.length, 5, 'five enabled tiles; disabled AJA is not rendered');
+  assert.equal(tiles.length, 4, 'four enabled tiles max; disabled feeds are not rendered');
   assert.match(html, /not production programming/);
   assert.match(html, /data-hls-slot="test:live"/);
   assert.match(html, /data-hls-slot="test:nasa"/);
@@ -310,7 +310,7 @@ test('status and agent brief surface live feed telemetry', () => {
   TF.event('live', 'level', { level: 1, bitrate: 2400000, width: 1280, height: 720 });
   TF.event('live', 'stall', {});
   const st = plain(TF.status());
-  assert.equal(st.feeds.length, 5);
+  assert.equal(st.feeds.length, 4);
   const live = st.feeds.find((f) => f.id === 'live');
   assert.equal(live.qoe.bitrate_kbps, 2400);
   assert.equal(live.qoe.stalls, 1);
@@ -318,7 +318,7 @@ test('status and agent brief surface live feed telemetry', () => {
   assert.deepEqual(plain(TF.status('live')).feeds.map((f) => f.id), ['live']);
   assert.deepEqual(plain(TF.status('nope')).feeds, []);
   const brief = plain(TF.agentBrief());
-  assert.equal(brief.feeds.length, 5);
+  assert.equal(brief.feeds.length, 4);
   assert.equal(brief.feeds[0].stalls, 1);
   assert.equal(brief.pending_fixes, 0);
 });

@@ -4090,6 +4090,8 @@ html.dark .ms-alert{color:#FF8A9A;}
 .ms-transport{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:10px;padding:8px 10px;border-radius:12px;background:var(--ms-soft,#F0F2F5);box-shadow:inset 0 0 0 1px var(--ms-line,rgba(5,5,5,.09));}
 .ms-tbtn{appearance:none;border:1px solid var(--ms-line,rgba(5,5,5,.12));background:rgb(var(--c-surface,255 255 255));color:inherit;border-radius:999px;min-width:38px;height:32px;padding:0 10px;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;}
 .ms-tbtn:hover{filter:brightness(.97);}
+.ms-btn.is-on{background:#0866FF;color:#fff;}
+.ms-tbtn.is-on{background:#0866FF;border-color:#0866FF;color:#fff;}
 .ms-tbtn.is-behind{background:rgba(228,30,63,.12);border-color:rgba(228,30,63,.45);color:#B3122E;}
 .ms-tseek{flex:1 1 140px;min-width:100px;accent-color:#0866FF;}
 .ms-tvol{width:90px;accent-color:#0866FF;}
@@ -4982,3 +4984,10 @@ html.dark body > header.sticky.glass-panel{background:#1F1F1F !important;box-sha
 html.mt-moving .mt-veil{opacity:1;}
 @media (min-width:640px){main.muse-main{padding-top:12px;}} /* match the floating banner's 12px gap above, below and on every page (view panes' first tile has no top margin) */
 @media (max-width:639px){html body > header.sticky.glass-panel{margin:8px 12px 0;top:8px;}}
+
+/* Density pass: tighter dashboard, narrower rail, 90% dashboard scale. */
+:root{--nav-rail-w:48px;--nav-rail-w-exp:192px;}
+#view-dashboard{zoom:.9;}
+#view-dashboard section{margin-bottom:0;}
+#dashRowMain{gap:10px;}
+.ms-dash{padding:8px;}

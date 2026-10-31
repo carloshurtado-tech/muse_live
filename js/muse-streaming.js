@@ -294,7 +294,7 @@
         v.src = url; return;
       }
       // CMCD (CTA-5004) as query args so origins / CDNs can correlate requests with this session.
-      var h = p.hls = new Hls({ lowLatencyMode: true, capLevelToPlayerSize: true, maxBufferLength: test ? 6 : 12, backBufferLength: test ? 0 : 10, liveSyncDurationCount: 3, enableWorker: true, subtitleDisplay: false,
+      var h = p.hls = new Hls({ lowLatencyMode: true, capLevelToPlayerSize: true, maxBufferLength: test ? 8 : 12, backBufferLength: test ? 2 : 10, liveSyncDurationCount: 3, enableWorker: true, subtitleDisplay: false,
         cmcd: { sessionId: q.session, contentId: slotKey.split(':')[1] || slotKey, useHeaders: false } });
       h.on(Hls.Events.LEVEL_SWITCHED, function (ev, data) {
         q.switches++;
@@ -611,15 +611,7 @@
   function testFeedsHTML() {
     try { return root.MuseTestFeeds ? root.MuseTestFeeds.sectionHTML() : ''; } catch (e) { return ''; }
   }
-  function dashHTML() {
-    // Dashboard carries the test/external multiviewer only. Show program
-    // monitors (three live decoders) are gone from the dashboard — they open
-    // on demand from each show's streaming plan instead.
-    var tf = testFeedsHTML();
-    if (!tf) return '';
-    return '<div class="ms-dash-h"><div class="ms-dash-title"><h2>Live test &amp; external feeds</h2><span class="ms-sub">Paused until hover or click</span></div>' +
-      '<button type="button" class="ms-btn" onclick="navGo(\'streams\')">Open Live Streams wall →</button></div>' + tf;
-  }
+  function dashHTML() { return ''; } // dashboard carries no streams (wall only)
 
   /* ---------------- dashboard home header (Meta Business Suite-style) ---------------- */
   function homeHTML() {
@@ -1083,6 +1075,7 @@
     if (!b) return;
     b.textContent = live ? 'Listening' : 'Listen';
     b.setAttribute('aria-pressed', live ? 'true' : 'false');
+    try { b.classList.toggle('is-on', !!live); } catch (e) {}
   }
   function modalSetAudio(live) {
     var p = modal.slot ? players[modal.slot] : null;
@@ -1123,7 +1116,7 @@
             '<button type="button" class="ms-btn" id="msModalAudioBtn" onclick="MuseStreaming.modalAudio()" aria-pressed="false" aria-label="Listen to this stream">Listen</button>' +
             '<button type="button" class="ms-btn" id="msModalCCBtn" onclick="MuseStreaming.modalCC()" title="Manual only — starts Muse Voice Transcribe (billed per window); playback never auto-starts it">CC · Muse captions</button>' +
             '<button type="button" class="ms-btn" id="msModalCapVisBtn" onclick="MuseStreaming.toggleCaptionsVisible()" aria-pressed="true">Captions shown</button>' +
-            '<button type="button" class="ms-btn" onclick="MuseStreaming.modalPiP()">Picture in picture</button>' +
+            '<button type="button" class="ms-btn" id="msModalPiPBtn" onclick="MuseStreaming.modalPiP()" aria-pressed="false">Picture in picture</button>' +
             '<button type="button" class="ms-btn" onclick="MuseStreaming.modalFs()">Fullscreen</button>' +
             '<button type="button" class="ms-btn" onclick="MuseStreaming.modalSnap()">Snapshot</button>' +
             '<button type="button" class="ms-btn ms-btn-soft" onclick="MuseStreaming.closeStream()">Close ✕</button>' +
@@ -1132,7 +1125,7 @@
         '<div class="ms-transport" id="msModalTransport" role="group" aria-label="Playback controls">' +
           '<button type="button" class="ms-tbtn" id="msTPlay" onclick="MuseStreaming.transportPlayPause()" aria-label="Play or pause">❚❚</button>' +
           '<button type="button" class="ms-tbtn" id="msTLive" onclick="MuseStreaming.transportLive()">● LIVE</button>' +
-          '<input type="range" class="ms-tseek" id="msTSeek" min="0" max="1000" value="0" step="1" oninput="MuseStreaming.transportSeek(this.value)" aria-label="Seek">' +
+          '<input type="range" class="ms-tseek" id="msTSeek" min="0" max="1000" value="0" step="1" oninput="MuseStreaming.transportSeek(this.value)" onchange="MuseStreaming.transportSeek(this.value)" aria-label="Seek">' +
           '<span class="ms-ttime" id="msTTime">0:00 / LIVE</span>' +
           '<button type="button" class="ms-tbtn" id="msTMute" onclick="MuseStreaming.transportMute()" aria-label="Mute or unmute">Mute</button>' +
           '<input type="range" class="ms-tvol" id="msTVol" min="0" max="100" value="80" step="1" oninput="MuseStreaming.transportVolume(this.value)" aria-label="Volume">' +
@@ -1155,6 +1148,7 @@
       '</div>';
     document.body.appendChild(d);
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.key) MS.closeStream(); });
+    try { document.addEventListener('pictureinpicturechange', function () { var b = document.getElementById('msModalPiPBtn'); if (!b) return; var on = !!document.pictureInPictureElement; b.classList.toggle('is-on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); }); } catch (e) {}
   }
   function fmtTime(s) {
     if (s == null || !isFinite(s)) return '—';
@@ -1169,8 +1163,8 @@
         vol = document.getElementById('msTVol'), seek = document.getElementById('msTSeek'),
         time = document.getElementById('msTTime'), liveBtn = document.getElementById('msTLive');
       if (!v) { if (playBtn) playBtn.textContent = '▶'; return; }
-      if (playBtn) { playBtn.textContent = v.paused ? '▶' : '❚❚'; playBtn.setAttribute('aria-label', v.paused ? 'Play' : 'Pause'); }
-      if (muteBtn) muteBtn.textContent = v.muted || !v.volume ? 'Muted' : 'Mute';
+      if (playBtn) { playBtn.textContent = v.paused ? '▶' : '❚❚'; playBtn.setAttribute('aria-label', v.paused ? 'Play' : 'Pause'); try { playBtn.classList.toggle('is-on', !v.paused); } catch (e) {} }
+      if (muteBtn) { var audible = !(v.muted || !v.volume); muteBtn.textContent = audible ? 'Mute' : 'Muted'; try { muteBtn.classList.toggle('is-on', audible); muteBtn.setAttribute('aria-pressed', audible ? 'false' : 'true'); } catch (e) {} }
       if (vol && document.activeElement !== vol) vol.value = String(Math.round((v.muted ? 0 : (typeof v.volume === 'number' ? v.volume : 0.8)) * 100));
       var dur = (typeof v.duration === 'number' && isFinite(v.duration)) ? v.duration : null;
       var cur = typeof v.currentTime === 'number' ? v.currentTime : 0;
@@ -1236,6 +1230,7 @@
     } else if (conf) conf.hidden = true;
     modalEl().hidden = false;
     mount(modalEl());
+    try { if (players[modal.slot] && players[modal.slot].hls && players[modal.slot].hls.startLoad) players[modal.slot].hls.startLoad(); } catch (e) {}
     // Click-originated opens carry a user gesture, so the theater takes the
     // room's ears at once: the clicked feed is audible without hunting for a
     // speaker icon. Programmatic opens (deep links, rehearsals) stay muted.
@@ -1298,6 +1293,7 @@
     var conf = document.getElementById('msModalConf'); if (conf) conf.hidden = true;
     modalEl().hidden = false;
     mount(modalEl());
+    try { if (players[modal.slot] && players[modal.slot].hls && players[modal.slot].hls.startLoad) players[modal.slot].hls.startLoad(); } catch (e) {}
     if (opts.viaClick) modalSetAudio(true); else paintModalAudio(false);
     // Manual captions only (cost control): see openStream — no auto-start here either.
     refreshModal();
@@ -1406,7 +1402,7 @@
   function renderModalCaps() {
     var host = document.getElementById('msModalCaps'); if (!host || !modal.key) return;
     var capKey = modal.capKey || modal.key;
-    var C = root.MuseCaptions, capSlot = modal.isTest ? modal.slot : captionSlotFor(modal.key);
+    var C = root.MuseCaptions, C0 = C, capSlot = modal.isTest ? modal.slot : captionSlotFor(modal.key);
     var caveat = capSlot ? '' : '<p class="ms-note">No HLS tile is available for Muse captions on this show.</p>';
     // Caption visibility: hide/show covers both the burned-in overlay and this list.
     try {
@@ -1415,7 +1411,9 @@
       var sec = document.getElementById('msModalCapSec');
       if (sec) sec.style.display = modal.capVisible ? '' : 'none';
       var visBtn = document.getElementById('msModalCapVisBtn');
-      if (visBtn) { visBtn.textContent = modal.capVisible ? 'Captions shown' : 'Captions hidden'; visBtn.setAttribute('aria-pressed', modal.capVisible ? 'true' : 'false'); }
+      if (visBtn) { visBtn.textContent = modal.capVisible ? 'Captions shown' : 'Captions hidden'; visBtn.setAttribute('aria-pressed', modal.capVisible ? 'true' : 'false'); try { visBtn.classList.toggle('is-on', !!modal.capVisible); } catch (e) {} }
+      var ccBtn = document.getElementById('msModalCCBtn');
+      if (ccBtn && C0) { var running = false; try { running = !!C0.status(capKey).running; } catch (e) {} try { ccBtn.classList.toggle('is-on', running); ccBtn.setAttribute('aria-pressed', running ? 'true' : 'false'); } catch (e) {} }
     } catch (e) {}
     if (!modal.capVisible) { host.innerHTML = '<p class="ms-note">Captions hidden — use “Captions hidden” above to show them again. Transcription keeps running.</p>'; return; }
     if (!C) { var noCap = caveat + '<p class="ms-note">Caption module unavailable.</p>'; host.innerHTML = noCap; return; }
@@ -1454,10 +1452,11 @@
     paneHTML: paneHTML,
     mount: function (el) { mount(el); },
     videoFor: function (slot) { var p = players[slot]; return p && p.video && p.video.tagName === 'VIDEO' ? p.video : null; },
-    suspendSlot: function (slot) { var p = players[slot]; if (!p) return; try { p.video.pause(); } catch (e) {} try { if (p.hls && p.hls.stopLoad) p.hls.stopLoad(); } catch (e) {} },
+    suspendSlot: function (slot) { if (slot && slot === modal.slot) return; var p = players[slot]; if (!p) return; try { p.video.pause(); } catch (e) {} try { if (p.hls && p.hls.stopLoad) p.hls.stopLoad(); } catch (e) {} },
+    theaterSlot: function () { return modal.slot || null; },
     resumeSlot: function (slot) { var p = players[slot]; if (!p) return false; try { if (p.hls && p.hls.startLoad) p.hls.startLoad(); } catch (e) {} try { p.video.play().catch(function () {}); } catch (e) {} return true; },
     renderWall: function () { var h = document.getElementById('streamsHost'); if (h) { h.innerHTML = wallHTML(); mount(h); try { if (root.MuseTestFeeds) root.MuseTestFeeds.mount(h); } catch (e) {} } },
-    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (!h) return; var html = dashHTML(); h.hidden = false; h.innerHTML = html || '<div class="text-center py-6 text-[10px] text-gray-400">No streams on air right now.</div>'; if (html) { mount(h); try { if (root.MuseTestFeeds) root.MuseTestFeeds.mount(h); } catch (e) {} } },
+    renderDash: function () { try { renderHome(); } catch (e) {} var h = document.getElementById('dashStreams'); if (h) { h.hidden = true; h.innerHTML = ''; } }, // streams live in the Streaming section only — never on the dashboard
     play: function (e, btn) { if (e && e.stopPropagation) e.stopPropagation(); var slot = btn.parentNode; slot.removeAttribute('data-defer'); btn.remove(); mount(slot.parentNode); },
     screenClick: function (e, screen, key) {
       var t = e && e.target;
@@ -1579,6 +1578,8 @@
         var dur = (typeof v.duration === 'number' && isFinite(v.duration)) ? v.duration : null;
         if (dur && dur > 0) v.currentTime = frac * dur;
         else if (v.seekable && v.seekable.length) v.currentTime = frac * v.seekable.end(v.seekable.length - 1);
+        if (p.hls && p.hls.startLoad) p.hls.startLoad();
+        if (!p.userPaused) v.play().catch(function () {});
       } catch (e) {}
       syncTransport();
     },
@@ -1614,8 +1615,9 @@
       setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
     },
     modalPiP: function () {
+      try { if (document.pictureInPictureElement) { document.exitPictureInPicture(); return; } } catch (e) {}
       var p = players[modal.slot];
-      if (p && p.video.requestPictureInPicture) p.video.requestPictureInPicture().catch(function () {});
+      if (p && p.video.requestPictureInPicture) p.video.requestPictureInPicture().catch(function () { if (root.toast) root.toast('Picture in picture was blocked'); });
       else if (root.toast) root.toast('Picture in picture is unavailable for this stream');
     },
     modalFs: function () {

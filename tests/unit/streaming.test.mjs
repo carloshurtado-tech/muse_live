@@ -220,10 +220,10 @@ test('theater resolves the clicked stream whatever tile context opened it', () =
   assert.doesNotMatch(els.msModalTitle.innerHTML, /Meta Connect 2026/, 'no program fallback');
 });
 
-test('dashboard rail carries the test-feed section for wow factor', () => {
+test('dashboard carries no streams; they live on the wall only', () => {
   let mounted = null;
   const els = {};
-  const mkEl = () => ({ style: {}, hidden: false, innerHTML: '', textContent: '',
+  const mkEl = () => ({ style: {}, hidden: false, innerHTML: 'x', textContent: '',
     setAttribute() {}, removeAttribute() {}, getAttribute: () => null,
     classList: { add() {}, remove() {}, toggle() {} }, querySelector: () => null, querySelectorAll: () => [], appendChild() {} });
   const win = makeWin({
@@ -237,8 +237,9 @@ test('dashboard rail carries the test-feed section for wow factor', () => {
     },
   });
   win.MuseStreaming.renderDash();
-  assert.match(els.dashStreams.innerHTML, /msTestFeeds/, 'test section renders on the dashboard');
-  assert.equal(mounted, els.dashStreams, 'test players mount with the dashboard rail');
+  assert.equal(els.dashStreams.hidden, true, 'dashboard stream host stays hidden');
+  assert.equal(els.dashStreams.innerHTML, '', 'no stream tiles on the dashboard');
+  assert.equal(mounted, null, 'test feeds never mount on the dashboard');
 });
 
 test('the listen and play buttons keep their own clicks', () => {
@@ -390,4 +391,16 @@ test('added streams are paused posters in the shared streams store', () => {
   assert.match(pane, /Roof cam[^]*?data-defer="1"|data-defer="1"[^]*?Roof cam/, 'added tile never autoplays');
   const stored = JSON.parse(win.localStorage.getItem('muselive_streams_v1'));
   assert.ok(JSON.stringify(stored).includes('Roof cam'), 'persisted in muselive_streams_v1 (KV-synced platform-wide)');
+});
+
+test('hover suspend can never freeze the theater; toggle buttons paint active states', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'js/muse-streaming.js'), 'utf8');
+  assert.ok(src.includes('if (slot && slot === modal.slot) return;'), 'suspendSlot spares the theater slot');
+  assert.ok(src.includes('theaterSlot'), 'streaming exposes the theater slot');
+  assert.ok(src.includes("classList.toggle('is-on', !!live)"), 'Listen paints active state');
+  assert.ok(src.includes('msModalPiPBtn'), 'PiP button is stateful');
+  assert.ok(src.includes('pictureinpicturechange'), 'PiP state follows the browser session');
+  const tf = fs.readFileSync(path.join(ROOT, 'js/muse-testfeeds.js'), 'utf8');
+  assert.ok(tf.includes('M.theaterSlot() === slotOf(id)'), 'hover-end spares the expanded feed');
+  assert.ok(tf.includes('WALL_MAX = 4'), 'test & external wall is hard-capped at 4 feeds');
 });

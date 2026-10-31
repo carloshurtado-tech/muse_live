@@ -43,7 +43,7 @@
     { id: 'nasa', label: 'NASA TV', url: 'https://ntv1.akamaized.net/hls/live/2014075/NASA-NTV1-HLS/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'NASA TV' },
     { id: 'redbull', label: 'Red Bull TV', url: 'https://rbmn-live.akamaized.net/hls/live/590964/BoRB-AT/master.m3u8', kind: 'live', enabled: true, badge: 'external', source: 'Red Bull TV' },
     { id: 'abr', label: 'Test ABR', url: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', kind: 'abr', enabled: true, badge: 'test' },
-    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: true, badge: 'test' },
+    { id: 'vod2', label: 'Test VOD 2', url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8', kind: 'vod', enabled: false, badge: 'test' },
     { id: 'aja', label: 'Al Jazeera Arabic', url: 'https://live-hls-web-aja.getaj.net/AJA/index.m3u8', kind: 'live', enabled: false, badge: 'external', source: 'Al Jazeera Arabic', nativeOnly: true }
   ];
 
@@ -167,8 +167,9 @@
       '</figcaption></figure>';
   }
 
+  var WALL_MAX = 4; // hard cap: the Live test & external wall never shows more than 4 feeds
   function sectionHTML() {
-    var tiles = S.feeds.filter(function (f) { return f.enabled !== false; }).map(tileHTML).join('');
+    var tiles = S.feeds.filter(function (f) { return f.enabled !== false; }).slice(0, WALL_MAX).map(tileHTML).join('');
     return '<section class="ms-card ms-test-wrap" id="msTestFeeds"><div class="ms-card-h"><h3>Test feeds</h3>' +
       '<span class="ms-sub">Stand-in signals for player QA — not production programming</span></div>' +
       '<p class="ms-note ms-demo-note"><span class="ms-test-badge">Test feed</span> Synthetic sample streams for player QA (fictional metadata). <span class="ms-test-badge is-external">External live feed</span> Real third-party broadcasts — not Muse productions. Tiles stay paused until hover or click, to protect the dashboard.</p>' +
@@ -525,7 +526,7 @@
 
   /* ---------------- agent + status reads ---------------- */
   function status(feedId) {
-    var feeds = S.feeds.filter(function (f) { return f.enabled !== false; });
+    var feeds = S.feeds.filter(function (f) { return f.enabled !== false; }).slice(0, WALL_MAX);
     if (feedId) feeds = feeds.filter(function (f) { return f.id === String(feedId); });
     return { ts: new Date(nowMs()).toISOString(), feeds: feeds.map(function (f) {
       var q = S.qoe[f.id] || null, log = S.events[f.id] || [];
@@ -762,7 +763,7 @@
     try {
       var grid = (host || document).querySelector('[data-tf-grid]');
       if (!grid) return;
-      grid.innerHTML = S.feeds.filter(function (f) { return f.enabled !== false; }).map(tileHTML).join('') || '<p class="ms-empty">No test feeds enabled.</p>';
+      grid.innerHTML = S.feeds.filter(function (f) { return f.enabled !== false; }).slice(0, WALL_MAX).map(tileHTML).join('') || '<p class="ms-empty">No test feeds enabled.</p>';
     } catch (e) {}
   }
 
@@ -773,7 +774,7 @@
       try {
         Array.prototype.forEach.call((host || document).querySelectorAll('[data-testfeed]'), function (el) { have[el.getAttribute('data-testfeed')] = 1; });
       } catch (e) {}
-      var want = feeds.filter(function (f) { return f.enabled !== false; }).map(function (f) { return f.id; });
+      var want = feeds.filter(function (f) { return f.enabled !== false; }).slice(0, WALL_MAX).map(function (f) { return f.id; });
       var same = want.length === Object.keys(have).length && want.every(function (id) { return have[id]; });
       if (!same) rerenderGrid(host);
       S.mounted = {};
@@ -818,8 +819,11 @@
     },
     hoverEnd: function (id) {
       id = String(id || '');
+      // Never suspend the feed the theater is playing (same slot, moved node):
+      // that was freezing the expanded video the moment the pointer left the tile.
+      try { var M = MS(); if (M && typeof M.theaterSlot === 'function' && M.theaterSlot() === slotOf(id)) return; } catch (e) {}
       // Pause + stop segment loading: a hovered-away tile costs no network/CPU.
-      try { var M = MS(); if (M && typeof M.suspendSlot === 'function') { M.suspendSlot(slotOf(id)); return; } } catch (e) {}
+      try { var M2 = MS(); if (M2 && typeof M2.suspendSlot === 'function') { M2.suspendSlot(slotOf(id)); return; } } catch (e) {}
       var v = videoOf(id);
       try { if (v && !v.paused) v.pause(); } catch (e) {}
     },

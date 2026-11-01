@@ -1,58 +1,132 @@
 <p align="center">
-  <img src="assets/brand/meta-mark-animated.svg" width="96" alt="Meta">
-</p>
-
-<p align="center">
   <img src="assets/brand/muse-mascot.webp" width="460" alt="Muse, the Muse Live mascot, operating a broadcast camera">
 </p>
 
 <h1 align="center">Muse Live</h1>
 
 <p align="center">
-  <b>Live broadcast and streaming operations.</b><br>
-  Plan every show, watch every stream end to end, learn from every incident.
+  <b>An operations safety net for live broadcast.</b><br>
+  Plan every show, watch every stream end to end, learn from every incident.<br>
+  Muse reads the whole production, proposes fixes with the records behind them, and a human approves. No approval, no execution.
 </p>
 
 <p align="center">
-  <a href="https://muse-live.pages.dev"><img src="https://img.shields.io/badge/%E2%96%B6%20Start%20the%2090--second%20demo-0866FF?style=for-the-badge" alt="Start the 90-second demo"></a>
+  <a href="https://muse-live.pages.dev"><img src="https://img.shields.io/badge/%E2%96%B6%20Explore%20the%20live%20app-0866FF?style=for-the-badge" alt="Explore the live app"></a>
   <a href="https://muse-live.pages.dev/about"><img src="https://img.shields.io/badge/How%20it%E2%80%99s%20built-1C2B33?style=for-the-badge" alt="How it's built"></a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Cloudflare%20Pages%20%2B%20Workers%20KV-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Pages and Workers KV">
-  <img src="https://img.shields.io/badge/AI-Meta%20Model%20API-0866FF?logo=meta&logoColor=white" alt="Meta Model API">
-  <img src="https://img.shields.io/badge/streaming-HLS%20%C2%B7%20LL--HLS%20%C2%B7%20SRT-1C2B33" alt="HLS, LL-HLS, SRT">
+  <img src="https://img.shields.io/badge/track-Indie-blue" alt="Indie track">
+  <img src="https://img.shields.io/badge/theme-Build%20for%20Your%20World-purple" alt="Theme: Build for Your World">
+  <img src="https://img.shields.io/badge/API-Meta%20Model%20API-0668E1" alt="Meta Model API">
+  <img src="https://img.shields.io/badge/license-GPL--3.0-green" alt="License: GPL-3.0">
   <img src="https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20%C2%B7%20axe--checked-1E7B34" alt="WCAG 2.1 AA, axe-checked">
-  <img src="https://img.shields.io/badge/Muse%20eval-40%2F40-1E7B34" alt="Muse eval 40 of 40">
 </p>
 
 ---
 
-Muse Live is an operations platform for live events that are both broadcast and streamed: the plan of record for every show, end-to-end stream health from encoder to viewer, blameless incident reports, finance, per-show communication, and **Muse**, an AI agent that can read all of it and propose changes for a person to confirm.
+## The problem
 
-> **Try it:** open the [live demo](https://muse-live.pages.dev) and press **Start the 90-second demo**. No sign-in needed: you get a read-only guest session and a guided tour that plays itself (Space pauses, arrows step, Esc ends).
+Live broadcast runs on scar-tissue judgment. The failure modes are cross-module: an encoder dies *while* a camera operator is double-booked *while* the backup path is promised to another show — and no single human watches schedule, streams, crew, equipment, and comms at once. Muse Live is the one place that does, with an agent that proposes the fix and a human who decides.
 
-## Who built it
+**Carlos Hurtado** designed and built Muse Live: product, front end, edge functions, the Muse agent, tests, and deployment. [GitHub](https://github.com/carloshurtado-tech)
 
-**Carlos Hurtado.** Designed and built Muse Live: product, front end, edge functions, the Muse agent, tests and the guided demo. [GitHub](https://github.com/carloshurtado-tech)
+## What Muse does (the loop)
 
-## Built during the Meta Global AI Developer Hackathon (Oct 27 – Nov 4, 2026)
+1. **Detect** — Show Caller builds a deterministic, rules-based risk brief across schedule, streams, incidents, crew, and equipment. Every line carries the source record it came from; nothing is invented.
+2. **Propose** — each risk comes with a concrete fix. The Muse drawer (Muse Spark) can also answer questions and draft changes against the same live snapshot.
+3. **Approve** — a human approves with one tap. Approval re-verifies the world first; stale plans refuse themselves. Nothing moves an on-air booking.
+4. **Execute** — the approved fix runs and an audit entry is written. The approval reachable in the UI today is the human-approved test-feed retry.
+5. **Notify** — Omni files Slack and Gmail in the same per-show thread when production secrets are configured; without them, sends fail closed (`503 configured:false`), never simulated.
 
-Muse Live itself predates the event (engineering retrospective: [docs](docs/ARCHITECTURE.md)). The hackathon theme is **Build for Your World** — the world here is live broadcast operations. Commit dates: 32 commits predate Oct 27, 2026 (including the Oct 15 Muse Live rebrand); every commit whose message says “Day” is dated Oct 27, 2026 — “Day 1–7” names work packages, not separate calendar days. See the dated disclosure on the [About page](https://muse-live.pages.dev/about#hackathon).
+If the Meta Model API is unreachable, the deterministic rule engine keeps the safety net up — degraded, never silent.
 
-| Feature | What it does today | Code | Verified by |
-|---|---|---|---|
-| **Show Caller** | Deterministic, rules-based risk brief: reads schedule, streams, incidents, crew, equipment and ops records into a ranked brief with the source record behind every line, then proposes fixes a human approves. Approval re-verifies the world before executing and stale plans refuse themselves; nothing moves an on-air booking. The approval reachable in the UI today is the test-feed retry; Show Caller does not call `/api/museai` and no Slack/Gmail send fires from Approve until targets and production secrets are wired (see Runbook). | [js/muse-showcaller.js](js/muse-showcaller.js) | Scenario eval in [tests/unit/showcaller.test.mjs](tests/unit/showcaller.test.mjs) (`npm test`) |
-| **Stream Check** | SAM 3.1 segments the program frame via `/api/streamcheck` (the model endpoint receives the frame; no chat model sees pixels). Black frames are caught by pixel math; lower-third presence is checked against the `caption bar` concept. Errored checks are reported as **unavailable**, never as clean. No gear-vs-checkout comparison is wired at the call sites today, so none is claimed. Flags flow into Show Caller's brief. | [functions/api/streamcheck.js](functions/api/streamcheck.js), [js/muse-streamcheck.js](js/muse-streamcheck.js) | Offline fault matrix + unit tests (`npm test`) |
-| **Omni connectors** | Slack posting (bot token + webhook fallback) and Gmail sending (least-privilege `gmail.send`) inside the existing per-show thread, with stored IDs and audit on both outcomes. Requires `SLACK_*` / `GMAIL_*` secrets in production; without them sends fail closed. | [functions/api/omni/](functions/api/omni/) | Unit tests (`npm test`); live sends need production secrets (owner) |
-| **Live captioning** | Chunked captions over Voice Transcribe with a searchable stored transcript — the post-show transcript exists by construction. | [functions/api/transcribe.js](functions/api/transcribe.js), [js/muse-captions.js](js/muse-captions.js) | Unit tests (`npm test`) |
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#E7F3FF', 'primaryBorderColor': '#0866FF', 'primaryTextColor': '#1C2B33', 'lineColor': '#0866FF', 'secondaryColor': '#F0F2F5', 'tertiaryColor': '#FFFFFF', 'fontFamily': 'Segoe UI, Helvetica, Arial, sans-serif'}}}%%
+flowchart LR
+    A[Rules engine<br/>flags cross-module risk] --> B[Show Caller brief<br/>with source records]
+    B --> C{Propose fix}
+    C --> D[[Human approves<br/>one tap]]
+    C -.->|No approval| E[No execution. Ever.]
+    D --> F[Execute fix]
+    F --> G[Write audit entry]
+    G --> H[Omni notify:<br/>Slack + Gmail, one thread]
+    D -.->|Model API down| J[Deterministic<br/>rule-engine fallback]
+    J --> C
+    classDef meta fill:#0866FF,stroke:#0064E0,color:#FFFFFF,stroke-width:2px
+    classDef soft fill:#E7F3FF,stroke:#0866FF,color:#1C2B33
+    classDef stop fill:#FFFFFF,stroke:#E41E3F,color:#B3122E
+    class D meta
+    class A,B,F,G,H,J soft
+    class E stop
+```
 
-Meta models used through the Meta Model API: **Muse Spark 1.3** (Muse drawer reasoning + tool calls via `/api/museai`), **SAM 3.1** (segmentation), **Muse Voice Transcribe 1.0** (speech). No image-generation model is called by this codebase (`grep -r muse-image js functions` → 0 hits); seeded Site Survey photos that are AI-generated are labelled illustrative in the app and are never presented as real frames. Built with **Muse Code**. Gateway, auth, streaming/scheduling/incident modules and the 90-second tour predate the window and are unchanged except where the new features plug in.
+## How Meta AI was used
 
-## What you’ll see
+| Model (Meta Model API) | Job in this project | Where |
+|---|---|---|
+| **Muse Spark 1.3** (`muse-spark-1.3`) | Muse drawer: reasoning + tool calls over the live production snapshot; every write returns as a Confirm card | `POST /api/museai` → [js/muse-agent.js](js/muse-agent.js) |
+| **SAM 3.1** | Stream Check frame segmentation (lower-third `caption bar` concept); black frames caught by pixel math; errored checks report **unavailable**, never clean | [functions/api/streamcheck.js](functions/api/streamcheck.js), [js/muse-streamcheck.js](js/muse-streamcheck.js) |
+| **Muse Voice Transcribe 1.0** (`muse-voice-transcribe-1.0`) | Chunked live captions (manual start only — playback never auto-starts billing) + searchable stored transcript with SRT/VTT export | [functions/api/transcribe.js](functions/api/transcribe.js), [js/muse-captions.js](js/muse-captions.js) |
+
+Deliberately **not** used: no image-generation model is called anywhere (`grep -r muse-image js functions` → 0 hits; AI-generated survey photos are labelled illustrative in-app), no non-Meta LLM in the product path, and no silent model substitute — the fallback is deterministic rules.
+
+## Architecture
+
+Static app on Cloudflare Pages + Pages Functions, state in KV / D1 / R2, custom HMAC sessions (OIDC/PKCE + PBKDF2 where configured), prompt-injection fencing and per-session token budgets on the agent path. Web only: the control room, the truck, and the glasses companion reach the same backend.
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': {'primaryColor': '#E7F3FF', 'primaryBorderColor': '#0866FF', 'primaryTextColor': '#1C2B33', 'lineColor': '#0866FF', 'secondaryColor': '#F0F2F5', 'tertiaryColor': '#FFFFFF', 'fontFamily': 'Segoe UI, Helvetica, Arial, sans-serif'}}}%%
+flowchart TB
+    subgraph Client["Clients · web only"]
+        W[Producer dashboard]
+        G[Glasses companion]
+        V[Streams wall — hls.js telemetry]
+    end
+    subgraph Edge["Cloudflare Pages"]
+        WK[Pages Functions — API + agent relay]
+        KV[(KV — sync · sessions)]
+        D1[(D1 — audit · transcripts · assets)]
+        R2[(R2 — media)]
+    end
+    subgraph Meta["Meta Model API"]
+        SP[Muse Spark 1.3]
+        SAM[SAM 3.1]
+        TR[Muse Voice Transcribe]
+    end
+    W <--> WK
+    G <--> WK
+    V --> WK
+    WK <--> KV
+    WK <--> D1
+    WK <--> R2
+    WK <--> SP
+    WK <--> SAM
+    WK <--> TR
+    classDef meta fill:#0866FF,stroke:#0064E0,color:#FFFFFF,stroke-width:2px
+    classDef soft fill:#E7F3FF,stroke:#0866FF,color:#1C2B33
+    classDef store fill:#F0F2F5,stroke:#65676B,color:#1C2B33
+    class WK,SP,SAM,TR meta
+    class W,G,V soft
+    class KV,D1,R2 store
+```
+
+## Proof (measured, Nov 1, 2026)
+
+| Check | Result |
+|---|---|
+| `npm run check` (ESLint + `tsc` + unit, Node 22) | **293 / 293 pass** |
+| Playwright e2e, Chromium (gate, crawl of every view + every show tab, streams, tour, shade, sync, a11y) | **21 / 21 pass** |
+| Playwright a11y + Sun & Shadow, Firefox | **3 / 3 pass** (axe WCAG 2.1 AA, light + dark: 0 violations) |
+| Muse accuracy eval on the real model | **40 / 40**, median answer 5.8 s ([eval/REPORT.md](eval/REPORT.md)) |
+| Stream Check offline fault matrix | Black 30/30, down 30/30, frozen 24/30, muted 27/30; 0 false alarms on 90 clean samples |
+
+Every number above comes from a run log. Anything unmeasured is stated as a limit below, never estimated.
+
+## What you'll see
 
 ![A show's live health: encode, contribute, ingest, package, deliver and watch, with sparklines for viewers, rebuffer ratio, SRT loss and CDN egress](assets/about/chain.webp)
-<sub>**Streaming:** end-to-end health per show: encoder → SRT contribution → MediaConnect/MediaLive → packaging → multi-CDN → player QoE. Each show also tracks a 99.9% availability SLO with its error budget.</sub>
+<sub>**Streaming:** end-to-end health per show: encoder → SRT contribution → ingest → packaging → multi-CDN → player QoE, with a 99.9% availability SLO and error budget.</sub>
 
 <table>
   <tr>
@@ -65,66 +139,47 @@ Meta models used through the Meta Model API: **Muse Spark 1.3** (Muse drawer rea
   </tr>
 </table>
 
-**The guided demo** walks through: the home view → the Live Streams wall → one show’s end-to-end streaming chain → incident post-mortems → finance (“always on budget”) → Muse answering live → Omni, every conversation for a show in one place → the techbook, built as a PDF from live data and opened in a new tab.
+Also in the app: per-show streaming plans and ABR ladders, hls.js QoE beacons, Muse Schedule with ICS calendar feeds, Finance (budget vs actuals), Omni (every conversation linked to its show), site surveys, techbook PDF export from live data, and a Ray-Ban Display glasses companion fed by the desktop's live status.
 
-## The job, and where it lives in the app
+## Explore on your own
 
-| Streaming & broadcast responsibility | In Muse Live |
-| --- | --- |
-| **Deliver live events end to end** | Per-show streaming plan: destinations and ingest, contribution and redundancy (SRT primary, bonded cellular backup), packaging (HLS / LL-HLS / DASH), CDN, captions and loudness, pre-flight and go-live checklist. |
-| **Encoding and ABR ladders** | Encoding ladder per show: rungs, codecs and bitrates on the plan of record. |
-| **Monitoring and quality of experience** | Live Streams wall; per-hop health; hls.js QoE beacons (startup, rebuffer, bitrate switches, errors); AWS MediaLive / MediaConnect / CloudFront and Mux Data adapters; availability SLO with error budget. |
-| **Incident response and post-mortems** | Incident Reports: severity, viewer impact, time to detect and mitigate, timeline, root cause and action items, linked to each show. |
-| **Event production and broadcast planning** | Department readiness, techbook PDF export, site surveys, venue drawings, power and fiber, gear and crew, for a world tour across Meta offices. |
-| **Resources: encoders, circuits, rooms, crew** | Muse Schedule with conflict detection, labor rules, crew self-service and ICS calendar feeds. |
-| **Budget and vendors** | Finance: budget against actuals, purchase orders, invoices and vendor payments per show. |
-| **Communication** | Omni: every email, Teams chat and TOC alert linked to the show, PO or incident it is about. |
-| **Facebook and Instagram Live** | Server-side Graph API proxy for live video status and ingest stream health. |
-| **Automation and tooling** | Muse, an agent with tools over all of the above; every write goes through a human confirmation step. |
+No sign-in needed for the guest path:
 
-## Architecture
+1. Open [muse-live.pages.dev](https://muse-live.pages.dev) and choose **Explore on your own** — you get a read-only guest session (every write endpoint refuses viewers).
+2. Open the **Live Streams** wall and click any tile to enter the theater (transport, live measurements, captions repository).
+3. Open a show and ask **Muse** a question; watch it read the plan of record and answer with its working shown.
+4. Use **Take the tour** in the profile menu for the guided walk-through.
 
-<p align="center"><img src="assets/about/architecture.svg" alt="Architecture: browser app, Cloudflare Pages edge functions, and services (Workers KV, Meta Model API, AWS CloudWatch and Mux Data, Facebook Graph API)"></p>
+Team sign-in uses the access password (held by the owner; never published here).
 
-A static single-page app at the edge, a thin server layer for anything secret, and an agent loop where the model plans and the browser runs the tools.
+## Repo map
 
-### How Muse answers a question
+| Path | What lives there |
+|---|---|
+| `js/muse-showcaller.js`, `js/muse-streamcheck.js`, `js/muse-streaming.js` | Risk brief, Stream Check, streams wall + theater |
+| `js/muse-agent.js`, `functions/api/museai.js` | Muse drawer + model relay (keys stay server-side) |
+| `functions/api/omni/`, `functions/api/transcribe.js`, `functions/api/voice.js` | Slack/Gmail connectors, captions, push-to-talk |
+| `functions/_middleware.js`, `functions/_lib/` | Access gate, sessions, audit, abuse guards |
+| `glasses/`, `glasses-src/` | Ray-Ban Display companion (built output + source) |
+| `tests/unit/`, `tests/e2e/`, `eval/` | Unit + browser tests, model eval harness |
+| `docs/` | [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Runbook](docs/RUNBOOK.md) · [Migration](docs/MIGRATION.md) |
 
-The model never sees the database and never writes on its own.
+## Hackathon disclosure (before / during)
 
-1. The browser builds a live snapshot: every show’s readiness, dates, stream health and open incidents.
-2. `POST /api/museai` adds the persona and tool schemas and makes **one** call to Meta Model API, so the key never leaves the server.
-3. If the model asks for tools (production, techbook, crew, schedule, streaming, incidents, weather…), the browser runs them against the plan of record and posts the results back, for up to 8 steps.
-4. Anything that would change data comes back as a **Confirm** card. A person decides, and Undo is offered.
+Built for the **Meta Global AI Developer Hackathon** (Oct 27 – Nov 4, 2026), Indie track, theme **Build for Your World** — the world here is live broadcast operations.
 
-## How it’s checked
-
-| Result | What it measures |
-| --- | --- |
-| **40 / 40** | Muse accuracy eval on the real model, median answer 5.8 s ([eval/REPORT.md](eval/REPORT.md)) |
-| **`npm test`** | unit tests (Node 22): auth, sessions, guest access and AI spend limits, KV + conditional writes, sync, incidents, SigV4, telemetry schema, abuse guards, build — count reported by the runner at run time |
-| **Playwright** | end-to-end tests, including a crawl of every view and every show tab — count reported by the runner at run time |
-| **axe** | WCAG 2.1 AA checks on the landing page, About page and main views, light and dark ([tests/e2e/a11y.spec.mjs](tests/e2e/a11y.spec.mjs)) |
-
-## Decisions and trade-offs
-
-- **Edge first, no servers to run.** Static assets and Functions on Cloudflare Pages, state in Workers KV: deploys in seconds, nothing to patch, close to viewers everywhere.
-- **Tools run in the browser.** The plan of record lives client-side today, so the agent’s tools do too; the server relays one model step at a time. As data moves into KV, tools can move server-side unchanged.
-- **Simulated where it must be, real where it can be.** Pipeline numbers are a seeded simulation labeled *Demo* until a stream is connected to CloudWatch, Mux or Facebook Live; video monitors, QoE beacons and pre-flight checks are real.
-- **Read-only by role, enforced on the server.** Viewer sessions, including the public guest demo, are refused by every write endpoint. Guests get their own Muse rate limit, request-size and output caps, and a daily token budget charged before each call.
-- **Blameless by design.** Incident reports focus on the system and the timeline, and every follow-up has an owner and a status.
-- **Accessible from the start.** Keyboard paths, focus management, screen-reader announcements (including the guided tour) and contrast checked in both themes.
+Muse Live itself predates the window: 32 commits are dated Oct 15–19, 2026, including the Oct 15 rebrand from an NBC "Pulse" operations tool (`fde343c`). Every commit whose message says "Day" is dated Oct 27, 2026 — "Day 1–7" names work packages, not separate calendar days. The Show Caller / Stream Check / captioning / Omni-connector layer and the full final-debug pass are in-window work. Nothing is backdated; the dated disclosure also lives on the [About page](https://muse-live.pages.dev/about#hackathon).
 
 ## Honest limits
 
-- Viewer counts, bitrates and other pipeline metrics are simulated unless a show is connected to real telemetry; every simulated number is labeled *Demo*.
-- Stream monitors play public recordings of Meta events from YouTube, standing in for live program feeds.
-- Most views are string-template JavaScript from an earlier build; newer modules are self-contained, and [docs/MIGRATION.md](docs/MIGRATION.md) plans the move to React + TypeScript.
-- Shared storage is last-write-wins per key unless clients send `If-Match` / `If-None-Match`
-  (optimistic concurrency, 412 on conflict): fine for a small team, not for a large one.
+- Viewer counts, bitrates, and pipeline metrics are simulated unless a show is connected to real telemetry; every simulated number is labelled *Demo*.
+- Show Caller approval executes the test-feed retry today; Omni sends need production `SLACK_*` / `GMAIL_*` secrets and fail closed without them.
+- Shared storage is last-write-wins per key unless clients send `If-Match` / `If-None-Match` (412 on conflict): fine for a small team, not strict multi-writer CAS.
 - This is a concept demo, not an official Meta product.
 
----
+## License
+
+GPL-3.0 — see [LICENSE](LICENSE). The DWG importer is LibreDWG (GPL-3.0); third-party notices are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 ## Run it locally
 
@@ -138,21 +193,12 @@ npm run dev                    # http://127.0.0.1:8788
 `printf 'muse-live:%s' 'your-password' | shasum -a 256`.
 Without `MODEL_API_KEY`, Muse answers from built-in rules (offline mode).
 
-`tools/dev-server.mjs` is a small Cloudflare Pages emulator in plain Node: it runs the middleware
-and `functions/api/**`, applies `_headers`, and emulates the `MUSE_KV` binding (persisted to
-`.dev-kv.json`). It exists because `wrangler pages dev` (workerd) needs macOS 13.5+. It binds
-127.0.0.1; `--host` overrides this with an explicit warning — the dev server is unhardened, so
-never expose it to the public internet (see [Security](docs/SECURITY.md)).
-
 | Command | What it does |
-| --- | --- |
+|---|---|
 | `npm run dev` | Local server with Functions + KV emulation |
 | `npm run build` | Minify `js/muse-app-a.js` / `-b.js` → `*.min.js` + source maps, bump the `?v=` cache tag |
-| `npm test` | Unit tests (`node:test`) |
+| `npm test` / `npm run check` | Unit tests / lint + typecheck + unit |
 | `npm run test:e2e` | Playwright end-to-end tests against the dev server and a mock Meta Model API |
-| `npm run lint` / `npm run typecheck` | ESLint + TypeScript (JSDoc) checks for platform code and Functions |
-| `npm run stage` | Deployable copy in `.stage/` (no tests, docs, sources, maps or secrets) |
-
-**Docs:** [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Runbook](docs/RUNBOOK.md) · [Migration plan](docs/MIGRATION.md) · [Privacy](https://muse-live.pages.dev/about#privacy) · [Third-party notices](THIRD_PARTY_NOTICES.md) · Admin pages at `/ops/` (health, audit log, users).
+| `npm run stage` | Deployable copy (no tests, docs, sources, maps, or secrets) |
 
 <p align="center"><sub>Muse Live is a concept demo by Carlos Hurtado and is not affiliated with or endorsed by Meta. Meta, Ray-Ban, Instagram, WhatsApp and Muse are trademarks of their owners. Event recordings belong to their owners.</sub></p>

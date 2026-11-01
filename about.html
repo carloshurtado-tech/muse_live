@@ -89,7 +89,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="/"><img src="assets/brand/meta-mark.svg" alt="" width="34" height="22">Muse Live</a>
+    <a class="brand" href="/"><img src="assets/brand/muse-ai-icon.svg" alt="" width="22" height="22">Muse Live</a>
     <a class="btn" href="/">Open the live demo</a>
   </header>
 
@@ -99,8 +99,8 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     <h1>One place to plan, stream and learn from every live event</h1>
     <p class="lede">Muse Live is an operations platform for live events that are both broadcast and streamed: the plan of record for every show, end-to-end stream health from encoder to viewer, blameless incident reports, a resource scheduler, and Muse, an AI agent that can read all of it and propose changes for a human to confirm.</p>
     <div class="cta">
-      <a class="btn" href="/">Start the 90-second demo</a>
-      <a class="btn ghost" href="https://gitshare.me/repo/bc2a532b-765b-4ac3-ad1d-e2dec66c149b" target="_blank" rel="noopener">Source on GitHub</a>
+      <a class="btn" href="/">Open Muse Live</a>
+      <a class="btn ghost" href="https://github.com/carloshurtado-tech/muse_live" target="_blank" rel="noopener">Source on GitHub</a>
     </div>
   </div>
 
@@ -111,7 +111,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
       <div>
         <h3>Carlos Hurtado</h3>
         <!-- BIO: add 2–4 sentences on background, years in broadcast and current role -->
-        <p>Designed and built Muse Live: product, front end, edge functions, the Muse agent, tests and the guided demo.</p>
+        <p>Designed and built Muse Live: product, front end, edge functions, the Muse agent, tests and deployment.</p>
         <p><a href="https://github.com/carloshurtado-tech" target="_blank" rel="noopener">GitHub</a></p>
       </div>
     </div>
@@ -213,6 +213,18 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
       <li>If the model asks for tools (production, techbook, crew, schedule, streaming, incidents, weather…), the browser runs them against the plan of record and posts the results back. This repeats for up to 8 steps.</li>
       <li>Anything that would change data comes back as a Confirm card. A person decides, and Undo is offered.</li>
     </ol>
+  </section>
+
+  <section aria-labelledby="metaai">
+    <h2 id="metaai">How Meta AI was used</h2>
+    <p class="sub">Three models, three distinct jobs — and a deterministic fallback that is never a silent substitute.</p>
+    <ul class="limits">
+      <li><b>Muse Spark 1.3</b> — the Muse drawer: reasoning and tool calls over the live production snapshot (<code>POST /api/museai</code>). Every write returns as a Confirm card; the model never writes on its own.</li>
+      <li><b>SAM 3.1</b> — Stream Check frame segmentation (lower-third <code>caption bar</code> concept). Black frames are caught by pixel math, and any check that errors reports <b>unavailable</b>, never clean.</li>
+      <li><b>Muse Voice Transcribe 1.0</b> — chunked live captions, started manually only (playback never auto-starts billing), with a searchable transcript and SRT/VTT export. Failure shows “captions unavailable”, never invented lines.</li>
+      <li><b>Show Caller</b> itself is deterministic rules, not a model call: it reads schedule, streams, incidents, crew, and equipment into a ranked brief with the source record behind every line, proposes a fix, and executes only after human approval re-verifies the world.</li>
+      <li>No image-generation model is called anywhere in this codebase; AI-generated survey photos are labelled illustrative in the app. If the Meta Model API is unreachable, built-in rules answer instead — degraded, never silent.</li>
+    </ul>
   </section>
 
   <section aria-labelledby="quality">

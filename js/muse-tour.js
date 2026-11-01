@@ -1,11 +1,10 @@
 /* Muse Live — guided tour.
    A scripted spotlight walk-through: home → Live Streams wall → a show's Streaming tab → Incident Reports
    (Ray-Ban) → Muse Schedule conflicts → Ask Muse (answers live) → a show's Bookings → techbook.
-   Two modes: manual (Next / Back) and auto-play (~90 s, timed steps with a progress bar; Space pauses,
+   Two modes: manual (Next / Back) and auto-play (timed steps with a progress bar; Space pauses,
    arrows step, Esc ends; pauses itself while the tab is hidden). Every step is announced to screen readers.
    A step whose target is missing still shows its card, centred.
-   Start: MuseTour.start({ auto }), the "Take the tour" button on the home header, ?tour=1 (manual) or
-   ?tour=auto (the landing page's "Start the 90-second demo"). */
+   Start: MuseTour.start({ auto }), the "Take the tour" button on the home header, or ?tour=1 / ?tour=auto. */
 (function (root) {
   'use strict';
 
@@ -73,7 +72,7 @@
 
   // secs: how long the step stays up in auto-play (null = wait for the viewer).
   var STEPS = [
-    { secs: 7, title: 'Welcome to Muse Live', body: 'An operations platform for live events that are broadcast and streamed. In the next 90 seconds: the live stream wall, Muse on Ray-Ban Display, one show\'s end-to-end streaming chain, incident post-mortems, finance, Omni and Muse, the AI agent on comms.',
+    { secs: 7, title: 'Welcome to Muse Live', body: 'An operations platform for live events that are broadcast and streamed. Coming up: the live stream wall, Muse on Ray-Ban Display, one show\'s end-to-end streaming chain, incident post-mortems, finance, Omni and Muse, the AI agent on comms.',
       before: function () { closeMuse(); closeOmni(); go('dashboard'); call(function () { scrollTo(0, 0); }); }, target: [] },
     { secs: 9, title: 'Today, at a glance', body: 'What is on air right now, live viewers, shows at risk and open incidents. Every number is a shortcut into the detail.',
       before: function () { go('dashboard'); }, target: ['#dashHome'], top: true },

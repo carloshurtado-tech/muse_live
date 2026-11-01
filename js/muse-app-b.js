@@ -4193,7 +4193,6 @@ function openUserProfile(){var ov=document.getElementById('userProfileOverlay');
     '</div>'+
     '<div class="px-5 py-3 border-t border-gray-100 flex-shrink-0 flex flex-wrap items-center gap-2">'+
       '<button onclick="closeUserProfile();openCompose(\'production\',order[0],\'email\')" class="flex-1 bg-gray-900 text-white text-[12px] font-bold rounded-lg py-2 hover:bg-gray-800">New Message</button>'+
-      '<button onclick="closeUserProfile();if(window.MuseLazy)MuseLazy.ensureTour().then(function(T){if(T)T.start();})" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Take the tour</button>'+
       '<button onclick="museResetDemo()" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Reset demo</button>'+
       '<a href="/logout" class="text-[11px] font-bold text-gray-700 border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50">Sign out</a>'+
     '</div>'+

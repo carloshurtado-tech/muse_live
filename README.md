@@ -115,8 +115,8 @@ flowchart TB
 
 | Check | Result |
 |---|---|
-| `npm run check` (ESLint + `tsc` + unit, Node 22) | **293 / 293 pass** |
-| Playwright e2e, Chromium (gate, crawl of every view + every show tab, streams, tour, shade, sync, a11y) | **21 / 21 pass** |
+| `npm run check` (ESLint + `tsc` + unit, Node 22) | **292 / 292 pass** |
+| Playwright e2e, Chromium (gate, crawl of every view + every show tab, streams, shade, sync, a11y) | **20 / 20 pass** |
 | Playwright a11y + Sun & Shadow, Firefox | **3 / 3 pass** (axe WCAG 2.1 AA, light + dark: 0 violations) |
 | Muse accuracy eval on the real model | **40 / 40**, median answer 5.8 s ([eval/REPORT.md](eval/REPORT.md)) |
 | Stream Check offline fault matrix | Black 30/30, down 30/30, frozen 24/30, muted 27/30; 0 false alarms on 90 clean samples |
@@ -139,7 +139,11 @@ Every number above comes from a run log. Anything unmeasured is stated as a limi
   </tr>
 </table>
 
-Also in the app: per-show streaming plans and ABR ladders, hls.js QoE beacons, Muse Schedule with ICS calendar feeds, Finance (budget vs actuals), Omni (every conversation linked to its show), site surveys, techbook PDF export from live data, and a Ray-Ban Display glasses companion fed by the desktop's live status.
+Also in the app: per-show streaming plans and ABR ladders, hls.js QoE beacons, Muse Schedule with ICS calendar feeds, Finance (budget vs actuals), Omni (every conversation linked to its show), site surveys, and techbook PDF export from live data.
+
+## On your face: the Meta Ray-Ban Display companion
+
+The producer's view, on Meta glasses. The desktop publishes a live status every 10 seconds — every show's state and health, open incidents, and what's next on air (or "unknown", never invented) — and the [glasses app](glasses/) renders tally, alerts, and the show status a floor producer actually needs, built on `@wearables-ui-toolkit/mrbd` with the same sign-in as the main app. Publishing continues on a background cadence, so switching tabs never quietly turns the glasses into a demo; if the status goes stale for over 60 seconds, the glasses say "Demo data" out loud instead of presenting old numbers as live.
 
 ## Explore on your own
 
@@ -148,7 +152,7 @@ No sign-in needed for the guest path:
 1. Open [muse-live.pages.dev](https://muse-live.pages.dev) and choose **Explore on your own** — you get a read-only guest session (every write endpoint refuses viewers).
 2. Open the **Live Streams** wall and click any tile to enter the theater (transport, live measurements, captions repository).
 3. Open a show and ask **Muse** a question; watch it read the plan of record and answer with its working shown.
-4. Use **Take the tour** in the profile menu for the guided walk-through.
+4. Open [/glasses/](https://muse-live.pages.dev/glasses/) to see the same live status on the Meta Ray-Ban Display companion.
 
 Team sign-in uses the access password (held by the owner; never published here).
 

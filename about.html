@@ -89,7 +89,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
 <body>
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="/"><img src="assets/brand/muse-ai-icon.svg" alt="" width="22" height="22">Muse Live</a>
+    <a class="brand" href="/"><img src="assets/brand/meta-mark-animated.svg" alt="" width="34" height="22">Muse Live</a>
     <a class="btn" href="/">Open the live demo</a>
   </header>
 
@@ -204,6 +204,16 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     </div>
   </section>
 
+  <section aria-labelledby="glasses">
+    <h2 id="glasses">On your face: the Meta Ray-Ban Display companion</h2>
+    <p class="sub">The producer's view on Meta glasses — tally, alerts, and show status, live from the same backend as the dashboard.</p>
+    <ol class="steps">
+      <li>The desktop publishes a live status every 10 seconds: every show's state and health, open incidents, and what's next on air — or "unknown", never an invented next item.</li>
+      <li>The glasses app (<code>/glasses/</code>, built on <code>@wearables-ui-toolkit/mrbd</code>) renders that status with the same sign-in as the main app.</li>
+      <li>Publishing runs on a background cadence, so switching browser tabs never silently turns the glasses into a demo. If the status goes stale for over 60 seconds, the glasses label it "Demo data" instead of passing old numbers off as live.</li>
+    </ol>
+  </section>
+
   <section aria-labelledby="agent">
     <h2 id="agent">How Muse answers a question</h2>
     <p class="sub">The model never sees the database and never writes on its own.</p>
@@ -246,7 +256,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
       <div class="card"><h3>Simulated where it must be, real where it can be</h3><p>Pipeline numbers are a seeded simulation, labeled “Demo”, until a stream is connected to CloudWatch, Mux or Facebook Live. Video monitors, QoE beacons and pre-flight checks are real.</p></div>
       <div class="card"><h3>Read-only by role, enforced on the server</h3><p>Viewer sessions (including this guest demo) are refused by every write endpoint. Muse has separate rate limits and a daily token budget for guests.</p></div>
       <div class="card"><h3>Blameless by design</h3><p>Incident reports focus on the system and the timeline, and every follow-up has an owner and a status, so the same failure can’t quietly happen twice.</p></div>
-      <div class="card"><h3>Accessible from the start</h3><p>Keyboard paths, focus management, screen-reader announcements (including the guided tour) and contrast checked in both themes.</p></div>
+      <div class="card"><h3>Accessible from the start</h3><p>Keyboard paths, focus management, screen-reader announcements and contrast checked in both themes.</p></div>
     </div>
   </section>
 

@@ -1,31 +1,18 @@
 // @ts-check
-// Append-only audit log.
-// Primary: D1 table audit_log (one row per entry — strict ordering, real queries).
-// Mirror: KV key `audit:<yyyy-mm-dd>` → JSON array (kept while older builds read it).
-const MAX_PER_DAY = 5000;
-
+// Append-only audit log: D1 table audit_log only (one row per entry — strict
+// ordering, real queries, concurrent-safe). The old KV mirror kept the day's
+// entries in one JSON array capped at 5,000: concurrent writers lost entries
+// and anyone who could add entries (for example repeated guest logins) could
+// flush the day's evidence. It is gone; without a D1 binding entries are
+// dropped rather than written somewhere flushable.
 /** @param {any} env @param {{who?:string, role?:string, action:string, key?:string, detail?:any}} e */
 export async function audit(env, e) {
-  if (!env) return;
+  if (!env || !env.MUSE_D1) return;
   const now = new Date().toISOString();
   const day = now.slice(0, 10);
-  const entry = {
-    t: now, who: e.who || 'anonymous', role: e.role || '',
-    action: e.action, key: e.key || '', detail: e.detail === undefined ? '' : e.detail,
-  };
   try {
-    if (env.MUSE_D1) {
-      await env.MUSE_D1.prepare(
-        'INSERT INTO audit_log (day, t, who, role, action, key, detail) VALUES (?, ?, ?, ?, ?, ?, ?)'
-      ).bind(day, entry.t, entry.who, entry.role, entry.action, entry.key, String(entry.detail).slice(0, 4000)).run();
-    }
+    await env.MUSE_D1.prepare(
+      'INSERT INTO audit_log (day, t, who, role, action, key, detail) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).bind(day, now, e.who || 'anonymous', e.role || '', e.action, e.key || '', String(e.detail === undefined ? '' : e.detail).slice(0, 4000)).run();
   } catch (err) { try { console.error('audit d1:', err && err.message || err); } catch (e2) {} }
-  if (!env.MUSE_KV) return;
-  const k = 'audit:' + day;
-  try {
-    const list = (await env.MUSE_KV.get(k, { type: 'json' })) || [];
-    list.push(entry);
-    if (list.length > MAX_PER_DAY) list.splice(0, list.length - MAX_PER_DAY);
-    await env.MUSE_KV.put(k, JSON.stringify(list), { expirationTtl: 60 * 60 * 24 * 400 });
-  } catch (err) { try { console.error('audit:', k, err && err.message || err); } catch (e2) {} }
 }

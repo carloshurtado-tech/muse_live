@@ -1,6 +1,8 @@
 // @ts-check
 // POST /api/omni/mail — send a Show Caller notification via the Gmail API.
-// Body: { to: [email], subject, body, show? } → { ok, id, threadId }. Writers only.
+// Body: { to: [email], subject, body, show?, idempotencyKey?/approvalId? } → { ok, id, threadId }.
+// Writers only. A repeated send with the same idempotency/approval id returns
+// the first result instead of mailing again.
 // Sends from the authorized account (see the OAuth setup); least-privilege send scope.
 import { json, sameOrigin } from '../../_lib/session.js';
 import { who, canWrite } from '../../_lib/who.js';
@@ -9,6 +11,16 @@ import { audit } from '../../_lib/audit.js';
 const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,128}\.[^\s@]{1,32}$/;
 function b64url(s) {
   return btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+// Idempotency store: KV when bound, per-isolate memory otherwise.
+const dedupeMem = globalThis.__museOmniMailDedupe || (globalThis.__museOmniMailDedupe = new Map());
+async function dedupeGet(env, k) {
+  if (env && env.MUSE_KV) { try { return await env.MUSE_KV.get(k, 'json'); } catch (e) { /* fall through */ } }
+  return dedupeMem.get(k) || null;
+}
+async function dedupePut(env, k, v) {
+  dedupeMem.set(k, v);
+  if (env && env.MUSE_KV) { try { await env.MUSE_KV.put(k, JSON.stringify(v), { expirationTtl: 86400 }); } catch (e) { /* memory copy stands */ } }
 }
 // Headers must be ASCII: RFC 2047-encode anything beyond it (else "—" arrives as mojibake).
 function encodeSubject(s) {
@@ -33,6 +45,12 @@ export async function onRequestPost(context) {
   const text = String((body && body.body) || '').slice(0, 20000);
   if (!to.length || !to.every((x) => EMAIL.test(x))) return json({ ok: false, error: 'A valid to list is required (max 10).' }, 400);
   if (!subject || !text) return json({ ok: false, error: 'subject and body are required.' }, 400);
+  const idem = String((body && (body.idempotencyKey || body.approvalId || body.id)) || '').slice(0, 120);
+  const dedupeKey = idem ? 'omni:mail:' + idem : null;
+  if (dedupeKey) {
+    const prior = await dedupeGet(env, dedupeKey);
+    if (prior && prior.ok) return json(prior);
+  }
 
   let access = '';
   try {
@@ -57,8 +75,10 @@ export async function onRequestPost(context) {
     });
     const j = await r.json();
     if (j && j.id) {
+      const out = { ok: true, id: String(j.id), threadId: String(j.threadId || '') };
+      if (dedupeKey) await dedupePut(env, dedupeKey, out);
       await audit(env, { who: user.u, role: user.r, action: 'showcaller.notify', key: 'gmail', detail: to.join(',') });
-      return json({ ok: true, id: String(j.id), threadId: String(j.threadId || '') });
+      return json(out);
     }
   } catch (e) { /* fall through */ }
   await audit(env, { who: user.u, role: user.r, action: 'showcaller.notify.failed', key: 'gmail', detail: 'send failed' });

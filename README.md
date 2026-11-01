@@ -22,7 +22,7 @@
   <img src="https://img.shields.io/badge/Cloudflare%20Pages%20%2B%20Workers%20KV-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Pages and Workers KV">
   <img src="https://img.shields.io/badge/AI-Meta%20Model%20API-0866FF?logo=meta&logoColor=white" alt="Meta Model API">
   <img src="https://img.shields.io/badge/streaming-HLS%20%C2%B7%20LL--HLS%20%C2%B7%20SRT-1C2B33" alt="HLS, LL-HLS, SRT">
-  <img src="https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20%C2%B7%200%20axe%20violations-1E7B34" alt="WCAG 2.1 AA, 0 axe violations">
+  <img src="https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20%C2%B7%20axe--checked-1E7B34" alt="WCAG 2.1 AA, axe-checked">
   <img src="https://img.shields.io/badge/Muse%20eval-40%2F40-1E7B34" alt="Muse eval 40 of 40">
 </p>
 
@@ -38,16 +38,16 @@ Muse Live is an operations platform for live events that are both broadcast and 
 
 ## Built during the Meta Global AI Developer Hackathon (Oct 27 – Nov 4, 2026)
 
-Muse Live itself predates the event (engineering retrospective: [docs](docs/ARCHITECTURE.md)); everything below was designed, built and committed inside the window, on top of it. The hackathon theme is **Build for Your World** — the world here is live broadcast operations.
+Muse Live itself predates the event (engineering retrospective: [docs](docs/ARCHITECTURE.md)). The hackathon theme is **Build for Your World** — the world here is live broadcast operations. Commit dates: 32 commits predate Oct 27, 2026 (including the Oct 15 Muse Live rebrand); every commit whose message says “Day” is dated Oct 27, 2026 — “Day 1–7” names work packages, not separate calendar days. See the dated disclosure on the [About page](https://muse-live.pages.dev/about#hackathon).
 
-| Feature | What it does | Code | Verified by |
+| Feature | What it does today | Code | Verified by |
 |---|---|---|---|
-| **Show Caller** | Reads every module (schedule, streams, incidents, crew, equipment, ops) into a grounded risk brief, then proposes fixes a human approves — approval re-verifies the world before executing, stale plans refuse themselves, nothing moves an on-air booking. Muse Spark reasons; deterministic rules carry the fallback. | [js/muse-showcaller.js](js/muse-showcaller.js) | [14-scenario eval + headline on real seeds](tests/unit/showcaller.test.mjs), 40/40 Muse eval |
-| **Stream Check** | SAM 3.1 segments the program frame (black frame by pixel math, lower-third presence, gear count vs checkout); Spark never sees the frame, only SAM's output. Flags flow into Show Caller's brief. | [functions/api/streamcheck.js](functions/api/streamcheck.js), [js/muse-streamcheck.js](js/muse-streamcheck.js) | 12-frame live load matrix (11/12 + probes) |
-| **Omni connectors** | Real Slack posting (bot + webhook fallback) and Gmail sending (least-privilege `gmail.send`) inside the existing per-show thread, with stored IDs, failed-send retry, and audit on both outcomes. | [functions/api/omni/](functions/api/omni/) | Live Slack + Gmail sends with provider receipts |
-| **Live captioning** | Chunked captions over Voice Transcribe with a searchable stored transcript — the post-show transcript exists by construction. | [functions/api/transcribe.js](functions/api/transcribe.js), [js/muse-captions.js](js/muse-captions.js) | 6/6-clip soak; live transcript |
+| **Show Caller** | Deterministic, rules-based risk brief: reads schedule, streams, incidents, crew, equipment and ops records into a ranked brief with the source record behind every line, then proposes fixes a human approves. Approval re-verifies the world before executing and stale plans refuse themselves; nothing moves an on-air booking. The approval reachable in the UI today is the test-feed retry; Show Caller does not call `/api/museai` and no Slack/Gmail send fires from Approve until targets and production secrets are wired (see Runbook). | [js/muse-showcaller.js](js/muse-showcaller.js) | Scenario eval in [tests/unit/showcaller.test.mjs](tests/unit/showcaller.test.mjs) (`npm test`) |
+| **Stream Check** | SAM 3.1 segments the program frame via `/api/streamcheck` (the model endpoint receives the frame; no chat model sees pixels). Black frames are caught by pixel math; lower-third presence is checked against the `caption bar` concept. Errored checks are reported as **unavailable**, never as clean. No gear-vs-checkout comparison is wired at the call sites today, so none is claimed. Flags flow into Show Caller's brief. | [functions/api/streamcheck.js](functions/api/streamcheck.js), [js/muse-streamcheck.js](js/muse-streamcheck.js) | Offline fault matrix + unit tests (`npm test`) |
+| **Omni connectors** | Slack posting (bot token + webhook fallback) and Gmail sending (least-privilege `gmail.send`) inside the existing per-show thread, with stored IDs and audit on both outcomes. Requires `SLACK_*` / `GMAIL_*` secrets in production; without them sends fail closed. | [functions/api/omni/](functions/api/omni/) | Unit tests (`npm test`); live sends need production secrets (owner) |
+| **Live captioning** | Chunked captions over Voice Transcribe with a searchable stored transcript — the post-show transcript exists by construction. | [functions/api/transcribe.js](functions/api/transcribe.js), [js/muse-captions.js](js/muse-captions.js) | Unit tests (`npm test`) |
 
-Meta models used through the Meta Model API: **Muse Spark 1.3** (reasoning + tool calls), **SAM 3.1** (segmentation), **Muse Voice Transcribe 1.0** (speech), and set-dressing under evaluation with **Muse Image 1.0**. Built with **Muse Code**. Gateway, auth, streaming/scheduling/incident modules and the 90-second tour predate the window and are unchanged except where the new features plug in.
+Meta models used through the Meta Model API: **Muse Spark 1.3** (Muse drawer reasoning + tool calls via `/api/museai`), **SAM 3.1** (segmentation), **Muse Voice Transcribe 1.0** (speech). No image-generation model is called by this codebase (`grep -r muse-image js functions` → 0 hits); seeded Site Survey photos that are AI-generated are labelled illustrative in the app and are never presented as real frames. Built with **Muse Code**. Gateway, auth, streaming/scheduling/incident modules and the 90-second tour predate the window and are unchanged except where the new features plug in.
 
 ## What you’ll see
 
@@ -102,9 +102,9 @@ The model never sees the database and never writes on its own.
 | Result | What it measures |
 | --- | --- |
 | **40 / 40** | Muse accuracy eval on the real model, median answer 5.8 s ([eval/REPORT.md](eval/REPORT.md)) |
-| **189** | unit tests (`npm test`): auth, sessions, guest access and AI spend limits, KV + conditional writes, sync, incidents, SigV4, telemetry schema, abuse guards, build |
-| **16** | Playwright end-to-end tests, including a crawl of every view and every show tab |
-| **0** | axe WCAG 2.1 AA violations on the landing page, About page and main views, light and dark |
+| **`npm test`** | unit tests (Node 22): auth, sessions, guest access and AI spend limits, KV + conditional writes, sync, incidents, SigV4, telemetry schema, abuse guards, build — count reported by the runner at run time |
+| **Playwright** | end-to-end tests, including a crawl of every view and every show tab — count reported by the runner at run time |
+| **axe** | WCAG 2.1 AA checks on the landing page, About page and main views, light and dark ([tests/e2e/a11y.spec.mjs](tests/e2e/a11y.spec.mjs)) |
 
 ## Decisions and trade-offs
 
@@ -153,6 +153,6 @@ never expose it to the public internet (see [Security](docs/SECURITY.md)).
 | `npm run lint` / `npm run typecheck` | ESLint + TypeScript (JSDoc) checks for platform code and Functions |
 | `npm run stage` | Deployable copy in `.stage/` (no tests, docs, sources, maps or secrets) |
 
-**Docs:** [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Runbook](docs/RUNBOOK.md) · [Migration plan](docs/MIGRATION.md) · Admin pages at `/ops/` (health, audit log, users).
+**Docs:** [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Runbook](docs/RUNBOOK.md) · [Migration plan](docs/MIGRATION.md) · [Privacy](https://muse-live.pages.dev/about#privacy) · [Third-party notices](THIRD_PARTY_NOTICES.md) · Admin pages at `/ops/` (health, audit log, users).
 
 <p align="center"><sub>Muse Live is a concept demo by Carlos Hurtado and is not affiliated with or endorsed by Meta. Meta, Ray-Ban, Instagram, WhatsApp and Muse are trademarks of their owners. Event recordings belong to their owners.</sub></p>

@@ -122,6 +122,26 @@ test('logEvent appends to the survey activity log', () => {
   assert.ok(h.some((e) => e.action === 'cad-note'), 'CAD note missing from v2 log');
 });
 
+test('BUG-08: seeded survey photos are flagged AI-generated; user photos stay unlabelled', () => {
+  const w = loadBrowserModule('js/muse-survey-media.js', {
+    productions: { orion: { name: 'Orion' } }, order: ['orion'],
+    document: { readyState: 'complete', addEventListener() {} },
+    location: { search: '', hash: '' },
+  });
+  const media = w.MUSE_SURVEY_MEDIA;
+  assert.equal(media.orion.gallery[0].ai, true, 'seeded JPG venue photo is not flagged AI-generated');
+  assert.equal(media.orion.around[0].ai, true, 'seeded JPG surrounding-area photo is not flagged AI-generated');
+  assert.ok(!media.raybangen3.gallery[0].ai, 'SVG schematic must not carry the Grok photo label');
+  assert.ok(!media.museailaunch.gallery[0].ai, 'CC-credited Wikimedia photo must not carry the Grok label');
+  assert.equal(media.museailaunch.gallery[1].ai, true, 'uncredited seeded JPG is not flagged AI-generated');
+  const s = { images: [{ src: 'data:image/png;base64,AAAA', caption: 'Mine', ts: 'now', by: 'Sam' }], imagesAround: [], pano: { img: null, hotspots: [], marks: [] } };
+  w.museApplySurveyMedia('orion', s);
+  const user = s.images.find((im) => String(im.src).indexOf('data:') === 0);
+  assert.ok(user && !user.ai, 'user-uploaded photo gained an AI label');
+  assert.ok(s.images.filter((im) => im.ai).length >= 2, 'seeded gallery was not labelled on apply');
+  assert.ok(w.MUSE_SURVEY_MEDIA_VER > 20261018, 'media VER must bump so saved surveys pick up the labels');
+});
+
 test('history caps and newest-first order hold under volume', () => {
   const S = win().MuseSurvey;
   for (let i = 0; i < 5; i++) S.addNote('demo', 'note ' + i);

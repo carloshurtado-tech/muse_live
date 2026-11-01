@@ -123,6 +123,39 @@ test('captions: a re-tap with no rebuild path fails silent, never audible', () =
   assert.equal(video.muted, true, 'failed re-tap must not leak feed audio to the room');
 });
 
+test('captions: transcribe fetch carries an AbortSignal timeout (BUG-38)', async () => {
+  let seen = null;
+  const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, AbortSignal,
+    fetch: async (url, init) => { seen = init; return { status: 200, json: async () => ({ ok: true, transcript: 'hello' }) }; } });
+  const r = await w.MuseCaptions.transcribeClip('AAAA');
+  assert.equal(r.ok, true);
+  assert.ok(seen && seen.signal, 'transcribe fetch must pass an AbortSignal (timeout)');
+});
+
+test('captions: failed transcribe clears the overlay to unavailable, not frozen LIVE (BUG-16)', async () => {
+  let intervalFn = null, nodeInst = null;
+  const ccEl = { className: '', textContent: 'Standby camera two…', setAttribute() {} };
+  const screenEl = { _cc: ccEl, querySelector: () => screenEl._cc, appendChild: (el) => { screenEl._cc = el; } };
+  const doc = { querySelector: (sel) => (String(sel).includes('wall:backup') ? screenEl : null), createElement: () => ccEl };
+  function FakeNode() { this.port = {}; nodeInst = this; }
+  const src = { connect: () => {} };
+  const actx = { destination: {}, state: 'running', createMediaElementSource: () => src, audioWorklet: { addModule: () => Promise.resolve() } };
+  function FakeAC() { return actx; }
+  const video = { tagName: 'VIDEO', muted: true };
+  const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, AudioContext: FakeAC, AudioWorkletNode: FakeNode,
+    MuseStreaming: { videoFor: () => video }, document: doc,
+    setInterval: (fn) => { intervalFn = fn; return 1; },
+    fetch: async () => ({ status: 502, json: async () => ({ ok: false, error: 'transcribe down' }) }) });
+  const r = w.MuseCaptions.start('demo', 'wall:backup');
+  assert.equal(await r.ready, true);
+  nodeInst.port.onmessage({ data: new Int16Array(1600) });
+  await intervalFn();
+  await new Promise((r) => setTimeout(r, 20));
+  assert.equal(ccEl.textContent, 'Captions unavailable', 'failure must replace the frozen line: ' + JSON.stringify(ccEl.textContent));
+  assert.ok(w.MuseCaptions.status('demo').lastError, 'failure is recorded');
+  w.MuseCaptions.stop('demo');
+});
+
 test('captions: start refuses honestly without tappable audio or Web Audio', () => {
   const w = loadBrowserModule('js/muse-captions.js', { btoa: BTOA, MuseStreaming: {} });
   const r1 = w.MuseCaptions.start('demo', 'wall:program');

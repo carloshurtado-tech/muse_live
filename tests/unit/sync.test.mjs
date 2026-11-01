@@ -11,6 +11,40 @@ test('MuseSync stays local when signed out and maps localStorage keys to valid K
   assert.equal(await w.MuseSync.get('live-status'), null);
 });
 
+test('BUG-38: a 401 surfaces a visible "signed out, not saving" state instead of silent local mode', async () => {
+  const doc = { readyState: 'complete', cookie: 'muse_authed=1', addEventListener() {}, getElementById: () => null, hidden: false };
+  const fetch = (url) => {
+    if (String(url).includes('/api/auth/me')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ user: { email: 'ana@meta.com', role: 'engineer' } }) });
+    return Promise.resolve({ status: 401, ok: false, headers: { get: () => null }, json: () => Promise.resolve({}) });
+  };
+  const w = loadBrowserModule('js/muse-sync.js', {
+    Storage: function Storage() {}, fetch, performance: { now: () => 0 },
+    sessionStorage: { getItem: () => null, setItem() {} }, document: doc,
+  });
+  await w.MuseSync.ready;
+  assert.equal(w.MuseSync.status().enabled, false);
+  assert.equal(w.MuseSync.status().state, 'signedout', '401 must surface as a signed-out state, not silent local mode');
+  const fs = await import('node:fs');
+  const src = fs.readFileSync(new URL('../../js/muse-sync.js', import.meta.url), 'utf8');
+  assert.ok(src.includes('Signed out — not saving'), 'the signed-out banner copy is missing');
+  assert.ok(/AbortSignal\.timeout/.test(src), 'sync fetches must carry a timeout (BUG-38 / CLI-017)');
+  assert.ok(src.includes("'muselive_launch_v1'"), 'launch votes must ride the existing MuseSync mirror (BUG-43)');
+});
+
+test('BUG-38: a 503 (KV not configured) still degrades to silent local mode', async () => {
+  const doc = { readyState: 'complete', cookie: 'muse_authed=1', addEventListener() {}, getElementById: () => null, hidden: false };
+  const fetch = (url) => {
+    if (String(url).includes('/api/auth/me')) return Promise.resolve({ ok: true, json: () => Promise.resolve({ user: { email: 'ana@meta.com', role: 'engineer' } }) });
+    return Promise.resolve({ status: 503, ok: false, headers: { get: () => null }, json: () => Promise.resolve({}) });
+  };
+  const w = loadBrowserModule('js/muse-sync.js', {
+    Storage: function Storage() {}, fetch, performance: { now: () => 0 },
+    sessionStorage: { getItem: () => null, setItem() {} }, document: doc,
+  });
+  await w.MuseSync.ready;
+  assert.equal(w.MuseSync.status().state, 'local', '503 must stay the silent local fallback');
+});
+
 test('reads are conditional: second GET sends If-None-Match, 304 resolves unchanged', async () => {
   const seen = [];
   const doc = { readyState: 'complete', cookie: 'muse_authed=1', addEventListener() {}, getElementById: () => null, hidden: false };

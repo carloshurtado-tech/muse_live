@@ -1,10 +1,11 @@
 // Muse Schedule calendar feeds (iCalendar, RFC 5545).
 //
-//   GET  /api/calendar?prod=<key>|res=<id or name>|crew=<name>&token=<sig>   (alias: /api/calendar.ics)
+//   GET  /api/calendar?prod=<key>|res=<id or name>|crew=<name>&token=<exp>.<sig>   (alias: /api/calendar.ics)
 //        Public subscription feed for Google / Apple / Outlook calendars. The token is
-//        HMAC-SHA256(secret, "<scope>:<value>") (or "all"), base64url, so a link only ever opens
-//        the calendar it was made for. Calendar apps fetch it without the Muse Live session.
-//   GET  /api/calendar?sign=1&prod=…  (signed-in only) → { url, webcal, google, outlook, label }
+//        "<expiry>.<HMAC-SHA256(secret, "<scope>:<value>:<expiry>")>", base64url, so a link
+//        only ever opens the calendar it was made for, and only until it expires.
+//        Calendar apps fetch it without the Muse Live session.
+//   GET  /api/calendar?sign=1&prod=…  (writers only) → { url, webcal, google, outlook, label }
 //   POST /api/calendar                 (signed-in only) the browser mirrors its Muse Schedule
 //        snapshot here; feeds are rendered from the latest snapshot.
 //
@@ -15,10 +16,11 @@
 // middleware's default hash. The login middleware must let /api/calendar* through: this
 // function checks the session itself for sign and POST, and the token for feeds.
 
-import { DEFAULT_PW_HASH } from '../_lib/session.js';
+import { DEFAULT_PW_HASH, sameOrigin } from '../_lib/session.js';
 import { canWrite } from '../_lib/who.js';
 const KV_KEY = 'calendar:schedule';
 const MAX_SNAPSHOT = 2_000_000;
+const FEED_TTL_S = 30 * 24 * 3600;
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
@@ -35,6 +37,17 @@ function safeEqual(a, b) {
   return r === 0;
 }
 function secretOf(env) { return (env && (env.MUSE_FEED_SECRET || env.MUSE_PASSWORD_HASH)) || DEFAULT_PW_HASH; }
+async function mintToken(secret, scopeKey) {
+  const exp = Math.floor(Date.now() / 1000) + FEED_TTL_S;
+  return exp + '.' + await hmac(secret, scopeKey + ':' + exp);
+}
+async function tokenValid(secret, scopeKey, given) {
+  const dot = String(given || '').indexOf('.');
+  if (dot < 1) return false;
+  const exp = Number(String(given).slice(0, dot));
+  if (!Number.isFinite(exp) || exp < Math.floor(Date.now() / 1000)) return false;
+  return safeEqual(String(given).slice(dot + 1), await hmac(secret, scopeKey + ':' + exp));
+}
 // Signed in? Middleware runs for every request (even public paths) and sets context.data.user.
 function signedIn(_request, _env, data) { return !!(data && (data.user || data.authed === true)); }
 function scopeOf(url) {
@@ -113,6 +126,7 @@ export async function onRequest(context) {
   if (request.method === 'POST') {
     if (!signedIn(request, env, data)) return json({ ok: false, error: 'Sign in required' }, 401);
     if (!canWrite(data && data.user)) return json({ ok: false, error: 'Your role is read-only.' }, 403);
+    if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
     const raw = await request.text();
     if (raw.length > MAX_SNAPSHOT) return json({ ok: false, error: 'Snapshot too large' }, 413);
     let snap; try { snap = JSON.parse(raw); } catch (e) { return json({ ok: false, error: 'Bad JSON' }, 400); }
@@ -125,7 +139,9 @@ export async function onRequest(context) {
   const secret = secretOf(env);
   if (url.searchParams.get('sign')) {
     if (!signedIn(request, env, data)) return json({ ok: false, error: 'Sign in required' }, 401);
-    const token = await hmac(secret, scope.key);
+    // Minting a bearer feed link is a writer action: a guest link would outlive the guest session.
+    if (!canWrite(data && data.user)) return json({ ok: false, error: 'Your role is read-only.' }, 403);
+    const token = await mintToken(secret, scope.key);
     const qs = scope.kind === 'all' ? '' : scope.kind + '=' + encodeURIComponent(scope.value) + '&';
     const feed = url.origin + '/api/calendar?' + qs + 'token=' + token; // also served at /api/calendar.ics
     const webcal = feed.replace(/^https?:\/\//, 'webcal://');
@@ -137,7 +153,7 @@ export async function onRequest(context) {
   }
 
   const given = url.searchParams.get('token') || '';
-  if (!safeEqual(given, await hmac(secret, scope.key))) return new Response('Invalid or expired calendar link.', { status: 403, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
+  if (!(await tokenValid(secret, scope.key, given))) return new Response('Invalid or expired calendar link.', { status: 403, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' } });
   const snap = await loadSnapshot(env);
   if (!snap) return new Response('Muse Schedule has not been published to the server yet. Open Muse Live once and try again.', { status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'Retry-After': '300' } });
   const { label, body } = buildICS(snap, scope, url.origin);

@@ -28,6 +28,13 @@ test('defaults carry the four-tile NOC wall plus disabled extras', () => {
   assert.equal(TF.KV_KEY, 'testfeeds');
 });
 
+test('BUG-42 guard: feed membership, order and enabled flags are unchanged pending an owner/content decision', () => {
+  const TF = makeWin().MuseTestFeeds;
+  assert.deepEqual(plain(TF.defaults()).map((f) => [f.id, f.enabled !== false]), [
+    ['live', true], ['nasa', true], ['redbull', true], ['abr', true], ['vod2', false], ['aja', false],
+  ], 'do not swap the default feed without a licensed replacement already in the fixed list');
+});
+
 test('sanitize drops invalid feeds and caps the list', () => {
   const TF = makeWin().MuseTestFeeds;
   const out = TF.sanitize([

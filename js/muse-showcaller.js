@@ -238,7 +238,8 @@
       }
     } catch (e) {}
 
-    // Stream Check: visual flags from the last frame run.
+    // Stream Check: visual flags from the last frame run. Errored checks are
+    // unavailable — stated as unknown, never read as clean (BUG-06).
     try {
       var chk = scopeOn(s.key, 'streams') && root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
       ((chk && chk.flags) || []).forEach(function (f) {
@@ -246,6 +247,9 @@
           text: 'Stream Check [' + f.check + (f.concept ? ' ' + f.concept : '') + ']: ' + (f.flag || 'flagged'),
           sources: ['streamcheck · ' + ((chk && chk.slot) || s.show)] });
       });
+      if (chk && chk.unavailable && chk.unavailable.length) {
+        unknown.push('streamcheck (' + chk.unavailable.map(function (u) { return u.check + ': ' + (u.error || 'unavailable'); }).join('; ') + ')');
+      }
     } catch (e) {}
 
     var rank = { high: 0, med: 1, low: 2 };
@@ -369,6 +373,9 @@
       var chk = scopeOn(s.key, 'streams') && root.MuseStreamCheck && typeof root.MuseStreamCheck.latest === 'function' ? root.MuseStreamCheck.latest(s.key) : null;
       ((chk && chk.flags) || []).forEach(function (f) {
         uncov('Stream Check [' + f.check + ']: ' + (f.flag || 'flagged'), 'visual flag — confirm on the monitor before acting');
+      });
+      ((chk && chk.unavailable) || []).forEach(function (f) {
+        uncov('Stream Check [' + f.check + ']: unavailable', 'check unavailable — ' + (f.error || 'no result') + '; confirm on the monitor');
       });
     } catch (e) {}
 

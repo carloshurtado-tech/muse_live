@@ -95,6 +95,17 @@ test('critical path finds the longest open chain; andon files a flag; punch list
   assert.ok(pl.orphans.some((t) => t.id === r.id), 'ownerless Andon flag must be an orphan');
 });
 
+test('BUG-43: every poll row names its owner (voter, system, or Unassigned)', () => {
+  const L = loadBrowserModule('js/muse-launch.js', { permUser: () => 'Sam Reyes' }).MuseLaunch;
+  const fresh = L.poll('s');
+  assert.ok(fresh.votes.every((v) => v.owner === 'Unassigned'), 'pending checks must still name an owner slot: ' + JSON.stringify(fresh.votes));
+  L.setVote('s', 'video', 'GO');
+  const p = L.poll('s');
+  assert.equal(p.votes.find((v) => v.discipline === 'video').owner, 'Sam Reyes', 'a cast vote must display who cast it');
+  L.weatherHold('s', true);
+  assert.equal(L.poll('s').votes.find((v) => v.discipline === 'safety').owner, 'system', 'a system hold must display as system-owned');
+});
+
 test('setCriteria guards blanks and unknown disciplines', () => {
   const L = win().MuseLaunch;
   assert.equal(L.setCriteria('s', 'bogus', 'x').ok, false);

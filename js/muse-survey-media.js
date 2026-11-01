@@ -2,9 +2,9 @@
    Images generated in-session. */
 (function (root) {
   'use strict';
-  var VER = 20261018; /* bump: World Tour finale moved to MPK (shares the MPK SVG set) */
-  function cap(src, caption, by) {
-    return { src: src, caption: caption, ts: 'seeded walk', by: by || 'Site survey' };
+  var VER = 20261101; /* bump: seeded JPG venue photos carry the AI-generated label (BUG-08) */
+  function cap(src, caption, by, ai) {
+    return { src: src, caption: caption, ts: 'seeded walk', by: by || 'Site survey', ai: !!ai };
   }
   /* Third-party photos (CC BY-SA 4.0, cropped to 16:9) — credited on the photo itself */
   var CREDIT = {
@@ -15,13 +15,16 @@
   };
   function pack(key, venue, ext) {
     var b = 'assets/survey/' + key + '/', c = CREDIT[key] || {}, e = ext || 'jpg';
+    /* Seeded JPGs are Grok Imagine renders unless a real-photo credit says
+       otherwise (BUG-08); SVG schematics and user uploads are never labelled. */
+    function seeded(name, caption, credit) { return cap(b + name + '.' + e, caption, credit, !credit && e === 'jpg'); }
     return {
       gallery: [
-        cap(b + 'exterior.' + e, venue + ' — exterior / approach', c.exterior),
-        cap(b + 'compound.' + e, venue + ' — compound / platforms', c.compound)
+        seeded('exterior', venue + ' — exterior / approach', c.exterior),
+        seeded('compound', venue + ' — compound / platforms', c.compound)
       ],
       around: [
-        cap(b + 'around.' + e, venue + ' — surrounding area', c.around)
+        seeded('around', venue + ' — surrounding area', c.around)
       ],
       pano: b + 'pano.' + e
     };

@@ -2,17 +2,18 @@
 // GET /api/auth/oidc/callback → exchange the code (with PKCE + client secret), read the user from
 // the IdP's userinfo endpoint (fetched server-to-server over TLS with the fresh access token),
 // map to a Muse Live account and role, and start a session.
-import { json, readCookie, verifyToken, signSession, sessionCookies } from '../../../_lib/session.js';
+import { json, readCookie, verifyTokenFor, signSession, sessionCookies, safeNextPath, OIDC_TX_TYP } from '../../../_lib/session.js';
 import { oidcConfigured, discovery, redirectUri } from '../../../_lib/oidc.js';
-import { getUser, normEmail } from '../../../_lib/users.js';
+import { getUser, putUser, normEmail } from '../../../_lib/users.js';
 import { audit } from '../../../_lib/audit.js';
 
 export async function onRequestGet({ request, env }) {
   if (!oidcConfigured(env)) return json({ ok: false, error: 'SSO is not configured.' }, 404);
   const url = new URL(request.url);
-  const tx = await verifyToken(env, readCookie(request, 'muse_oidc'));
+  const tx = await verifyTokenFor(env, readCookie(request, 'muse_oidc'), OIDC_TX_TYP);
   if (!tx || tx.u !== url.searchParams.get('state')) return json({ ok: false, error: 'Sign-in expired. Try again.' }, 400);
-  const [verifier, next] = String(tx.n).split('|');
+  const [verifier, rawNext] = String(tx.n).split('|');
+  const next = safeNextPath(rawNext || '/');
   try {
     const meta = await discovery(env);
     const tok = await fetch(meta.token_endpoint, {
@@ -26,9 +27,16 @@ export async function onRequestGet({ request, env }) {
     if (!email || info.email_verified !== true) throw new Error('The identity provider did not return a verified email.');
     const domains = String(env.OIDC_ALLOWED_DOMAINS || '').split(/[\s,]+/).filter(Boolean);
     if (domains.length && !domains.includes(email.split('@')[1])) throw new Error('This account’s domain is not allowed.');
-    const account = await getUser(env, email);
+    let account = await getUser(env, email);
     if (account && account.disabled) throw new Error('This account is disabled.');
     const role = (account && account.role) || env.OIDC_DEFAULT_ROLE || 'viewer';
+    // First SSO login creates the account record: without one, the
+    // middleware's per-request account re-read would revoke the new session.
+    if (!account && env.MUSE_KV) {
+      const now = new Date().toISOString();
+      account = { email, name: info.name || email, role, disabled: false, created: now, updated: now, sso: true };
+      await putUser(env, account);
+    }
     const who = { u: email, n: (account && account.name) || info.name || email, r: role };
     await audit(env, { who: email, role, action: 'login', detail: 'sso' });
     const headers = new Headers({ Location: next || '/', 'Cache-Control': 'no-store' });

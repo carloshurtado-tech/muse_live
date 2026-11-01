@@ -4926,7 +4926,7 @@ function globalSearchRender(q){
   if(corr&&corr.corrections&&corr.corrections.length){
     spellBar='<div class="px-3 py-2 mx-2 mt-2 rounded-lg bg-amber-50 border border-amber-200 text-[10px] text-amber-900">'+
       '<span class="font-bold">Did you mean</span> · '+esc(typeof museCorrectHint==='function'?museCorrectHint(corr):q)+
-      ' <button type="button" class="ml-1 font-bold text-blue-700 hover:underline" onclick="globalSearchPreset('+JSON.stringify(q).replace(/</g,'\\u003c')+')">Search “'+esc(q)+'”</button></div>';
+      ' <button type="button" class="ml-1 font-bold text-blue-700 hover:underline" onclick="globalSearchPreset('+esc(JSON.stringify(q))+')">Search “'+esc(q)+'”</button></div>';
   }
   if(!hits.length){
     box.innerHTML=spellBar+'<div class="px-4 py-6 text-center text-[11px] text-gray-400">No indexed matches for "<b>'+esc(raw)+'</b>"'+(q!==q0?' (also tried “'+esc(q)+'”)':'')+' — Search below may still answer.</div>';
@@ -7521,7 +7521,7 @@ function cadUpload(key,e){var f=e.target.files&&e.target.files[0];if(!f)return;
   if(isPdf){var rb=new FileReader();
     rb.onload=function(){var buf=rb.result;
       loadPdfJs().then(function(pdfjs){
-        pdfjs.getDocument({data:buf}).promise.then(function(doc){
+        pdfjs.getDocument({data:buf,isEvalSupported:false}).promise.then(function(doc){
           var total=Math.min(doc.numPages,4);var done=0;
           function renderPage(n){doc.getPage(n).then(function(page){
             var vp=page.getViewport({scale:1});var sc=Math.min(4,2400/Math.max(vp.width,vp.height));
@@ -7610,7 +7610,8 @@ function survGalView(key,which,i){var s=getSurvey(key);var arr=survGalArr(s,whic
     ov.onclick=function(ev){if(ev.target===ov)ov.style.display='none';};document.body.appendChild(ov);}
   ov.innerHTML='<img src="'+im.src+'" onerror="this.onerror=null;this.src=STADIUM_IMG_FALLBACK" style="max-width:92vw;max-height:76vh;border-radius:12px;box-shadow:0 20px 60px rgba(0,0,0,.6);object-fit:contain" alt="site photo">'+
     '<div style="color:#e4e6eb;font:600 12px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:80vw;text-align:center">'+esc(im.caption||'No caption yet')+
-      ((im.ts||im.by)?'<div style="color:#8a8d91;font:500 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-top:3px">'+esc(im.ts||'')+(im.by?' · '+esc(im.by):'')+'</div>':'')+'</div>'+
+      ((im.ts||im.by)?'<div style="color:#8a8d91;font:500 10px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-top:3px">'+esc(im.ts||'')+(im.by?' · '+esc(im.by):'')+'</div>':'')+
+      (im.ai?'<div style="color:#f7b928;font:700 10px -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin-top:3px">AI-generated (Grok Imagine), illustrative</div>':'')+'</div>'+
     '<button onclick="document.getElementById(\'galLightbox\').style.display=\'none\'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#ced0d4;font-size:22px;cursor:pointer;line-height:1">✕</button>';
   ov.style.display='flex';}
 
@@ -7623,7 +7624,8 @@ function survGalCard(key,which,im,i){
       '<button onclick="event.stopPropagation();survGalRemove(\''+key+'\',\''+which+'\','+i+')" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-lg bg-black/50 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">✕</button></div>'+
     '<div class="p-2">'+
       '<input value="'+esc(im.caption||'').replace(/"/g,'&quot;')+'" onchange="survGalCaption(\''+key+'\',\''+which+'\','+i+',this.value)" placeholder="Caption — what is this &amp; why it matters…" class="w-full text-[10px] text-gray-700 border border-transparent hover:border-gray-200 focus:border-gray-300 rounded px-1.5 py-1" style="outline:none">'+
-      '<p class="text-[8px] text-gray-400 mono px-1.5 mt-0.5">'+(im.ts?esc(im.ts):'seeded reference')+(im.by?' · '+esc(im.by):'')+'</p></div></div>';}
+      '<p class="text-[8px] text-gray-400 mono px-1.5 mt-0.5">'+(im.ts?esc(im.ts):'seeded reference')+(im.by?' · '+esc(im.by):'')+'</p>'+
+      (im.ai?'<p class="text-[8px] font-bold text-amber-700 px-1.5 mt-0.5">AI-generated (Grok Imagine), illustrative</p>':'')+'</div></div>';}
 function surveyGalleryHTML(key){var s=getSurvey(key);
   var main=(s.images||[]).map(function(im,i){return survGalCard(key,'main',im,i);}).join('');
   var around=(s.imagesAround||[]).map(function(im,i){return survGalCard(key,'around',im,i);}).join('');
@@ -12831,6 +12833,31 @@ function renderOmniDrawer(){
   omniFabBadge();
 }
 
+/* Muse answers are model text, not stored rich text: render them with the
+   drawer's md() (escape first, then a safe subset) instead of the regex
+   sanitiser (BUG-11). Everything else keeps the stored-rich renderer. */
+function omniBodyHTML(m,out){
+  if(m&&m.from==='Muse'){
+    try{
+      if(typeof MuseAgent!=='undefined'&&MuseAgent.ui&&typeof MuseAgent.ui.md==='function')
+        return '<div class="rt text-[11px] leading-snug'+(out?' rt-on-dark':'')+'">'+MuseAgent.ui.md(String(m.body==null?'':m.body))+'</div>';
+    }catch(e){}
+  }
+  return museRichView(m.body,'text-[11px] leading-snug'+(out?' rt-on-dark':''));
+}
+/* Plain-language statement of a pending Omni write: the action and the show
+   it will land on (BUG-05b). */
+function omniDescribeAction(act,prod){
+  var p=productions[prod]||{};var show=p.name||prod||'this show';
+  if(!act)return 'Apply this change on '+show;
+  if(act.kind==='deptStatus')return 'Set '+act.dept+' to '+act.status+' on '+show;
+  if(act.kind==='nav')return 'Open the '+act.tab+' tab on '+show;
+  if(act.kind==='techbook')return 'Export the techbook PDF for '+show;
+  if(act.kind==='restoreBackup')return 'Restore a Muse Live backup from file';
+  if(act.kind==='exportBackup')return 'Download a Muse Live backup';
+  return 'Apply this change on '+show;
+}
+
 /* ---- TAB 1 · Chat & Teams — threaded ops-room conversation ---- */
 function omniChatHTML(prod){
   var sim=(OMNI_OPS_CHAT[prod]||[]).map(function(m){return {from:m.from,body:m.body,ts:m.ts,dir:m.dir,src:'ops'};});
@@ -12848,14 +12875,15 @@ function omniChatHTML(prod){
     var open=m.thread?' onclick="openCommsThread(\''+m.thread+'\')" style="cursor:pointer"':'';
     return '<div class="flex '+(out?'justify-end':'justify-start')+' mb-2"><div class="'+(out?'omni-bubble-out':'omni-bubble-in')+'"'+open+'>'+
       '<div class="flex items-center gap-2 mb-0.5"><span class="text-[9px] font-bold '+(out?'omni-bub-meta-out':'text-gray-500')+'">'+esc(m.from)+'</span><span class="text-[8px] mono '+(out?'omni-bub-meta-out':'text-gray-400')+'">'+esc(m.ts)+'</span></div>'+
-      museRichView(m.body,'text-[11px] leading-snug'+(out?' rt-on-dark':''))+
+      omniBodyHTML(m,out)+
       (m.thread?'<p class="text-[8px] mt-1 font-bold '+(out?'omni-bub-meta-out':'text-blue-600')+'">Open linked thread →</p>':'')+
       '</div></div>';
   }).join('');
 }
 function omniChatFootHTML(){
   var pend=window._omniMuseAiPend;
-  var bar=pend?'<div class="mb-2 p-2 rounded-lg border border-gray-200 bg-gray-50 text-[10px]">Muse can write this into Muse Live. '+
+  var pact=pend&&(pend.act||pend);
+  var bar=pend?'<div class="mb-2 p-2 rounded-lg border border-gray-200 bg-gray-50 text-[10px]">Muse can write this into Muse Live: <b>'+esc(omniDescribeAction(pact,(pend&&pend.prod)||omniCurrentProd()))+'</b>. '+
     '<button type="button" onclick="omniMuseAiConfirm()" class="ml-1 text-[10px] font-bold text-white bg-gray-900 rounded px-2 py-0.5">Confirm</button> '+
     '<button type="button" onclick="omniMuseAiCancel()" class="text-[10px] font-bold border border-gray-300 rounded px-2 py-0.5">Cancel</button></div>':'';
   return bar+'<div class="flex items-center gap-2">'+
@@ -12884,7 +12912,14 @@ function omniAskMuseAi(preset){
     omniPushOps(prod,'Muse',String(ans||'').slice(0,2000),'in');
     try{
       var act=typeof museaiParseAction==='function'?museaiParseAction(txt):null;
-      window._omniMuseAiPend=act||null;
+      if(act){
+        /* The thread owns the write (BUG-05b): pin it to this thread's show
+           (omniCurrentProd() at ask time), never the drawer focus or the
+           currently active view, and bind it to a per-offer id. */
+        if(act.key&&productions[act.key])act.key=prod;
+        var oid=null;try{oid=typeof museaiRegisterOffer==='function'?museaiRegisterOffer(act):null;}catch(eO){oid=null;}
+        window._omniMuseAiPend={act:act,prod:prod,id:oid};
+      }else window._omniMuseAiPend=null;
     }catch(e){window._omniMuseAiPend=null;}
     renderOmniDrawer();
   }).catch(function(){
@@ -12895,15 +12930,23 @@ function omniAskMuseAi(preset){
   });
 }
 function omniMuseAiConfirm(){
-  var act=window._omniMuseAiPend;window._omniMuseAiPend=null;
+  var pend=window._omniMuseAiPend;window._omniMuseAiPend=null;
+  var act=pend&&(pend.act||pend);
   if(!act){toast('Nothing to confirm');return;}
-  try{_museaiPending=act;if(typeof museaiConfirmAction==='function')museaiConfirmAction();}catch(e){}
-  omniPushOps(omniCurrentProd(),'Muse','Confirmed in Muse Live.','in');
+  var prod=(pend&&pend.prod)||act.key||omniCurrentProd();
+  if(act.key&&productions[act.key])act.key=prod;
+  try{
+    if(pend&&pend.id&&typeof museaiConfirmAction==='function')museaiConfirmAction(pend.id);
+    else{_museaiPending=act;if(typeof museaiConfirmAction==='function')museaiConfirmAction();}
+  }catch(e){}
+  omniPushOps(prod,'Muse','Confirmed in Muse Live.','in');
   renderOmniDrawer();
 }
 function omniMuseAiCancel(){
-  window._omniMuseAiPend=null;
-  omniPushOps(omniCurrentProd(),'Muse','Cancelled — no write.','in');
+  var pend=window._omniMuseAiPend;window._omniMuseAiPend=null;
+  var act=pend&&(pend.act||pend);
+  try{if(act&&window._museaiPending===act)window._museaiPending=null;}catch(e){}
+  omniPushOps((pend&&pend.prod)||omniCurrentProd(),'Muse','Cancelled — no write.','in');
   renderOmniDrawer();
 }
 function omniSendChat(){

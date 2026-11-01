@@ -13,7 +13,7 @@ test('bundle budgets hold: minified totals may fall, never rise', () => {
   assert.deepEqual(checkBudgets(), []);
 });
 test('deploy staging never ships dev files, sources, maps or secrets', () => {
-  for (const p of ['tests/unit/a.mjs', 'tools/dev-server.mjs', 'docs/SECURITY.md', 'package.json', 'js/muse-app-a.js', '.dev.vars', '.dev-kv.json', 'js/muse-app-a.min.js.map', 'functions/_middleware.js', 'glasses/src/main.tsx', 'glasses/node_modules/x.js'])
+  for (const p of ['tests/unit/a.mjs', 'tools/dev-server.mjs', 'docs/SECURITY.md', 'package.json', 'js/muse-app-a.js', '.dev.vars', '.dev-kv.json', 'js/muse-app-a.min.js.map', 'functions/_middleware.js', 'glasses/src/main.tsx', 'glasses/node_modules/x.js', 'submission-draft.md'])
     assert.ok(excluded(p), p);
   for (const p of ['index.html', 'js/muse-app-a.min.js', 'js/muse-sync.js', 'ops/health.html', 'glasses/index.html', '_headers'])
     assert.ok(!excluded(p), p);

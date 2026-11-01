@@ -243,10 +243,29 @@ async function kvPut(env, k, v, ttl, attempts = 3) {
   }
   return false;
 }
-export function sessionKey(request) {
-  const c = request.headers.get('Cookie') || '';
-  const m = /(?:^|;\s*)muse_session=([^;]+)/.exec(c);
-  return (m ? 's:' + m[1].slice(-24) : 'ip:' + (request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local'));
+/* Rate-limit identity comes from the verified session (context.data.user, set
+   by the middleware after HMAC verification), never from raw cookie bytes:
+   the caller chooses those, so slicing the cookie would let anyone mint a
+   fresh bucket by padding it. Unauthenticated callers fall back to their IP. */
+export function sessionKey(request, user) {
+  if (user && typeof user.u === 'string' && user.u) return 'u:' + user.u;
+  return 'ip:' + (request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local');
+}
+/* Fetch whose timeout covers only the wait for response headers. The timer is
+   cleared the moment headers arrive, so a streaming body may run as long as it
+   needs; aborting mid-stream would lose the answer and its tool calls. */
+export async function fetchWithHeaderTimeout(url, init = {}, timeoutMs = 45000, fetchImpl = fetch) {
+  const ctrl = new AbortController();
+  let rejectOnAbort;
+  const aborted = new Promise((_, reject) => { rejectOnAbort = reject; });
+  const timer = setTimeout(() => { ctrl.abort(); rejectOnAbort(new Error('Model API header timeout')); }, timeoutMs);
+  try {
+    const pending = fetchImpl(url, { ...init, signal: ctrl.signal });
+    pending.catch(() => {});
+    return await Promise.race([pending, aborted]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 /* Token bucket with an optimistic read-modify-write retry: after writing, the
    bucket is re-read and, when another isolate won the race (or the write was
@@ -281,15 +300,16 @@ export async function takeToken(env, sk, guest) {
   return { ok: true, retryS: 0 };
 }
 function dayKey(guest) { return 'museai:tokens:' + new Date().toISOString().slice(0, 10) + (guest ? ':guest' : ''); }
-async function usedToday(env, guest) { const k = dayKey(guest); const v = await kvGet(env, k); return Math.max(Number(v) || 0, mem.usage.get(k) || 0); }
+export async function usedToday(env, guest) { const k = dayKey(guest); const v = await kvGet(env, k); return Math.max(Number(v) || 0, mem.usage.get(k) || 0); }
 /* sign=1 charges, sign=-1 refunds (floored at zero). Each slice is re-read
    before writing and the write is confirmed; a lost race is re-applied once on
    top of the observed value so concurrent steps undercount less. */
-async function addUsage(env, usage, guest, sign = 1) {
+export async function addUsage(env, usage, guest, sign = 1) {
   const raw = usage && (usage.total_tokens || ((usage.prompt_tokens || 0) + (usage.completion_tokens || 0)));
   const n = Number(raw) || 0;
   if (!n) return;
-  for (const g of guest ? [false, true] : [false]) {
+  // Guests charge the guest slice only; team usage charges the team counter only.
+  for (const g of guest ? [true] : [false]) {
     const k = dayKey(g);
     let next = 0;
     for (let a = 0; a < 3; a++) {
@@ -307,9 +327,9 @@ async function addUsage(env, usage, guest, sign = 1) {
     }
   }
 }
-function dailyCap(env) { return Math.max(10000, Number(env && env.MUSE_DAILY_TOKEN_CAP) || 2000000); }
+export function dailyCap(env) { return Math.max(10000, Number(env && env.MUSE_DAILY_TOKEN_CAP) || 2000000); }
 // All guest sessions together share this slice of the day, so the public demo can't exhaust the team's budget.
-function guestCap(env) { return Math.max(10000, Number(env && env.MUSE_GUEST_DAILY_TOKEN_CAP) || 1500000); }
+export function guestCap(env) { return Math.max(10000, Number(env && env.MUSE_GUEST_DAILY_TOKEN_CAP) || 1500000); }
 
 /* ---------------- handlers ---------------- */
 export async function onRequestGet({ env }) {
@@ -333,7 +353,7 @@ export async function onRequestPost(context) {
   const user = context.data && context.data.user;
   const guest = !!user && user.u === 'guest';
   context.museGuest = guest;
-  const rl = await takeToken(env, sessionKey(request), guest);
+  const rl = await takeToken(env, sessionKey(request, user), guest);
   if (!rl.ok) return json({ ok: false, error: 'Muse is pacing itself. Try again in ' + rl.retryS + ' s.' }, 429);
   if ((await usedToday(env)) >= dailyCap(env)) {
     return json({ ok: false, capped: true, error: 'Muse has reached today\'s usage limit for this workspace. It resets at midnight UTC; an admin can raise MUSE_DAILY_TOKEN_CAP.' }, 429);
@@ -388,12 +408,12 @@ export async function onRequestPost(context) {
 
   let r;
   try {
-    r = await fetch(base + '/chat/completions', {
+    // Header-only timeout: a slow start fails fast, a long stream is never cut.
+    r = await fetchWithHeaderTimeout(base + '/chat/completions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
       body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(45000),
-    });
+    }, 45000);
   } catch (e) {
     await refundGuest();
     return json({ ok: false, error: 'Muse could not reach Meta Model API.' }, 502);

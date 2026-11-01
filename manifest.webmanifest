@@ -1,5 +1,5 @@
 {
-  "name": "Muse Live — Meta",
+  "name": "Muse Live",
   "short_name": "Muse Live",
   "description": "Collaborative digital techbook for live broadcast operations.",
   "start_url": "/",
@@ -9,21 +9,15 @@
   "theme_color": "#FFFFFF",
   "icons": [
     {
-      "src": "assets/brand/favicon.svg",
+      "src": "assets/brand/muse-ai-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "assets/brand/meta-mark-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "assets/brand/meta-mark-180.png",
-      "sizes": "180x180",
-      "type": "image/png",
+      "src": "assets/brand/muse-mascot-800.webp",
+      "sizes": "800x534",
+      "type": "image/webp",
       "purpose": "any"
     }
   ]

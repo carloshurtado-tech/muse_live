@@ -4,7 +4,7 @@
 //   PUT    /api/kv/:key   → store a JSON body (≤ 256 KB). Viewers are read-only.
 //   DELETE /api/kv/:key   → admins only.
 // Keys are [a-z0-9_-]{1,64}; internal namespaces (users:, audit:, obs:) use ':' and are not reachable here.
-import { json } from '../../_lib/session.js';
+import { json, sameOrigin } from '../../_lib/session.js';
 import { guardJsonWrite, readCappedBody } from '../../_lib/abuse.js';
 import { who, isAdmin, canWrite } from '../../_lib/who.js';
 import { audit } from '../../_lib/audit.js';
@@ -14,7 +14,12 @@ const MAX = 256 * 1024;
 
 /* Optimistic concurrency for PUT: clients send the X-Muse-Updated value they
    read (as an ETag) back via If-Match / If-None-Match. Returns null when the
-   write may proceed, otherwise an error Response (412). */
+   write may proceed, otherwise an error Response (412).
+   Honest limit: KV has no compare-and-swap, so this is NOT strict CAS. The
+   handler re-reads the version immediately before writing (see PUT below),
+   which narrows the check-to-write race to a single KV round-trip; a writer
+   landing inside that last window can still win silently. Strict CAS needs a
+   Durable Object, which this deployment does not have. */
 function etagList(h) {
   return String(h || '').split(',').map((t) => t.trim().replace(/^W\//, '').replace(/^"|"$/g, ''));
 }
@@ -85,6 +90,12 @@ export async function onRequest(context) {
     const current = cur && cur.value !== null ? String((cur.metadata && cur.metadata.updated) || 0) : null;
     const blocked = checkPreconditions(request, current || '');
     if (blocked) return blocked;
+    // Narrow the race (not strict CAS — see above): re-read the version
+    // immediately before the write and refuse if it moved since the check.
+    const again = await env.MUSE_KV.getWithMetadata(key, { type: 'text' });
+    const latest = again && again.value !== null ? String((again.metadata && again.metadata.updated) || 0) : null;
+    const blockedAgain = checkPreconditions(request, latest || '');
+    if (blockedAgain) return blockedAgain;
     const updated = Date.now();
     await env.MUSE_KV.put(key, text, { metadata: { updated, by: user.u } });
     // High-frequency telemetry keys aren't audited (they'd drown the log).
@@ -94,6 +105,7 @@ export async function onRequest(context) {
   }
   if (request.method === 'DELETE') {
     if (!isAdmin(user)) return json({ ok: false, error: 'Admins only' }, 403);
+    if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
     await env.MUSE_KV.delete(key);
     await audit(env, { who: user.u, role: user.r, action: 'kv.delete', key });
     return json({ ok: true });

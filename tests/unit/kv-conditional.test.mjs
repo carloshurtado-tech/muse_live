@@ -53,6 +53,35 @@ test('PUT with If-None-Match: matching version → 412, otherwise writes', async
   assert.equal((await onRequest(ctx('/api/kv/doc', { env, user: editor, params: { key: 'doc' } }))).status, 200);
 });
 
+test('SRV-011: a version that changes between check and write is signalled, not overwritten', async () => {
+  // Simulate a concurrent writer: the first metadata read sees v1000, every
+  // later read sees v2000 (the racer already wrote). The stale If-Match must
+  // be refused at the immediate re-check instead of silently winning.
+  const inner = memoryKV();
+  let reads = 0;
+  const racing = {
+    ...inner,
+    async getWithMetadata(k, o) {
+      reads++;
+      const r = await inner.getWithMetadata(k, o);
+      if (r.value === null) return r;
+      return { value: r.value, metadata: { ...(r.metadata || {}), updated: reads === 1 ? 1000 : 2000 } };
+    },
+  };
+  await inner.put('doc', JSON.stringify({ v: 1 }), { metadata: { updated: 1000, by: 'ana@meta.com' } });
+  const res = await put({ v: 2 }, { MUSE_KV: racing }, { 'If-Match': '"1000"' });
+  assert.equal(res.status, 412);
+  assert.ok(reads >= 2, 'the handler must re-check the version immediately before writing');
+  assert.deepEqual(JSON.parse(await inner.get('doc')), { v: 1 });
+});
+test('BUG-33: KV DELETE requires a same-origin request', async () => {
+  const env = { MUSE_KV: memoryKV() };
+  const admin = { u: 'team', n: 'Team', r: 'admin' };
+  await put({ v: 1 }, env);
+  const evil = await onRequest(ctx('/api/kv/doc', { method: 'DELETE', env, user: admin, params: { key: 'doc' }, headers: { Origin: 'https://evil.example' } }));
+  assert.equal(evil.status, 403);
+  assert.equal((await onRequest(ctx('/api/kv/doc', { method: 'DELETE', env, user: admin, params: { key: 'doc' } }))).status, 200);
+});
 test('conditional PUT keeps other guards (auth, JSON, size, origin)', async () => {
   const env = { MUSE_KV: memoryKV() };
   assert.equal((await put({ v: 1 }, env, { Origin: 'https://evil.example' })).status, 403);

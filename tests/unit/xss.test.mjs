@@ -43,6 +43,56 @@ test('no new Function() or eval() calls in first-party scripts', () => {
   }
   assert.deepEqual(hits, []);
 });
+/* ---- app-bundle bug contracts (BUG-05/11/12/39, COORD-8/11) ----
+   muse-app-a.js / muse-app-b.js are classic-script monoliths that need the full
+   page to boot, so these pin the fixed source contracts the same way the
+   ratchets above pin esc(). Behavioural coverage for the loadable modules
+   lives in their own test files. */
+const appA = () => fs.readFileSync(path.join(ROOT, 'js/muse-app-a.js'), 'utf8');
+const appB = () => fs.readFileSync(path.join(ROOT, 'js/muse-app-b.js'), 'utf8');
+
+test('BUG-05a: drawer offers bind Confirm/Cancel to a per-offer id, not the newest global', () => {
+  const a = appA();
+  assert.ok(a.includes('_museaiOffers'), 'per-offer store missing — Confirm still runs the newest offer');
+  assert.ok(a.includes('museaiRegisterOffer'), 'offer registration helper missing');
+  assert.ok(/onclick=\\"museaiConfirmAction\('\\"\s*\+\s*id/.test(a) || a.includes("museaiConfirmAction(\\''+id"), 'Confirm button is not bound to its offer id');
+  assert.ok(!a.includes('onclick="museaiConfirmAction()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Confirm</button>\'+\n    \'<button type="button" onclick="museaiCancelAction()"'), 'legacy unbound Confirm button still rendered');
+});
+
+test('BUG-05b: Omni Confirm states the action and show, pinned to the thread production', () => {
+  const b = appB();
+  assert.ok(b.includes('omniDescribeAction'), 'Omni bar does not describe the pending action');
+  assert.ok(/pend\.prod|_omniMuseAiPend\s*=\s*\{/.test(b), 'Omni pending does not pin the thread production');
+  assert.ok(b.includes('omniCurrentProd()'), 'Omni must resolve the thread production via omniCurrentProd()');
+});
+
+test('BUG-11: Omni Muse answers render through md(), personnel names are escaped', () => {
+  const b = appB();
+  assert.ok(/MuseAgent[^\n]*\.md\(/.test(b), 'Omni Muse answers are not rendered with the drawer md() renderer');
+  const a = appA();
+  assert.ok(a.includes('esc(m.name)'), 'personnel directory still inserts the imported name raw');
+  assert.ok(a.includes('esc(m.group'), 'personnel directory still inserts the group raw');
+});
+
+test('BUG-39/CLI-018: the global-search button escapes its JSON argument', () => {
+  const b = appB();
+  assert.ok(b.includes('esc(JSON.stringify(q))'), 'search button must use esc(JSON.stringify(q))');
+  assert.ok(!b.includes("JSON.stringify(q).replace(/</g"), 'unescaped JSON.stringify(q) still breaks out of the onclick attribute');
+});
+
+test('BUG-12: the CAD PDF path disables pdf.js eval', () => {
+  const b = appB();
+  assert.ok(/getDocument\(\{data:buf,isEvalSupported:false\}\)/.test(b), 'getDocument must pass isEvalSupported:false');
+});
+
+test('COORD-8/11: a missing ShadeMap key fails visibly, and the fallback note stays neutral', () => {
+  const a = appA();
+  assert.ok(/if\(!k\)\s*throw/.test(a), 'empty ShadeMap key must throw instead of building a shadowless map');
+  assert.ok(!a.includes('could not be reached on this network'), 'fallback note must not always blame the network');
+  assert.ok(/_shadeFail[\s\S]{0,600}key or map configuration/.test(a), 'fallback note must name the key/configuration as a possible cause');
+  assert.ok(a.includes('pitch:44'), 'the pitch-44 shadow cap must be preserved');
+});
+
 // innerHTML sites that concatenate data without esc() on the same line. shortcut: same-line heuristic, so
 // it is a ratchet (the number may fall, never rise) rather than a precise lint; tighten when the bundles are modularised.
 test('innerHTML assignments without esc() do not multiply', () => {

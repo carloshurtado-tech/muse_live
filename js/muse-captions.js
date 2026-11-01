@@ -48,11 +48,12 @@
   }
 
   function http() { return root.fetch || (typeof fetch !== 'undefined' ? fetch : null); }
+  function timeoutSignal(ms) { try { return AbortSignal.timeout(ms); } catch (e) { return undefined; } }
   async function transcribeClip(b64) {
     var F = http();
     if (!F) return { ok: false, error: 'network unavailable' };
     try {
-      var r = await F('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ audio: b64 }) });
+      var r = await F('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: timeoutSignal(30000), body: JSON.stringify({ audio: b64 }) });
       var j = await r.json();
       return j && j.ok ? { ok: true, text: j.transcript } : { ok: false, error: (j && j.error) || ('HTTP ' + (r.status || '?')) };
     } catch (e) { return { ok: false, error: String((e && e.message) || e).slice(0, 160) }; }
@@ -87,6 +88,7 @@
       r.gaps++;
       r.lastError = t.error || 'empty transcript';
       pushLine(key, { ts: new Date().toISOString(), text: '', gap: true });
+      renderLine(r.slot, 'Captions unavailable');
     }
   }
 

@@ -85,7 +85,9 @@
     var rec = show(key).rec;
     var votes = DISCIPLINES.map(function (d) {
       var v = rec.votes[d];
-      return { discipline: d, vote: v ? v.vote : 'PENDING', constraint: v ? v.constraint : '', by: v ? v.by : '', ts: v ? v.ts : 0, criteria: rec.criteria[d] || '' };
+      /* Every check names an owner (OPS-005): the voter, 'system' for a
+         weather hold, or 'Unassigned' while the vote is still pending. */
+      return { discipline: d, vote: v ? v.vote : 'PENDING', constraint: v ? v.constraint : '', by: v ? v.by : '', owner: v && v.by ? v.by : 'Unassigned', ts: v ? v.ts : 0, criteria: rec.criteria[d] || '' };
     });
     var nogos = votes.filter(function (v) { return v.vote === 'NO-GO'; });
     var pending = votes.filter(function (v) { return v.vote === 'PENDING'; });

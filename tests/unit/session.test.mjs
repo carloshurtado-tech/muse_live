@@ -30,3 +30,6 @@ test('legacy pre-account session cookies are rejected (every session needs a sig
   assert.equal(await verifyToken({}, legacy), null);
   assert.equal(pwHash({}), DEFAULT_PW_HASH);
 });
+test('BUG-01: the built-in default hash is the test fixture hash, never a production secret', () => {
+  assert.equal(DEFAULT_PW_HASH, 'c92726301f796df6d1fea9aba7f42d28ecfe5b0fc0a1614e033ff996cf0b3722');
+});

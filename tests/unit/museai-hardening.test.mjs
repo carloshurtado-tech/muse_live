@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { onRequestPost, takeToken } from '../../functions/api/museai.js';
+import { onRequestPost, takeToken, sessionKey, fetchWithHeaderTimeout } from '../../functions/api/museai.js';
 import { memoryKV, ctx } from './helpers.mjs';
 
 const GUEST = { u: 'guest', n: 'Guest reviewer', r: 'viewer' };
@@ -42,6 +42,50 @@ test('takeToken consumes one token and exhausts with KV and without', async () =
   }
 });
 
+test('BUG-02: guests charge only the guest counter, so the team keeps its budget', async () => {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => new Response(JSON.stringify({ choices: [{ message: { content: 'ok' }, finish_reason: 'stop' }], usage: { total_tokens: 10 } }), { headers: { 'Content-Type': 'application/json' } });
+  try {
+    const env = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_DAILY_TOKEN_CAP: '10000', MUSE_GUEST_DAILY_TOKEN_CAP: '10000' };
+    const TEAM = { u: 'team', n: 'Muse Live team', r: 'admin' };
+    const call = (user) => onRequestPost(ctx('/api/museai', { method: 'POST', body, env, user }));
+    assert.equal((await call(GUEST)).status, 200);
+    assert.equal((await call(GUEST)).status, 200);
+    assert.equal((await call(GUEST)).status, 200);
+    assert.equal((await call(GUEST)).status, 429); // guest slice exhausted
+    const teamKey = 'museai:tokens:' + day;
+    assert.ok(!Number(await env.MUSE_KV.get(teamKey, 'json')), 'guest spend leaked into the team counter');
+    assert.equal((await call(TEAM)).status, 200); // team budget untouched
+  } finally { globalThis.fetch = realFetch; }
+});
+test('BUG-02: the rate-limit key comes from the verified session, not the raw cookie', () => {
+  const req = (cookie) => new Request('https://muse.test/api/museai', { headers: { Cookie: cookie } });
+  const a = sessionKey(req('muse_session=token-aaaaaaaaaaaaaaaaaaaaaaaa'), GUEST);
+  const b = sessionKey(req('muse_session=completely-different-token-value'), GUEST);
+  assert.equal(a, b);
+  assert.ok(!a.includes('token'), 'key must not be derived from cookie bytes: ' + a);
+});
+test('BUG-15: the model timeout covers headers only, never a streaming body', async () => {
+  // Slow headers must still time out.
+  await assert.rejects(
+    fetchWithHeaderTimeout('https://model.test/v1/chat/completions', {}, 30, async () => {
+      await new Promise((r) => setTimeout(r, 120));
+      return new Response('late', { status: 200 });
+    }),
+  );
+  // Fast headers with a slow body must complete: no whole-stream abort.
+  const slowBody = new ReadableStream({
+    async start(c) {
+      c.enqueue(new TextEncoder().encode('data: {"choices":[]}\n\n'));
+      await new Promise((r) => setTimeout(r, 120));
+      c.enqueue(new TextEncoder().encode('data: [DONE]\n\n'));
+      c.close();
+    },
+  });
+  const res = await fetchWithHeaderTimeout('https://model.test/v1/chat/completions', {}, 30, async () => new Response(slowBody, { status: 200, headers: { 'Content-Type': 'text/event-stream' } }));
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /DONE/);
+});
 test('takeToken survives a lost KV race without double-charging', async () => {
   // A racing writer overwrites the bucket between our write and confirm: the
   // retry must adopt the winner's state and still admit exactly one token.

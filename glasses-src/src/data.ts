@@ -152,7 +152,8 @@ export async function fetchStatus(): Promise<Status> {
     if (r.ok) {
       const s = normalize(await r.json());
       if (s && Date.now() - s.ts < STALE_MS) {
-        if (!s.next) s.next = demoStatus().next; // older publishers don't send `next`
+        // No invented "next": when the desktop sends none, next stays null
+        // and the glasses show it as unknown (BUG-17).
         return s;
       }
     }

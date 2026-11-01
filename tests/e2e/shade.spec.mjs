@@ -9,6 +9,7 @@ import { signIn } from './helpers.mjs';
 // exercised without the real secret; the SDK's license call is stubbed too, while
 // its draw pipeline runs for real.
 test('sun & shadow panel draws and follows the scrubber', async ({ page }) => {
+  test.skip(!(await page.evaluate(() => !!document.createElement('canvas').getContext('webgl'))), 'no WebGL');
   await page.addInitScript(() => { try { localStorage.setItem('museTheme', 'light'); } catch (e) {} });
   await page.route('**/api/shademap-key', (route) => route.fulfill({ json: { key: 'e2e-placeholder-key' } }));
   await page.route('**/sdk/load', (route) => route.fulfill({ body: 'ok' })); // license check only; draw is local

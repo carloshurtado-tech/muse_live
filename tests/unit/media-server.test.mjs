@@ -46,6 +46,20 @@ test('prefix listing scopes to a show; delete is writers-only', async () => {
   assert.equal((await onRequest(ctx('/api/media?key=' + encodeURIComponent(k1), { env: e, user: viewer }))).status, 404);
 });
 
+test('BUG-11: stored media is served as an attachment, never inline scriptable content', async () => {
+  const e = env();
+  const put = await onRequest(ctx('/api/media', { method: 'POST', body: { kind: 'pano', show: 'demo', name: 'evil.html', contentType: 'text/html', data: b64('<script>alert(1)</script>') }, env: e, user: editor }));
+  assert.equal(put.status, 200);
+  const meta = await put.json();
+  for (const url of ['/api/media?key=' + encodeURIComponent(meta.key)]) {
+    const get = await onRequest(ctx(url, { env: e, user: viewer }));
+    assert.equal(get.status, 200, url);
+    assert.match(get.headers.get('Content-Disposition') || '', /^attachment/, url);
+    assert.equal(get.headers.get('X-Content-Type-Options'), 'nosniff', url);
+    assert.match(get.headers.get('Content-Security-Policy') || '', /sandbox/, url);
+    await get.text();
+  }
+});
 test('attach links a media key to an asset record', async () => {
   const { onRequest: serial } = await import('../../functions/api/assets/[serial].js');
   const db = memoryD1();

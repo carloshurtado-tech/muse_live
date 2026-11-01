@@ -21,7 +21,7 @@ const WITH_MAPS = argv.includes('--with-maps');
 export const EXCLUDE = [
   /^\.git(\/|$)/, /^\.github(\/|$)/, /^\.stage(\/|$)/, /^node_modules(\/|$)/, /(^|\/)node_modules(\/|$)/, /^functions(\/|$)/, /^tests(\/|$)/, /^tools(\/|$)/,
   /^scripts(\/|$)/, /^docs(\/|$)/, /^dist(\/|$)/, /^test-results(\/|$)/, /^playwright-report(\/|$)/, /^glasses\/src(\/|$)/, /^glasses-src(\/|$)/, /^eval(\/|$)/, /(^|\/)README\.md$/,
-  /^package(-lock)?\.json$/, /^tsconfig\.json$/, /^eslint\.config\.mjs$/, /^README\.md$/, /(^|\/)\.DS_Store$/,
+  /^package(-lock)?\.json$/, /^tsconfig\.json$/, /^eslint\.config\.mjs$/, /^README\.md$/, /^submission-draft\.md$/, /(^|\/)\.DS_Store$/,
   /(^|\/)\.dev[^/]*$/, /^js\/muse-app-[ab]\.js$/, /\.d\.ts$/, /^\.gitignore$/,
   / \d+\.[^/]+$/, /* iCloud conflict dupes: "index 2.html", "muse-app-b 2.js" */
 ];
@@ -46,6 +46,6 @@ function copyTree(src, dst, rel = '') {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   fs.rmSync(OUT, { recursive: true, force: true });
   copyTree(ROOT, path.join(OUT, 'public'));
-  fs.cpSync(path.join(ROOT, 'functions'), path.join(OUT, 'functions'), { recursive: true, filter: (s) => !/\.DS_Store$/.test(s) });
+  fs.cpSync(path.join(ROOT, 'functions'), path.join(OUT, 'functions'), { recursive: true, filter: (s) => !/\.DS_Store$/.test(s) && !/ \d+\.[^/]+$/.test(s) && !/(^|\/)submission-draft\.md$/.test(s) });
   console.log('staged → ' + OUT + '\n  deploy: cd ' + JSON.stringify(OUT) + ' && npx wrangler pages deploy public --project-name muse-live --branch main');
 }

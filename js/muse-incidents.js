@@ -277,8 +277,8 @@
   function statusBadge(s) { return '<span class="mi-status is-' + String(s).toLowerCase() + '">' + esc(s) + '</span>'; }
   function rowHTML(i, compact) {
     var open = (i.actions || []).filter(function (a) { return a.status !== 'Done'; }).length;
-    return '<button type="button" class="mi-row' + (ui.sel === i.id && !compact ? ' is-sel' : '') + '" onclick="MuseIncidents.open(\'' + i.id + '\')">' +
-      '<div class="mi-row-top">' + sevBadge(i.severity) + statusBadge(i.status) + '<span class="mi-id">' + i.id + '</span><span class="mi-when">' + fmt(i.started) + '</span></div>' +
+    return '<button type="button" class="mi-row' + (ui.sel === i.id && !compact ? ' is-sel' : '') + '" data-mi-act="open" data-mi-id="' + esc(i.id) + '">' +
+      '<div class="mi-row-top">' + sevBadge(i.severity) + statusBadge(i.status) + '<span class="mi-id">' + esc(i.id) + '</span><span class="mi-when">' + fmt(i.started) + '</span></div>' +
       '<div class="mi-row-title">' + esc(i.title) + '</div>' +
       '<div class="mi-row-meta">' + esc(prodName(i.production)) + ' · ' + esc(i.category) + (i.impact && i.impact.viewers_affected ? ' · ' + Number(i.impact.viewers_affected).toLocaleString() + ' viewers affected' : '') + (open ? ' · ' + open + ' open action' + (open > 1 ? 's' : '') : '') + '</div></button>';
   }
@@ -310,9 +310,9 @@
     var sim = similar(i), fixes = [];
     sim.forEach(function (x) { (x.actions || []).forEach(function (a) { if (a.status === 'Done' && fixes.length < 5 && !fixes.some(function (f) { return f.text === a.text; })) fixes.push({ text: a.text, id: x.id }); }); });
     return '<section><h3>Stream &amp; schedule at the time</h3>' +
-        '<p class="mi-d-meta">Window ' + fmt(from) + ' – ' + fmt(to) + ' · stream state now: ' + esc(state || '—') + ' · <button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + i.production + '\')">Open the streaming tab</button></p>' + sched + '</section>' +
+        '<p class="mi-d-meta">Window ' + fmt(from) + ' – ' + fmt(to) + ' · stream state now: ' + esc(state || '—') + ' · <button type="button" class="ms-link" data-mi-act="openShow" data-mi-prod="' + esc(i.production) + '">Open the streaming tab</button></p>' + sched + '</section>' +
       '<section><h3>Similar past incidents</h3>' + (sim.length ? listHTML(sim, { compact: true }) : '<p class="mi-muted">No similar incidents on record.</p>') +
-        (fixes.length ? '<h4 class="mi-h4">Recommended fixes (proven on similar incidents)</h4><ul class="mi-ul">' + fixes.map(function (f) { return '<li>' + esc(f.text) + ' <span class="mi-muted">(' + f.id + ')</span></li>'; }).join('') + '</ul>' : '') + '</section>';
+        (fixes.length ? '<h4 class="mi-h4">Recommended fixes (proven on similar incidents)</h4><ul class="mi-ul">' + fixes.map(function (f) { return '<li>' + esc(f.text) + ' <span class="mi-muted">(' + esc(f.id) + ')</span></li>'; }).join('') + '</ul>' : '') + '</section>';
   }
   function bullets(a) { return a && a.length ? '<ul class="mi-ul">' + a.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' : '<p class="mi-muted">—</p>'; }
   function detailHTML(i) {
@@ -322,25 +322,25 @@
     var tele = i.telemetry && Object.keys(i.telemetry).length ? '<div class="mi-tele">' + Object.keys(i.telemetry).map(function (k) { var v = i.telemetry[k]; return '<div><span>' + esc(k.replace(/_/g, ' ')) + '</span><b>' + esc(typeof v === 'object' ? JSON.stringify(v) : v) + '</b></div>'; }).join('') + '</div>' : '<p class="mi-muted">No telemetry captured.</p>';
     return '<article class="mi-detail">' +
       '<header class="mi-d-head"><div class="mi-row-top">' + sevBadge(i.severity) +
-        '<select class="mi-status-sel" aria-label="Status" onchange="MuseIncidents.setStatus(\'' + i.id + '\',this.value)">' + STATUSES.map(function (s) { return '<option' + (s === i.status ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select>' +
-        '<span class="mi-id">' + i.id + '</span><span class="mi-when">Post-mortem: ' + esc(i.postmortem || 'Draft') + '</span></div>' +
+        '<select class="mi-status-sel" aria-label="Status" data-mi-act="setStatus" data-mi-id="' + esc(i.id) + '">' + STATUSES.map(function (s) { return '<option' + (s === i.status ? ' selected' : '') + '>' + s + '</option>'; }).join('') + '</select>' +
+        '<span class="mi-id">' + esc(i.id) + '</span><span class="mi-when">Post-mortem: ' + esc(i.postmortem || 'Draft') + '</span></div>' +
         '<h2>' + esc(i.title) + '</h2>' +
-        '<p class="mi-d-meta"><button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + i.production + '\')">' + esc(prodName(i.production)) + '</button> · ' + esc(i.category) + ' · Incident commander ' + esc(i.commander || '—') + ' · Reported by ' + esc(i.reporter || '—') + (i.platforms && i.platforms.length ? ' · ' + esc(i.platforms.join(', ')) : '') + '</p>' +
-        '<div class="mi-d-actions"><button type="button" class="ms-btn ms-btn-primary" onclick="MuseIncidents.openEdit(\'' + i.id + '\')">✎ Edit report</button><button type="button" class="ms-btn" onclick="MuseIncidents.draftPostmortem(\'' + i.id + '\')">Draft post-mortem</button><button type="button" class="ms-btn" onclick="museaiAsk(\'Brief me on incident ' + i.id + '\')">Ask Muse to brief me</button><button type="button" class="ms-btn" onclick="MuseIncidents.copy(\'' + i.id + '\')">Copy post-mortem</button>' + (i.clip_url ? '<a class="ms-btn" href="' + esc(i.clip_url) + '" target="_blank" rel="noopener">Recorded clip ↗</a>' : '') + '</div>' +
+        '<p class="mi-d-meta"><button type="button" class="ms-link" data-mi-act="openShow" data-mi-prod="' + esc(i.production) + '">' + esc(prodName(i.production)) + '</button> · ' + esc(i.category) + ' · Incident commander ' + esc(i.commander || '—') + ' · Reported by ' + esc(i.reporter || '—') + (i.platforms && i.platforms.length ? ' · ' + esc(i.platforms.join(', ')) : '') + '</p>' +
+        '<div class="mi-d-actions"><button type="button" class="ms-btn ms-btn-primary" data-mi-act="openEdit" data-mi-id="' + esc(i.id) + '">✎ Edit report</button><button type="button" class="ms-btn" data-mi-act="draft" data-mi-id="' + esc(i.id) + '">Draft post-mortem</button><button type="button" class="ms-btn" data-mi-act="ask" data-mi-id="' + esc(i.id) + '">Ask Muse to brief me</button><button type="button" class="ms-btn" data-mi-act="copy" data-mi-id="' + esc(i.id) + '">Copy post-mortem</button>' + (i.clip_url ? '<a class="ms-btn" href="' + esc(i.clip_url) + '" target="_blank" rel="noopener">Recorded clip ↗</a>' : '') + '</div>' +
       '</header>' +
       '<div class="mi-kpis">' + kpis.map(function (k) { return '<div><span>' + k[0] + '</span><b>' + esc(k[1]) + '</b></div>'; }).join('') + '</div>' +
       (im.sla ? '<p class="mi-sla">' + esc(im.sla) + '</p>' : '') +
       '<section><h3>Summary</h3><p>' + esc(i.summary) + '</p></section>' +
       '<section><h3>Timeline</h3><ol class="mi-timeline">' + (i.timeline || []).map(function (t) { return '<li><time>' + fmt(t.t) + (t.tc ? ' · <b class="mi-tc">TC ' + esc(t.tc) + '</b>' : '') + '</time><span>' + esc(t.text) + '</span></li>'; }).join('') + '</ol>' +
-        '<form class="mi-inline" onsubmit="event.preventDefault();MuseIncidents.addTimeline(\'' + i.id + '\',this)"><input name="text" placeholder="Add a timeline entry (stamped now)" aria-label="Timeline entry" required><input name="tc" placeholder="TC (HH:MM:SS)" aria-label="Broadcast timecode" pattern="[0-9]{1,2}:[0-9]{2}:[0-9]{2}(:[0-9]{2})?" style="width:140px" title="HH:MM:SS or HH:MM:SS:FF"><button class="ms-btn">Add</button></form></section>' +
+        '<form class="mi-inline" data-mi-act="addTimeline" data-mi-id="' + esc(i.id) + '"><input name="text" placeholder="Add a timeline entry (stamped now)" aria-label="Timeline entry" required><input name="tc" placeholder="TC (HH:MM:SS)" aria-label="Broadcast timecode" pattern="[0-9]{1,2}:[0-9]{2}:[0-9]{2}(:[0-9]{2})?" style="width:140px" title="HH:MM:SS or HH:MM:SS:FF"><button class="ms-btn">Add</button></form></section>' +
       '<section><h3>Root cause</h3><p>' + esc(i.root_cause || '—') + '</p></section>' +
       '<section><h3>Contributing factors</h3>' + bullets(i.contributing) + '</section>' +
       '<section><h3>Resolution</h3><p>' + esc(i.resolution || '—') + '</p></section>' +
       '<div class="mi-two"><section><h3>What went well</h3>' + bullets(i.went_well) + '</section><section><h3>What went wrong</h3>' + bullets(i.went_wrong) + '</section></div>' +
       '<section><h3>Action items</h3><div class="mi-actions">' + (i.actions || []).map(function (a, n) {
-        return '<label class="mi-action' + (a.status === 'Done' ? ' is-done' : '') + '"><input type="checkbox" ' + (a.status === 'Done' ? 'checked ' : '') + 'onchange="MuseIncidents.toggleAction(\'' + i.id + '\',' + n + ',this.checked)"><span class="mi-a-text">' + esc(a.text) + '</span><span class="mi-a-meta">' + esc(a.owner || '') + (a.due ? ' · due ' + esc(a.due) : '') + '</span></label>';
+        return '<label class="mi-action' + (a.status === 'Done' ? ' is-done' : '') + '"><input type="checkbox" ' + (a.status === 'Done' ? 'checked ' : '') + 'data-mi-act="toggleAction" data-mi-id="' + esc(i.id) + '" data-mi-n="' + n + '"><span class="mi-a-text">' + esc(a.text) + '</span><span class="mi-a-meta">' + esc(a.owner || '') + (a.due ? ' · due ' + esc(a.due) : '') + '</span></label>';
       }).join('') + '</div>' +
-        '<form class="mi-inline" onsubmit="event.preventDefault();MuseIncidents.addAction(\'' + i.id + '\',this)"><input name="text" placeholder="New action item" aria-label="Action item" required><input name="owner" placeholder="Owner" aria-label="Owner"><input name="due" type="date" aria-label="Due date"><button class="ms-btn">Add</button></form></section>' +
+        '<form class="mi-inline" data-mi-act="addAction" data-mi-id="' + esc(i.id) + '"><input name="text" placeholder="New action item" aria-label="Action item" required><input name="owner" placeholder="Owner" aria-label="Owner"><input name="due" type="date" aria-label="Due date"><button class="ms-btn">Add</button></form></section>' +
       '<section><h3>Telemetry at the time of the incident</h3>' + tele + '</section>' +
       contextHTML(i) +
       (i.tags && i.tags.length ? '<p class="mi-tags">' + i.tags.map(function (t) { return '<span>#' + esc(t) + '</span>'; }).join('') + '</p>' : '') +
@@ -348,7 +348,7 @@
   }
   function filters() {
     var ks = (root.order || Object.keys(P())).filter(function (k) { return P()[k]; });
-    function sel(name, label, opts) { return '<select aria-label="' + label + '" onchange="MuseIncidents.filter(\'' + name + '\',this.value)"><option value="">' + label + '</option>' + opts.map(function (o) { var v = Array.isArray(o) ? o[0] : o, l = Array.isArray(o) ? o[1] : o; return '<option value="' + esc(v) + '"' + (ui[name] === v ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select>'; }
+    function sel(name, label, opts) { return '<select aria-label="' + label + '" data-mi-filter="' + name + '"><option value="">' + label + '</option>' + opts.map(function (o) { var v = Array.isArray(o) ? o[0] : o, l = Array.isArray(o) ? o[1] : o; return '<option value="' + esc(v) + '"' + (ui[name] === v ? ' selected' : '') + '>' + esc(l) + '</option>'; }).join('') + '</select>'; }
     return sel('production', 'All shows', ks.map(function (k) { return [k, prodName(k)]; })) + sel('severity', 'Any severity', Object.keys(SEVS)) + sel('status', 'Any status', STATUSES) + sel('category', 'Any category', CATEGORIES);
   }
   function render() {
@@ -363,7 +363,7 @@
     var mttrAvg = mttr.length ? Math.round(mttr.reduce(function (a, b) { return a + b; }, 0) / mttr.length) : 0;
     host.innerHTML = '<div class="ms-wrap">' +
       '<div class="ms-page-h"><div><h1>Incident Reports</h1><p>Blameless post-mortems for every live stream and broadcast: what happened, the impact, the root cause and follow-ups.</p></div>' +
-        '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseIncidents.openNew()">+ New incident</button></div>' +
+        '<button type="button" class="ms-btn ms-btn-primary" data-mi-act="openNew">+ New incident</button></div>' +
       '<div class="ms-kpis"><div><span>Open / monitoring</span><b>' + open + '</b></div><div><span>SEV-1 / SEV-2 this year</span><b>' + sev12 + '</b></div><div><span>Mean time to resolve</span><b>' + (mttrAvg >= 60 ? Math.floor(mttrAvg / 60) + ' h ' + (mttrAvg % 60) + ' m' : mttrAvg + ' min') + '</b></div><div><span>Open action items</span><b>' + acts + '</b></div></div>' +
       '<div class="mi-search"><input id="miSearch" type="search" value="' + esc(ui.q) + '" placeholder="Search incidents: show, venue, symptom, gear, owner… e.g. “Ray-Ban failover”, “captions”, “CDN”" aria-label="Search incidents" oninput="MuseIncidents.query(this.value)">' +
         '<div class="mi-filters">' + filters() + '</div></div>' +
@@ -504,7 +504,7 @@
       }
       var startedLocal = i.started ? new Date(i.started).toISOString().slice(0, 16) : '';
       var resolvedLocal = i.resolved ? new Date(i.resolved).toISOString().slice(0, 16) : '';
-      ov.innerHTML = '<form class="mi-modal-box" onsubmit="event.preventDefault();MuseIncidents.saveEdit(\'' + i.id + '\',this)">' +
+      ov.innerHTML = '<form class="mi-modal-box" data-mi-act="saveEdit" data-mi-id="' + esc(i.id) + '">' +
         '<h2>Edit incident ' + esc(i.id) + '</h2>' +
         '<p class="mi-muted">Resolved reports stay editable — fixes, follow-ups and timecode notes keep landing here.</p>' +
         inp('title', 'Title', i.title, 'required') +
@@ -574,4 +574,42 @@
     full: function (i) { var o = JSON.parse(JSON.stringify(i)); o.show = prodName(i.production); o.time_to_detect = dur(i.started, i.detected); o.time_to_mitigate = dur(i.started, i.mitigated || i.resolved); return o; },
     severities: SEVS
   };
+
+  /* BUG-11: one delegated listener set for every incident control. Ids and
+     production keys travel in esc()-encoded data-* attributes (the browser
+     entity-decodes them back to the raw value), never inside inline
+     handler strings, so a hostile id cannot break out as markup or code. */
+  var miBound = false;
+  function miActEl(el) { while (el && el !== document) { if (el.getAttribute && el.getAttribute('data-mi-act')) return el; el = el.parentNode; } return null; }
+  function miBind() {
+    if (miBound || typeof document === 'undefined' || !document.addEventListener) return; miBound = true;
+    document.addEventListener('click', function (e) {
+      var t = miActEl(e.target); if (!t) return;
+      var act = t.getAttribute('data-mi-act'), id = t.getAttribute('data-mi-id');
+      if (act === 'open') MI.open(id);
+      else if (act === 'openNew') openNew();
+      else if (act === 'openShow') { try { root.MuseStreaming.openShow(t.getAttribute('data-mi-prod')); } catch (e2) {} }
+      else if (act === 'openEdit') MI.openEdit(id);
+      else if (act === 'draft') MI.draftPostmortem(id);
+      else if (act === 'copy') MI.copy(id);
+      else if (act === 'ask') { if (typeof root.museaiAsk === 'function') root.museaiAsk('Brief me on incident ' + id); }
+    });
+    document.addEventListener('change', function (e) {
+      var t = e.target; if (!t || !t.getAttribute) return;
+      var f = t.getAttribute('data-mi-filter'); if (f) { MI.filter(f, t.value); return; }
+      var act = t.getAttribute('data-mi-act');
+      if (act === 'setStatus') MI.setStatus(t.getAttribute('data-mi-id'), t.value);
+      else if (act === 'toggleAction') MI.toggleAction(t.getAttribute('data-mi-id'), +t.getAttribute('data-mi-n'), t.checked);
+    });
+    document.addEventListener('submit', function (e) {
+      var t = e.target; if (!t || !t.getAttribute) return;
+      var act = t.getAttribute('data-mi-act'); if (!act) return;
+      e.preventDefault();
+      var id = t.getAttribute('data-mi-id');
+      if (act === 'addTimeline') MI.addTimeline(id, t);
+      else if (act === 'addAction') MI.addAction(id, t);
+      else if (act === 'saveEdit') MI.saveEdit(id, t);
+    });
+  }
+  miBind();
 })(typeof window !== 'undefined' ? window : globalThis);

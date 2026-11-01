@@ -19,7 +19,7 @@
 (function (root) {
   'use strict';
   /** @type {any} */ var w = root;
-  var MIRROR = ['muselive_incidents_v1', 'muselive_streams_v1', 'muselive_schedule_v1', 'muselive_edits', 'muselive_custom'];
+  var MIRROR = ['muselive_incidents_v1', 'muselive_streams_v1', 'muselive_schedule_v1', 'muselive_edits', 'muselive_custom', 'muselive_launch_v1'];
   var META = 'muselive_sync_meta', QUEUE = 'muselive_sync_queue', RELOADED = 'muse_sync_reloaded';
   var POLL_MS = 10000, RETRY_MS = 15000, DEBOUNCE_MS = 1500, MAX_BYTES = 256 * 1024;
 
@@ -40,15 +40,21 @@
   // Reads are conditional: once a version is seen, If-None-Match turns an
   // unchanged poll into a 304 with no body. The HEAD poll below needs no
   // change — 304 is !ok, so it already returns early on "unchanged".
+  function timeoutSignal(ms) {
+    try { return typeof AbortSignal !== 'undefined' && AbortSignal.timeout ? AbortSignal.timeout(ms) : undefined; } catch (e) { return undefined; }
+  }
   function req(method, key, body) {
     var headers = body !== undefined ? { 'Content-Type': 'application/json' } : {};
     if (body === undefined && (method === 'GET' || method === 'HEAD') && seen[key]) headers['If-None-Match'] = '"' + seen[key] + '"';
     return fetch('/api/kv/' + encodeURIComponent(key) + (method === 'PUT' ? '' : '?optional=1'), {
       method: method, credentials: 'include', cache: 'no-store',
-      headers: headers,
+      headers: headers, signal: timeoutSignal(10000),
       body: body !== undefined ? body : undefined
     }).then(function (r) {
-      if (r.status === 503 || r.status === 401) { enabled = false; setState('local'); }
+      /* 401 means signed out: say so, visibly (BUG-38). 503 still means KV
+         is not configured on this deployment, which stays silent local. */
+      if (r.status === 401) { enabled = false; setState('signedout'); }
+      else if (r.status === 503) { enabled = false; setState('local'); }
       return r;
     });
   }
@@ -162,7 +168,7 @@
   /* ---------------- identity ---------------- */
   function me() {
     if (!mePromise) {
-      mePromise = signedIn() ? fetch('/api/auth/me', { credentials: 'include', cache: 'no-store' })
+      mePromise = signedIn() ? fetch('/api/auth/me', { credentials: 'include', cache: 'no-store', signal: timeoutSignal(10000) })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) { w.__museSyncMe = j && j.user; return (j && j.user) || null; })
         .catch(function () { return null; }) : Promise.resolve(null);
@@ -171,7 +177,7 @@
   }
 
   /* ---------------- indicator ---------------- */
-  var LABEL = { saving: 'Saving…', synced: 'Synced', offline: 'Offline · saved on this device', stale: 'Updated elsewhere · Reload', local: '' };
+  var LABEL = { saving: 'Saving…', synced: 'Synced', offline: 'Offline · saved on this device', stale: 'Updated elsewhere · Reload', local: '', signedout: 'Signed out — not saving (changes stay on this device)' };
   var fadeTimer = null;
   function setState(s) {
     state = s;
@@ -182,7 +188,7 @@
     // "Synced" is a moment of reassurance, not a permanent badge; problems stay visible.
     if (s === 'synced') fadeTimer = setTimeout(function () { pill.classList.add('is-fading'); setTimeout(function () { if (state === 'synced') pill.hidden = true; }, 450); }, 2500);
     var text = s === 'stale' ? 'Updated by ' + staleBy + ' · Reload' : (LABEL[s] || '');
-    pill.hidden = !text || enabled === false;
+    pill.hidden = !text || (enabled === false && s !== 'signedout');
     pill.className = 'muse-sync-pill is-' + s;
     if (s === 'synced') pill.classList.remove('is-fading');
     pill.querySelector('.muse-sync-text').textContent = text;
@@ -218,7 +224,7 @@
       if (!u || u.email === 'guest') { enabled = false; settle(); return; }
       enabled = true;
       return initialPull().then(function (changed) {
-        if (enabled === false) return;
+        if (enabled === false) { settle(); return; }
         var fresh = performance.now() < 20000;
         var reloaded = false; try { reloaded = sessionStorage.getItem(RELOADED) === '1'; } catch (e) { /* noop */ }
         if (changed.length && fresh && !reloaded) {

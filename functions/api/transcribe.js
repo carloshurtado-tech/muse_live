@@ -6,6 +6,8 @@
 import { json, sameOrigin } from '../_lib/session.js';
 import { who, canWrite } from '../_lib/who.js';
 import { audit } from '../_lib/audit.js';
+import { resolveModelBase } from '../_lib/abuse.js';
+import { takeToken, sessionKey, usedToday, dailyCap } from './museai.js';
 
 const MODEL = 'muse-voice-transcribe-1.0';
 const MAX_AUDIO = 10000000;
@@ -36,12 +38,19 @@ export async function onRequestPost(context) {
   if (bytes[0] !== 0x52 || bytes[1] !== 0x49 || bytes[2] !== 0x46 || bytes[3] !== 0x46) {
     return json({ ok: false, error: 'audio must be a WAV (RIFF) clip.' }, 400);
   }
+  // Same guards as Muse: per-session pacing, the shared daily budget, and the
+  // pinned model base (which is also how the local mock is honoured).
+  const rl = await takeToken(env, sessionKey(request, user), false);
+  if (!rl.ok) return json({ ok: false, error: 'Transcription is pacing itself. Try again in ' + rl.retryS + ' s.' }, 429);
+  if ((await usedToday(env)) >= dailyCap(env)) return json({ ok: false, capped: true, error: 'Muse has reached today\'s usage limit for this workspace.' }, 429);
+  const resolved = resolveModelBase(env);
+  if (!resolved.ok) return json({ ok: false, error: resolved.error }, 503);
   const form = new FormData();
   form.append('request', new Blob([JSON.stringify({ model: MODEL, audioEncoding: 'WAV', mode: 'PUSH_TO_TALK' })], { type: 'application/json' }));
   form.append('audio', new Blob([bytes], { type: 'audio/wav' }), 'clip.wav');
   let up = null, okUp = false;
   try {
-    const r = await fetch('https://api.meta.ai/v1/asr/transcribe', {
+    const r = await fetch(resolved.base + '/asr/transcribe', {
       method: 'POST', headers: { Authorization: 'Bearer ' + key, Accept: 'application/json' },
       body: form, signal: AbortSignal.timeout(90000),
     });

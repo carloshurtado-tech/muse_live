@@ -26,7 +26,7 @@ async function graph(env, path, params) {
   const u = new URL(`https://graph.facebook.com/${v}/${path}`);
   for (const [k, val] of Object.entries(params || {})) u.searchParams.set(k, val);
   u.searchParams.set('access_token', env.FB_GRAPH_TOKEN);
-  const r = await fetch(u.toString());
+  const r = await fetch(u.toString(), { signal: AbortSignal.timeout(15000) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok || j.error) {
     const e = j.error || {};

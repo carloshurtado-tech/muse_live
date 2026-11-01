@@ -4,7 +4,7 @@ import vm from 'node:vm';
 import fs from 'node:fs';
 import path from 'node:path';
 import { onRequestPost } from '../../functions/api/streamcheck.js';
-import { memoryKV, ctx, loadBrowserModule, ROOT } from './helpers.mjs';
+import { memoryKV, memoryD1, ctx, loadBrowserModule, ROOT } from './helpers.mjs';
 
 const TEAM = { u: 'team', n: 'Muse Live team', r: 'admin' };
 const VIEWER = { u: 'guest', n: 'Guest reviewer', r: 'viewer' };
@@ -25,8 +25,8 @@ test('streamcheck: parses boxes + confidences, counts masks without returning th
   const text = 'a<|box;x1=10;y1=20;x2=30;y2=40;w=640;h=360;c=0.94|><|mask;x=0;y=0;c=0.94;data=AAA|>b<|box;x1=50;y1=60;x2=70;y2=80;w=640;h=360;c=0.87|><|mask;x=0;y=0;c=0.87;data=BBB|>';
   const m = mockFetch(samResponse(text));
   try {
-    const kv = memoryKV();
-    const r = await onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: { MODEL_API_KEY: 'k', MUSE_KV: kv }, user: TEAM,
+    const db = memoryD1();
+    const r = await onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_D1: db }, user: TEAM,
       body: { image: IMG, concept: 'traffic cone' } }));
     assert.equal(r.status, 200);
     const j = await r.json();
@@ -38,7 +38,7 @@ test('streamcheck: parses boxes + confidences, counts masks without returning th
     assert.ok(!JSON.stringify(j).includes('AAA'), 'mask data leaked into the response');
     assert.equal(m.calls[0][0], 'https://api.meta.ai/v1/responses');
     assert.equal(m.calls[0][1].model, 'sam-3.1');
-    assert.ok((await kv.get('audit:' + day(), { type: 'json' })).some((e) => e.action === 'showcaller.streamcheck'));
+    assert.ok(db.tables.auditLog.some((e) => e.action === 'showcaller.streamcheck'));
   } finally { m.done(); }
 });
 
@@ -160,13 +160,83 @@ test('client: runShow stores latest and Show Caller raises each flag high', asyn
   assert.ok(p.uncovered.some((u) => /monitor/.test(u.why)), 'visual flag must escalate to human eyes');
 });
 
+test('client: errored SAM checks surface as unavailable, never as clean flags (BUG-06)', async () => {
+  const video = { tagName: 'VIDEO', videoWidth: 640, videoHeight: 360 };
+  const bright = { data: new Array(64 * 36 * 4).fill(255), w: 64, h: 36 };
+  const canvas = () => ({ width: 0, height: 0, getContext: () => ({ drawImage() {}, getImageData: () => bright }), toDataURL: () => 'data:image/jpeg;base64,x' });
+  const w = loadBrowserModule('js/muse-streamcheck.js', {
+    MuseStreaming: { videoFor: () => video }, document: { createElement: () => canvas() },
+    fetch: async () => { throw new Error('HTTP 429 budget'); } });
+  const run = await w.MuseStreamCheck.runShow('demo', 'wall:program', { expectLowerThird: true, gear: [] });
+  assert.ok(Array.isArray(run.results), 'run carries results');
+  assert.ok(Array.isArray(run.unavailable), 'errored checks are exposed as unavailable, not dropped');
+  assert.ok(run.unavailable.some((r) => r.check === 'lower-third'), 'SAM failure is unavailable: ' + JSON.stringify(run));
+  assert.ok(!run.flags.some((r) => r.check === 'lower-third'), 'errored check must not become a flag');
+  assert.ok(run.results.some((r) => r.check === 'lower-third' && r.error), 'result keeps its error');
+});
+
+test('client: segment fetch carries an AbortSignal timeout (BUG-38)', async () => {
+  const video = { tagName: 'VIDEO', videoWidth: 640, videoHeight: 360 };
+  const canvas = () => ({ width: 0, height: 0, getContext: () => ({ drawImage() {} }), toDataURL: () => 'data:image/jpeg;base64,x' });
+  let seen = null;
+  const w = loadBrowserModule('js/muse-streamcheck.js', {
+    MuseStreaming: { videoFor: () => video }, document: { createElement: () => canvas() }, AbortSignal,
+    fetch: async (url, init) => { seen = init; return { status: 200, json: async () => ({ ok: true, matches: [], count: 0 }) }; } });
+  const r = await w.MuseStreamCheck.segment('data:image/jpeg;base64,x', 'caption bar');
+  assert.equal(r.ok, true);
+  assert.ok(seen && seen.signal, 'streamcheck fetch must pass an AbortSignal (timeout)');
+});
+
+test('client: runShow skips the lower-third check when no expectation is declared (BUG-06)', async () => {
+  const video = { tagName: 'VIDEO', videoWidth: 640, videoHeight: 360 };
+  const bright = { data: new Array(64 * 36 * 4).fill(255), w: 64, h: 36 };
+  const canvas = () => ({ width: 0, height: 0, getContext: () => ({ drawImage() {}, getImageData: () => bright }), toDataURL: () => 'data:image/jpeg;base64,x' });
+  let calls = 0;
+  const w = loadBrowserModule('js/muse-streamcheck.js', {
+    MuseStreaming: { videoFor: () => video }, document: { createElement: () => canvas() },
+    fetch: async () => { calls++; return { status: 200, json: async () => ({ ok: true, matches: [], count: 0 }) }; } });
+  const run = await w.MuseStreamCheck.runShow('demo', 'wall:program', { gear: [] });
+  assert.equal(run.results.length, 1, 'no rundown expectation means no lower-third verdict: ' + JSON.stringify(run.results));
+  assert.equal(run.results[0].check, 'black');
+  assert.equal(calls, 0, 'SAM must not be called for an undeclared lower-third expectation');
+});
+
 test('streamcheck: upstream failure is a 502 with a failed audit entry', async () => {
   const m = mockFetch({ error: { code: 'model_not_found' } });
   try {
-    const kv = memoryKV();
-    const r = await onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: { MODEL_API_KEY: 'k', MUSE_KV: kv }, user: TEAM,
+    const db = memoryD1();
+    const r = await onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_D1: db }, user: TEAM,
       body: { image: IMG, concept: 'camera' } }));
     assert.equal(r.status, 502);
-    assert.ok((await kv.get('audit:' + day(), { type: 'json' })).some((e) => e.action === 'showcaller.streamcheck.failed'));
+    assert.ok(db.tables.auditLog.some((e) => e.action === 'showcaller.streamcheck.failed'));
+  } finally { m.done(); }
+});
+
+test('BUG-28: streamcheck honours the mock model base, rate limit and daily budget', async () => {
+  const m = mockFetch(samResponse(''));
+  try {
+    // The configured (mock) base is used, never a hardcoded host.
+    const mockEnv = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_API_BASE: 'http://127.0.0.1:8799/v1' };
+    const r0 = await onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: mockEnv, user: TEAM, body: { image: IMG, concept: 'camera' } }));
+    assert.equal(r0.status, 200);
+    assert.equal(m.calls[0][0], 'http://127.0.0.1:8799/v1/responses');
+    // A forbidden base fails closed without calling upstream.
+    const evilEnv = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_API_BASE: 'https://evil.example/v1' };
+    assert.equal((await onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: evilEnv, user: TEAM, body: { image: IMG, concept: 'camera' } }))).status, 503);
+    assert.equal(m.calls.length, 1);
+    // Rate limit: the third rapid call is paced before any model call.
+    const rlEnv = { MODEL_API_KEY: 'k', MUSE_KV: memoryKV(), MUSE_RATE_PER_MIN: '2' };
+    const RLUSER = { u: 'rl@meta.com', n: 'RL', r: 'engineer' };
+    const call = () => onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: rlEnv, user: RLUSER, body: { image: IMG, concept: 'camera' } }));
+    assert.equal((await call()).status, 200);
+    assert.equal((await call()).status, 200);
+    assert.equal((await call()).status, 429);
+    assert.equal(m.calls.length, 3);
+    // Daily budget already spent: refused before any model call.
+    const cappedKv = memoryKV();
+    await cappedKv.put('museai:tokens:' + day(), JSON.stringify(10000));
+    const capEnv = { MODEL_API_KEY: 'k', MUSE_KV: cappedKv, MUSE_DAILY_TOKEN_CAP: '10000' };
+    assert.equal((await onRequestPost(ctx('/api/streamcheck', { method: 'POST', env: capEnv, user: TEAM, body: { image: IMG, concept: 'camera' } }))).status, 429);
+    assert.equal(m.calls.length, 3);
   } finally { m.done(); }
 });

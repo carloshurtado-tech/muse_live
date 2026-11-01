@@ -13,15 +13,17 @@ const describe = (x) => x.id + ': ' + x.nodes.slice(0, 3).map((n) => n.target.jo
 
 test('main views have no WCAG 2.1 AA violations in light and dark', async ({ page }) => {
   await signIn(page);
+  const failures = [];
   for (const dark of [false, true]) {
     await page.evaluate((d) => document.documentElement.classList.toggle('dark', d), dark);
     for (const v of VIEWS) {
       await page.evaluate((v) => (window.navGo || window.switchView)(v), v);
       await page.waitForTimeout(800);
       const { violations } = await axe(page).analyze();
-      expect(violations.map(describe), `${v} ${dark ? 'dark' : 'light'}`).toEqual([]);
+      if (violations.length) failures.push(`${v} ${dark ? 'dark' : 'light'}: ` + violations.map(describe).join(' | '));
     }
   }
+  expect(failures, failures.join('\n')).toEqual([]);
 });
 test('the About page has no WCAG 2.1 AA violations', async ({ page }) => {
   await page.goto('/about');

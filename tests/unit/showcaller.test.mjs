@@ -433,6 +433,29 @@ test('25. gate: approve moves the real seed booking end to end', () => {
   assert.equal(SC.approve(r.id, {}).ok, false);
 });
 
+test('30. BUG-04: approval card makes no Spark/citation claim and approve without targets sends nothing', async () => {
+  const src = fs.readFileSync(path.join(ROOT, 'js/muse-showcaller.js'), 'utf8');
+  assert.doesNotMatch(src, /Muse Spark|citation-checked|Spark reasons/i, 'showcaller UI must not claim model reasoning it never calls');
+  const comms = [], saved = [];
+  const w = makeWin({ MuseSchedule: Object.assign(schedFixStubs(['crk6']), { update: (id, patch) => { saved.push([id, patch]); } }),
+    comms, saveComms: () => {}, fetch: async () => ({ status: 200, json: async () => ({ ok: true, ts: 'ts1' }) }) });
+  const SC = w.MuseShowCaller;
+  assert.doesNotMatch(SC.cardHTML({ id: 'SC-x', show: 'demo', plan: { action: 'reassign_booking', detail: { booking: 'B', from: 'a', to: 'b' }, sources: ['booking b1'] } }), /Spark|citation/i);
+  const plan = SC.propose('demo').plans.filter((x) => x.action === 'reassign_booking')[0];
+  const r = SC.approve(SC.requestApproval(plan, 'demo').id, { by: 'Cara' });
+  assert.equal(r.ok, true);
+  await new Promise((done) => setTimeout(done, 20));
+  assert.equal(comms.length, 0, 'approve without targets must stay silent (no wired Omni send claimed)');
+});
+
+test('31. BUG-06: errored Stream Check is unknown in the brief, never clean', () => {
+  const w = makeWin({ MuseStreamCheck: { latest: () => ({ key: 'demo', slot: 'wall:demo', ts: new Date().toISOString(),
+    results: [{ check: 'lower-third', pass: false, error: 'HTTP 429' }], flags: [], unavailable: [{ check: 'lower-third', error: 'HTTP 429' }] }) } });
+  const b = w.MuseShowCaller.brief('demo');
+  assert.ok(b.unknown.some((u) => /streamcheck/i.test(u)), 'errored check must surface as unknown: ' + JSON.stringify(b.unknown));
+  assert.doesNotMatch(b.grounding.note, /all six ops areas readable/, 'brief must not claim readable while Stream Check is blind');
+});
+
 test('29. approved test-feed fixes re-check exactly that feed', () => {
   const retried = [];
   const win = makeWin({

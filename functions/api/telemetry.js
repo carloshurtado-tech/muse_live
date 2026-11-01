@@ -94,7 +94,7 @@ async function getMetricData(env, region, queries) {
     accessKeyId: env.AWS_ACCESS_KEY_ID, secretAccessKey: env.AWS_SECRET_ACCESS_KEY, sessionToken: env.AWS_SESSION_TOKEN,
   });
   delete headers.host;
-  const r = await fetch(url, { method: 'POST', headers, body });
+  const r = await fetch(url, { method: 'POST', headers, body, signal: AbortSignal.timeout(15000) });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) throw new Error('CloudWatch ' + r.status + ': ' + (j.message || j.Message || j.__type || 'request failed'));
   const out = {};
@@ -131,7 +131,7 @@ async function muxStages(env, cfg, stages, errors) {
   const auth = 'Basic ' + btoa(env.MUX_TOKEN_ID + ':' + env.MUX_TOKEN_SECRET);
   const filt = cfg.videoId ? '&filters[]=' + encodeURIComponent('video_id:' + cfg.videoId) : '';
   const get = async (path) => {
-    const r = await fetch('https://api.mux.com' + path, { headers: { Authorization: auth } });
+    const r = await fetch('https://api.mux.com' + path, { headers: { Authorization: auth }, signal: AbortSignal.timeout(15000) });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error('Mux ' + r.status + ': ' + ((j.error && j.error.messages && j.error.messages[0]) || 'request failed'));
     return j.data;

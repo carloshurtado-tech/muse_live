@@ -59,7 +59,11 @@ export async function onRequest(context) {
           'Content-Type': row.content_type || 'application/octet-stream',
           'Content-Length': String(obj.size),
           'Cache-Control': 'private, max-age=60',
-          'Content-Disposition': 'inline; filename="' + String(row.name || 'file').replace(/["\r\n]/g, '') + '"',
+          // Uploads are evidence, never executable pages: force a download in
+          // a sandboxed, sniff-proof context whatever type was claimed.
+          'Content-Disposition': 'attachment; filename="' + String(row.name || 'file').replace(/["\r\n]/g, '') + '"',
+          'X-Content-Type-Options': 'nosniff',
+          'Content-Security-Policy': 'sandbox',
         },
       });
     }
@@ -70,7 +74,10 @@ export async function onRequest(context) {
       if (!obj) return json({ ok: false, error: t(lang, 'noSuchMedia') }, 404);
       return new Response(obj.body, { headers: {
         'Content-Type': (obj.httpMetadata && obj.httpMetadata.contentType) || 'application/octet-stream',
-        'Cache-Control': 'private, max-age=3600', 'X-Muse-Media-Key': key } });
+        'Cache-Control': 'private, max-age=3600', 'X-Muse-Media-Key': key,
+        'Content-Disposition': 'attachment; filename="' + key.split('/').pop().replace(/["\r\n]/g, '') + '"',
+        'X-Content-Type-Options': 'nosniff',
+        'Content-Security-Policy': 'sandbox' } });
     }
     if (url.searchParams.has('prefix')) {
       const prefix = url.searchParams.get('prefix') || '';

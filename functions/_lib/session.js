@@ -8,8 +8,10 @@ export const SESSION = 'muse_session';
 export const HINT = 'muse_authed';
 export const MAX_AGE = 60 * 60 * 24 * 7;
 export const ROLES = ['admin', 'producer', 'engineer', 'viewer'];
-// sha256('muse-live:' + password). Local dev only; production MUST set MUSE_PASSWORD_HASH.
-export const DEFAULT_PW_HASH = 'b774222f71346737d53bc90fd0572e8b2f86d34b02b16b1c9704cc18a3f85db0';
+// Test-fixture hash only (tests/fixtures/test.vars; password "localtest"). Production MUST
+// set MUSE_PASSWORD_HASH — this default must never be a real deployment's password hash,
+// because it is public and also derives session/calendar signing keys when secrets are unset.
+export const DEFAULT_PW_HASH = 'c92726301f796df6d1fea9aba7f42d28ecfe5b0fc0a1614e033ff996cf0b3722';
 
 const enc = new TextEncoder();
 
@@ -44,13 +46,18 @@ async function hmacKey(env) {
   return crypto.subtle.importKey('raw', enc.encode(secret), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign', 'verify']);
 }
 
+export const SESSION_TYP = 'session';
+export const OIDC_TX_TYP = 'oidc_tx';
 /**
+ * Sign a token. `typ` separates real sessions from transient OIDC transaction
+ * cookies signed with the same key: only typ "session" may authenticate.
  * @param {any} env
  * @param {{u:string,n?:string,r:string}} who
  * @param {number} [maxAge]
+ * @param {string} [typ]
  */
-export async function signSession(env, who, maxAge = MAX_AGE) {
-  const payload = b64u(enc.encode(JSON.stringify({ v: 1, u: who.u, n: who.n || who.u, r: who.r, exp: Math.floor(Date.now() / 1000) + maxAge })));
+export async function signSession(env, who, maxAge = MAX_AGE, typ = SESSION_TYP) {
+  const payload = b64u(enc.encode(JSON.stringify({ v: 1, typ, u: who.u, n: who.n || who.u, r: who.r, exp: Math.floor(Date.now() / 1000) + maxAge })));
   const sig = new Uint8Array(await crypto.subtle.sign('HMAC', await hmacKey(env), enc.encode(payload)));
   return payload + '.' + b64u(sig);
 }
@@ -70,7 +77,7 @@ export function readCookie(request, name) {
  * @param {any} env @param {string|null} token
  * @returns {Promise<{u:string,n:string,r:string,exp:number,legacy?:boolean}|null>}
  */
-export async function verifyToken(env, token) {
+export async function verifyTokenFor(env, token, typ) {
   if (!token) return null;
   const dot = token.indexOf('.');
   if (dot < 1) return null;
@@ -79,11 +86,12 @@ export async function verifyToken(env, token) {
     const ok = await crypto.subtle.verify('HMAC', await hmacKey(env), fromB64u(token.slice(dot + 1)), enc.encode(payload));
     if (!ok) return null;
     const s = JSON.parse(new TextDecoder().decode(fromB64u(payload)));
-    if (!s || s.v !== 1 || typeof s.u !== 'string' || !ROLES.includes(s.r)) return null;
+    if (!s || s.v !== 1 || s.typ !== typ || typeof s.u !== 'string' || !ROLES.includes(s.r)) return null;
     if (s.exp && s.exp < Math.floor(Date.now() / 1000)) return null;
     return s;
   } catch (e) { return null; }
 }
+export async function verifyToken(env, token) { return verifyTokenFor(env, token, SESSION_TYP); }
 
 /** @param {Request} request @param {any} env */
 export async function readSession(request, env) { return verifyToken(env, readCookie(request, SESSION)); }
@@ -113,4 +121,10 @@ export function json(body, status = 200, extra) {
 export function sameOrigin(request) {
   const origin = request.headers.get('Origin');
   return !origin || origin === new URL(request.url).origin;
+}
+/** A safe same-origin redirect target: control characters stripped, only "/…" paths that stay on this origin. @param {any} next */
+export function safeNextPath(next) {
+  const clean = String(next == null ? '' : next).split('').filter((ch) => { const c = ch.codePointAt(0) || 0; return c >= 0x20 && c !== 0x7f; }).join('').trim();
+  if (!/^\/(?![/\\])/.test(clean) || clean.includes('\\')) return '/';
+  return clean;
 }

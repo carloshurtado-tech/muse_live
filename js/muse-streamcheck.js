@@ -127,11 +127,12 @@
   }
 
   function http() { return root.fetch || (typeof fetch !== 'undefined' ? fetch : null); }
+  function timeoutSignal(ms) { try { return AbortSignal.timeout(ms); } catch (e) { return undefined; } }
   async function segment(dataUrl, concept) {
     var F = http();
     if (!F) return { ok: false, error: 'network unavailable' };
     try {
-      var r = await F('/api/streamcheck', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      var r = await F('/api/streamcheck', { method: 'POST', headers: { 'Content-Type': 'application/json' }, signal: timeoutSignal(20000),
         body: JSON.stringify({ image: dataUrl, concept: concept }) });
       var j = await r.json();
       return j && j.ok ? { ok: true, data: j } : { ok: false, error: (j && j.error) || ('HTTP ' + (r.status || '?')) };
@@ -167,13 +168,16 @@
     opts = opts || {};
     var results = [];
     results.push(checkBlack(slot));
-    results.push(await checkLowerThird(slot, opts.expectLowerThird));
+    // No declared expectation means no lower-third verdict: an undeclared
+    // strap must never be invented from a hard-coded default.
+    if (opts.expectLowerThird != null) results.push(await checkLowerThird(slot, opts.expectLowerThird));
     var gear = opts.gear || [];
     for (var i = 0; i < gear.length; i++) {
       results.push(await checkGear(slot, gear[i].concept, gear[i].expected));
     }
     var run = { key: key, slot: slot, ts: new Date().toISOString(), results: results,
-      flags: results.filter(function (r) { return !r.pass && !r.error; }) };
+      flags: results.filter(function (r) { return !r.pass && !r.error; }),
+      unavailable: results.filter(function (r) { return !!r.error; }) };
     LATEST[key] = run;
     return run;
   }

@@ -67,6 +67,37 @@ test('hidden tabs skip foreground work but not background work', () => {
   assert.equal(bg, 2);
 });
 
+test('BUG-17: a background live-status publish runs while the tab is hidden', () => {
+  const w = win();
+  const H = w.MuseHeartbeat;
+  H._now(0);
+  let pub = 0, fg = 0;
+  H.every('streams:live-status', () => { pub++; }, 10000, { background: true });
+  H.every('streams:frame', () => { fg++; }, 10000);
+  H._hidden(true);
+  H._tick(20000);
+  assert.equal(pub, 1, 'live-status publish was skipped on a hidden tab (glasses go stale, then demo)');
+  assert.equal(fg, 0, 'foreground rendering work must still pause while hidden');
+});
+
+test('BUG-17: glasses never invent a "next" show the desktop did not send', async () => {
+  const { transformSync } = await import('esbuild');
+  const src = fs.readFileSync(path.join(ROOT, 'glasses-src/src/data.ts'), 'utf8');
+  const { code } = transformSync(src, { loader: 'ts', format: 'cjs' });
+  const mod = { exports: {} };
+  const ctx = vm.createContext({
+    module: mod, exports: mod.exports, console,
+    fetch: async () => ({
+      ok: true,
+      json: async () => ({ ts: Date.now(), shows: [{ key: 'a', name: 'Show A', state: 'LIVE', health: 'ok', viewers: 10, latency: 4, alerts: [] }], openIncidents: [] }),
+    }),
+  });
+  vm.runInContext(code, ctx, { filename: 'glasses-src/src/data.ts' });
+  const s = await mod.exports.fetchStatus();
+  assert.equal(s.demo, false, 'fresh desktop status must not be marked demo');
+  assert.equal(s.next, null, 'desktop sent no next: glasses must show unknown, not an invented demo next: ' + JSON.stringify(s.next));
+});
+
 test('thingsboard demo loop starts and stops through the heartbeat', () => {
   const w = loadBrowserModule('js/muse-heartbeat.js', {});
   vm.runInContext(fs.readFileSync(path.join(ROOT, 'js/muse-thingsboard.js'), 'utf8'), w, { filename: 'js/muse-thingsboard.js' });

@@ -8,7 +8,8 @@
 // Response → { ok, text, durationMs }.
 
 import { takeToken, sessionKey } from './museai.js';
-import { resolveModelBase } from '../_lib/abuse.js';
+import { resolveModelBase, checkOrigin } from '../_lib/abuse.js';
+import { canWrite } from '../_lib/who.js';
 
 const MAX_BYTES = 2 * 1024 * 1024;
 const MAX_MS = 31000;
@@ -39,10 +40,16 @@ function inspectWav(buf) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const originBlocked = checkOrigin(request);
+  if (originBlocked) return originBlocked;
   const key = env && env.MODEL_API_KEY;
   if (!key) return json({ ok: false, configured: false, error: 'Voice needs the Muse model to be connected.' }, 503);
   const user = context.data && context.data.user;
-  const rl = await takeToken(env, sessionKey(request), !!user && user.u === 'guest');
+  // Defence in depth with the middleware: read-only (viewer/guest) sessions
+  // never spend transcription credit, whichever path reached this handler.
+  if (!user) return json({ ok: false, error: 'Sign in required' }, 401);
+  if (!canWrite(user)) return json({ ok: false, error: 'Voice is not available for read-only sessions.' }, 403);
+  const rl = await takeToken(env, sessionKey(request, user), user.u === 'guest');
   if (!rl.ok) return json({ ok: false, error: 'Voice is pacing itself. Try again in ' + rl.retryS + ' s.' }, 429);
   const len = Number(request.headers.get('Content-Length') || 0);
   if (len > MAX_BYTES) return json({ ok: false, error: 'That recording is too long. Keep it under 30 seconds.' }, 413);
@@ -61,7 +68,7 @@ export async function onRequestPost(context) {
   const base = resolved.base;
   let r, j;
   try {
-    r = await fetch(base + '/asr/transcribe', { method: 'POST', headers: { Authorization: 'Bearer ' + key }, body: form });
+    r = await fetch(base + '/asr/transcribe', { method: 'POST', headers: { Authorization: 'Bearer ' + key }, body: form, signal: AbortSignal.timeout(30000) });
     const text = await r.text();
     try { j = JSON.parse(text); } catch (e) { j = { raw: text.slice(0, 300) }; }
   } catch (e) {

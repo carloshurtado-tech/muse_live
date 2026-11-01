@@ -35,10 +35,13 @@ const DUMMY_USER = { salt: 'AAAAAAAAAAAAAAAAAAAAAA', hash: 'AAAAAAAAAAAAAAAAAAAA
 // cost of a double-admit is one extra PBKDF2, not a bypass.
 const LOGIN_RATE = 10, LOGIN_WINDOW_MS = 60_000, LOGIN_KV_TTL = 120;
 const loginBuckets = globalThis.__museLoginBuckets || (globalThis.__museLoginBuckets = new Map());
-function loginKey(request) {
+// Throttle on the client IP (plus the account email when one is given). Never
+// on cookie bytes: the caller chooses those, so a fresh cookie per attempt
+// would otherwise mint a fresh bucket and make guessing unlimited.
+function loginKey(request, email) {
   const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'local';
-  const c = (request.headers.get('Cookie') || '').match(/(?:^|;\s*)muse_session=([^;]+)/);
-  return ip + '|' + (c ? c[1].slice(-16) : '-');
+  const em = normEmail(email);
+  return em ? ip + '|' + em : ip;
 }
 export async function loginTake(env, key) {
   const now = Date.now();
@@ -64,12 +67,12 @@ async function login(request, env, secure) {
   const lang = resolveLang(request);
   if (request.method !== 'POST') return json({ ok: false, error: t(lang, 'methodNotAllowed') }, 405);
   if (!sameOrigin(request)) return json({ ok: false, error: t(lang, 'forbiddenOrigin') }, 403);
-  const retry = await loginTake(env, loginKey(request));
-  if (retry) return json({ ok: false, error: t(lang, 'tooManyLogins', { retry }) }, 429);
   let body = {};
   try { body = await request.json(); } catch (e) { /* empty body */ }
-  const password = typeof body.password === 'string' ? body.password : '';
   const email = normEmail(body.email);
+  const retry = await loginTake(env, loginKey(request, email));
+  if (retry) return json({ ok: false, error: t(lang, 'tooManyLogins', { retry }) }, 429);
+  const password = typeof body.password === 'string' ? body.password : '';
   if (!password || password.length > 256) return json({ ok: false, error: t(lang, 'enterPassword') }, 400);
 
   let who = null;
@@ -114,6 +117,9 @@ export async function onRequest(context) {
   const lang = resolveLang(request);
   const url = new URL(request.url);
   const path = url.pathname;
+  // The router ignores case and a trailing slash, so every gate below compares
+  // this one normalised path; otherwise /API/… or /api/voice/ would skip checks.
+  const p = path.toLowerCase().replace(/\/+$/, '') || '/';
   const secure = url.protocol === 'https:';
   // Refuse to run on https without a deployment-specific signing secret: otherwise session HMAC
   // keys derive from DEFAULT_PW_HASH (a public constant) and tokens can be forged offline.
@@ -127,19 +133,19 @@ export async function onRequest(context) {
 
   // Accounts disabled after sign-in lose API access immediately (checked on API calls only,
   // so static assets don't cost a KV read each).
-  if (authed && session.u !== 'team' && session.u !== GUEST.u && path.startsWith('/api/') && env.MUSE_KV) {
+  if (authed && session.u !== 'team' && session.u !== GUEST.u && p.startsWith('/api/') && env.MUSE_KV) {
     const user = await getUser(env, session.u);
     if (!user || user.disabled) authed = false;
     else if (user.role !== session.r) session.r = user.role; // role changes apply immediately
   }
   if (context.data) context.data.user = authed ? session : null;
 
-  if (path === '/api/ping') return json({ ok: true, authed });
-  if (path === '/api/login' || path === '/api/auth/login') return login(request, env, secure);
-  if (path === '/api/auth/guest') return guestLogin(request, env, secure);
+  if (p === '/api/ping') return json({ ok: true, authed });
+  if (p === '/api/login' || p === '/api/auth/login') return login(request, env, secure);
+  if (p === '/api/auth/guest') return guestLogin(request, env, secure);
   // Voice transcription spends model credit and has no rate limit of its own: not for read-only sessions.
-  if (authed && session.r === 'viewer' && path === '/api/voice') return json({ ok: false, error: t(lang, 'voiceOffGuest') }, 403);
-  if (path === '/logout' || path === '/api/auth/logout') {
+  if (authed && session.r === 'viewer' && p === '/api/voice') return json({ ok: false, error: t(lang, 'voiceOffGuest') }, 403);
+  if (p === '/logout' || p === '/api/auth/logout') {
     if (authed) await audit(env, { who: session.u, role: session.r, action: 'logout' });
     const headers = new Headers({ Location: '/', 'Cache-Control': 'no-store' });
     for (const c of clearCookies(secure)) headers.append('Set-Cookie', c);
@@ -148,13 +154,13 @@ export async function onRequest(context) {
 
   if (authed) return next();
 
-  if (PUBLIC_PATHS.has(path) || PUBLIC_PREFIXES.some((p) => path.startsWith(p)) || path.endsWith('.css')) return next();
-  if (path.startsWith('/api/')) return json({ ok: false, error: t(lang, 'signIn') }, 401);
-  if (REDIRECT_PREFIXES.some((p) => path === p || path.startsWith(p + '/')) && !/\.(m?js|css|json|map)$/.test(path)) {
+  if (PUBLIC_PATHS.has(p) || PUBLIC_PREFIXES.some((x) => p.startsWith(x)) || p.endsWith('.css')) return next();
+  if (p.startsWith('/api/')) return json({ ok: false, error: t(lang, 'signIn') }, 401);
+  if (REDIRECT_PREFIXES.some((x) => p === x || p.startsWith(x + '/')) && !/\.(m?js|css|json|map)$/.test(p)) {
     return new Response(null, { status: 302, headers: { Location: '/?next=' + encodeURIComponent(path + url.search), 'Cache-Control': 'no-store' } });
   }
   // App scripts are withheld until sign-in; an empty module keeps the login page error-free.
-  if (path.endsWith('.js') || path.endsWith('.mjs')) {
+  if (p.endsWith('.js') || p.endsWith('.mjs')) {
     return new Response('/* sign in required */\n', {
       status: 200,
       headers: { 'Content-Type': 'text/javascript; charset=utf-8', 'Cache-Control': 'no-store' },

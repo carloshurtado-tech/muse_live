@@ -61,6 +61,32 @@ test('guest demo: public about page; read-only viewer session; voice blocked; GU
   assert.equal((await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: off }))).status, 403);
   assert.equal((await (await onRequest(ctx('/api/ping', { env: off, headers: { Cookie: cookie } }))).json()).authed, false);
 });
+test('BUG-03: case and trailing-slash variants cannot skip the voice or disabled-account checks', async () => {
+  const e = await env();
+  const guest = await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: e }));
+  const gCookie = cookieFrom(guest);
+  for (const p of ['/api/voice/', '/API/VOICE', '/Api/Voice/']) {
+    assert.equal((await onRequest(ctx(p, { method: 'POST', body: 'x', env: e, headers: { Cookie: gCookie } }))).status, 403, p);
+  }
+  await e.MUSE_KV.put('users:ana@meta.com', JSON.stringify({ email: 'ana@meta.com', name: 'Ana', role: 'producer', disabled: false, ...(await hashPassword('correct-horse-1')) }));
+  const ok = await onRequest(ctx('/api/login', { method: 'POST', body: { email: 'ana@meta.com', password: 'correct-horse-1' }, env: e }));
+  const cookie = cookieFrom(ok);
+  await e.MUSE_KV.put('users:ana@meta.com', JSON.stringify({ email: 'ana@meta.com', role: 'producer', disabled: true }));
+  assert.equal((await onRequest(ctx('/API/KV/productions', { env: e, headers: { Cookie: cookie } }))).status, 401);
+  assert.equal((await onRequest(ctx('/api/kv/a/', { env: e, headers: { Cookie: cookie } }))).status, 401);
+  // Normalisation must not widen what is public: an unknown API path stays gated.
+  assert.equal((await onRequest(ctx('/API/SECRET', { env: e }))).status, 401);
+});
+test('BUG-14: rotating the session cookie cannot reset the login throttle', async () => {
+  const e = await env();
+  const ip = { 'X-Forwarded-For': '198.51.100.77' };
+  for (let i = 0; i < 10; i++) {
+    const r = await onRequest(ctx('/api/login', { method: 'POST', body: { password: 'nope' }, env: e, headers: { ...ip, Cookie: 'muse_session=rotated-' + i + '-' + 'x'.repeat(i) } }));
+    assert.equal(r.status, 401, 'attempt ' + i);
+  }
+  const blocked = await onRequest(ctx('/api/login', { method: 'POST', body: { password: 'nope' }, env: e, headers: { ...ip, Cookie: 'muse_session=brand-new-cookie' } }));
+  assert.equal(blocked.status, 429);
+});
 test('QoE beacons from read-only sessions are accepted but not stored', async () => {
   const { onRequestPost } = await import('../../functions/api/qoe.js');
   const env = { MUSE_KV: memoryKV() };

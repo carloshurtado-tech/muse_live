@@ -1,6 +1,6 @@
 // @ts-check
 // Product health + usage telemetry (first-party, no third-party SDK).
-//   POST /api/observe {events:[...]}  (any signed-in user; also accepts sendBeacon text bodies)
+//   POST /api/observe {events:[...]}  (writers; viewer events are dropped — see below)
 //   GET  /api/observe?date=YYYY-MM-DD → the day's aggregate (admins only)
 // Daily aggregate in KV `obs:<date>`: errors grouped by signature, views, Muse question count
 // (never the question text), feature usage, perf samples (n/sum/max per key), sessions.
@@ -28,6 +28,9 @@ export async function onRequest(context) {
     return json({ ok: true, date, data: (await env.MUSE_KV.get('obs:' + date, { type: 'json' })) || null });
   }
   if (request.method !== 'POST') return json({ ok: false, error: 'Method not allowed' }, 405);
+  // Read-only (viewer/guest) events are accepted and dropped: anyone can open
+  // a guest session, so honouring them would let guests forge /ops/health groups.
+  if (user.r === 'viewer') return json({ ok: true });
   if (!sameOrigin(request)) return json({ ok: false, error: 'Forbidden origin' }, 403);
   const text = await request.text();
   if (text.length > 64 * 1024) return json({ ok: false, error: 'Too large' }, 413);

@@ -3962,7 +3962,7 @@ html.dark #museaiDrawer{
 
 /* ===================== Streaming (js/muse-streaming.js) + Incidents (js/muse-incidents.js) ===================== */
 .ms-wrap,.ms-dash{--ms-ink:#050505;--ms-ink-2:#65676B;--ms-line:rgba(5,5,5,.09);--ms-card:#FFFFFF;--ms-soft:#F0F2F5;
-  --ms-blue:#0866FF;--ms-green:#31A24C;--ms-amber:#F7B928;--ms-red:#E41E3F;--ms-screen:#18191A;}
+  --ms-blue:#0866FF;--ms-green:#1E7B34;--ms-amber:#F7B928;--ms-red:#E41E3F;--ms-screen:#18191A;}
 html.dark .ms-wrap,html.dark .ms-dash,html.dark .mi-modal{--ms-ink:#FFFFFF;--ms-ink-2:#CFD3D9;--ms-line:rgba(255,255,255,.1);--ms-card:#27282D;--ms-soft:#30333A;--ms-screen:#0B0C0D;}
 .ms-wrap{display:flex;flex-direction:column;gap:16px;color:var(--ms-ink);min-width:0;}
 .ms-page-h{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--ms-line);}
@@ -4675,12 +4675,14 @@ html.dark .ms-pf.is-pass{color:#26A756;} html.dark .ms-pf.is-warn{color:#C58600;
 .ms-test-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 8px;border-radius:6px;color:#8A5A00;background:rgba(247,185,40,.22);box-shadow:inset 0 0 0 1px currentColor;text-transform:uppercase;white-space:nowrap;}
 .ms-test-badge.is-external{color:#fff;background:#0A58CA;box-shadow:none;}
 html.dark .ms-test-badge{color:#F7B928;}
+html.dark .ms-test-badge.is-external{color:#fff;}
 .ms-test-kind{font-size:10.5px;color:#fff;opacity:.75;}
 .ms-test-health{font-size:11px;color:var(--ms-ink-2,#65676B);}
 .ms-test-health.is-up{color:var(--ms-green,#1E7B34);}
 .ms-test-health.is-down{color:var(--ms-red,#D21F3C);font-weight:700;}
 .ms-screen.is-down .ms-slate{background:linear-gradient(160deg,#3a1218,#0a0b0f);}
 .ms-retry{position:absolute;z-index:2;left:14px;bottom:44px;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;border:0;cursor:pointer;color:#fff;background:var(--ms-blue,#0866FF);}
+html.dark .ms-retry{background:#0A58CA;}
 .ms-retry:hover{filter:brightness(1.1);}
 .ms-test-qoe{font-size:11px;color:var(--ms-ink-2,#65676B);margin-top:2px;font-variant-numeric:tabular-nums;}
 .ms-test-risks{display:flex;flex-direction:column;gap:8px;margin:0 0 10px;}

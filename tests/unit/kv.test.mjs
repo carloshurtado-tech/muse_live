@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequest } from '../../functions/api/kv/[key].js';
-import { memoryKV, ctx } from './helpers.mjs';
+import { memoryKV, memoryD1, ctx } from './helpers.mjs';
 
 const editor = { u: 'ana@meta.com', n: 'Ana', r: 'engineer' };
 const viewer = { u: 'vic@meta.com', n: 'Vic', r: 'viewer' };
@@ -45,11 +45,10 @@ test('roles: viewers read-only, only admins delete, signed-out 401, no binding 5
   assert.equal((await onRequest(ctx('/x', { env: {}, user: editor, params: { key: 'a' } }))).status, 503);
 });
 test('writes are audited (except high-frequency telemetry keys)', async () => {
-  const kv = memoryKV(), env = { MUSE_KV: kv };
+  const db = memoryD1(), env = { MUSE_KV: memoryKV(), MUSE_D1: db };
   await onRequest(ctx('/x', { method: 'PUT', body: { a: 1 }, env, user: editor, params: { key: 'ls-muselive_incidents_v1' } }));
   await onRequest(ctx('/x', { method: 'PUT', body: { a: 1 }, env, user: editor, params: { key: 'live-status' } }));
-  const day = new Date().toISOString().slice(0, 10);
-  const log = await kv.get('audit:' + day, 'json');
+  const log = db.tables.auditLog;
   assert.equal(log.length, 1); assert.equal(log[0].action, 'kv.put'); assert.equal(log[0].key, 'ls-muselive_incidents_v1');
 });
 test('?optional=1 answers 200 + null for missing keys (no console noise)', async () => {

@@ -38,6 +38,18 @@ test('theme: comms thread bubbles adapt to dark mode', () => {
     'no hardcoded light bubble may survive in the thread renderer');
 });
 
+test('theme: customer chips use AA text colors in dark mode', () => {
+  const app = fs.readFileSync(path.join(ROOT, 'js/muse-app-a.js'), 'utf8');
+  assert.ok(app.includes('CUST_DARK_TX'), 'dark chips need lightened text (brand blues are ~3.1:1 on dark cards)');
+  for (const hex of ['#6CB2FF', '#B79CFF', '#4ADE80', '#FF7EB6', '#B0B3B8'])
+    assert.ok(app.includes(hex), 'missing dark chip color ' + hex);
+});
+
+test('theme: feed retry button keeps AA contrast in dark mode', () => {
+  assert.ok(css.includes('html.dark .ms-retry{background:#0A58CA;'),
+    'dark --ms-blue (#2694FE) is only 3.11:1 under white text; the retry button needs its own dark background');
+});
+
 test('theme: theater data stays dense (one glance, minimal scroll)', () => {
   assert.ok(css.includes('.ms-modal .ms-kv div{flex-direction:row'),
     'modal measurements read as tight rows');

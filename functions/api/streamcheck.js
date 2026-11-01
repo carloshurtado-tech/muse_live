@@ -7,6 +7,8 @@
 import { json, sameOrigin } from '../_lib/session.js';
 import { who, canWrite } from '../_lib/who.js';
 import { audit } from '../_lib/audit.js';
+import { resolveModelBase } from '../_lib/abuse.js';
+import { takeToken, sessionKey, usedToday, dailyCap } from './museai.js';
 
 const MODEL = 'sam-3.1';
 const MAX_IMAGE = 1500000;
@@ -40,10 +42,17 @@ export async function onRequestPost(context) {
   if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(image) || image.length > MAX_IMAGE + 30) {
     return json({ ok: false, error: 'image must be a jpeg/png/webp data URL under 1.5 MB.' }, 400);
   }
+  // Same guards as Muse: per-session pacing, the shared daily budget, and the
+  // pinned model base (which is also how the local mock is honoured).
+  const rl = await takeToken(env, sessionKey(request, user), false);
+  if (!rl.ok) return json({ ok: false, error: 'Stream Check is pacing itself. Try again in ' + rl.retryS + ' s.' }, 429);
+  if ((await usedToday(env)) >= dailyCap(env)) return json({ ok: false, capped: true, error: 'Muse has reached today\'s usage limit for this workspace.' }, 429);
+  const resolved = resolveModelBase(env);
+  if (!resolved.ok) return json({ ok: false, error: resolved.error }, 503);
   const t0 = Date.now();
   let up = null;
   try {
-    const r = await fetch('https://api.meta.ai/v1/responses', {
+    const r = await fetch(resolved.base + '/responses', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + key },
       body: JSON.stringify({

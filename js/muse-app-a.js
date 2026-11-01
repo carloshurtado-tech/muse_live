@@ -358,12 +358,13 @@ var customerStyle={
  "Instagram":{bg:"#ffe6ef",tx:"#D1005C",bd:"#ffb3cd"},
  "External Productions":{bg:"#f7f8fa",tx:"#4b4f56",bd:"#e4e6eb"}
 };
+var CUST_DARK_TX={"Reality Labs":"#6CB2FF","Meta AI":"#B79CFF","WhatsApp":"#4ADE80","Facebook":"#6CB2FF","Instagram":"#FF7EB6","External Productions":"#B0B3B8"};
 function custChip(c){
   var s=customerStyle[c]||customerStyle["External Productions"];
   var dark=false;try{dark=document.documentElement.classList.contains('dark');}catch(e){}
   var bg=dark?'rgba(28,30,33,.72)':s.bg;
-  var tx=dark?s.tx:s.tx;
-  var bd=dark?s.tx:s.bd;
+  var tx=dark?(CUST_DARK_TX[c]||"#B0B3B8"):s.tx;
+  var bd=dark?(CUST_DARK_TX[c]||"#B0B3B8"):s.bd;
   return '<span class="text-[9px] font-bold mono px-2 py-0.5 rounded-full" style="background:'+bg+';color:'+tx+';border:1px solid '+bd+'">'+(c||"Unassigned")+'</span>';
 }
 /* equipment / spec dropdown options per department */
@@ -3870,12 +3871,12 @@ function renderPersonnelDir(){
     body.innerHTML=filtered.map(function(pp){var m=pp.m;
       var grpColor={"Field & Technical":"#0866ff","IT / Network & Engineering":"#0866ff","PCR / Control Room":"#0a58ca","Production & Executive":"#f5832a"}[m.group]||"#65676b";
       var statusPill=pp.onShift?'<span class="inline-block whitespace-nowrap px-2 py-0.5 rounded bg-emerald-50 border border-emerald-200 text-emerald-800 text-[9px] mono">\u25cf On Shift</span>':'<span class="inline-block whitespace-nowrap px-2 py-0.5 rounded bg-gray-100 border border-gray-200 text-gray-500 text-[9px] mono">Off Shift</span>';
-      var od=personnelInfo(m.name);var nm=m.name.replace(/'/g,"\\'");
+      var od=personnelInfo(m.name);var nm=m.name.replace(/\\/g,"\\\\").replace(/'/g,"\\'");
       var catColor={"Employee":"bg-blue-50 border-blue-200 text-blue-700","Freelancer":"bg-violet-50 border-violet-200 text-violet-700","Vendor":"bg-orange-50 border-orange-200 text-orange-700","Talent / On-Air":"bg-pink-50 border-pink-200 text-pink-700"}[m.category]||"bg-gray-100 border-gray-200 text-gray-600";
-      return '<tr class="personnel-row hover:bg-gray-50/60"><td class="py-2.5 pr-4 align-middle"><button onclick="openPersonnelEdit(\''+nm+'\')" class="font-semibold text-gray-900 hover:text-blue-700 hover:underline text-left">'+m.name+'</button>'+(m.custom?'<span class="ml-1 text-[8px] font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded px-1">added</span>':'')+'</td>'+
+      return '<tr class="personnel-row hover:bg-gray-50/60"><td class="py-2.5 pr-4 align-middle"><button onclick="openPersonnelEdit(\''+nm+'\')" class="font-semibold text-gray-900 hover:text-blue-700 hover:underline text-left">'+esc(m.name)+'</button>'+(m.custom?'<span class="ml-1 text-[8px] font-bold text-blue-600 bg-blue-50 border border-blue-200 rounded px-1">added</span>':'')+'</td>'+
         '<td class="py-2.5 pr-4 whitespace-nowrap align-middle"><span class="mono text-[9px] text-gray-500">'+esc(m.id||'')+'</span> <span class="inline-block text-[8px] font-bold border rounded px-1 py-px '+catColor+'">'+esc(m.category||'')+'</span>'+(m.exportExempt?'<span class="ml-1 text-[8px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1" title="Excluded from techbook exports (admin-set at account creation)">exempt</span>':'')+'</td>'+
         '<td class="py-2.5 pr-4 text-gray-700 align-middle">'+esc(m.pos||'\u2014')+'</td>'+
-        '<td class="py-2.5 pr-4 align-middle"><span class="inline-flex items-center gap-1.5 text-[10px] whitespace-nowrap"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+grpColor+'"></span>'+m.group.replace(' / Network & Engineering',' / Eng').replace(' / Control Room',' / PCR')+'</span></td>'+
+        '<td class="py-2.5 pr-4 align-middle"><span class="inline-flex items-center gap-1.5 text-[10px] whitespace-nowrap"><span class="w-2 h-2 rounded-full flex-shrink-0" style="background:'+grpColor+'"></span>'+esc(m.group.replace(' / Network & Engineering',' / Eng').replace(' / Control Room',' / PCR'))+'</span></td>'+
         '<td class="py-2.5 pr-4 align-middle"><input value="'+esc(od.passport||m.passport||'').replace(/"/g,'&quot;')+'" onchange="setPersonnelInfo(\''+nm+'\',\'passport\',this.value)" placeholder="passport / ID" class="w-full bg-transparent mono text-[10px] text-gray-700 border border-transparent hover:border-gray-200 focus:border-blue-300 rounded px-1.5 py-1" style="outline:none;min-width:100px"></td>'+
         '<td class="py-2.5 pr-4 align-middle"><input value="'+esc(od.homeBase||m.homeBase||'').replace(/"/g,'&quot;')+'" onchange="setPersonnelInfo(\''+nm+'\',\'homeBase\',this.value.toUpperCase());this.value=this.value.toUpperCase()" placeholder="IATA" maxlength="3" class="w-full bg-transparent mono uppercase text-[10px] font-bold text-blue-700 border border-transparent hover:border-gray-200 focus:border-blue-300 rounded px-1.5 py-1" style="outline:none;min-width:54px"></td>'+
         '<td class="py-2.5 pr-4 text-[10px] text-gray-700 align-middle" style="max-width:200px"><div class="truncate">'+(m.email?'<a href="mailto:'+esc(m.email)+'" class="text-blue-700 hover:underline" title="'+esc(m.email)+'">'+esc(m.email)+'</a>':'<span class="text-gray-400">\u2014</span>')+'</div></td>'+
@@ -4567,7 +4568,7 @@ function loadShadeMap(){
       setTimeout(function(){if(!window.ShadeMap)reject(new Error('ShadeMap load timeout'));},12000);
     }catch(e){reject(e);}
   });});}
-  return _smPromise.then(function(SM){return shadeApiKey().then(function(k){if(k)SHADEMAP_KEY=k;return SM;});});
+  return _smPromise.then(function(SM){return shadeApiKey().then(function(k){if(!k)throw new Error('ShadeMap API key missing');SHADEMAP_KEY=k;return SM;});});
 }
 function _shadeTerrain(){return {tileSize:256,maxZoom:15,
   getSourceUrl:function(o){return 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/'+o.z+'/'+o.x+'/'+o.y+'.png';},
@@ -4778,7 +4779,7 @@ function _shadeAddVectorBuildings(map,forceLight){try{
       'fill-extrusion-opacity':0.92}});
 }catch(e){}}
 function _shadeFail(el){if(!el)return;try{el.innerHTML='<div class="w-full h-full flex items-center justify-center text-center px-4" style="background:linear-gradient(135deg,#18191A,#1c1e21)">'+
-  '<p class="text-[10px] text-gray-400 mono">Sun &amp; Shadow view unavailable — the ShadeMap/MapLibre service could not be reached on this network.<br><span class="text-gray-500">The location map &amp; weather above are unaffected.</span></p></div>';}catch(e){}}
+  '<p class="text-[10px] text-gray-400 mono">Sun &amp; Shadow view unavailable — check the ShadeMap key or map configuration, or reload to retry.<br><span class="text-gray-500">The location map &amp; weather above are unaffected.</span></p></div>';}catch(e){}}
 /* force the shadow layer to re-pull features for the current view */
 function _shadeRefresh(id){var S=_shadeMaps[id];if(!S||!S.shade)return;try{S.shade.setDate(_shadeAbsDate(S));}catch(e){}}
 function shadeNow(id){var S=_shadeMaps[id];if(!S)return;S.mode='now';S.baseParts=museZonedParts(S.tz,museNow());
@@ -7010,7 +7011,28 @@ function museaiPushHtml(html){
   m.appendChild(el);m.scrollTop=m.scrollHeight;
 }
 var _museaiPending=null;
+var _museaiOffers={};
+var _museaiOfferSeq=0;
 var _museaiUndo=null;
+/* Per-offer binding (BUG-05a): every Confirm/Cancel button carries the id of
+   the offer it was rendered for, so an older bubble can never run a newer
+   action. _museaiPending stays as the legacy latest-offer pointer because
+   muse-ops-os wraps museaiConfirmAction and reads it for field notes. */
+function museaiRegisterOffer(act){
+  var id='museaiOf'+(++_museaiOfferSeq);
+  act._offerId=id;_museaiOffers[id]=act;_museaiPending=act;
+  return id;
+}
+function museaiTakeOffer(id){
+  if(id){
+    var act=_museaiOffers[id]||null;
+    if(act){delete _museaiOffers[id];if(_museaiPending===act)_museaiPending=null;}
+    return act;
+  }
+  var act2=_museaiPending;_museaiPending=null;
+  if(act2&&act2._offerId)delete _museaiOffers[act2._offerId];
+  return act2;
+}
 function museaiParseAction(qRaw){
   var q=String(qRaw||'').toLowerCase().trim();
   if(!q)return null;
@@ -7047,7 +7069,7 @@ function museaiParseAction(qRaw){
   return null;
 }
 function museaiOfferAction(act){
-  _museaiPending=act;
+  var id=museaiRegisterOffer(act);
   var p=productions[act.key];
   var name=p?p.name:act.key;
   var msg='';
@@ -7058,16 +7080,16 @@ function museaiOfferAction(act){
   else if(act.kind==='exportBackup')msg='Download a recovery backup of your current work, including unsaved changes?';
   else return false;
   museaiPushHtml(msg+'<div class="mt-2 flex flex-wrap gap-1.5">'+
-    '<button type="button" onclick="museaiConfirmAction()" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Confirm</button>'+
-    '<button type="button" onclick="museaiCancelAction()" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1">Cancel</button></div>');
+    '<button type="button" onclick="museaiConfirmAction(\''+id+'\')" class="text-[10px] font-bold text-white bg-gray-900 rounded-lg px-2.5 py-1">Confirm</button>'+
+    '<button type="button" onclick="museaiCancelAction(\''+id+'\')" class="text-[10px] font-bold text-gray-700 border border-gray-300 rounded-lg px-2.5 py-1">Cancel</button></div>');
   return true;
 }
-function museaiCancelAction(){
-  _museaiPending=null;
+function museaiCancelAction(id){
+  museaiTakeOffer(id);
   museaiPush('Cancelled — no change.','bot');
 }
-function museaiConfirmAction(){
-  var act=_museaiPending;_museaiPending=null;
+function museaiConfirmAction(id){
+  var act=museaiTakeOffer(id);
   if(!act){museaiPush('Nothing pending to confirm.','bot');return;}
   if(act.kind==='restoreBackup'){MuseRecovery.chooseFile();return;}
   if(act.kind==='exportBackup'){museExportStateBackup();return;}

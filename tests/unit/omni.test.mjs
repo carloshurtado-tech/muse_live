@@ -2,12 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequestPost as slackPost } from '../../functions/api/omni/slack.js';
 import { onRequestPost as mailPost } from '../../functions/api/omni/mail.js';
-import { memoryKV, ctx } from './helpers.mjs';
+import { memoryKV, memoryD1, ctx } from './helpers.mjs';
 
 const TEAM = { u: 'team', n: 'Muse Live team', r: 'admin' };
 const VIEWER = { u: 'guest', n: 'Guest reviewer', r: 'viewer' };
-const day = () => new Date().toISOString().slice(0, 10);
-async function auditOf(kv) { return (await kv.get('audit:' + day(), { type: 'json' })) || []; }
+function auditOf(db) { return db ? db.tables.auditLog : []; }
 
 function mockFetch(routes) {
   const real = globalThis.fetch, calls = [];
@@ -26,12 +25,12 @@ function mockFetch(routes) {
 test('slack: bot post succeeds and audits', async () => {
   const m = mockFetch([[ /chat\.postMessage/, 200, { ok: true, ts: '1.2', channel: 'C1' } ]]);
   try {
-    const kv = memoryKV();
-    const r = await slackPost(ctx('/api/omni/slack', { method: 'POST', env: { SLACK_BOT_TOKEN: 'x', MUSE_KV: kv }, user: TEAM,
+    const db = memoryD1();
+    const r = await slackPost(ctx('/api/omni/slack', { method: 'POST', env: { SLACK_BOT_TOKEN: 'x', MUSE_KV: memoryKV(), MUSE_D1: db }, user: TEAM,
       body: { channel: 'C1', text: 'fix applied' } }));
     assert.equal(r.status, 200);
     assert.deepEqual(await r.json(), { ok: true, ts: '1.2', channel: 'C1', path: 'bot' });
-    assert.ok((await auditOf(kv)).some((e) => e.action === 'showcaller.notify' && e.key === 'slack'));
+    assert.ok(auditOf(db).some((e) => e.action === 'showcaller.notify' && e.key === 'slack'));
   } finally { m.done(); }
 });
 
@@ -54,13 +53,13 @@ test('slack: failed bot post retries once via webhook and marks the path', async
 test('slack: total failure is a sanitized 502 with a failed audit entry', async () => {
   const m = mockFetch([[ /chat\.postMessage/, 200, { ok: false, error: 'xyz<script>' } ]]);
   try {
-    const kv = memoryKV();
-    const r = await slackPost(ctx('/api/omni/slack', { method: 'POST', env: { SLACK_BOT_TOKEN: 'x', MUSE_KV: kv }, user: TEAM,
+    const db = memoryD1();
+    const r = await slackPost(ctx('/api/omni/slack', { method: 'POST', env: { SLACK_BOT_TOKEN: 'x', MUSE_KV: memoryKV(), MUSE_D1: db }, user: TEAM,
       body: { channel: 'C1', text: 'fix applied' } }));
     assert.equal(r.status, 502);
     const j = await r.json();
     assert.ok(!j.error.includes('<'), 'unsanitized provider error');
-    assert.ok((await auditOf(kv)).some((e) => e.action === 'showcaller.notify.failed'));
+    assert.ok(auditOf(db).some((e) => e.action === 'showcaller.notify.failed'));
   } finally { m.done(); }
 });
 
@@ -84,13 +83,13 @@ test('mail: refresh then send returns the message id and audits', async () => {
     [/gmail\.googleapis/, 200, { id: 'm1', threadId: 't1' }],
   ]);
   try {
-    const kv = memoryKV();
-    const env = { GMAIL_CLIENT_ID: 'i', GMAIL_CLIENT_SECRET: 's', GMAIL_REFRESH_TOKEN: 'r', MUSE_KV: kv };
+    const db = memoryD1();
+    const env = { GMAIL_CLIENT_ID: 'i', GMAIL_CLIENT_SECRET: 's', GMAIL_REFRESH_TOKEN: 'r', MUSE_KV: memoryKV(), MUSE_D1: db };
     const r = await mailPost(ctx('/api/omni/mail', { method: 'POST', env, user: TEAM,
       body: { to: ['ops@example.com'], subject: 'fix', body: 'moved the test' } }));
     assert.equal(r.status, 200);
     assert.deepEqual(await r.json(), { ok: true, id: 'm1', threadId: 't1' });
-    assert.ok((await auditOf(kv)).some((e) => e.action === 'showcaller.notify' && e.key === 'gmail'));
+    assert.ok(auditOf(db).some((e) => e.action === 'showcaller.notify' && e.key === 'gmail'));
     assert.deepEqual(m.calls.map((u) => /oauth2/.test(u) ? 'token' : 'send'), ['token', 'send']);
   } finally { m.done(); }
 });
@@ -137,6 +136,48 @@ test('mail: non-ASCII subject is RFC 2047 encoded, ASCII stays plain', async () 
   } finally { globalThis.fetch = real; }
 });
 
+test('BUG-30: webhook-only Slack succeeds once, and a repeated approval send is deduped', async () => {
+  let hooks = 0;
+  const real = globalThis.fetch;
+  globalThis.fetch = async () => { hooks++; return new Response('ok', { status: 200 }); };
+  try {
+    const env = { SLACK_WEBHOOK_URL: 'https://hooks.slack/only', MUSE_KV: memoryKV() };
+    const body = { channel: 'C1', text: 'fix applied', idempotencyKey: 'approval-42' };
+    const r1 = await slackPost(ctx('/api/omni/slack', { method: 'POST', env, user: TEAM, body }));
+    assert.equal(r1.status, 200);
+    assert.equal((await r1.json()).path, 'webhook');
+    const r2 = await slackPost(ctx('/api/omni/slack', { method: 'POST', env, user: TEAM, body }));
+    assert.equal(r2.status, 200);
+    assert.equal(hooks, 1, 'the same approval must not post twice');
+    // A different approval still posts.
+    assert.equal((await slackPost(ctx('/api/omni/slack', { method: 'POST', env, user: TEAM, body: { ...body, idempotencyKey: 'approval-43' } }))).status, 200);
+    assert.equal(hooks, 2);
+    // Nothing configured at all stays an honest 503.
+    const none = await slackPost(ctx('/api/omni/slack', { method: 'POST', env: { MUSE_KV: memoryKV() }, user: TEAM, body: { channel: 'C1', text: 'x' } }));
+    assert.equal(none.status, 503);
+    assert.equal((await none.json()).configured, false);
+  } finally { globalThis.fetch = real; }
+});
+test('BUG-30: a repeated mail approval sends once (idempotency key)', async () => {
+  let sends = 0;
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    if (/oauth2/.test(String(url))) return Response.json({ access_token: 'a' });
+    sends++;
+    return Response.json({ id: 'm-once', threadId: 't1' });
+  };
+  try {
+    const env = { GMAIL_CLIENT_ID: 'i', GMAIL_CLIENT_SECRET: 's', GMAIL_REFRESH_TOKEN: 'r', MUSE_KV: memoryKV() };
+    const body = { to: ['ops@example.com'], subject: 'fix', body: 'moved', approvalId: 'show-7-fix-1' };
+    const r1 = await mailPost(ctx('/api/omni/mail', { method: 'POST', env, user: TEAM, body }));
+    assert.equal(r1.status, 200);
+    assert.equal((await r1.json()).id, 'm-once');
+    const r2 = await mailPost(ctx('/api/omni/mail', { method: 'POST', env, user: TEAM, body }));
+    assert.equal(r2.status, 200);
+    assert.equal((await r2.json()).id, 'm-once');
+    assert.equal(sends, 1);
+  } finally { globalThis.fetch = real; }
+});
 test('mail: dead refresh token fails closed with reconnect wording', async () => {
   const m = mockFetch([[ /oauth2\.googleapis/, 400, { error: 'invalid_grant' } ]]);
   try {

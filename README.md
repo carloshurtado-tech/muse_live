@@ -5,9 +5,12 @@
 <h1 align="center">Muse Live</h1>
 
 <p align="center">
+  <em>The agent proposes. A human decides.</em>
+</p>
+
+<p align="center">
   <b>An operations safety net for live broadcast.</b><br>
-  Plan every show, watch every stream end to end, learn from every incident.<br>
-  Muse reads the whole production, proposes fixes with the records behind them, and a human approves. No approval, no execution.
+  Plan every show, watch every stream end to end, learn from every incident.
 </p>
 
 <p align="center">
@@ -16,11 +19,21 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/track-Indie-blue" alt="Indie track">
-  <img src="https://img.shields.io/badge/theme-Build%20for%20Your%20World-purple" alt="Theme: Build for Your World">
-  <img src="https://img.shields.io/badge/API-Meta%20Model%20API-0668E1" alt="Meta Model API">
-  <img src="https://img.shields.io/badge/license-GPL--3.0-green" alt="License: GPL-3.0">
-  <img src="https://img.shields.io/badge/a11y-WCAG%202.1%20AA%20%C2%B7%20axe--checked-1E7B34" alt="WCAG 2.1 AA, axe-checked">
+  <img src="https://img.shields.io/github/stars/carloshurtado-tech/muse_live?style=flat-square&color=1C2B33&label=stars" alt="Stars">
+  <img src="https://img.shields.io/badge/track-Indie-0866FF?style=flat-square" alt="Indie track">
+  <img src="https://img.shields.io/badge/theme-Build_for_Your_World-1C2B33?style=flat-square" alt="Theme: Build for Your World">
+  <img src="https://img.shields.io/badge/API-Meta_Model_API-0866FF?style=flat-square" alt="Meta Model API">
+  <img src="https://img.shields.io/badge/a11y-WCAG_2.1_AA-1E7B34?style=flat-square" alt="WCAG 2.1 AA, axe-checked">
+  <img src="https://img.shields.io/badge/license-GPL--3.0-1E7B34?style=flat-square" alt="License: GPL-3.0">
+</p>
+
+<p align="center">
+  <img src="assets/about/chain.webp" width="880" alt="A show's live health: encode, contribute, ingest, package, deliver and watch, with sparklines for viewers, rebuffer ratio, SRT loss and CDN egress">
+</p>
+
+<p align="center">
+  <strong>292 / 292 unit &middot; 20 / 20 browser &middot; 40 / 40 model eval &middot; 0 axe violations.</strong><br>
+  <sub>Measured Nov 1, 2026 on Node 22 + Playwright Chromium/Firefox. Every number in this README comes from a run log.</sub>
 </p>
 
 ---
@@ -30,6 +43,12 @@
 Live broadcast runs on scar-tissue judgment. The failure modes are cross-module: an encoder dies *while* a camera operator is double-booked *while* the backup path is promised to another show — and no single human watches schedule, streams, crew, equipment, and comms at once. Muse Live is the one place that does, with an agent that proposes the fix and a human who decides.
 
 **Carlos Hurtado** designed and built Muse Live: product, front end, edge functions, the Muse agent, tests, and deployment. [GitHub](https://github.com/carloshurtado-tech)
+
+| Without Muse | With Muse |
+|---|---|
+| Camera op double-booked on two positions. Nobody sees it until air. | Show Caller flags the conflict, citing both schedule records. |
+| Frantic reassignment over IFB during the show. | The proposed fix with its sources on screen, approved with one tap. |
+| The fix happens — or it doesn't — with no record. | Audit entry written; the crew notified in one Omni thread. |
 
 ## What Muse does (the loop)
 
@@ -125,8 +144,7 @@ Every number above comes from a run log. Anything unmeasured is stated as a limi
 
 ## What you'll see
 
-![A show's live health: encode, contribute, ingest, package, deliver and watch, with sparklines for viewers, rebuffer ratio, SRT loss and CDN egress](assets/about/chain.webp)
-<sub>**Streaming:** end-to-end health per show: encoder → SRT contribution → ingest → packaging → multi-CDN → player QoE, with a 99.9% availability SLO and error budget.</sub>
+<sub>**Streaming** (hero shot above): end-to-end health per show: encoder → SRT contribution → ingest → packaging → multi-CDN → player QoE, with a 99.9% availability SLO and error budget.</sub>
 
 <table>
   <tr>

@@ -57,11 +57,11 @@ Fictional demo data only: Harbor Lights Live. Maya Chen (producer), Jordan Reyes
 
 ## Open items (owner actions)
 
-- [ ] Repo public (visibility for judges) — brief requires it; flipping shortly before submission (kept private meanwhile).
+- [x] Repo public (visibility for judges) — public since Nov 1, 2026.
 - [x] Logged-out link check of the deployed site — anonymous `/` and `/about` return 200,
   and the guest-reviewer session serves the full app (write endpoints refuse viewers).
 - [ ] Harbor Lights scenario slots confirmed.
 - [ ] Gmail re-auth ~Nov 3 (7-day test-mode expiry) — publish the OAuth app (“In production”) or mint a fresh token Nov 3 (lasts ~Nov 10); steps in `docs/RUNBOOK.md`.
 - [ ] Film the demo video (owner). Film the live `caption bar` check; do not present AI-generated survey photos as real frames.
-- [ ] Licence choice (owner): adopt a GPL-compatible project licence (the DWG importer is LibreDWG, GPL-3.0) **or** drop DWG import (DXF still works). No `LICENSE` file is added until the owner chooses. See `THIRD_PARTY_NOTICES.md`.
+- [x] Licence: GPL-3.0 (`LICENSE`, keeps the LibreDWG DWG importer working). See `THIRD_PARTY_NOTICES.md`.
 - [ ] X / gallery post-submission.

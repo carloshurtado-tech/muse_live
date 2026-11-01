@@ -4545,13 +4545,20 @@ function setMapMode(id,mode){
    If the ShadeMap/MapLibre CDN is blocked the panel degrades to a note, never
    breaking the surrounding UI.  API key: user's shademap.app account key.
    ============================================================================ */
-var SHADEMAP_JS='https://unpkg.com/mapbox-gl-shadow-simulator/dist/mapbox-gl-shadow-simulator.umd.min.js';
+var SHADEMAP_JS='https://unpkg.com/mapbox-gl-shadow-simulator@0.68.2/dist/mapbox-gl-shadow-simulator.umd.min.js';
 var SHADEMAP_KEY='';
 var _smPromise=null;
+/* The simulator throws without an API key, so the key (fetched once from env via
+   /api/shademap-key) gates the loader: construction sites keep reading SHADEMAP_KEY.
+   Empty results are not cached, so a later mount retries after an outage. */
+var _smKeyPromise=null;
+function shadeApiKey(){
+  if(!_smKeyPromise){_smKeyPromise=fetch('/api/shademap-key',{cache:'no-store',credentials:'same-origin'}).then(function(r){return r.ok?r.json():null;}).then(function(j){var k=(j&&j.key)||'';if(!k)_smKeyPromise=null;return k;}).catch(function(){_smKeyPromise=null;return '';});}
+  return _smKeyPromise;
+}
 function loadShadeMap(){
-  if(typeof window!=='undefined'&&window.ShadeMap)return Promise.resolve(window.ShadeMap);
-  if(_smPromise)return _smPromise;
-  _smPromise=loadMapLibre().then(function(){return new Promise(function(resolve,reject){
+  if(typeof window!=='undefined'&&window.ShadeMap&&SHADEMAP_KEY)return Promise.resolve(window.ShadeMap);
+  if(!_smPromise){_smPromise=loadMapLibre().then(function(){return new Promise(function(resolve,reject){
     try{
       var s=document.createElement('script');s.src=SHADEMAP_JS;s.async=true;
       s.onload=function(){window.ShadeMap?resolve(window.ShadeMap):reject(new Error('ShadeMap missing'));};
@@ -4559,8 +4566,8 @@ function loadShadeMap(){
       document.head.appendChild(s);
       setTimeout(function(){if(!window.ShadeMap)reject(new Error('ShadeMap load timeout'));},12000);
     }catch(e){reject(e);}
-  });});
-  return _smPromise;
+  });});}
+  return _smPromise.then(function(SM){return shadeApiKey().then(function(k){if(k)SHADEMAP_KEY=k;return SM;});});
 }
 function _shadeTerrain(){return {tileSize:256,maxZoom:15,
   getSourceUrl:function(o){return 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/'+o.z+'/'+o.x+'/'+o.y+'.png';},
@@ -4716,7 +4723,7 @@ function mountShadeBox(el){
       el.innerHTML='';var node=document.createElement('div');node.style.cssText='position:absolute;inset:0;width:100%;height:100%';el.appendChild(node);
       var useVector=!!ofmStyle;
       var map=new maplib.Map({container:node,style:ofmStyle||museRasterStyle('streets'),center:[lng,lat],zoom:zoom,
-        pitch:56,bearing:-18,attributionControl:{compact:true},cooperativeGestures:true,antialias:true});
+        pitch:44,bearing:-18,attributionControl:{compact:true},cooperativeGestures:true,antialias:true}); /* pitch <=44: the shadow SDK never draws above ~45 (see museShadeStatic) */
       map.addControl(new maplib.NavigationControl({visualizePitch:true}),'bottom-right');
       S.map=map;S.node=node;S.useVector=useVector;
       map.on('load',function(){

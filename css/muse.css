@@ -3778,7 +3778,7 @@ html body .muse-badge,html body .nav-rail-attn,html body .omni-fab-badge,html bo
   background:var(--m-red) !important;color:#fff !important;font:700 11px/18px var(--m-font) !important;
   min-width:18px !important;height:18px !important;padding:0 5px !important;border-radius:9px !important;border:0 !important;
   box-shadow:0 0 0 2px var(--m-card) !important;text-align:center !important;letter-spacing:0 !important;box-sizing:border-box !important;}
-#navRail .nav-rail-btn .muse-badge,#navRail .nav-rail-btn .nav-rail-attn{position:absolute !important;top:3px !important;left:calc(50% + 5px) !important;right:auto !important;bottom:auto !important;
+#navRail .nav-rail-btn .muse-badge,#navRail .nav-rail-btn .nav-rail-attn{position:absolute !important;top:3px !important;left:calc(50% - 1px) !important;right:auto !important;bottom:auto !important;
   transform:none !important;margin:0 !important;min-width:17px !important;height:17px !important;padding:0 4px !important;border-radius:9px !important;
   font-size:10.5px !important;line-height:17px !important;z-index:2;}
 body.nav-rail-expanded #navRail .nav-rail-btn .muse-badge,body.nav-rail-expanded #navRail .nav-rail-btn .nav-rail-attn{left:auto !important;right:10px !important;top:50% !important;transform:translateY(-50%) !important;}

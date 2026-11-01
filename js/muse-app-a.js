@@ -4899,7 +4899,7 @@ function museOpenDatePop(targetId,anchor,opts){
   _dp.noTime=!!opts.noTime;_dp.rangeHint=opts.rangeHint!==false;
   _dp.y=now.getFullYear();_dp.mo=now.getMonth();
   var pop=document.getElementById('museDatePop');
-  if(!pop){pop=document.createElement('div');pop.id='museDatePop';pop.style.cssText='position:fixed;z-index:130;display:none';document.body.appendChild(pop);
+  if(!pop){pop=document.createElement('div');pop.id='museDatePop';pop.style.cssText='position:fixed;z-index:130;display:none';document.documentElement.appendChild(pop); // unzoomed host: rect-measured px stay 1:1
     document.addEventListener('mousedown',function(ev){var p=document.getElementById('museDatePop');
       if(p&&p.style.display!=='none'&&!p.contains(ev.target)&&!(ev.target.getAttribute&&ev.target.getAttribute('data-dp-anchor')))p.style.display='none';});}
   _dpRender();pop.style.display='block';
@@ -7721,7 +7721,7 @@ function ensureDeptPicker(){var ov=document.getElementById('deptPickerOverlay');
         '<span id="deptPickerHint" class="text-[9px] text-gray-400"></span>'+
         '<button onclick="closeDeptPicker()" class="text-[10px] font-bold text-gray-700" style="padding:3px 10px;border:1px solid #e4e6eb;border-radius:7px;background:#ffffff;cursor:pointer">Done</button></div>'+
     '</div>';
-  document.body.appendChild(ov);
+  document.documentElement.appendChild(ov); // unzoomed host: rect-measured px stay 1:1
   ov.querySelector('#deptPickerBackdrop').addEventListener('click',closeDeptPicker);
   return ov;}
 function openDeptPicker(key,dept,fk,anchor,mode,idx){var ov=ensureDeptPicker();

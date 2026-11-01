@@ -207,6 +207,6 @@
     wrapped.__mp = true; root.toggleMuseAi = wrapped;
   }
   P.check = check;
-  function boot() { mountToggle(); mountPanel(); hookToggle(); badge(); setTimeout(function () { check(); if (global.MuseHeartbeat && typeof global.MuseHeartbeat.every === 'function') global.MuseHeartbeat.every('proactive:check', check, EVERY_MS); else setInterval(check, EVERY_MS); }, FIRST_MS); }
+  function boot() { mountToggle(); mountPanel(); hookToggle(); badge(); setTimeout(function () { check(); if (root.MuseHeartbeat && typeof root.MuseHeartbeat.every === 'function') root.MuseHeartbeat.every('proactive:check', check, EVERY_MS); else setInterval(check, EVERY_MS); }, FIRST_MS); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(boot, 50); }); else setTimeout(boot, 50);
 })(typeof window !== 'undefined' ? window : globalThis);

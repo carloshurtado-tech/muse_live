@@ -115,7 +115,9 @@
       '<button type="button" class="mt-btn" id="mtBack">Back</button><button type="button" class="mt-btn mt-primary" id="mtNext">Next</button></div>' +
       '<p class="mt-hint" id="mtHint" hidden>Space pauses · ← → step · Esc ends</p>';
     var live = document.createElement('div'); live.className = 'sr-only'; live.setAttribute('aria-live', 'polite'); live.id = 'mtLive';
-    document.body.appendChild(veil); document.body.appendChild(spot); document.body.appendChild(card); document.body.appendChild(live);
+    // On <html>, not <body>: these boxes are measured in viewport pixels, and the body's zoom would scale them a second time.
+    var host = document.documentElement;
+    host.appendChild(veil); host.appendChild(spot); host.appendChild(card); host.appendChild(live);
     card.querySelector('#mtNext').onclick = function () { step(i + 1); };
     card.querySelector('#mtBack').onclick = function () { step(i - 1); };
     card.querySelector('#mtClose').onclick = end;

@@ -91,6 +91,46 @@
   white-space: nowrap;
 }
 
+/* Expandable full list inside the banner. Same in-flow behavior: the
+ * <details> block wraps with the page and every dot rides its own line. */
+.hk-details {
+  flex-basis: 100%;
+  font-size: 12.5px;
+}
+
+.hk-details summary {
+  cursor: pointer;
+  font-weight: 700;
+  color: inherit;
+  width: fit-content;
+  max-width: 100%;
+  border-radius: 4px;
+}
+
+.hk-details summary:focus-visible {
+  outline: 2px solid #0a58ca;
+  outline-offset: 2px;
+}
+
+.hk-details ol {
+  margin: 0.4rem 0 0.1rem;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.hk-details li::marker {
+  color: inherit;
+  font-weight: 700;
+}
+
+.hk-details .hk-dot {
+  width: 9px;
+  height: 9px;
+  margin-left: 0;
+  margin-right: 0.35em;
+}
+
 @media (prefers-color-scheme: dark) {
   .hk-banner {
     background: #2a1a10;

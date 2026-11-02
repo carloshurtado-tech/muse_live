@@ -27,6 +27,12 @@ test('project Finance tab defaults to AP when the show has overdue invoices', ()
   assert.ok(aSrc.includes("finWsTab[key]='ap'") || aSrc.includes('finWsTab[key]="ap"'), 'project finance must prefer AP on overdue');
 });
 
+test('finance tabs carry their own counts so the bubble origin is visible', () => {
+  const src = fs.readFileSync(path.join(ROOT, 'js', 'muse-app-b.js'), 'utf8');
+  assert.ok(src.includes("finOverdueList(scope==='all'?undefined:scope)"), 'AP tab must count overdue invoices per scope');
+  assert.ok(src.includes('finARAging(scope).n'), 'AR tab must count open invoices per scope');
+});
+
 test('finance badges count overdue invoices per scope', () => {
   assert.ok(bSrc.includes('function finOverdueList(key)'), 'overdue list must exist');
   assert.ok(bSrc.includes('finTabBadge(key)'), 'per-project badge must exist');

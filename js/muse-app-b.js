@@ -10501,7 +10501,11 @@ function financeWorkspaceHTML(scope){scope=scope||'all';var isAll=(scope==='all'
   var tabs=[['cockpit','Executive Cockpit'],['gl','General Ledger'],['ap','Accounts Payable'],['ar','Accounts Receivable'],['budget','Budget & Forecast'],['reports','Financial Reports']];
   if(!isAll)tabs.push(['ops','Ledger & Ops']);
   if(!tabs.some(function(t){return t[0]===tab;}))tab='cockpit';
-  var strip=tabs.map(function(t){return '<button onclick="setFinTab(\''+scope+'\',\''+t[0]+'\')" class="px-3.5 py-2 rounded-lg text-[11px] font-bold transition-colors '+(tab===t[0]?'bg-gray-900 text-white shadow-sm':'text-gray-600 hover:bg-gray-100')+'">'+t[1]+'</button>';}).join('');
+  var strip=tabs.map(function(t){
+    var bd='';
+    if(t[0]==='ap'){try{var od=finOverdueList(scope==='all'?undefined:scope).length;if(od)bd='<span title="'+od+' overdue invoice'+(od>1?'s':'')+' — click the rows to open each invoice" style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:9999px;background:#FDE7EA;color:#B3122E;font-size:10px;font-weight:800">'+od+'</span>';}catch(e){}}
+    if(t[0]==='ar'){try{var oo=(finARAging(scope).n||0);if(oo)bd='<span title="'+oo+' open invoice'+(oo>1?'s':'')+'" style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;margin-left:6px;padding:0 6px;border-radius:9999px;background:#E7F3FF;color:#0A58CA;font-size:10px;font-weight:800">'+oo+'</span>';}catch(e){}}
+    return '<button onclick="setFinTab(\''+scope+'\',\''+t[0]+'\')" class="px-3.5 py-2 rounded-lg text-[11px] font-bold transition-colors '+(tab===t[0]?'bg-gray-900 text-white shadow-sm':'text-gray-600 hover:bg-gray-100')+'">'+t[1]+bd+'</button>';}).join('');
   var body=tab==='gl'?finGLHTML(scope):(tab==='ap'?finAPHTML(scope):(tab==='ar'?finARHTML(scope):(tab==='budget'?finBudgetHTML(scope):(tab==='reports'?finReportsHTML(scope):(tab==='ops'&&!isAll?financePaneHTML(scope):finCockpitHTML(scope))))));
   var head=isAll?('<div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">'+
       '<div class="flex items-center gap-3"><div class="w-10 h-10 rounded-xl flex items-center justify-center text-white flex-shrink-0" style="background:linear-gradient(135deg,#1c1e21,#242526)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>'+

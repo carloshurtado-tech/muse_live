@@ -47,6 +47,8 @@ Built for the **Meta Global AI Developer Hackathon** (Oct 27 – Nov 4, 2026), I
 
 Built with **Muse Code** (the agentic coding CLI, powered by **Muse Spark**): the agent wrote the code, ran the checks, and iterated against failing tests — the same Detect → Propose → Approve → Execute → Notify loop the product itself implements. Models via the **Meta Model API** (table below); hosting on **Cloudflare Pages + Functions** with Workers KV, D1, and R2; every number verified by the repo's own suites (`npm run check`, Playwright, `eval/REPORT.md`).
 
+Built on a 2015 13-inch MacBook Pro (2.9 GHz dual-core i5, 8 GB RAM, Intel Iris 6100, macOS Monterey 12.7.6) — the whole hackathon build ran on this machine.
+
 ### Feature map (all commits dated Oct 27 – Nov 1, 2026)
 
 | # | What judges open | Key files | Dated commits | Built with / verified by |

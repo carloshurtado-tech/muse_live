@@ -73,6 +73,8 @@ th,td{text-align:left;vertical-align:top;padding:12px 16px;border-bottom:1px sol
 th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);background:var(--code);}
 tr:last-child td{border-bottom:0;}
 td:first-child{font-weight:600;width:36%;}
+.build-map td:first-child{width:auto;white-space:nowrap;}
+.build-map td:nth-child(2){min-width:230px;}
 .table-wrap{overflow-x:auto;border-radius:12px;}
 ol.steps{margin:0;padding-left:22px;color:var(--ink-2);}
 ol.steps li{margin:0 0 8px;}
@@ -101,8 +103,37 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     <div class="cta">
       <a class="btn" href="/">Open Muse Live</a>
       <a class="btn ghost" href="https://github.com/carloshurtado-tech/muse_live" target="_blank" rel="noopener">Source on GitHub</a>
+      <a class="btn" href="#hackathon-build" style="background:#FF5C00">Hackathon build: new since Oct 26</a>
     </div>
   </div>
+
+  <section aria-labelledby="hackathon-build">
+    <h2 id="hackathon-build">Hackathon build: new work since Oct 26, 2026</h2>
+    <p class="sub"><b>Judges start here.</b> Everything below was built in the hackathon window: commits dated <b>Oct 27, Oct 31, or Nov 1, 2026</b> — nothing backdated. Verify it yourself: <code>git log --since=2026-10-26</code> reproduces the full in-window history. Nothing else in this demo is claimed as new.</p>
+    <p class="sub">Built with <b>Muse Code</b> (the agentic coding CLI, powered by <b>Muse Spark</b>): the agent wrote the code, ran the checks, and iterated against failing tests. Models via the Meta Model API; hosting on Cloudflare Pages + Functions with Workers KV, D1, and R2. Built on a 2015 13-inch MacBook Pro.</p>
+    <div class="table-wrap"><table class="build-map">
+      <thead><tr><th>#</th><th>What judges open</th><th>Key files</th><th>Dated commits</th><th>Built with / verified by</th></tr></thead>
+      <tbody>
+      <tr><td>1</td><td>Show Caller risk brief + fix proposals (open a show)</td><td><code>js/muse-showcaller.js</code></td><td><code>e5beea1</code> (Days 1–2)</td><td>Deterministic rules engine; 14-scenario eval</td></tr>
+      <tr><td>2</td><td>Approval + execution + glasses tally republish (“Approve &amp; run” on a test-feed retry)</td><td><code>js/muse-showcaller.js</code>, <code>functions/api/omni/</code></td><td><code>bd1b44e</code> (Day 3), <code>ff34f64</code> (Day 7 freeze)</td><td>Approval re-verifies the world first; e2e-covered</td></tr>
+      <tr><td>3</td><td>Stream Check frame analysis (Streams wall → tile → theater, <code>caption bar</code> check)</td><td><code>js/muse-streamcheck.js</code>, <code>functions/api/streamcheck.js</code></td><td><code>c40872e</code> (Days 4–5), <code>04a3ade</code></td><td><b>SAM 3.1</b> segmentation; errors report <b>unavailable</b>, never clean</td></tr>
+      <tr><td>4</td><td>Chunked live captions + searchable transcript + SRT/VTT export</td><td><code>js/muse-captions.js</code>, <code>functions/api/transcribe.js</code></td><td><code>c40872e</code>, <code>35bc358</code>, <code>953a6d1</code></td><td><b>Muse Voice Transcribe 1.0</b>, manual start only</td></tr>
+      <tr><td>5</td><td>Muse drawer answers + SAM alerts + proactive briefs</td><td><code>js/muse-agent.js</code>, <code>js/muse-proactive.js</code>, <code>functions/api/museai.js</code></td><td><code>35bc358</code>, <code>650e6b6</code></td><td><b>Muse Spark 1.3</b>; every write a Confirm card; 40/40 model eval</td></tr>
+      <tr><td>6</td><td>Omni Gmail/Slack per-show threads</td><td><code>functions/api/omni/</code>, Omni view</td><td><code>bd1b44e</code>, <code>1cfe9b3</code>, <code>3a56898</code></td><td>Fail closed (<code>503 configured:false</code>) — never simulated</td></tr>
+      <tr><td>7</td><td>i18n: Functions strings + access gate in en/es/pt</td><td><code>functions/_middleware.js</code>, <code>functions/_lib/</code></td><td><code>034f158</code>, <code>ea8ca8e</code></td><td>Externalized via <code>Accept-Language</code></td></tr>
+      <tr><td>8</td><td>D1 + R2 data layer: queryable transcripts (FTS), media blobs, audit log, D1 schema</td><td><code>migrations/</code>, <code>functions/_lib/</code></td><td><code>27e4feb</code>, <code>f8a3e3c</code></td><td>Audit entry written on every approval</td></tr>
+      <tr><td>9</td><td>2.0 ops pack: tasks + automations, asset register/CRM + graph + search, templates + picker, site survey, Site Gallery, CAD plans, 360° walkthrough</td><td><code>js/muse-tasks.js</code>, <code>js/muse-assets.js</code>, <code>js/muse-survey*.js</code>, <code>js/muse-templates.js</code></td><td><code>fcf158b</code>, <code>f8a3e3c</code>, <code>8eec207</code>, <code>46dd00c</code></td><td>Asset history deterministic order; unit-tested</td></tr>
+      <tr><td>10</td><td>Streams wall + theater: HLS-only transport, live telemetry of each stream, manual captions, external feeds, 4-feed cap, test-feeds-only wall</td><td><code>js/muse-streaming.js</code>, <code>js/muse-testfeeds.js</code></td><td><code>4aff047</code>, <code>2e138e1</code>, <code>eefd638</code>, <code>1cfe9b3</code>, <code>953a6d1</code>, <code>40b77c2</code>, <code>1193c9a</code></td><td>Real HLS feeds with telemetry; idle HLS suspends</td></tr>
+      <tr><td>11</td><td>Dashboard density pass + 90%-zoom demo frames + rail badges</td><td><code>index.html</code>, <code>js/muse-app-a/b.js</code></td><td><code>eefd638</code>, <code>08fb817</code>, <code>650e6b6</code></td><td>Tighter density; proactive-crash fix</td></tr>
+      <tr><td>12</td><td>Sun &amp; Shadow panels, Shadow Map, QC, rehearsal + signals, Techbook rebuilt with Show Bible appendix</td><td><code>js/muse-*.js</code>, <code>js/muse-export-gear.js</code></td><td><code>31aa2de</code>, <code>1cfe9b3</code>, <code>35bc358</code></td><td>Techbook exports live data</td></tr>
+      <tr><td>13</td><td>Meta Ray-Ban Display companion content, login Meta marks, guided-tour removal, README/About rebuild</td><td><code>glasses/</code>, <code>about.html</code>, <code>README.md</code></td><td><code>6ee0f3f</code>, <code>41591af</code>, <code>79f9d17</code>, <code>7f44da6</code></td><td>Same sign-in; stale status says “Demo data” aloud</td></tr>
+      <tr><td>14</td><td>Security hardening + final DEBUG pass (BUG-01..46), dark-mode fixes</td><td>whole app, <code>functions/_middleware.js</code></td><td><code>04a3ade</code>, <code>cc14043</code></td><td>292 unit, 20/20 browser e2e, 0 axe violations</td></tr>
+      <tr><td>15</td><td>Open-source release + license + deploy rotation</td><td><code>LICENSE</code>, <code>THIRD_PARTY_NOTICES.md</code></td><td><code>95f1c21</code> (GPL-3.0), <code>9897323</code>, <code>6f2d6b7</code>, <code>11b31b0</code></td><td>Repo public; logged-out guest path verified 200</td></tr>
+      <tr><td>16</td><td>UI follow-through: Omni drawer posts to real Slack, badge counts reconciled, Muse-noticed newest-first + conflict deep-link, sidebar Glasses entry, one favicon, finance bubble → AP → invoice</td><td><code>js/muse-app-b.js</code>, <code>js/muse-app-a.js</code>, <code>js/muse-showcaller.js</code>, <code>js/muse-schedule.js</code>, <code>js/muse-proactive.js</code>, <code>index.html</code>, <code>tests/unit/</code></td><td><code>c1b7a89</code>, <code>0ac185d</code>, <code>2ff5abe</code>, <code>4fb1b98</code></td><td>Real POSTs with honest errors; 303 unit green; deployed + verified live</td></tr>
+      </tbody>
+    </table></div>
+    <p class="sub">History mechanics, not features: <code>41786a6</code> reverts <code>main</code> to <code>034f158</code>; <code>ff34f64</code> then re-applies the Day 2–7 work. <b>Not claimed:</b> the Oct 15–19 base (rebrand, login shell, nav rail, seeded demo content) and any view untouched by the commits above. The same map lives in the <a href="https://github.com/carloshurtado-tech/muse_live#hackathon-build-new-work-since-oct-26-2026">README build map</a>.</p>
+  </section>
 
   <section aria-labelledby="who">
     <h2 id="who">Who built it</h2>

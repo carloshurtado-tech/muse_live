@@ -20,11 +20,12 @@ test('open drawer shifts centered popups left, drawer stays put', () => {
 // glance mode, answers land in the lens, Meta Connect backdrop.
 const pv = fs.readFileSync(path.join(ROOT, 'glasses', 'preview.html'), 'utf8');
 
-test('glasses talks to Muse in glance mode with live snapshot', () => {
-  assert.ok(pv.includes("mode: 'glance'"), 'glasses must use the glance mode built for the display');
+test('glasses talks to Muse with the live snapshot, never an object dump', () => {
+  assert.ok(pv.includes('/api/kv/live-status'), 'glasses must read the desktop live-status first');
   assert.ok(pv.includes('/api/museai'), 'glasses must call the Muse endpoint on this origin');
   assert.ok(pv.includes('/api/auth/guest'), 'glasses must mint a guest session like Explore does');
-  assert.ok(pv.includes('muselive_schedule_v1'), 'snapshot must use this browser’s real schedule data, never invented data');
+  assert.ok(pv.includes('muselive_schedule_v1'), 'snapshot fallback must use this browser’s real schedule data, never invented data');
+  assert.ok(pv.includes('m.content'), 'the {role, content} answer must be unwrapped before display');
 });
 
 test('glasses answers in the lens, by voice and by tap', () => {

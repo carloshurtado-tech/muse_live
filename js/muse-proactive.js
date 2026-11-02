@@ -75,6 +75,7 @@
     if (item.rec) btns += '<button type="button" class="ma-btn ma-btn-primary" onclick="MuseProactive.confirm(\'' + id + '\')">' + esc(item.rec.label || 'Apply fix') + '</button>';
     if (item.kind === 'anomaly' && root.MuseIncidents && typeof root.MuseIncidents.draftFromTelemetry === 'function') btns += '<button type="button" class="ma-btn" onclick="MuseProactive.draft(\'' + id + '\')">Draft incident</button>';
     if (item.kind === 'conflicts') btns += '<button type="button" class="ma-btn ma-btn-primary" onclick="MuseProactive.review(\'' + id + '\')">Review &amp; fix</button>';
+    if (item.kind === 'anomaly' || item.kind === 'streamcheck') btns += '<button type="button" class="ma-btn" onclick="MuseProactive.view(\'' + id + '\')">View stream</button>';
     btns += '<button type="button" class="ma-btn" onclick="MuseProactive.dismiss(\'' + id + '\')">Dismiss</button>';
     el.innerHTML = '<img class="ma-ava" src="assets/brand/muse-face.webp" alt="" width="28" height="28" draggable="false">' +
       '<div class="ma-body"><div class="mp-card is-' + (item.level || 'warn') + '">' +
@@ -85,10 +86,18 @@
     m.insertBefore(el, m.firstChild); // newest first: the latest "Muse noticed" sits on top
     syncPanel();
   }
+  // A finished notice (applied, dismissed, auto-resolved) stays useful: one tap
+  // takes the user to the underlying subject to see what it resolved.
+  function viewBtn(id, item) {
+    if (!item) return '';
+    if (item.kind === 'anomaly' || item.kind === 'streamcheck') return '<div class="ma-card-btns"><button type="button" class="ma-btn" onclick="MuseProactive.view(\'' + id + '\')">View stream →</button></div>';
+    if (item.kind === 'conflicts') return '<div class="ma-card-btns"><button type="button" class="ma-btn" onclick="MuseProactive.view(\'' + id + '\')">View conflicts →</button></div>';
+    return '';
+  }
   function finish(id, html) {
     var item = P.cards[id], el = $(id); if (!item) return;
     item.open = false;
-    if (el) { var b = el.querySelector('.mp-btns, .mp-draft'); if (b) b.outerHTML = '<div class="mp-result">' + html + '</div>'; var c = el.querySelector('.mp-card'); if (c) c.classList.add('is-done'); }
+    if (el) { var b = el.querySelector('.mp-btns, .mp-draft'); if (b) b.outerHTML = '<div class="mp-result">' + html + viewBtn(id, item) + '</div>'; var c = el.querySelector('.mp-card'); if (c) c.classList.add('is-done'); }
     syncPanel();
   }
   // Notices clear themselves when the underlying issue is gone: the card is
@@ -127,9 +136,7 @@
     note('user confirmed "' + rec.label + '" for ' + item.show + ' — ' + (r.text || 'applied'));
   };
   P.dismiss = function (id) { var item = P.cards[id]; finish(id, '<p class="mp-muted">Dismissed.</p>'); if (item) note('user dismissed "' + item.text + '"'); };
-  P.review = function (id) {
-    var item = P.cards[id];
-    finish(id, '<p class="mp-muted">Opened the conflicts panel.</p>');
+  function gotoConflicts(item) {
     try {
       root.navGo('schedule');
       setTimeout(function () {
@@ -146,6 +153,23 @@
       }, 150);
     } catch (e) {}
     try { if (root.matchMedia && root.matchMedia('(max-width: 767px)').matches && root.museaiOpen) root.toggleMuseAi(); } catch (e) {}
+  }
+  P.review = function (id) {
+    var item = P.cards[id];
+    finish(id, '<p class="mp-muted">Opened the conflicts panel.</p>');
+    gotoConflicts(item);
+  };
+  // Every notice is a door to its solution: stream cards open the show's
+  // streaming plan (monitors, alerts, Ask Muse), conflict cards re-land on
+  // the exact conflict — including after the notice resolved or dismissed.
+  P.view = function (id) {
+    var item = P.cards[id]; if (!item) return;
+    if (item.kind === 'anomaly' || item.kind === 'streamcheck') {
+      try { if (item.key && root.MuseStreaming && root.MuseStreaming.openShow) root.MuseStreaming.openShow(item.key); } catch (e) {}
+      try { if (root.matchMedia && root.matchMedia('(max-width: 767px)').matches && root.museaiOpen) root.toggleMuseAi(); } catch (e2) {}
+    } else if (item.kind === 'conflicts') {
+      gotoConflicts(item);
+    }
   };
   P.draft = function (id) {
     var item = P.cards[id], el = $(id); if (!item || !el) return;

@@ -116,9 +116,18 @@ function wobble(base: number, pct: number) {
 function tomorrowAt(h: number) {
   const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(h, 0, 0, 0); return d.getTime();
 }
-export function demoStatus(): Status {
+/* Demo-only incident seed (presenter deep link ?incident=encoder2). Everything stays
+   fictional per the demo-data rule; in-memory only, resets on reload. */
+const resolvedDemoIncidents = new Set<string>();
+export const DEMO_INCIDENT_ID = 'INC-2026-1101';
+export function resolveDemoIncident(id: string): void {
+  resolvedDemoIncidents.add(id);
+}
+export function demoStatus(incident?: string): Status {
   const cycle = (Date.now() / 1000) % 120; // CDN burst every two minutes, like the desktop simulation
   const cdnBad = cycle > 30 && cycle < 62;
+  const seedEncoder2 = incident === 'encoder2' && !resolvedDemoIncidents.has(DEMO_INCIDENT_ID);
+  const encoder2Healed = incident === 'encoder2' && resolvedDemoIncidents.has(DEMO_INCIDENT_ID);
   return {
     ts: Date.now(),
     demo: true,
@@ -136,8 +145,24 @@ export function demoStatus(): Status {
         key: 'museailaunch', name: 'Muse AI Launch Keynote', state: 'REHEARSAL', health: 'ok',
         viewers: Math.round(wobble(340, 0.1)), latency: +wobble(4.8, 0.05).toFixed(1), alerts: [],
       },
+      ...(seedEncoder2
+        ? [{
+            key: 'mconnect26', name: 'Meta Connect 2026 Keynote', state: 'LIVE', health: 'crit' as Health,
+            viewers: Math.round(wobble(882_000, 0.03)), latency: +wobble(5.1, 0.05).toFixed(1),
+            alerts: ['Encoder 2 · black frame 45 s · backup path clean'],
+          }]
+        : []),
+      ...(encoder2Healed
+        ? [{
+            key: 'mconnect26', name: 'Meta Connect 2026 Keynote', state: 'LIVE', health: 'ok' as Health,
+            viewers: Math.round(wobble(882_000, 0.03)), latency: +wobble(5.1, 0.05).toFixed(1), alerts: [],
+          }]
+        : []),
     ].map((s) => ({ ...s, health: s.health as Health, stage: stageOf(s.alerts) })),
     openIncidents: [
+      ...(seedEncoder2
+        ? [{ id: DEMO_INCIDENT_ID, severity: 'SEV-2', title: 'Encoder 2 black frame — backup path clean, awaiting approval', show: 'Meta Connect 2026 Keynote' }]
+        : []),
       { id: 'INC-2026-1017', severity: 'SEV-2', title: 'Akamai EU-West edge 5xx spikes. Traffic weighted to CloudFront.', show: 'Muse AI World Tour 2026' },
       { id: 'INC-2026-1009', severity: 'SEV-4', title: 'Stream test: LL-HLS latency 9 s vs 4 s target', show: 'WhatsApp Business Summit' },
       { id: 'INC-2026-1002', severity: 'SEV-4', title: 'Venue firewall blocks outbound UDP 5000 (SRT)', show: 'Orion AR Glasses Reveal' },

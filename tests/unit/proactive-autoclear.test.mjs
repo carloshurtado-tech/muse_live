@@ -20,6 +20,14 @@ test('Apply re-reads the live anomaly instead of refusing on a stale snapshot', 
   assert.ok(src.includes('live.recommendation'), 'Apply must prefer the current recommendation');
 });
 
+test('every notice opens its solution, even after it resolves', () => {
+  assert.ok(src.includes('MuseProactive.view('), 'cards must carry a View action');
+  assert.ok(src.includes('View stream'), 'stream notices must offer the stream view');
+  assert.ok(src.includes('View conflicts'), 'conflict notices must offer the conflicts view');
+  assert.ok(src.includes('MuseStreaming.openShow(item.key)'), 'View must land on the show streaming plan');
+  assert.ok(src.includes('gotoConflicts(item)'), 'review and View must share the exact-conflict landing');
+});
+
 test('judge entry grants read-write producer sessions', async () => {
   const mw = fs.readFileSync(path.join(ROOT, 'functions', '_middleware.js'), 'utf8');
   assert.ok(mw.includes("r: 'producer'"), 'guest sessions must carry the producer role');

@@ -35,7 +35,7 @@
   .display { position: absolute; top: 50%; left: 50%; width: 600px; height: 600px; transform-origin: center; background: #000; overflow: hidden; }
   #glassesRoot { width: 600px; height: 600px; position: relative; }
   .hint { position: absolute; left: 24px; bottom: 20px; font-size: 13px; color: #ffffffcc; background: rgba(0,0,0,.45); padding: 8px 12px; border-radius: 9999px; }
-  /* Talk to Muse: voice + text, answered inside the lens (glance mode). */
+  /* Talk to Muse: voice + text, answered inside the lens from live status. */
   .talk { width: min(1180px, 100%); margin: 14px auto 0; background: #101216; border: 1px solid var(--line); border-radius: 20px; padding: 14px 16px; }
   .talk-row { display: flex; gap: 10px; align-items: center; }
   .talk-row input { flex: 1; min-width: 0; background: #000; border: 1px solid var(--line); color: var(--ink); border-radius: 9999px; padding: 11px 16px; font: 400 14px/1.3 inherit; font-family: inherit; outline: none; }
@@ -66,8 +66,8 @@
   kbd { font: 600 12px/1 inherit; font-family: inherit; padding: 3px 7px; border-radius: 6px; background: #30333a; color: #fff; }
   button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 </style>
-  <script type="module" crossorigin src="./assets/preview-C4x5AmFB.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/styles-CnxgxF0D.js">
+  <script type="module" crossorigin src="./assets/preview-klxO5OWZ.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/styles-BkCJSY0f.js">
   <link rel="stylesheet" crossorigin href="./assets/styles-DkHXJXO8.css">
 </head>
 <body>
@@ -114,7 +114,7 @@
     <button type="button" class="talk-btn primary" id="sendBtn">Ask</button>
     <button type="button" class="talk-btn" id="voiceBtn" aria-pressed="true" title="Spoken replies on/off">🔊 Voice</button>
   </div>
-  <p class="talk-status" id="talkStatus">Muse answers in glance mode — short, from this browser's live Muse Live data.</p>
+  <p class="talk-status" id="talkStatus">Muse answers from the desktop's live status — full solutions, spoken back.</p>
 </section>
 <footer>
   <span><b>Muse Live</b> · live broadcast &amp; streaming agent · data refreshes every 5 s from the desktop app</span>
@@ -142,12 +142,12 @@
     b.addEventListener('click', function () { send(b.getAttribute('data-key')); });
   });
 
-  /* ---------------- Talk to Muse (glance mode: short answers, live snapshot) ---------------- */
+  /* ---------------- Talk to Muse (live status snapshot, spoken answers) ---------------- */
   var talkInput = document.getElementById('talkInput'), sendBtn = document.getElementById('sendBtn'),
     micBtn = document.getElementById('micBtn'), voiceBtn = document.getElementById('voiceBtn'),
     talkStatus = document.getElementById('talkStatus'),
     lensCard = document.getElementById('lensCard'), lensQ = document.getElementById('lensQ'), lensA = document.getElementById('lensA');
-  var voiceOn = true, asking = false, guestReady = null;
+  var voiceOn = true, asking = false, guestReady = null, convo = [];
   function status(msg, err) { talkStatus.textContent = msg; talkStatus.classList.toggle('err', !!err); }
   // Live snapshot: whatever this browser's Muse Live desktop app has persisted
   // (same origin, so its localStorage is visible here) — never invented.
@@ -174,18 +174,52 @@
   function showAnswer(q, text) {
     lensQ.textContent = q; lensA.textContent = text; lensCard.hidden = false;
     if (voiceOn && 'speechSynthesis' in window) {
-      try { window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(String(text).slice(0, 420)); u.rate = 1.05; window.speechSynthesis.speak(u); } catch (e) {}
+      try { window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(String(text).slice(0, 4000)); u.rate = 1.05; window.speechSynthesis.speak(u); } catch (e) {}
     }
+  }
+  // Real live data first: the desktop app publishes its status for the glasses
+  // every 10 s. Same origin, so the guest session can read it. Falls back to
+  // whatever this browser has persisted locally — never invented.
+  function liveSnapshot() {
+    return fetch('/api/kv/live-status', { credentials: 'include', cache: 'no-store' }).then(function (r) {
+      if (!r.ok) throw 0; return r.json().catch(function () { return null; });
+    }).then(function (j) {
+      var v = null;
+      try {
+        if (!j) return null;
+        v = (j && j.value !== undefined) ? (typeof j.value === 'string' ? JSON.parse(j.value) : j.value) : j;
+        if (!v || !Array.isArray(v.shows)) return null;
+        return JSON.stringify({ at: new Date().toISOString(), source: 'Muse Live desktop live-status', status: v });
+      } catch (e) { return null; }
+    }).catch(function () { return null; });
+  }
+  // The endpoint answers {ok, message} where message is {role, content} —
+  // never render the object itself (that was the "[object Object]" bug).
+  function msgText(j) {
+    if (!j || !j.ok) return '';
+    var m = j.message;
+    if (typeof m === 'string') return m.trim();
+    if (m && typeof m.content === 'string') return m.content.trim();
+    if (Array.isArray(m)) return m.map(function (x) { return typeof x === 'string' ? x : (x && x.text) || ''; }).join(' ').trim();
+    if (m && typeof m === 'object') { try { return JSON.stringify(m); } catch (e) { return ''; } }
+    return '';
   }
   function ask(q) {
     q = String(q || '').trim(); if (!q || asking) return;
     asking = true; sendBtn.disabled = true; status('Muse is thinking…');
-    ensureGuest().then(function () {
+    ensureGuest().then(function () { return liveSnapshot(); }).then(function (live) {
+      var snap = live || buildSnapshot();
+      var hist = convo.slice(-6).concat([{ role: 'user', content: q }]);
       return fetch('/api/museai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-        body: JSON.stringify({ question: q, snapshot: buildSnapshot(), mode: 'glance' }) });
+        body: JSON.stringify({ messages: hist, snapshot: snap }) });
     }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (res) {
       asking = false; sendBtn.disabled = false;
-      if (res.ok && res.j && res.j.ok && res.j.message) { status('Answered from live data · ' + new Date().toLocaleTimeString() + (voiceOn ? ' · speaking' : '')); showAnswer(q, res.j.message); }
+      var text = msgText(res.j);
+      if (res.ok && text) {
+        convo.push({ role: 'user', content: q }, { role: 'assistant', content: text });
+        if (convo.length > 6) convo = convo.slice(-6);
+        status('Answered from live data · ' + new Date().toLocaleTimeString() + (voiceOn ? ' · speaking' : '')); showAnswer(q, text);
+      }
       else { status('Muse is unavailable (' + ((res.j && res.j.error) || 'network error') + ').', true); }
     }).catch(function (e) { asking = false; sendBtn.disabled = false; status('Could not reach Muse: ' + (e && e.message ? e.message : e), true); });
   }

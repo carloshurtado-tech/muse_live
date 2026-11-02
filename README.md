@@ -186,9 +186,49 @@ Team sign-in uses the access password (held by the owner; never published here).
 | `tests/unit/`, `tests/e2e/`, `eval/` | Unit + browser tests, model eval harness |
 | `docs/` | [Architecture](docs/ARCHITECTURE.md) · [Security](docs/SECURITY.md) · [Runbook](docs/RUNBOOK.md) · [Migration](docs/MIGRATION.md) |
 
-## Hackathon disclosure (before / during)
+## Hackathon build: new work since Oct 26, 2026
 
 Built for the **Meta Global AI Developer Hackathon** (Oct 27 – Nov 4, 2026), Indie track, theme **Build for Your World** — the world here is live broadcast operations.
+
+> **Judges start here.** Everything below was built in the hackathon window (commits dated **Oct 27, Oct 31, or Nov 1, 2026** — nothing backdated; `git log --since=2026-10-26` reproduces it: 38 commits). Nothing else in this demo is claimed as new.
+
+### How to spot it in the demo
+
+- A small **fluorescent-orange pulsing dot** sits inside the heading of every hackathon-built entry point: the in-app legend banner, Master Production Schedule, Omni, the Live Streams wall, Test feeds, Show Caller proposals, and the dotted sections of the [About page](https://muse-live.pages.dev/about#hackathon).
+- The dot is an **inline element in the text flow** (`css/muse-hackathon.css`), never a fixed overlay — so it reflows with its label and follows it on any screen size, zoom level, or orientation. No-JS fallback: static headings carry the dot in markup; dynamic panels are marked by `js/muse-hackathon.js`.
+- This table maps **every** in-window feature to where judges open it, the files, and the dated commits. The [About page disclosure](https://muse-live.pages.dev/about#hackathon) states what predates the window.
+
+### How it was built
+
+Built with **Muse Code** (the agentic coding CLI, powered by **Muse Spark**): the agent wrote the code, ran the checks, and iterated against failing tests — the same Detect → Propose → Approve → Execute → Notify loop the product itself implements. Models via the **Meta Model API** (table below); hosting on **Cloudflare Pages + Functions** with Workers KV, D1, and R2; every number verified by the repo's own suites (`npm run check`, Playwright, `eval/REPORT.md`).
+
+### Feature map (all commits dated Oct 27 – Nov 1, 2026)
+
+| # | What judges open | Key files | Dated commits | Built with / verified by |
+|---|---|---|---|---|
+| 1 | Show Caller risk brief + fix proposals (open a show) | `js/muse-showcaller.js` | `e5beea1` (Days 1–2) | Deterministic rules engine; 14-scenario eval in `tests/unit/showcaller.test.mjs` |
+| 2 | Approval + execution + glasses tally republish ("Approve & run" on a test-feed retry) | `js/muse-showcaller.js`, `functions/api/omni/` | `bd1b44e` (Day 3), `ff34f64` (Day 7 freeze) | Approval re-verifies the world first; stale plans refuse themselves; e2e-covered |
+| 3 | Stream Check frame analysis (Streams wall → tile → theater, `caption bar` check) | `js/muse-streamcheck.js`, `functions/api/streamcheck.js` | `c40872e` (Days 4–5), `04a3ade` | **SAM 3.1** segmentation; black frames by pixel math; errors report **unavailable**, never clean; offline fault matrix (Black 30/30, down 30/30, frozen 24/30, muted 27/30) |
+| 4 | Chunked live captions + searchable transcript + SRT/VTT export | `js/muse-captions.js`, `functions/api/transcribe.js` | `c40872e`, `35bc358`, `953a6d1` | **Muse Voice Transcribe 1.0**, manual start only, stated ~12 s lag |
+| 5 | Muse drawer answers + SAM alerts + proactive briefs | `js/muse-agent.js`, `js/muse-proactive.js`, `functions/api/museai.js` | `35bc358`, `650e6b6` | **Muse Spark 1.3** reasoning + tool calls; every write a Confirm card; 40/40 model eval ([eval/REPORT.md](eval/REPORT.md)) |
+| 6 | Omni Gmail/Slack per-show threads | `functions/api/omni/`, Omni view | `bd1b44e`, `1cfe9b3`, `3a56898` | Sends file in the show's thread when secrets exist; fail closed (`503 configured:false`) otherwise — never simulated |
+| 7 | i18n: Functions strings + access gate in en/es/pt | `functions/_middleware.js`, `functions/_lib/` | `034f158`, `ea8ca8e` | Externalized via `Accept-Language` |
+| 8 | D1 + R2 data layer: queryable transcripts (FTS), media blobs, audit log, D1 schema | `migrations/`, `functions/_lib/` | `27e4feb`, `f8a3e3c` | Queryable by construction; audit entry written on every approval |
+| 9 | 2.0 ops pack: tasks + automations, asset register/CRM + graph + search, templates + picker, survey render + record, 360/CAD visuals + hold-to-place, Astryx tokens, perf foundations | `js/muse-tasks.js`, `js/muse-assets.js`, `js/muse-survey*.js`, `js/muse-templates.js`, `css/astryx-tokens.css` | `fcf158b`, `f8a3e3c`, `8eec207`, `46dd00c` | Asset history deterministic order; unit-tested |
+| 10 | Streams wall + theater: HLS-only transport, live telemetry, manual captions, external feeds, freeze + stateful controls, 4-feed cap, test-feeds-only wall | `js/muse-streaming.js`, `js/muse-testfeeds.js` | `4aff047`, `2e138e1`, `eefd638`, `1cfe9b3`, `953a6d1`, `40b77c2`, `1193c9a` | Real HLS feeds with telemetry; idle HLS suspends; dead-embed fallback; viewport fit |
+| 11 | Dashboard density pass + 90%-zoom demo frames + rail badges | `index.html`, `js/muse-app-a/b.js` | `eefd638`, `08fb817`, `650e6b6` | Tighter density; proactive-crash fix; CWV fixes (`c40872e`) |
+| 12 | Sun & Shadow panels, Shadow Map, QC, telemetry fixes, rehearsal + signals, Techbook Show Bible | panels + `js/muse-*.js` | `31aa2de`, `1cfe9b3`, `35bc358` | API-key wiring + pitch cap; Chromium drag fix |
+| 13 | Meta Ray-Ban Display companion content, login Meta marks, guided-tour removal, README/About rebuild | `glasses/`, `glasses-src/`, `about.html`, `README.md` | `6ee0f3f`, `41591af`, `79f9d17`, `7f44da6` | Same sign-in; stale status (>60 s) says "Demo data" aloud |
+| 14 | Security hardening + final DEBUG pass (BUG-01..46), dark-mode fixes | whole app, `functions/_middleware.js` | `04a3ade`, `cc14043` | 292 unit, 20/20 browser e2e, 0 axe violations; HMAC sessions, read-only viewer enforcement, model-down rule fallback |
+| 15 | Open-source release + license + deploy rotation | `LICENSE`, `THIRD_PARTY_NOTICES.md`, `submission-draft.md` | `95f1c21` (GPL-3.0), `9897323`, `6f2d6b7`, `11b31b0` | Repo public; logged-out guest path verified 200 |
+
+History mechanics, not features: `41786a6` reverts `main` to `034f158` (undoing the `f5c7ff2` merge); `ff34f64` then re-applies the Day 2–7 work. `6190c09`/`6f2d6b7` record the private→public decision trail. `d17cba9`/`86b7c1e` are local tweaks and rebuild triggers.
+
+**Not claimed:** the Oct 15–19 base (rebrand from the NBC "Pulse" tool in `fde343c`, login shell, nav rail, seeded demo content) and any view untouched by the commits above. If it has no orange dot and is not in this table, it predates the window.
+
+## Hackathon disclosure (before / during)
+
+Built for the **Meta Global AI Developer Hackathon** (Oct 27 – Nov 4, 2026), Indie track, theme **Build for Your World** — the world here is live broadcast operations. The full new-work map is the [section above](#hackathon-build-new-work-since-oct-26-2026).
 
 Muse Live itself predates the window: 32 commits are dated Oct 15–19, 2026, including the Oct 15 rebrand from an NBC "Pulse" operations tool (`fde343c`). Every commit whose message says "Day" is dated Oct 27, 2026 — "Day 1–7" names work packages, not separate calendar days. The Show Caller / Stream Check / captioning / Omni-connector layer and the full final-debug pass are in-window work. Nothing is backdated; the dated disclosure also lives on the [About page](https://muse-live.pages.dev/about#hackathon).
 

@@ -1,0 +1,112 @@
+/* Muse Live — hackathon provenance markers.
+ *
+ * One reusable marker identifies everything built during the hackathon window
+ * (since Mon Oct 26, 2026): a small fluorescent-orange pulsing dot.
+ *
+ * Resize-proof by construction: the dot is an inline-level box inside the
+ * heading/label text flow (never position:fixed, never viewport-anchored), so
+ * it reflows with its label on any screen size, zoom level, or orientation.
+ * Its size is in em, so it scales with the surrounding text. The pulse ring
+ * is absolutely positioned *relative to the dot itself*, so it tracks the dot.
+ *
+ * Usage in static HTML:
+ *   <h2>Show Caller <span class="hk-dot" role="img"
+ *     aria-label="Built during the hackathon (since Oct 26, 2026)"
+ *     title="Built during the hackathon — see README"></span></h2>
+ *
+ * Dynamic panels: add data-hk to the heading and js/muse-hackathon.js inserts
+ * the same dot as its first inline child. No layout CSS depends on the JS.
+ */
+
+.hk-dot {
+  display: inline-block;
+  width: 0.62em;
+  height: 0.62em;
+  min-width: 8px;
+  min-height: 8px;
+  margin-left: 0.35em;
+  vertical-align: baseline;
+  border-radius: 9999px;
+  background: #ff5c00; /* fluorescent orange: visible on light and dark */
+  box-shadow: 0 0 0 2px rgba(255, 92, 0, 0.25), 0 0 10px rgba(255, 92, 0, 0.9);
+  position: relative; /* anchor for the pulse ring only */
+  flex: none; /* keep its shape inside flex heading rows */
+}
+
+.hk-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 92, 0, 0.75);
+  animation: hk-ping 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
+  pointer-events: none;
+}
+
+@keyframes hk-ping {
+  0% { transform: scale(0.55); opacity: 1; }
+  80%, 100% { transform: scale(1.15); opacity: 0; }
+}
+
+/* In-app legend banner. Normal in-flow block: it scrolls and wraps with the
+ * page on every viewport — never fixed, never overlaying content. */
+.hk-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.9rem;
+  border: 1px solid #f5b98a;
+  border-left: 4px solid #ff5c00;
+  border-radius: 0.75rem;
+  background: #fff4ec;
+  color: #1c1e21;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.hk-banner a {
+  color: #0a58ca;
+  font-weight: 700;
+}
+
+.hk-banner .hk-dot {
+  width: 10px;
+  height: 10px;
+  margin-left: 0;
+}
+
+.hk-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9a3d00;
+  background: #ffe3cf;
+  border: 1px solid #f5b98a;
+  border-radius: 9999px;
+  padding: 0.1rem 0.55rem;
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  .hk-banner {
+    background: #2a1a10;
+    border-color: #7a3c00;
+    border-left-color: #ff5c00;
+    color: #f5f6f7;
+  }
+  .hk-banner a { color: #a8ccff; }
+  .hk-tag {
+    color: #ffd9bd;
+    background: #3d220e;
+    border-color: #7a3c00;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hk-dot::after { animation: none; opacity: 0; }
+  .hk-dot { box-shadow: 0 0 0 2px rgba(255, 92, 0, 0.45); }
+}

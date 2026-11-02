@@ -130,6 +130,7 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
 <link rel="preload" href="css/muse.css?v=20261101-ua3g" as="style">
 <link rel="stylesheet" href="css/astryx-tokens.css?v=20261101-ua3g">
 <link rel="stylesheet" href="css/muse.css?v=20261101-ua3g" id="museDarkThemeLink">
+<link rel="stylesheet" href="css/muse-hackathon.css">
 <script src="js/muse-demo.js?v=20261101-ua3g" defer></script>
 <script src="js/muse-planet-trucks.js?v=20261101-ua3g" defer></script>
 <script src="js/muse-platform.js?v=20261101-ua3g" defer></script>
@@ -168,6 +169,7 @@ if(!ok)document.documentElement.classList.add('muse-gated');}catch(e){}})();
 <script src="js/muse-survey-media.js?v=20261101-ua3g" defer></script>
 
 <script src="js/muse-a11y.js?v=20261101-ua3g" defer></script>
+<script src="js/muse-hackathon.js" defer></script>
 <style id="museDashLayout">
 /* Classic dashboard + telemetry layout — desktop columns by default */
 .dash-row-main{display:grid!important;grid-template-columns:minmax(280px,1fr) minmax(0,2fr)!important;gap:1.5rem!important;align-items:start}
@@ -467,6 +469,16 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 
 <main class="flex-1 w-full mx-auto p-4 sm:p-6 muse-main" style="max-width:1700px">
 
+<!-- Hackathon provenance legend: in normal page flow (never fixed), so it
+     wraps and scrolls with the page on any screen size or zoom level. -->
+<div class="hk-banner" role="note" aria-label="Hackathon-built work legend">
+  <span class="hk-dot" role="img" aria-label="Built during the hackathon (since Oct 26, 2026)"></span>
+  <span class="hk-tag">Built during the hackathon · since Oct 26</span>
+  <span>Everything marked with this <b>orange dot</b> was built in the hackathon window. Nothing else in this demo is claimed as new.</span>
+  <a href="https://github.com/carloshurtado-tech/muse_live#hackathon-build-new-work-since-oct-26-2026">Full build map in the README</a>
+  <a href="https://muse-live.pages.dev/about#hackathon">Before / during disclosure</a>
+</div>
+
 <!-- ===== DASHBOARD ===== -->
 <div id="view-dashboard" class="view-pane active space-y-6">
 <div id="cfgBannerHost"></div>
@@ -658,7 +670,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 <div id="view-streams" class="view-pane space-y-6"><div id="streamsHost"></div></div>
 <div id="view-incidents" class="view-pane space-y-6"><div id="incidentsHost"></div></div>
 <div id="view-schedule" class="view-pane space-y-6">
-  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80"><div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Master Production Schedule</h1><p class="text-sm text-gray-600 mt-0.5">Muse Schedule for rooms, circuits, kit and crew, plus the broadcast air grid and facility gantt.</p></div><div class="flex items-center gap-3"><button onclick="downloadScheduleBook(order[0])" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Schedule Book PDF</button><button type="button" onclick="try{museSyncCalendar(order[0]);}catch(e){if(typeof toast==='function')toast(String(e));}" class="flex items-center gap-1.5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-100" title="Download schedule as .ics">Export .ics</button></div></div>
+  <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80"><div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Master Production Schedule <span class="hk-dot" role="img" aria-label="Built during the hackathon (since Oct 26, 2026)" title="Built during the hackathon — see README"></span></h1><p class="text-sm text-gray-600 mt-0.5">Muse Schedule for rooms, circuits, kit and crew, plus the broadcast air grid and facility gantt.</p></div><div class="flex items-center gap-3"><button onclick="downloadScheduleBook(order[0])" class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-900 rounded-lg px-3 py-1.5 hover:bg-gray-800"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M5 21h14"/></svg> Schedule Book PDF</button><button type="button" onclick="try{museSyncCalendar(order[0]);}catch(e){if(typeof toast==='function')toast(String(e));}" class="flex items-center gap-1.5 text-xs font-bold text-blue-800 bg-blue-50 border border-blue-200 rounded-lg px-3 py-1.5 hover:bg-blue-100" title="Download schedule as .ics">Export .ics</button></div></div>
   <div id="schedTabBar" class="flex justify-center"></div>
   <div class="bg-white rounded-2xl p-5 border border-gray-200/60 overflow-x-auto" style="box-shadow:0 4px 20px rgba(0,0,0,.03)" id="scheduleGantt"></div>
 </div>
@@ -743,7 +755,7 @@ html.muse-gated #museGate{visibility:visible;opacity:1;pointer-events:auto;}
 <!-- ===== COMMUNICATIONS HUB VIEW ===== -->
 <div id="view-comms" class="view-pane space-y-6">
   <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-gray-300/80">
-    <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Omni</h1><p class="text-sm text-gray-600 mt-0.5">Unified operations comms — Gmail, Slack &amp; TOC alerts, every thread linked to a production, invoice, PO, ENG hit or event.</p></div>
+    <div><h1 class="text-2xl font-semibold tracking-tight text-gray-900">Omni <span class="hk-dot" role="img" aria-label="Built during the hackathon (since Oct 26, 2026)" title="Built during the hackathon — see README"></span></h1><p class="text-sm text-gray-600 mt-0.5">Unified operations comms — Gmail, Slack &amp; TOC alerts, every thread linked to a production, invoice, PO, ENG hit or event.</p></div>
     <div class="flex items-center gap-3">
       <span id="commsStats" class="text-xs mono text-gray-600 hidden lg:block"></span>
       <button onclick="openCompose('production',order[0],'email')" class="text-xs font-bold text-white bg-blue-600 rounded-lg px-4 py-1.5 hover:bg-blue-700">+ New Message</button>

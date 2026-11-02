@@ -439,6 +439,10 @@
   var LEVEL_TXT = { ok: 'Healthy', warn: 'Degraded', crit: 'Critical', off: 'Off air' };
   function programOf(key) { var s = streamsFor(key); return s.filter(function (x) { return x.role === 'program'; })[0] || s[0] || null; }
   function liveOf(key) { var st = stateOf(key); return st === 'LIVE' || st === 'REHEARSAL'; }
+  // Single source of truth for "what is on air right now": the dashboard
+  // On-air stat, the wall KPI and the wall row list all read this one
+  // helper, so a count and its rows can never disagree.
+  function liveKeys() { return keys().filter(liveOf); }
   function healthOf(key) {
     var pr = programOf(key); if (!pr) return { overall: 'off', stages: {}, m: null };
     var t = teleFor(key, pr), g = grade(t.m, t.live); g.m = t.m; g.t = t; return g;
@@ -584,8 +588,9 @@
   }
 
   function wallHTML() {
-    var ks = keys(), totalV = 0, live = 0, reb = [], openInc = 0;
-    ks.forEach(function (k) { var g = healthOf(k); if (g.m && liveOf(k)) { live++; totalV += g.m.viewers; reb.push(g.m.rebuffer); } });
+    var ks = keys(), lk = liveKeys(), totalV = 0, reb = [], openInc = 0;
+    var live = lk.length;
+    lk.forEach(function (k) { var g = healthOf(k); if (g.m) { totalV += g.m.viewers; reb.push(g.m.rebuffer); } });
     try { openInc = root.MuseIncidents.all().filter(function (i) { return i.status === 'Open' || i.status === 'Monitoring'; }).length; } catch (e) {}
     var avgReb = reb.length ? reb.reduce(function (a, b) { return a + b; }, 0) / reb.length : 0;
     var sorted = ks.slice().sort(function (a, b) { var o = { LIVE: 0, REHEARSAL: 1, STANDBY: 2, SCHEDULED: 3, ENDED: 4 }; var x = o[stateOf(a)], y = o[stateOf(b)]; return (x == null ? 9 : x) - (y == null ? 9 : y); });
@@ -596,6 +601,7 @@
     return '<div class="ms-wrap">' +
       '<div class="ms-page-h"><div><h1>Live Streams</h1><p>Every program feed across Meta live events, with end-to-end health. For executives and engineers.</p></div>' +
         '<div class="ms-head-r"><button type="button" class="ms-btn" onclick="MuseStreaming.rehearse(\'museaitour\')">▶ Rehearse the incident</button>' +
+        '<button type="button" class="ms-btn" title="Clear any saved per-show state overrides and return the wall to the demo-clock states" onclick="MuseStreaming.resetStates()">Reset states</button>' +
         '<button type="button" class="ms-btn ms-btn-soft" onclick="window.open(\'glasses/preview.html\',\'_blank\',\'noopener\')">Muse on Ray-Ban Display ↗</button>' +
         '<button type="button" class="ms-btn ms-btn-primary" onclick="museaiAsk(\'Give me a health check on every live stream right now\')">Ask Muse for a health check</button></div></div>' +
       '<p class="ms-note ms-demo-note"><span class="ms-src">Demo data</span> Viewer and pipeline numbers are simulated until real sources are connected per stream (AWS CloudWatch, Mux Data, Facebook Live). Video monitors and pre-flight checks are real.</p>' +
@@ -616,7 +622,7 @@
   // this list come from the same liveOf() filter, so they always agree.
   // Opening a show mounts its single on-demand player — wall stays cheap.
   function liveProgramsHTML() {
-    var ks = keys().filter(liveOf);
+    var ks = liveKeys();
     if (!ks.length) return '';
     var rows = ks.map(function (k) {
       var v = '—'; try { var g = healthOf(k); if (g && g.m && g.m.viewers) v = fmtN(g.m.viewers); } catch (e) {}
@@ -633,7 +639,7 @@
     if (!name) { var el = document.getElementById('userChipName'); name = el ? el.textContent.trim() : ''; }
     var first = (name || '').split(' ')[0];
     var h = new Date().getHours(), greet = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-    var ks = keys(), live = ks.filter(liveOf), viewers = 0, risk = 0, openInc = 0;
+    var ks = keys(), live = liveKeys(), viewers = 0, risk = 0, openInc = 0;
     live.forEach(function (k) { var g = healthOf(k); if (g.m) viewers += g.m.viewers; });
     ks.forEach(function (k) { var p = P()[k]; try { if (root.computePct(p) < 40 && p.status !== 'Complete') risk++; /* the portfolio At-risk band */ } catch (e) {} });
     try { openInc = root.MuseIncidents.all().filter(function (i) { return i.status === 'Open' || i.status === 'Monitoring'; }).length; } catch (e) {}
@@ -1808,6 +1814,19 @@
       streamsFor(key).forEach(function (x) { var t = teleFor(key, x); t.live = live; t.base = showFor(key).viewers || (st === 'LIVE' ? 25000 : 150); if (live && !t.m.viewers) t.m.viewers = t.base; });
       root.renderProjectView(key); MS.renderDash();
     },
+    // Demo insurance: drop every persisted per-show state override (setState
+    // writes survive reloads) so the wall and the On-air count return to the
+    // demo-clock states. Used when the wall ever shows fewer rows than the
+    // On-air count promises.
+    resetStates: function () {
+      keys().forEach(function (k) { try { if (rec(k)) delete rec(k).state; } catch (e) {} });
+      save();
+      try { if (document.getElementById('streamsHost')) MS.renderWall(); } catch (e) {}
+      MS.renderDash();
+      try { root.toast && root.toast('Stream states reset to the demo clock'); } catch (e) {}
+      return { ok: true, live: liveKeys() };
+    },
+    liveKeys: liveKeys,
     stateOf: stateOf,
     anomalies: anomalies,
     anomalyLog: function (key) { return (anomalyLogs[key] || []).slice(); },

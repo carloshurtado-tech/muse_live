@@ -43,6 +43,33 @@ test('wall lists every live program so the On-air count matches', () => {
   assert.doesNotMatch(html, /data-hls-slot="wall:/, 'rows mount no decoders');
 });
 
+test('liveKeys is the single count behind the KPI, the rows and the dashboard stat', () => {
+  const win = makeWin({
+    MuseDemo: { stateFor: () => 'LIVE' },
+    productions: { a: { name: 'Alpha' }, b: { name: 'Beta' }, c: { name: 'Gamma' } },
+    order: ['a', 'b', 'c'],
+  });
+  assert.deepEqual(win.MuseStreaming.liveKeys(), ['a', 'b', 'c']);
+  const html = renderWallHTML(win);
+  const n = win.MuseStreaming.liveKeys().length;
+  assert.equal((html.match(/ms-live-row/g) || []).length, n, 'one row per live program');
+  assert.match(html, new RegExp('msK-live">' + n + '<'), 'wall KPI matches the row count');
+});
+
+test('resetStates drops saved state overrides so the wall recovers its rows', () => {
+  const win = makeWin({
+    renderProjectView() {}, toast() {},
+    MuseDemo: { stateFor: () => 'LIVE' },
+    productions: { a: { name: 'Alpha' }, b: { name: 'Beta' } },
+    order: ['a', 'b'],
+  });
+  win.MuseStreaming.setState('a', 'ENDED');
+  assert.deepEqual(win.MuseStreaming.liveKeys(), ['b'], 'a persisted override hides a row');
+  const r = win.MuseStreaming.resetStates();
+  assert.equal(r.ok, true);
+  assert.deepEqual(win.MuseStreaming.liveKeys().sort(), ['a', 'b'], 'reset restores every row');
+});
+
 test('project plan tiles stay clickable and secondary tiles are poster-first', () => {
   const win = makeWin();
   const html = win.MuseStreaming.paneHTML('museaitour');

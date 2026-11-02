@@ -12867,7 +12867,7 @@ function omniDescribeAction(act,prod){
 
 /* ---- TAB 1 · Chat & Teams — threaded ops-room conversation ---- */
 function omniChatHTML(prod){
-  var sim=(OMNI_OPS_CHAT[prod]||[]).map(function(m){return {from:m.from,body:m.body,ts:m.ts,dir:m.dir,src:'ops'};});
+  var sim=(OMNI_OPS_CHAT[prod]||[]).map(function(m,i){return {from:m.from,body:m.body,ts:m.ts,dir:m.dir,src:'ops',oi:i,museQ:m.museQ,museShare:m.museShare};});
   /* executive-circle group — completely invisible unless the role has full comms access */
   if(typeof permScope==='function'&&permScope('comms')==='all'&&typeof OMNI_EXEC_CHAT!=='undefined'){
     sim=OMNI_EXEC_CHAT.map(function(m){return {from:'👔 Exec Circle · '+m.from.replace('You','You'),body:m.body,ts:m.ts,dir:m.dir,src:'exec'};}).concat(sim);}
@@ -12882,7 +12882,7 @@ function omniChatHTML(prod){
     var open=m.thread?' onclick="openCommsThread(\''+m.thread+'\')" style="cursor:pointer"':'';
     return '<div class="flex '+(out?'justify-end':'justify-start')+' mb-2"><div class="'+(out?'omni-bubble-out':'omni-bubble-in')+'"'+open+'>'+
       '<div class="flex items-center gap-2 mb-0.5"><span class="text-[9px] font-bold '+(out?'omni-bub-meta-out':'text-gray-500')+'">'+esc(m.from)+'</span><span class="text-[8px] mono '+(out?'omni-bub-meta-out':'text-gray-400')+'">'+esc(m.ts)+'</span></div>'+
-      omniBodyHTML(m,out)+
+      omniBodyHTML(m,out)+omniMuseShareHTML(prod,m)+
       (m.thread?'<p class="text-[8px] mt-1 font-bold '+(out?'omni-bub-meta-out':'text-blue-600')+'">Open linked thread →</p>':'')+
       '</div></div>';
   }).join('');
@@ -12899,9 +12899,43 @@ function omniChatFootHTML(){
     '<span class="text-[9px] font-bold uppercase tracking-wider text-gray-400 flex-shrink-0">Slack</span>'+
     '<span class="text-[10px] font-bold mono text-gray-700 truncate" title="Posts to '+esc(chan)+'">'+esc(chan)+'</span>'+
     '</div><div class="flex items-center gap-2">'+
-    '<input id="omniChatInput" class="omni-input flex-1" placeholder="Message ops, or ask Muse…" onkeydown="if(event.key===\'Enter\')omniSendChat()">'+
+    '<input id="omniChatInput" class="omni-input flex-1" placeholder="Message ops, or @muse to ask Muse…" onkeydown="if(event.key===\'Enter\')omniSendChat()">'+
     '<button type="button" onclick="omniAskMuseAi()" class="text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0" style="background:#0866FF">Muse</button>'+
     '<button onclick="omniSendChat()" class="omni-send text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0">Send</button></div>';
+}
+/* After Muse answers in the ops room, the asker decides who keeps it:
+   everyone (mirrored to the shared Slack thread) or only me (stays local). */
+function omniMuseShareHTML(prod,m){
+  if(!m||m.from!=='Muse'||m.museQ===undefined||m.oi===undefined)return '';
+  if(m.museShare==='all')return '<p class="text-[8px] mt-1 font-bold text-emerald-600">Shared with everyone ✓</p>';
+  if(m.museShare==='me')return '<p class="text-[8px] mt-1 font-bold text-gray-400">Only visible to you</p>';
+  if(m.museShare==='sending')return '<p class="text-[8px] mt-1 font-bold text-gray-400">Sharing…</p>';
+  return '<div class="flex gap-2 mt-2"><button type="button" onclick="omniMuseShare(\'all\',\''+prod+'\','+m.oi+')" class="text-[9px] font-bold text-white rounded-lg px-2.5 py-1" style="background:#0866FF">Everyone can see</button>'+
+    '<button type="button" onclick="omniMuseShare(\'me\',\''+prod+'\','+m.oi+')" class="text-[9px] font-bold border border-gray-300 rounded-lg px-2.5 py-1">Only me</button></div>';
+}
+function omniMuseShare(scope,prod,oi){
+  var list=OMNI_OPS_CHAT[prod]||[];var m=list[oi];
+  if(!m||m.from!=='Muse'||m.museShare!=null||m.museQ===undefined)return;
+  if(scope==='me'){m.museShare='me';renderOmniDrawer();toast('Kept private — only you see this answer.');return;}
+  if(scope!=='all')return;
+  var chan=omniSlackChanFor(prod);
+  var thr=null;try{thr=omniSlackThreadAnchor('T-omni-'+prod);}catch(e){}
+  m.museShare='sending';renderOmniDrawer();
+  var text='Muse answered “'+m.museQ+'”:\n'+m.body;
+  var payload={channel:chan,text:text,show:prod};if(thr)payload.thread_ts=thr.ts;
+  fetch('/api/omni/slack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+    .then(function(r){return r.json().then(function(j){return {status:r.status,body:j};});})
+    .then(function(res){
+      if(res.body&&res.body.ok){
+        m.museShare='all';
+        var nmax=9006;comms.forEach(function(x){var n=parseInt((x.id||'').replace('MSG-',''),10);if(n>nmax)nmax=n;});
+        comms.unshift({id:'MSG-'+(nmax+1),channel:'teams',dir:'out',priority:'normal',from:'Muse',to:chan,
+          subject:'',body:text,ts:nowStamp(),linkType:'production',linkId:prod,prod:prod,read:true,thread:'T-omni-'+prod,
+          status:'sent',ext_id:res.body.ts||'',ext_channel:res.body.channel||chan,error:''});
+        try{saveComms();}catch(e0){}try{renderOmniDrawer();}catch(e1){}toast('Shared with everyone in '+chan);
+      }else{m.museShare=null;renderOmniDrawer();toast('Slack share failed: '+(((res.body&&(res.body.error||''))||('HTTP '+res.status))).slice(0,160));}
+    })
+    .catch(function(e){m.museShare=null;renderOmniDrawer();toast('Slack share failed: '+String((e&&e.message)||e).slice(0,160));});
 }
 function omniPushOps(prod, from, body, dir){
   if(!OMNI_OPS_CHAT[prod])OMNI_OPS_CHAT[prod]=[];
@@ -12912,6 +12946,7 @@ function omniAskMuseAi(preset){
   var txt=(preset||(inp&&inp.value)||'').trim();
   if(!txt){toast('Ask Muse something first');return;}
   if(/^@?museai\s+/i.test(txt))txt=txt.replace(/^@?museai\s+/i,'');
+  if(/^@muse\s+/i.test(txt))txt=txt.replace(/^@muse\s+/i,'');
   var prod=omniCurrentProd();
   omniPushOps(prod,'You',txt,'out');
   if(inp)inp.value='';
@@ -12922,6 +12957,7 @@ function omniAskMuseAi(preset){
     var list=OMNI_OPS_CHAT[prod]||[];
     if(list.length&&list[list.length-1].from==='Muse'&&list[list.length-1].body==='Thinking…')list.pop();
     omniPushOps(prod,'Muse',String(ans||'').slice(0,2000),'in');
+    var _ml=OMNI_OPS_CHAT[prod]||[];if(_ml.length){_ml[_ml.length-1].museQ=txt;_ml[_ml.length-1].museShare=null;}
     try{
       var act=typeof museaiParseAction==='function'?museaiParseAction(txt):null;
       if(act){
@@ -13016,7 +13052,7 @@ async function syncOmniThread(tk,manual){
 function omniSendChat(){
   var inp=document.getElementById('omniChatInput');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt){toast('Type a message first');return;}
-  if(/^@?museai\b/i.test(txt)||/^\/museai\b/i.test(txt)){omniAskMuseAi(txt);return;}
+  if(/^@muse\b/i.test(txt)||/^@?museai\b/i.test(txt)||/^\/museai\b/i.test(txt)){omniAskMuseAi(txt);return;}
   var prod=omniCurrentProd();
   var chan=omniSlackChanFor(prod);
   var thr=null;try{thr=omniSlackThreadAnchor('T-omni-'+prod);}catch(e){}

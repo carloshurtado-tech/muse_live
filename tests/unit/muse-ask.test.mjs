@@ -26,6 +26,11 @@ test('document warning banner asks Muse for a fix', () => {
   assert.ok(bSrc.includes('Ask Muse →'), 'doc warn must carry an Ask Muse button');
 });
 
+test('stream theater asks Muse about the exact stream on screen', () => {
+  assert.ok(sSrc.includes('MuseStreaming.modalAsk()'), 'theater must carry an Ask Muse action');
+  assert.ok(sSrc.includes('apply the recommended fix if anything is wrong'), 'inquiries must not force a fix on a healthy stream');
+});
+
 test('stream alerts are buttons that ask Muse to apply the fix', () => {
   assert.ok(sSrc.includes('MuseStreaming.askAlert('), 'alerts must call askAlert with the show and stage');
   assert.ok(sSrc.includes('Apply the fix.'), 'Muse must be asked to apply the stream fix');

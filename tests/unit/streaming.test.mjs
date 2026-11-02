@@ -83,6 +83,12 @@ test('resetStates drops saved state overrides so the wall recovers its rows', ()
   assert.deepEqual(win.MuseStreaming.liveKeys().sort(), ['a', 'b'], 'reset restores every row');
 });
 
+test('project monitor tiles open the theater at one uniform size', () => {
+  const html = makeWin().MuseStreaming.paneHTML('museaitour');
+  assert.ok(html.includes("MuseStreaming.screenClick(event,this,'museaitour')"), 'monitor click opens the stream theater');
+  assert.doesNotMatch(html, /ms-tile is-big/, 'no oversized program tile — every monitor shares one size');
+});
+
 test('project plan tiles stay clickable and secondary tiles are poster-first', () => {
   const win = makeWin();
   const html = win.MuseStreaming.paneHTML('museaitour');

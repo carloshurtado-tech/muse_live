@@ -462,10 +462,11 @@
     // decoder or segment fetches until Play/expand. Only a show's big program
     // monitor (or an already-playing wall feed) starts on its own.
     var defer = !st.seeded || (ctx === 'proj' ? !opts.big : (!t.live && !players[slot]));
-    var clickable = ctx !== 'proj'; // the plan pane IS the destination; wall + dash thumbnails open it
-    return '<figure class="ms-tile' + (opts.big ? ' is-big' : '') + (st.role === 'vertical' || (opts.vertical) ? ' is-vertical' : '') + '" data-sid="' + st.id + '">' +
-      '<div class="ms-screen' + (clickable ? ' is-clickable' : '') + '" data-hls-slot="' + esc(slot) + '" data-url="' + esc(st.url) + '"' + (t.live ? ' data-live="1"' : '') + (defer ? ' data-defer="1"' : '') +
-      (clickable ? ' onclick="MuseStreaming.screenClick(event,this,\'' + esc(key) + '\')" title="' + (defer ? 'Play preview' : 'Open streaming plan') + '"' : '') + '>' +
+    // Every monitor opens the stream theater (live telemetry + Ask Muse);
+    // the plan pane stays the destination behind it. One tile size everywhere.
+    return '<figure class="ms-tile' + (st.role === 'vertical' || (opts.vertical) ? ' is-vertical' : '') + '" data-sid="' + st.id + '">' +
+      '<div class="ms-screen is-clickable" data-hls-slot="' + esc(slot) + '" data-url="' + esc(st.url) + '"' + (t.live ? ' data-live="1"' : '') + (defer ? ' data-defer="1"' : '') +
+      ' onclick="MuseStreaming.screenClick(event,this,\'' + esc(key) + '\')" title="' + (defer ? 'Play preview' : (ctx === 'proj' ? 'Open stream monitor' : 'Open streaming plan')) + '">' +
         (st.role === 'vertical' ? '<span class="ms-vframe" aria-hidden="true"></span>' : '') +
         '<div class="ms-slate" aria-hidden="true"><b>' + esc(st.name) + '</b><span>' + (defer ? 'Off air' : 'Connecting') + '</span></div>' +
         (defer ? '<button type="button" class="ms-play" onclick="MuseStreaming.play(event,this)" aria-label="Play ' + esc(st.name) + '">▶</button>' : '') +
@@ -1190,6 +1191,7 @@
         '</div>' +
         '<div id="msModalChain"></div><div id="msModalCharts"></div>' +
         '<div class="ms-modal-foot">' +
+          '<button type="button" class="ms-btn ms-btn-primary" onclick="MuseStreaming.modalAsk()">Ask Muse about this stream</button>' +
           '<button type="button" class="ms-btn" id="msModalFaultBtn" onclick="MuseStreaming.modalFault()">Simulate: drop program feed</button>' +
           '<button type="button" class="ms-btn" onclick="MuseStreaming.modalPlan()">Open streaming plan →</button>' +
           '<button type="button" class="ms-btn" onclick="MuseStreaming.modalIncident()">Log incident</button>' +
@@ -1776,6 +1778,18 @@
       });
     },
     modalPlan: function () { if (modal.isTest) { if (root.toast) root.toast('Test feed — open the Live Streams wall for the full wall'); return; } var k = modal.key; closeStream(); MS.openShow(k); },
+    // Ask about this exact stream: live telemetry plus open issues go to Muse;
+    // fixes get applied when something is actually wrong.
+    modalAsk: function () {
+      var key = modal.key; if (!key) return;
+      var pr = programOf(key); if (!pr) return;
+      var t = teleFor(key, pr), m = t.m, g = grade(m, t.live);
+      var live = t.live ? ('viewers ' + fmtN(m.viewers) + ', rebuffer ' + m.rebuffer.toFixed(2) + '%, startup ' + m.startup.toFixed(1) + 's, failures ' + m.failures.toFixed(2) + '%; SRT loss ' + m.srt_loss.toFixed(2) + '%, RTT ' + Math.round(m.srt_rtt) + 'ms; edge 5xx ' + m.cdn_5xx.toFixed(2) + '%, cache hit ' + m.cdn_hit.toFixed(1) + '%, TTFB ' + Math.round(m.cdn_ttfb) + 'ms; encoder CPU ' + Math.round(m.enc_cpu) + '%') : 'off air';
+      var open = [];
+      try { open = anomalies().filter(function (x) { return x.key === key; }).map(function (x) { return x.text + (x.recommendation && x.recommendation.kind && x.recommendation.kind !== 'none' ? ' [fix: ' + x.recommendation.label + ']' : ''); }); } catch (e) {}
+      var q = ('Stream check for ' + nameOf(key) + ' (' + pr.name + ', ' + pr.role + '): ' + live + '. ' + (open.length ? 'Open issues: ' + open.join(' | ') + '. ' : 'No open issues. ') + 'Answer my question about this stream, and apply the recommended fix if anything is wrong.').replace(/'/g, '').replace(/"/g, '');
+      try { museaiAsk(q); } catch (e2) { try { if (root.toast) root.toast('Muse is not available here'); } catch (e3) {} }
+    },
     modalIncident: function () {
       if (modal.isTest) { if (root.toast) root.toast('Test feed — log incidents from a show streaming plan'); return; }
       var k = modal.key; closeStream();

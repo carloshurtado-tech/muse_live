@@ -41,7 +41,7 @@
 
 Built for the **Meta Global AI Developer Hackathon** (Oct 27 – Nov 4, 2026), Indie track, theme **Build for Your World** — the world here is live broadcast operations.
 
-> **Judges start here.** Everything below was built in the hackathon window: commits dated **Oct 27, Oct 31, or Nov 1, 2026** — nothing backdated. Verify it yourself: `git log --since=2026-10-26` reproduces all 38 commits. Nothing else in this demo is claimed as new.
+> **Judges start here.** Everything below was built in the hackathon window: commits dated **Oct 27, Oct 31, or Nov 1, 2026** — nothing backdated. Verify it yourself: `git log --since=2026-10-26` reproduces the full in-window history (48 commits at time of writing). Nothing else in this demo is claimed as new.
 
 ### How it was built
 
@@ -66,8 +66,9 @@ Built with **Muse Code** (the agentic coding CLI, powered by **Muse Spark**): th
 | 13 | Meta Ray-Ban Display companion content, login Meta marks, guided-tour removal, README/About rebuild | `glasses/`, `glasses-src/`, `about.html`, `README.md` | `6ee0f3f`, `41591af`, `79f9d17`, `7f44da6` | Same sign-in; stale status (>60 s) says "Demo data" aloud |
 | 14 | Security hardening + final DEBUG pass (BUG-01..46), dark-mode fixes | whole app, `functions/_middleware.js` | `04a3ade`, `cc14043` | 292 unit, 20/20 browser e2e, 0 axe violations; HMAC sessions, read-only viewer enforcement, model-down rule fallback |
 | 15 | Open-source release + license + deploy rotation | `LICENSE`, `THIRD_PARTY_NOTICES.md`, `submission-draft.md` | `95f1c21` (GPL-3.0), `9897323`, `6f2d6b7`, `11b31b0` | Repo public; logged-out guest path verified 200 |
+| 16 | UI follow-through: Omni drawer posts to real Slack (per-show channel, sent/failed status), badge counts reconciled across Slack surfaces, Muse-noticed newest-first + conflict deep-link, sidebar Glasses entry, one favicon everywhere, finance bubble → AP tab → invoice document, README/About hackathon surfacing | `js/muse-app-b.js`, `js/muse-app-a.js`, `js/muse-showcaller.js`, `js/muse-schedule.js`, `js/muse-proactive.js`, `functions/api/omni/`, `index.html`, `about.html`, `README.md`, `tests/unit/` | `c1b7a89`, `0ac185d`, `2ff5abe`, `4fb1b98`, `1bdcd86`, `8d8728b` | Real POSTs with honest errors; regression tests added; 303 unit green; deployed + verified live |
 
-History mechanics, not features: `41786a6` reverts `main` to `034f158` (undoing the `f5c7ff2` merge); `ff34f64` then re-applies the Day 2–7 work. `6190c09`/`6f2d6b7` record the private→public decision trail. `d17cba9`/`86b7c1e` are local tweaks and rebuild triggers.
+History mechanics, not features: `41786a6` reverts `main` to `034f158` (undoing the `f5c7ff2` merge); `ff34f64` then re-applies the Day 2–7 work. `6190c09`/`6f2d6b7` record the private→public decision trail. `d17cba9`/`86b7c1e` are local tweaks and rebuild triggers. `98a6f80`/`e44223c`/`c33687a` were a superseded demo-overlay experiment, fully reverted by `734545d` — none of that code is in the tree.
 
 **Not claimed:** the Oct 15–19 base (rebrand from the NBC "Pulse" tool in `fde343c`, login shell, nav rail, seeded demo content) and any view untouched by the commits above.
 

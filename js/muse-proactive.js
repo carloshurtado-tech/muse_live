@@ -79,7 +79,7 @@
     btns += '<button type="button" class="ma-btn" onclick="MuseProactive.dismiss(\'' + id + '\')">Dismiss</button>';
     el.innerHTML = '<img class="ma-ava" src="assets/brand/muse-face.webp" alt="" width="28" height="28" draggable="false">' +
       '<div class="ma-body"><div class="mp-card is-' + (item.level || 'warn') + '">' +
-        '<div class="mp-head"><span class="mp-tag"><i aria-hidden="true"></i>Muse noticed</span><span class="mp-time">' + nowLabel() + '</span></div>' +
+        '<div class="mp-head"><span class="mp-tag"><i aria-hidden="true"></i>Muse noticed</span><span style="display:inline-flex;align-items:center;gap:4px"><span class="mp-time">' + nowLabel() + '</span><button type="button" class="mp-x" onclick="MuseProactive.remove(\'' + id + '\')" title="Remove this notice" aria-label="Remove this notice">✕</button></span></div>' +
         '<div class="mp-text ma-md">' + md(item.text) + '</div>' +
         (item.rec ? '<p class="mp-rec">I recommend: <b>' + esc(item.rec.label) + '</b>. Nothing changes until you confirm.</p>' : '') +
         '<div class="ma-card-btns mp-btns">' + btns + '</div></div></div>';
@@ -136,6 +136,14 @@
     note('user confirmed "' + rec.label + '" for ' + item.show + ' — ' + (r.text || 'applied'));
   };
   P.dismiss = function (id) { var item = P.cards[id]; finish(id, '<p class="mp-muted">Dismissed.</p>'); if (item) note('user dismissed "' + item.text + '"'); };
+  // Delete is dismiss plus gone: the card leaves the panel entirely (open or
+  // finished). Seen state is kept, so a removed notice does not re-raise.
+  P.remove = function (id) {
+    var item = P.cards[id], el = $(id);
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+    if (item) { note('user removed "' + item.text + '"'); delete P.cards[id]; }
+    syncPanel();
+  };
   function gotoConflicts(item) {
     try {
       root.navGo('schedule');

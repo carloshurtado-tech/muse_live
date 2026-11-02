@@ -28,6 +28,13 @@ test('every notice opens its solution, even after it resolves', () => {
   assert.ok(src.includes('gotoConflicts(item)'), 'review and View must share the exact-conflict landing');
 });
 
+test('notices can be deleted from the panel', () => {
+  assert.ok(src.includes('MuseProactive.remove('), 'cards must carry a remove action');
+  assert.ok(src.includes('class="mp-x"'), 'remove affordance must sit in the card header');
+  assert.ok(src.includes('delete P.cards[id]'), 'remove must drop the card record');
+  assert.ok(src.includes('removeChild(el)'), 'remove must take the card element out of the panel');
+});
+
 test('judge entry grants read-write producer sessions', async () => {
   const mw = fs.readFileSync(path.join(ROOT, 'functions', '_middleware.js'), 'utf8');
   assert.ok(mw.includes("r: 'producer'"), 'guest sessions must carry the producer role');

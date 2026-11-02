@@ -4800,6 +4800,8 @@ html.dark .ma-chip-link:hover{box-shadow:inset 0 0 0 1px #0866FF;color:#2694FE;}
 .mp-tag i{width:8px;height:8px;border-radius:999px;background:#F7B928;}
 .mp-card.is-crit .mp-tag i{background:var(--ma-red,#E41E3F);animation:ma-blink 1.6s ease-in-out infinite;}
 .mp-time{font-size:11.5px;color:var(--ma-ink-2,#65676B);font-variant-numeric:tabular-nums;}
+.mp-x{border:0;background:none;color:var(--ma-ink-2,#65676B);font-size:12px;line-height:1;cursor:pointer;padding:2px 5px;border-radius:6px;}
+.mp-x:hover{color:var(--ma-red,#E41E3F);background:rgba(228,30,63,.08);}
 .mp-text p{margin:0 0 6px;}
 .mp-rec{margin:4px 0 0;font-size:13px;color:var(--ma-ink-2,#65676B);}
 .mp-rec b{color:var(--ma-ink,#050505);}

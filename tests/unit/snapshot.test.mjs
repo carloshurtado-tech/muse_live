@@ -25,3 +25,17 @@ test('snapshot card template has balanced tags', () => {
     assert.equal(opens.length, closes.length, `<${t}> opens (${opens.length}) must equal closes (${closes.length})`);
   }
 });
+
+// Half-size tiles: doubled column counts halve each tile's width, and the card
+// itself is compacted (p-3, text-sm title) so content fits the smaller tile.
+test('snapshot grid renders half-size tiles', () => {
+  const i = src.indexOf('function renderSnapshot');
+  const fn = src.slice(i, src.indexOf('function _snapshotCard', i));
+  assert.ok(fn.includes('md:grid-cols-4'), 'md doubles 2 -> 4');
+  assert.ok(fn.includes('xl:grid-cols-6'), 'xl doubles 3 -> 6');
+  assert.ok(fn.includes('2xl:grid-cols-8'), '2xl doubles 4 -> 8');
+  assert.ok(!fn.includes('md:grid-cols-2'), 'old full-size md columns gone');
+  const card = cardSource();
+  assert.ok(card.includes('rounded-xl p-3'), 'card padding compacted');
+  assert.ok(card.includes('text-sm font-semibold'), 'card title compacted');
+});

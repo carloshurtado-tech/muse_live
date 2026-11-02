@@ -1507,15 +1507,15 @@ function renderSnapshot(){
     var known={};present.forEach(function(c){known[c]=1;});
     var others=keys.filter(function(k){return !known[productions[k].customer];});
     if(others.length)present.push('Other');
-    g.className='grid grid-cols-1 gap-6';
+    g.className='grid grid-cols-1 gap-4';
     g.innerHTML=present.map(function(c){
       var ks=(c==='Other')?others:keys.filter(function(k){return productions[k].customer===c;});
-      return '<section><div class="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200"><h2 class="text-sm font-bold tracking-tight text-gray-900">'+c+'</h2><span class="text-[10px] mono font-bold text-gray-500">'+ks.length+'</span></div>'+
-        '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">'+ks.map(_snapshotCard).join('')+'</div></section>';
+      return '<section><div class="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200"><h2 class="text-sm font-bold tracking-tight text-gray-900">'+c+'</h2><span class="text-[10px] mono font-bold text-gray-500">'+ks.length+'</span></div>'+
+        '<div class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3">'+ks.map(_snapshotCard).join('')+'</div></section>';
     }).join('');
     return;
   }
-  g.className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4';
+  g.className='grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3';
   g.innerHTML=keys.map(_snapshotCard).join('');
 }
 function _snapshotCard(k){var p=productions[k];var c=countStatus(p);var pct=computePct(p);var ph=phaseFor(p);
@@ -1528,11 +1528,11 @@ function _snapshotCard(k){var p=productions[k];var c=countStatus(p);var pct=comp
       return{lab:'Status',txt:'All departments approved',tone:'emerald'};})();
     var bt={red:'bg-red-50 border-red-100',amber:'bg-amber-50 border-amber-100',emerald:'bg-emerald-50 border-emerald-100'}[bottleneck.tone];
     var btl={red:'text-red-600',amber:'text-amber-600',emerald:'text-emerald-600'}[bottleneck.tone];
-    return '<div onclick="openProject(\''+k+'\')" class="project-card bg-white rounded-2xl p-5 border '+border+' flex flex-col justify-between cursor-pointer relative" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+badge+
-      '<div><div class="flex justify-between items-start mb-4"><div><h3 class="text-lg font-semibold '+(risky?'text-red-900':'text-gray-950')+'">'+p.name+'</h3><p class="text-[10px] text-gray-500">'+p.venue+'</p></div><div class="flex flex-col items-end gap-1">'+custChip(p.customer)+'<span class="text-[9px] font-bold '+pillCls+' px-2.5 py-1 rounded-full border whitespace-nowrap tracking-wide">'+ph.label+'</span></div></div>'+
-      '<div class="space-y-1.5 mb-4"><div class="flex justify-between items-end mono"><span class="text-xs font-semibold '+(risky?'text-red-800':'text-gray-700')+'">Requirements Cleared</span><span class="text-3xl font-bold '+pctColor(pct)+'">'+pct+'<span class="text-xl">%</span></span></div><progress class="w-full '+progClass(pct)+'" style="height:10px" value="'+pct+'" max="100"></progress></div></div>'+
-      '<button type="button" onclick="event.stopPropagation();museaiAsk(\''+((bottleneck.lab+': '+bottleneck.txt+' ('+c.approved+' approved, '+c.pending+' pending, '+c.missing+' missing) for '+p.name+'. Suggest a fix.').replace(/\'/g,'').replace(/"/g,''))+'\')" title="Ask Muse for a fix" class="'+bt+' rounded-xl p-3 border mt-auto text-left w-full cursor-pointer"><p class="text-[9px] font-bold '+btl+' uppercase tracking-wider mb-1">'+bottleneck.lab+'</p><div class="flex items-center justify-between"><p class="text-xs font-semibold '+(risky?'text-red-900':'text-gray-800')+'">'+bottleneck.txt+'</p><span class="text-[10px] font-bold '+(risky?'text-red-700':'text-blue-700')+' mono whitespace-nowrap ml-2">Ask Muse →</span></div>'+
-      '<div class="snap-counts flex items-center gap-3 mt-2 pt-2 border-t border-gray-100 text-[10px] mono font-bold"><span class="text-emerald-600">'+c.approved+' Approved</span><span class="text-amber-600">'+c.pending+' Pending</span><span class="text-red-600">'+c.missing+' Missing</span></div></button></div>';
+    return '<div onclick="openProject(\''+k+'\')" class="project-card bg-white rounded-xl p-3 border '+border+' flex flex-col justify-between cursor-pointer relative" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+badge+
+      '<div><div class="flex justify-between items-start gap-1 mb-2"><div class="min-w-0"><h3 class="text-sm font-semibold truncate '+(risky?'text-red-900':'text-gray-950')+'">'+p.name+'</h3><p class="text-[9px] text-gray-500 truncate">'+p.venue+'</p></div><div class="flex flex-col items-end gap-1 flex-shrink-0">'+custChip(p.customer)+'<span class="text-[8px] font-bold '+pillCls+' px-2 py-0.5 rounded-full border whitespace-nowrap tracking-wide">'+ph.label+'</span></div></div>'+
+      '<div class="space-y-1 mb-2"><div class="flex justify-between items-end mono"><span class="text-[10px] font-semibold '+(risky?'text-red-800':'text-gray-700')+'">Requirements Cleared</span><span class="text-xl font-bold '+pctColor(pct)+'">'+pct+'<span class="text-xs">%</span></span></div><progress class="w-full '+progClass(pct)+'" style="height:6px" value="'+pct+'" max="100"></progress></div></div>'+
+      '<button type="button" onclick="event.stopPropagation();museaiAsk(\''+((bottleneck.lab+': '+bottleneck.txt+' ('+c.approved+' approved, '+c.pending+' pending, '+c.missing+' missing) for '+p.name+'. Suggest a fix.').replace(/\'/g,'').replace(/"/g,''))+'\')" title="Ask Muse for a fix" class="'+bt+' rounded-lg p-2 border mt-auto text-left w-full cursor-pointer"><p class="text-[8px] font-bold '+btl+' uppercase tracking-wider mb-0.5">'+bottleneck.lab+'</p><div class="flex items-center justify-between gap-1"><p class="text-[11px] font-semibold leading-tight '+(risky?'text-red-900':'text-gray-800')+'">'+bottleneck.txt+'</p><span class="text-[9px] font-bold '+(risky?'text-red-700':'text-blue-700')+' mono whitespace-nowrap ml-1 flex-shrink-0">Ask Muse →</span></div>'+
+      '<div class="snap-counts flex items-center gap-2 mt-1.5 pt-1.5 border-t border-gray-100 text-[9px] mono font-bold"><span class="text-emerald-600">'+c.approved+' Approved</span><span class="text-amber-600">'+c.pending+' Pending</span><span class="text-red-600">'+c.missing+' Missing</span></div></button></div>';
 }
 
 /* ---- master re-render after any data change ---- */
@@ -7027,6 +7027,33 @@ function museaiPushHtml(html){
   el.innerHTML='<div class="museai-bubble-bot text-xs rounded-2xl rounded-bl-sm px-3 py-2">'+html+'</div>';
   m.appendChild(el);m.scrollTop=m.scrollHeight;
 }
+/* File a Muse answer back into the wiki, so the next question can be solved
+   from it: Muse reads the wiki (search_knowledge / museaiWikiAnswer) and now
+   writes solutions there too. */
+var _museaiLastQA=null;var _museaiSavedTitle=null;
+function museaiOfferWikiSave(){
+  museaiPushHtml('<span class="text-gray-500">File this solution where the crew can find it:</span> <button type="button" onclick="museaiSaveToWiki()" class="text-blue-700 font-bold hover:underline">Save to wiki \u2192</button>');
+}
+function museaiSaveToWiki(){
+  try{
+    if(!_museaiLastQA||!_museaiLastQA.a){toast('Nothing to save yet \u2014 ask Muse first.');return;}
+    if(typeof MuseKB==='undefined'||typeof MuseKB.action!=='function'){toast('Wiki unavailable in this view.');return;}
+    var q=String(_museaiLastQA.q||'').replace(/[\[\]{}|#<>]/g,' ').replace(/\s+/g,' ').trim().slice(0,60)||'Muse solution';
+    var stamp='';try{stamp=new Date().toLocaleString('en-US');}catch(eS){}
+    var res=MuseKB.action({action:'edit',title:'Troubleshooting:'+q,text:'= '+q+' =\n\nFiled from Muse on '+stamp+'.\n\n== Question ==\n'+_museaiLastQA.q+'\n\n== Muse solution ==\n'+_museaiLastQA.a+'\n',summary:'Muse solution',token:'+\\\\'});
+    if(res&&res.edit&&res.edit.result==='Success'){
+      _museaiSavedTitle=res.edit.title;
+      museaiPushHtml('Saved to the wiki as <b>'+esc(res.edit.title)+'</b> <button type="button" onclick="museaiOpenSavedWiki()" class="text-blue-700 font-bold hover:underline">Open \u2192</button>');
+    }else if(res&&res.error){toast('Wiki save failed: '+(res.error.info||res.error.code));}
+    else{toast('Wiki save failed \u2014 please retry.');}
+  }catch(e){toast('Wiki save failed \u2014 please retry.');}
+}
+function museaiOpenSavedWiki(){
+  try{
+    if(typeof navGo==='function')navGo('kb');
+    if(_museaiSavedTitle&&typeof MuseKB!=='undefined'&&MuseKB.openByTitle){var t=_museaiSavedTitle;setTimeout(function(){try{MuseKB.openByTitle(t);}catch(eO){}},150);}
+  }catch(e){}
+}
 var _museaiPending=null;
 var _museaiOffers={};
 var _museaiOfferSeq=0;
@@ -7379,7 +7406,9 @@ function museaiDeliver(q){
     /* Only quietly note domain spelling fixes (e.g. superbow) — never dump the whole rewrite */
     if(spellNote&&t&&t.indexOf(spellNote)<0)t=t+' '+spellNote;
     museaiHistory.push({role:'assistant',content:t});
+    _museaiLastQA={q:rawQ,a:t};
     museaiPush(t,'bot');
+    if(t&&t.length>40)museaiOfferWikiSave();
     if(note)museaiPush(note,'bot');
   }
   function rulesAnswer(){

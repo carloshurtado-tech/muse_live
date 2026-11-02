@@ -35,6 +35,7 @@ export function Root() {
 
   return (
     <App>
+      <button type="button" className="g-exit" aria-label="Exit to dashboard" title="Exit to dashboard" onClick={() => { location.href = '/'; }}>✕</button>
       <SubNavigationPager items={TABS} ariaLabel="Muse live ops" defaultPageIndex={START_TAB}>
         <OnAirScreen status={status} />
         <AlertsScreen status={status} onResolve={() => setStatus(demoStatus(INCIDENT || undefined))} />

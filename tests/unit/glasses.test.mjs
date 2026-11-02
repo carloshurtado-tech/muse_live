@@ -38,3 +38,13 @@ test('glasses answers in the lens, by voice and by tap', () => {
 test('glasses stage is a Meta Connect event, not a black void', () => {
   assert.ok(pv.includes('scene-connect.jpg'), 'lens world must be the Meta Connect backdrop');
 });
+
+// Exit: the presenter must always be able to get back to the dashboard —
+// from the preview page header and from inside the 600×600 app itself.
+const gsrc = fs.readFileSync(path.join(ROOT, 'glasses-src', 'src', 'Root.tsx'), 'utf8');
+
+test('glasses exits back to the dashboard', () => {
+  assert.ok(pv.includes('Exit to dashboard'), 'preview header must link back to the dashboard');
+  assert.ok(gsrc.includes('g-exit'), 'glasses app must render an exit button');
+  assert.ok(gsrc.includes("location.href = '/'"), 'exit must land on the dashboard');
+});

@@ -230,6 +230,25 @@
         if (free('LiveU LU800 #4', at(cw, 7), at(cw, 14))) add('LiveU LU800 #4', 'igcreators', 'Creator Week roaming cam', at(cw, 7), at(cw, 14));
       }
     }
+    // 4) Next-week head (Mon–Tue): the demo window runs to Nov 10, so the
+    // calendar stays full past this week — with one deliberate double-booking
+    // on PCR 4 for the conflict-resolution demo.
+    var nxMon = addDays(mon, 7), nxTue = addDays(mon, 8);
+    add('Studio M1', 'raybangen3', 'Ray-Ban Meta Gen 3 — studio follow-up', at(nxMon, 9), at(nxMon, 13));
+    add('PCR 4', 'raybangen3', 'Ray-Ban Meta Gen 3 — follow-up control', at(nxMon, 9), at(nxMon, 13));
+    add('EVS 2', 'museaitour', 'World Tour stop cut-down', at(nxMon, 10), at(nxMon, 18));
+    add('Edit 3', 'museaitour', 'World Tour stop cut-down edit', at(nxMon, 10), at(nxMon, 18), { status: 'Hold' });
+    add('CRK 7', 'orion', 'Orion reveal — path prove-out', at(nxMon, 14), at(nxMon, 17), { status: 'Tentative' });
+    add('ACR 2', 'whatsapp', 'WhatsApp Summit — audio remix', at(nxTue, 9), at(nxTue, 12));
+    add('PCR 2', 'museaitour', 'World Tour — stop feed · LIVE', at(nxTue, 11), at(nxTue, 19), { onAir: true });
+    add('CRK 6', 'museaitour', 'World Tour — stop feed B-path', at(nxTue, 11), at(nxTue, 19), { onAir: true });
+    add('LiveU LU800 #3', 'igcreators', 'Creator Week pickup day', at(nxTue, 8), at(nxTue, 14));
+    crew.slice(0, 4).forEach(function (c, i) {
+      var day = (i % 2) ? nxTue : nxMon;
+      add(c.name, c.prod, prodName(c.prod) + ' next-week call · ' + (c.pos || 'crew'), at(day, 9), at(day, 17));
+    });
+    // Deliberate conflict #3 — a double-booked control room for the demo.
+    add('PCR 4', 'orion', 'Orion reveal — emergency line-up', at(nxMon, 12), at(nxMon, 15), { notes: 'Requested by Orion TX — clashes with the Ray-Ban follow-up on PCR 4.' });
     logChange(null, 'Muse Schedule initialised for the week of ' + dayLabel(mon) + ' · ' + db.bookings.length + ' bookings', 'ok');
     return db;
   }

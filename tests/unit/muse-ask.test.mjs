@@ -35,3 +35,12 @@ test('stream alerts are buttons that ask Muse to apply the fix', () => {
   assert.ok(sSrc.includes('MuseStreaming.askAlert('), 'alerts must call askAlert with the show and stage');
   assert.ok(sSrc.includes('Apply the fix.'), 'Muse must be asked to apply the stream fix');
 });
+
+// Wiki↔Muse is two-way: Muse reads the wiki to answer, and every substantive
+// answer offers to file the solution back as a Troubleshooting article.
+test('Muse answers offer to file the solution back into the wiki', () => {
+  assert.ok(aSrc.includes('museaiOfferWikiSave()'), 'answers must offer the wiki save');
+  assert.ok(aSrc.includes('_museaiLastQA={q:rawQ,a:t}'), 'the last Q/A must be captured for filing');
+  assert.ok(aSrc.includes("title:'Troubleshooting:'+q"), 'solutions must land as Troubleshooting articles');
+  assert.ok(aSrc.includes('museaiOpenSavedWiki()'), 'the saved article must open from the chat');
+});

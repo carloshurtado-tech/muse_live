@@ -10,3 +10,5 @@
 .g-head h1 { margin: 0; }
 .g-fill { display: flex; flex-direction: column; height: 100%; padding-top: 76px; box-sizing: border-box; }
 .g-fill .g-next { flex: 1; }
+/* exit back to the dashboard — floats above the pager, clear of the nav pill */
+.g-exit { position: absolute; top: 10px; right: 12px; z-index: 50; border: 1px solid var(--uit-color-border, rgba(255,255,255,.25)); background: rgba(0,0,0,.55); color: #fff; border-radius: 9999px; width: 34px; height: 34px; font-size: 15px; line-height: 1; cursor: pointer; }

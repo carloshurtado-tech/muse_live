@@ -12887,10 +12887,10 @@ function omniChatFootHTML(){
     '<button type="button" onclick="omniMuseAiConfirm()" class="ml-1 text-[10px] font-bold text-white bg-gray-900 rounded px-2 py-0.5">Confirm</button> '+
     '<button type="button" onclick="omniMuseAiCancel()" class="text-[10px] font-bold border border-gray-300 rounded px-2 py-0.5">Cancel</button></div>':'';
   var prod=omniCurrentProd();
-  var chan=omniSlackChan(prod);
+  var chan=omniSlackChanFor(prod);
   return bar+'<div class="flex items-center gap-2 mb-2">'+
     '<span class="text-[9px] font-bold uppercase tracking-wider text-gray-400 flex-shrink-0">Slack</span>'+
-    '<input id="omniSlackChan" class="omni-input flex-1" style="padding-top:6px;padding-bottom:6px" placeholder="#ops-room for this show" value="'+esc(chan)+'">'+
+    '<span class="text-[10px] font-bold mono text-gray-700 truncate" title="Posts to '+esc(chan)+'">'+esc(chan)+'</span>'+
     '</div><div class="flex items-center gap-2">'+
     '<input id="omniChatInput" class="omni-input flex-1" placeholder="Message ops, or ask Muse…" onkeydown="if(event.key===\'Enter\')omniSendChat()">'+
     '<button type="button" onclick="omniAskMuseAi()" class="text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0" style="background:#0866FF">Muse</button>'+
@@ -12954,30 +12954,28 @@ function omniMuseAiCancel(){
   omniPushOps((pend&&pend.prod)||omniCurrentProd(),'Muse','Cancelled — no write.','in');
   renderOmniDrawer();
 }
-/* Per-show Slack channel for the drawer Send button (local setting; the real
-   post goes to /api/omni/slack, which needs SLACK_BOT_TOKEN or SLACK_WEBHOOK_URL). */
-var OMNI_SLACK_KEY='muselive_omni_slack_v1';
-function omniSlackTargets(){try{return JSON.parse(localStorage.getItem(OMNI_SLACK_KEY)||'{}')||{};}catch(e){return {};}}
-function omniSlackChan(prod){return omniSlackTargets()[prod]||'';}
-function omniSlackChanSave(prod,ch){try{var t=omniSlackTargets();if(ch)t[prod]=ch;else delete t[prod];localStorage.setItem(OMNI_SLACK_KEY,JSON.stringify(t));}catch(e){}}
+/* The drawer ops-room channel always follows the project name: #<slug-of-show>.
+   The real post goes to /api/omni/slack, which needs SLACK_BOT_TOKEN or SLACK_WEBHOOK_URL. */
+function omniSlackChanFor(prod){
+  var p=(typeof productions!=='undefined')?productions[prod]:null;
+  var n=p?(p.name||prod):String(prod||'ops');
+  var s=''+n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
+  return '#'+(s||'ops-room');
+}
 function omniSendChat(){
   var inp=document.getElementById('omniChatInput');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt){toast('Type a message first');return;}
   if(/^@?museai\b/i.test(txt)||/^\/museai\b/i.test(txt)){omniAskMuseAi(txt);return;}
   var prod=omniCurrentProd();
-  var chanEl=document.getElementById('omniSlackChan');
-  var chan=chanEl?String(chanEl.value||'').trim():'';
-  if(!chan)chan=omniSlackChan(prod);
-  if(chan&&chanEl)omniSlackChanSave(prod,chan);
+  var chan=omniSlackChanFor(prod);
   var nmax=9006;comms.forEach(function(m){var n=parseInt((m.id||'').replace('MSG-',''),10);if(n>nmax)nmax=n;});
-  var rec={id:'MSG-'+(nmax+1),channel:'teams',dir:'out',priority:'normal',from:'Rowan Blake',to:chan||'Ops Room',
+  var rec={id:'MSG-'+(nmax+1),channel:'teams',dir:'out',priority:'normal',from:'Rowan Blake',to:chan,
     subject:'',body:txt,ts:nowStamp(),linkType:'production',linkId:prod,prod:prod,read:true,thread:'T-omni-'+prod,
-    status:chan?'queued':'local',error:''};
+    status:'queued',error:''};
   comms.unshift(rec);
   saveComms();inp.value='';
   try{logEvent(prod,'💬 Omni ops-room message logged');saveState();}catch(e){}
   renderOmniDrawer();
-  if(!chan){toast('Saved locally — add this show\u2019s Slack channel above to post it to Slack.');return;}
   toast('Posting to '+chan+'\u2026');
   fetch('/api/omni/slack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({channel:chan,text:txt,show:prod})})
     .then(function(r){return r.json().then(function(j){return {status:r.status,body:j};});})

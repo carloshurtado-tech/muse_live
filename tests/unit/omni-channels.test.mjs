@@ -37,6 +37,14 @@ test('drawer Send posts to the real Slack endpoint, not the console stub', () =>
   assert.ok(fn.includes('/api/omni/slack'), 'omniSendChat must POST /api/omni/slack');
   assert.ok(!fn.includes('sendTeamsNotification'), 'omniSendChat must not use the simulated stub');
   assert.ok(fn.includes("status") && fn.includes('failed'), 'omniSendChat must record send status');
+  assert.ok(fn.includes('omniSlackChanFor(prod)'), 'drawer channel must follow the project name');
+});
+
+test('drawer Slack channel is derived from the project name, never typed', () => {
+  const src = js('muse-app-b.js');
+  assert.ok(src.includes('function omniSlackChanFor(prod)'), 'channel helper must exist');
+  assert.ok(!src.includes('omniSlackChan(prod)'), 'no per-show stored channel may override the project name');
+  assert.ok(!src.includes('id="omniSlackChan"'), 'no manual channel input may remain');
 });
 
 test('proactive Muse-noticed cards render newest first', () => {

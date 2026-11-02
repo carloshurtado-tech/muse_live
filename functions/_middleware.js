@@ -19,8 +19,8 @@ const PUBLIC_PATHS = new Set(['/', '/index.html', '/about', '/about.html', '/man
   // Calendar subscriptions (Google / Outlook) can't send cookies; the handler checks its own token.
   '/api/calendar', '/api/calendar.ics']);
 const PUBLIC_PREFIXES = ['/assets/brand/', '/assets/about/', '/css/', '/api/calendar/'];
-// Guest demo: anyone can open a read-only 'viewer' session (KV/calendar/telemetry writes refuse it). GUEST_DEMO=off closes it.
-const GUEST = { u: 'guest', n: 'Guest reviewer', r: 'viewer' }, GUEST_MAX_AGE = 60 * 60 * 24;
+// Judge entry: anyone can open a read-write 'producer' session (writes allowed; admins-only areas still refuse it). GUEST_DEMO=off closes it.
+const GUEST = { u: 'guest', n: 'Guest reviewer', r: 'producer' }, GUEST_MAX_AGE = 60 * 60 * 24;
 // Pages a signed-out visitor should be sent to the sign-in screen for (instead of a bare 401).
 const REDIRECT_PREFIXES = ['/glasses', '/ops'];
 

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequest } from '../../functions/_middleware.js';
-import { sha256hex } from '../../functions/_lib/session.js';
+import { sha256hex, signSession } from '../../functions/_lib/session.js';
 import { hashPassword } from '../../functions/_lib/users.js';
 import { memoryKV, ctx } from './helpers.mjs';
 
@@ -45,26 +45,27 @@ test('cross-site login posts are refused', async () => {
   const e = await env();
   assert.equal((await onRequest(ctx('/api/login', { method: 'POST', body: { password: PW }, headers: { Origin: 'https://evil.example' }, env: e }))).status, 403);
 });
-test('guest demo: public about page; read-only viewer session; voice blocked; GUEST_DEMO=off closes and revokes', async () => {
+test('judge entry: public about page; read-write producer session; voice accepted; GUEST_DEMO=off closes and revokes', async () => {
   const e = await env();
   assert.equal(await (await onRequest(ctx('/about', { env: e }))).text(), 'NEXT');
   assert.equal((await onRequest(ctx('/api/auth/guest', { env: e }))).status, 405);
   const res = await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: e }));
   assert.equal(res.status, 200);
-  assert.equal((await res.json()).user.role, 'viewer');
+  assert.equal((await res.json()).user.role, 'producer');
   assert.match(res.headers.getSetCookie()[0], /Max-Age=86400; HttpOnly/);
   const cookie = cookieFrom(res);
   assert.equal((await (await onRequest(ctx('/api/ping', { env: e, headers: { Cookie: cookie } }))).json()).authed, true);
   assert.equal(await (await onRequest(ctx('/api/kv/a', { env: e, headers: { Cookie: cookie } }))).text(), 'NEXT');
-  assert.equal((await onRequest(ctx('/api/voice', { method: 'POST', body: 'x', env: e, headers: { Cookie: cookie } }))).status, 403);
+  assert.equal(await (await onRequest(ctx('/api/voice', { method: 'POST', body: 'x', env: e, headers: { Cookie: cookie } }))).text(), 'NEXT');
   const off = { ...e, GUEST_DEMO: 'off' };
   assert.equal((await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: off }))).status, 403);
   assert.equal((await (await onRequest(ctx('/api/ping', { env: off, headers: { Cookie: cookie } }))).json()).authed, false);
 });
 test('BUG-03: case and trailing-slash variants cannot skip the voice or disabled-account checks', async () => {
   const e = await env();
-  const guest = await onRequest(ctx('/api/auth/guest', { method: 'POST', body: {}, env: e }));
-  const gCookie = cookieFrom(guest);
+  await e.MUSE_KV.put('users:v@meta.com', JSON.stringify({ email: 'v@meta.com', name: 'V', role: 'viewer', disabled: false, ...(await hashPassword('correct-horse-2')) }));
+  const vToken = await signSession(e, { u: 'v@meta.com', n: 'V', r: 'viewer' });
+  const gCookie = 'muse_session=' + vToken;
   for (const p of ['/api/voice/', '/API/VOICE', '/Api/Voice/']) {
     assert.equal((await onRequest(ctx(p, { method: 'POST', body: 'x', env: e, headers: { Cookie: gCookie } }))).status, 403, p);
   }

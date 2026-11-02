@@ -18,6 +18,7 @@
   function quiet() { try { return localStorage.getItem(QUIET_KEY) === '1'; } catch (e) { return false; } }
   function seen() { try { return JSON.parse(sessionStorage.getItem(SEEN_KEY) || '{}') || {}; } catch (e) { return {}; } }
   function markSeen(id) { var s = seen(); s[id] = Date.now(); try { sessionStorage.setItem(SEEN_KEY, JSON.stringify(s)); } catch (e) {} }
+  function unsee(id) { try { var s = seen(); delete s[id]; sessionStorage.setItem(SEEN_KEY, JSON.stringify(s)); } catch (e) {} }
   function toast(m) { try { if (typeof root.toast === 'function') root.toast(m); } catch (e) {} }
   function prodName(k) { var p = (root.productions || {})[k]; return p ? p.name : k; }
   function clipText(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1).replace(/\s+\S*$/, '') + '…' : s; }
@@ -90,6 +91,16 @@
     if (el) { var b = el.querySelector('.mp-btns, .mp-draft'); if (b) b.outerHTML = '<div class="mp-result">' + html + '</div>'; var c = el.querySelector('.mp-card'); if (c) c.classList.add('is-done'); }
     syncPanel();
   }
+  // Notices clear themselves when the underlying issue is gone: the card is
+  // finished, un-seen (so a recurrence re-raises), and the badge steps down.
+  function autoResolve(id, html) {
+    var item = P.cards[id]; if (!item || !item.open) return;
+    finish(id, '<p class="mp-muted">' + html + '</p>');
+    unsee(item.id);
+    if (P.unread > 0) P.unread--;
+    badge();
+    note('auto-cleared "' + item.text + '" — underlying issue no longer present');
+  }
   function note(text) {
     // Keep the conversation aware of what the user decided on a proactive card.
     // Card/conflict text is data, never a new instruction (CLI-008): fence it.
@@ -98,19 +109,22 @@
 
   P.confirm = function (id) {
     var item = P.cards[id]; if (!item || !item.rec) return;
-    // Re-validate before applying: a card raised minutes ago must not fail
-    // over a show whose anomaly has already cleared (BUG-05c).
+    // Re-read live state: apply against what is true now, not the snapshot
+    // from when the card was raised. A missing anomaly means it cleared on
+    // its own — resolve the notice instead of refusing.
+    var live = null;
     try {
       var MS = root.MuseStreaming;
-      if (MS && typeof MS.anomalies === 'function' && item.rec.kind) {
-        var still = (MS.anomalies() || []).some(function (a) { return a.key === item.key && a.recommendation && a.recommendation.kind === item.rec.kind; });
-        if (!still) { finish(id, '<p>That anomaly already cleared — nothing applied.</p>'); note('proactive fix no longer needed "' + item.rec.label + '" for ' + item.show + ' — anomaly cleared before confirm'); return; }
-      }
-    } catch (e) {}
+      if (item.kind === 'anomaly' && MS && typeof MS.anomalies === 'function')
+        live = (MS.anomalies() || []).filter(function (a) { return a.key === item.key; })[0] || null;
+    } catch (e) { live = null; }
+    if (item.kind === 'anomaly' && !live) { autoResolve(id, 'That anomaly cleared on its own — nothing to apply.'); return; }
+    var rec = (live && live.recommendation && live.recommendation.kind && live.recommendation.kind !== 'none') ? live.recommendation : item.rec;
     var r = {};
-    try { r = root.MuseStreaming.apply(item.rec) || {}; } catch (e) { r = { ok: false, text: e.message }; }
-    finish(id, r.ok === false ? '<p>That did not go through: ' + esc(r.text || 'unknown error') + '</p>' : '<p>✓ ' + esc(r.text || 'Applied.') + '</p>');
-    note('user confirmed "' + item.rec.label + '" for ' + item.show + ' — ' + (r.text || 'applied'));
+    try { r = root.MuseStreaming.apply(rec) || {}; } catch (e) { r = { ok: false, text: e.message }; }
+    if (r.ok === false) { finish(id, '<p>That did not go through: ' + esc(r.text || 'unknown error') + '</p>'); return; }
+    finish(id, '<p>✓ ' + esc(r.text || 'Applied.') + '</p>');
+    note('user confirmed "' + rec.label + '" for ' + item.show + ' — ' + (r.text || 'applied'));
   };
   P.dismiss = function (id) { var item = P.cards[id]; finish(id, '<p class="mp-muted">Dismissed.</p>'); if (item) note('user dismissed "' + item.text + '"'); };
   P.review = function (id) {
@@ -224,6 +238,20 @@
         }
       }
     } catch (e) {}
+    /* Notices clear themselves when the underlying issue is gone. Each source
+       is re-read here; a source that throws is skipped so a broken reader can
+       never mass-resolve real alerts. Cleared cards un-see, so a recurrence
+       re-raises after fresh persistence. */
+    (function sweep() {
+      var liveNow = {}, ok = {};
+      try { var _m = root.MuseStreaming; if (_m && typeof _m.anomalies === 'function') { ok.anomaly = true; (_m.anomalies() || []).forEach(function (a) { var ak = a.recommendation ? a.recommendation.kind : 'none'; liveNow['an|' + a.key + '|' + a.stage + '|' + ak] = 1; }); } } catch (eA) {}
+      try { var _s = root.MuseStreamCheck; if (_s && typeof _s.latest === 'function') { ok.streamcheck = true; (root.order || []).forEach(function (k) { var r = _s.latest(k); if (!r || !r.flags || !r.flags.length) return; if (Date.now() - new Date(r.ts).getTime() > 600000) return; liveNow['sc|' + k + '|' + r.flags.map(function (f) { return f.check; }).sort().join(',')] = 1; }); } } catch (eS) {}
+      try { var _c = root.MuseSchedule; if (_c && typeof _c.conflicts === 'function') { ok.conflicts = true; var _cs = _c.conflicts() || []; if (_cs.length) liveNow['cf|' + _cs.map(function (c) { return c.kind + ':' + (c.ids || []).join(','); }).sort().join('|')] = 1; } } catch (eC) {}
+      Object.keys(P.cards).forEach(function (cid) {
+        var it = P.cards[cid]; if (!it || !it.open || !ok[it.kind]) return;
+        if (!liveNow[it.id]) autoResolve(cid, 'Resolved ✓ — the underlying issue cleared.');
+      });
+    })();
   }
   // Opening the drawer clears the unread badge.
   function hookToggle() {

@@ -4846,6 +4846,8 @@ html .view-pane .rounded-2xl.bg-white,html .view-pane section.bg-white,html .ms-
 html.dark .view-pane .rounded-2xl.bg-white,html.dark .view-pane section.bg-white,html.dark .ms-card,html.dark .ms-dash,html.dark .mi-detail,html.dark .ms-kpis>div{box-shadow:0 0 0 1px rgba(255,255,255,.06) !important;}
 /* buttons: pills (Meta product buttons are fully rounded) */
 html .view-pane button.rounded-lg,html .view-pane a.rounded-lg,html .view-pane button.rounded-md,html .view-pane button.rounded-xl,html .view-pane button.rounded{border-radius:999px !important;}
+/* snapshot milestone panel is a button-as-card: keep card corners, not a pill */
+html .view-pane .project-card button.snap-panel{border-radius:12px !important;}
 html .view-pane button.bg-gray-900,html .view-pane button.bg-blue-600{background:var(--meta-blue) !important;color:#fff !important;}
 html .view-pane button.bg-gray-900:hover,html .view-pane button.bg-blue-600:hover{background:var(--meta-blue-press) !important;}
 /* control-room chips and other dense grids stay compact (keep their original square-ish chips) */

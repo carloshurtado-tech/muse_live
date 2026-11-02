@@ -359,13 +359,13 @@ var customerStyle={
  "External Productions":{bg:"#f7f8fa",tx:"#4b4f56",bd:"#e4e6eb"}
 };
 var CUST_DARK_TX={"Reality Labs":"#6CB2FF","Meta AI":"#B79CFF","WhatsApp":"#4ADE80","Facebook":"#6CB2FF","Instagram":"#FF7EB6","External Productions":"#B0B3B8"};
-function custChip(c){
+function custChip(c,sz){
   var s=customerStyle[c]||customerStyle["External Productions"];
   var dark=false;try{dark=document.documentElement.classList.contains('dark');}catch(e){}
   var bg=dark?'rgba(28,30,33,.72)':s.bg;
   var tx=dark?(CUST_DARK_TX[c]||"#B0B3B8"):s.tx;
   var bd=dark?(CUST_DARK_TX[c]||"#B0B3B8"):s.bd;
-  return '<span class="text-[9px] font-bold mono px-2 py-0.5 rounded-full" style="background:'+bg+';color:'+tx+';border:1px solid '+bd+'">'+(c||"Unassigned")+'</span>';
+  return '<span class="text-['+(sz||9)+'px] font-bold mono px-2 py-0.5 rounded-full" style="background:'+bg+';color:'+tx+';border:1px solid '+bd+'">'+(c||"Unassigned")+'</span>';
 }
 /* equipment / spec dropdown options per department */
 /* ===== RVON ALPHA POOL — controlled vocabulary for intercom port labels ("alphas").
@@ -1496,8 +1496,13 @@ function renderSnapFilters(){var box=document.getElementById('snapFilterPills');
     return '<button onclick="setSnapFilter(\''+c.replace(/'/g,"\\'")+'\')" class="text-xs font-semibold px-3.5 py-1.5 rounded-full whitespace-nowrap" style="'+st+'">'+c+' <span style="opacity:.6;margin-left:4px">'+n+'</span></button>';
   }).join('');
 }
+var snapDrillBound=false;
 function renderSnapshot(){
   var g=document.getElementById('snapshotGrid');if(!g)return;
+  /* Drill Down links drill into the project instead of asking Muse. A single capture-phase
+     listener (not inline onclick) so axe nested-interactive stays clean: a handler-bearing
+     span inside the Ask-Muse button would flag, while a delegated listener is invisible. */
+  if(!snapDrillBound){snapDrillBound=true;g.addEventListener('click',function(e){var t=e.target;var d=(t&&t.closest)?t.closest('[data-drill]'):null;if(!d||!g.contains(d))return;e.stopPropagation();openProject(d.getAttribute('data-drill'));},true);}
   var keys=order.filter(function(k){return snapFilter==="All"||productions[k].customer===snapFilter;});
   if(!keys.length){g.innerHTML='<div class="col-span-full text-center text-sm text-gray-500 py-10">No productions under “'+snapFilter+'”.</div>';return;}
   /* subsections by customer when unfiltered — single column grouping, cards still responsive inside */
@@ -1511,28 +1516,28 @@ function renderSnapshot(){
     g.innerHTML=present.map(function(c){
       var ks=(c==='Other')?others:keys.filter(function(k){return productions[k].customer===c;});
       return '<section><div class="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200"><h2 class="text-sm font-bold tracking-tight text-gray-900">'+c+'</h2><span class="text-[10px] mono font-bold text-gray-500">'+ks.length+'</span></div>'+
-        '<div class="grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3">'+ks.map(_snapshotCard).join('')+'</div></section>';
+        '<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">'+ks.map(_snapshotCard).join('')+'</div></section>';
     }).join('');
     return;
   }
-  g.className='grid grid-cols-1 md:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-3';
+  g.className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5';
   g.innerHTML=keys.map(_snapshotCard).join('');
 }
 function _snapshotCard(k){var p=productions[k];var c=countStatus(p);var pct=computePct(p);var ph=phaseFor(p);
-    var risky=ph.risk;var border=risky?'border-red-100':'border-gray-200/60';
+    var risky=ph.risk;var border=risky?'border-red-200':'border-gray-200';
     var badge=museBadgeHTML(c.missing);
-    var pillCls=risky?'bg-red-50 text-red-800 border-red-200':'bg-emerald-50 text-emerald-800 border-emerald-200';
+    var pillCls=ph.label==='Complete'?'bg-emerald-50 text-emerald-700 border-emerald-200':(risky?'bg-white text-red-800 border-red-200':'bg-white text-emerald-700 border-emerald-200');
     var bottleneck=(function(){var miss=p.dept.filter(function(d){return d[1]==='missing';});var pend=p.dept.filter(function(d){return d[1]==='pending';});
-      if(miss.length)return{lab:'Critical Path Bottleneck',txt:miss[0][0]+' — '+miss[0][2],tone:'red'};
-      if(pend.length)return{lab:'Next Milestone',txt:pend[0][0]+' — '+pend[0][2],tone:'amber'};
-      return{lab:'Status',txt:'All departments approved',tone:'emerald'};})();
+      if(miss.length)return{lab:'CRITICAL PATH BOTTLENECK',txt:miss[0][0]+' — '+miss[0][2],tone:'red'};
+      if(pend.length)return{lab:'NEXT MILESTONE',txt:pend[0][0]+' — '+pend[0][2],tone:'amber'};
+      return{lab:'STATUS',txt:'All departments approved',tone:'emerald'};})();
     var bt={red:'bg-red-50 border-red-100',amber:'bg-amber-50 border-amber-100',emerald:'bg-emerald-50 border-emerald-100'}[bottleneck.tone];
     var btl={red:'text-red-600',amber:'text-amber-600',emerald:'text-emerald-600'}[bottleneck.tone];
-    return '<div onclick="openProject(\''+k+'\')" class="project-card bg-white rounded-xl p-3 border '+border+' flex flex-col justify-between cursor-pointer relative" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+badge+
-      '<div><div class="flex justify-between items-start gap-1 mb-2"><div class="min-w-0"><h3 class="text-sm font-semibold truncate '+(risky?'text-red-900':'text-gray-950')+'">'+p.name+'</h3><p class="text-[9px] text-gray-500 truncate">'+p.venue+'</p></div><div class="flex flex-col items-end gap-1 flex-shrink-0">'+custChip(p.customer)+'<span class="text-[8px] font-bold '+pillCls+' px-2 py-0.5 rounded-full border whitespace-nowrap tracking-wide">'+ph.label+'</span></div></div>'+
-      '<div class="space-y-1 mb-2"><div class="flex justify-between items-end mono"><span class="text-[10px] font-semibold '+(risky?'text-red-800':'text-gray-700')+'">Requirements Cleared</span><span class="text-xl font-bold '+pctColor(pct)+'">'+pct+'<span class="text-xs">%</span></span></div><progress class="w-full '+progClass(pct)+'" style="height:6px" value="'+pct+'" max="100"></progress></div></div>'+
-      '<button type="button" onclick="event.stopPropagation();museaiAsk(\''+((bottleneck.lab+': '+bottleneck.txt+' ('+c.approved+' approved, '+c.pending+' pending, '+c.missing+' missing) for '+p.name+'. Suggest a fix.').replace(/\'/g,'').replace(/"/g,''))+'\')" title="Ask Muse for a fix" class="'+bt+' rounded-lg p-2 border mt-auto text-left w-full cursor-pointer"><p class="text-[8px] font-bold '+btl+' uppercase tracking-wider mb-0.5">'+bottleneck.lab+'</p><div class="flex items-center justify-between gap-1"><p class="text-[11px] font-semibold leading-tight '+(risky?'text-red-900':'text-gray-800')+'">'+bottleneck.txt+'</p><span class="text-[9px] font-bold '+(risky?'text-red-700':'text-blue-700')+' mono whitespace-nowrap ml-1 flex-shrink-0">Ask Muse →</span></div>'+
-      '<div class="snap-counts flex items-center gap-2 mt-1.5 pt-1.5 border-t border-gray-100 text-[9px] mono font-bold"><span class="text-emerald-600">'+c.approved+' Approved</span><span class="text-amber-600">'+c.pending+' Pending</span><span class="text-red-600">'+c.missing+' Missing</span></div></button></div>';
+    return '<div onclick="openProject(\''+k+'\')" class="project-card bg-white rounded-xl p-5 border '+border+' flex flex-col justify-between cursor-pointer relative" style="box-shadow:0 4px 20px rgba(0,0,0,.03)">'+badge+
+      '<div><div class="flex justify-between items-start gap-3 mb-4"><div class="min-w-0"><h3 class="text-lg font-semibold truncate '+(risky?'text-red-900':'text-gray-950')+'">'+p.name+'</h3><p class="text-[13px] text-gray-500 truncate">'+p.venue+'</p></div><div class="flex flex-col items-end gap-2 flex-shrink-0">'+custChip(p.customer,11)+'<span class="text-[11px] font-semibold '+pillCls+' px-2 py-1 rounded-full border whitespace-nowrap">'+ph.label+'</span></div></div>'+
+      '<div class="mb-4"><div class="flex justify-between items-end mb-1"><span class="text-[13px] font-semibold '+(risky?'text-red-800':'text-gray-700')+'">Requirements Cleared</span><span class="text-3xl font-bold '+pctColor(pct)+'">'+pct+'<span class="text-base">%</span></span></div><progress class="w-full '+progClass(pct)+'" style="height:8px" value="'+pct+'" max="100"></progress></div></div>'+
+      '<button type="button" onclick="event.stopPropagation();museaiAsk(\''+((bottleneck.lab+': '+bottleneck.txt+' ('+c.approved+' approved, '+c.pending+' pending, '+c.missing+' missing) for '+p.name+'. Suggest a fix.').replace(/\'/g,'').replace(/"/g,''))+'\')" title="Ask Muse for a fix" class="'+bt+' rounded-xl snap-panel p-4 border mt-auto text-left w-full cursor-pointer"><p class="text-[11px] font-bold '+btl+' mb-1">'+bottleneck.lab+'</p><div class="flex items-center justify-between gap-2"><p class="text-sm font-semibold leading-snug '+(risky?'text-red-900':'text-gray-800')+'">'+bottleneck.txt+'</p><span data-drill="'+k+'" class="text-[13px] font-semibold '+(risky?'text-red-700':'text-blue-700')+' whitespace-nowrap ml-2 flex-shrink-0 hover:underline cursor-pointer">Drill Down →</span></div>'+
+      '<div class="snap-counts flex items-center gap-4 mt-3 pt-3 border-t border-gray-100 text-[13px] mono font-bold"><span class="text-emerald-600">'+c.approved+' Approved</span><span class="text-orange-500">'+c.pending+' Pending</span><span class="text-red-600">'+c.missing+' Missing</span></div></button></div>';
 }
 
 /* ---- master re-render after any data change ---- */

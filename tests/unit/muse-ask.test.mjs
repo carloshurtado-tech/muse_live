@@ -9,6 +9,7 @@ import { ROOT } from './helpers.mjs';
 // the source: each surface below must call museaiAsk with a fix prompt.
 const aSrc = fs.readFileSync(path.join(ROOT, 'js', 'muse-app-a.js'), 'utf8');
 const bSrc = fs.readFileSync(path.join(ROOT, 'js', 'muse-app-b.js'), 'utf8');
+const sSrc = fs.readFileSync(path.join(ROOT, 'js', 'muse-streaming.js'), 'utf8');
 
 test('snapshot bottleneck / milestone block asks Muse for a fix', () => {
   assert.ok(aSrc.includes('event.stopPropagation();museaiAsk('), 'card bottleneck must open Muse without opening the project');
@@ -23,4 +24,9 @@ test('dashboard transmission conflicts ask Muse for a fix', () => {
 test('document warning banner asks Muse for a fix', () => {
   assert.ok(bSrc.includes("'About '+d.title"), 'doc warn must name the document in the Muse question');
   assert.ok(bSrc.includes('Ask Muse →'), 'doc warn must carry an Ask Muse button');
+});
+
+test('stream alerts are buttons that ask Muse to apply the fix', () => {
+  assert.ok(sSrc.includes('MuseStreaming.askAlert('), 'alerts must call askAlert with the show and stage');
+  assert.ok(sSrc.includes('Apply the fix.'), 'Muse must be asked to apply the stream fix');
 });

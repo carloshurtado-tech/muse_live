@@ -4027,6 +4027,10 @@ html.dark #snapFilterPills button[style*="color:#0064E0"]{color:#4599FF !importa
 .ms-alerts{display:flex;flex-direction:column;gap:6px;}
 .ms-alerts:empty{display:none;}
 .ms-alert{font-size:13px;font-weight:600;color:#8A1C2C;background:rgba(228,30,63,.08);box-shadow:inset 3px 0 0 var(--ms-red);border-radius:8px;padding:8px 12px;}
+/* Alerts are actions: the whole line asks Muse for a fix with the live values. */
+button.ms-alert.is-clickable{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;font:inherit;text-align:left;cursor:pointer;border:0;}
+button.ms-alert.is-clickable:hover{filter:brightness(.97);}
+.ms-alert-ask{flex:none;font-size:11px;font-weight:800;color:#0866FF;white-space:nowrap;}
 html.dark .ms-alert{color:#FF8A9A;}
 
 /* monitors */

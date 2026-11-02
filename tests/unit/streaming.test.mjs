@@ -56,6 +56,19 @@ test('liveKeys is the single count behind the KPI, the rows and the dashboard st
   assert.match(html, new RegExp('msK-live">' + n + '<'), 'wall KPI matches the row count');
 });
 
+test('stream alerts open Muse with the live values and a fix request', () => {
+  let asked = '';
+  const win = makeWin({
+    museaiAsk: (q) => { asked = q; },
+    productions: { museaitour: { name: 'World Tour' } },
+    order: ['museaitour'],
+  });
+  win.MuseStreaming.askAlert('museaitour', 'cdn');
+  assert.match(asked, /World Tour/, 'Muse gets the show context');
+  assert.match(asked, /cdn/, 'Muse gets the failing stage');
+  assert.match(asked, /Apply the fix/, 'Muse is asked to apply it, not just describe it');
+});
+
 test('resetStates drops saved state overrides so the wall recovers its rows', () => {
   const win = makeWin({
     renderProjectView() {}, toast() {},

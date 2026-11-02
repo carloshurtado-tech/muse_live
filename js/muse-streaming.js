@@ -233,11 +233,17 @@
   function worst(list) { return list.indexOf('crit') >= 0 ? 'crit' : list.indexOf('warn') >= 0 ? 'warn' : 'ok'; }
   function alertsFor(m, g) {
     var out = [];
-    if (g.stages.cdn && g.stages.cdn !== 'ok') out.push('CDN 5xx ' + m.cdn_5xx.toFixed(2) + '% · cache hit ' + m.cdn_hit.toFixed(1) + '% · TTFB ' + Math.round(m.cdn_ttfb) + ' ms');
-    if (g.stages.contribution && g.stages.contribution !== 'ok') out.push('Contribution: SRT loss ' + m.srt_loss.toFixed(2) + '% · RTT ' + Math.round(m.srt_rtt) + ' ms · bonded ' + m.bond_up + '/' + m.bond_total + ' modems');
-    if (g.stages.viewers && g.stages.viewers !== 'ok') out.push('QoE: rebuffer ' + m.rebuffer.toFixed(2) + '% · failures ' + m.failures.toFixed(2) + '% · startup ' + m.startup.toFixed(1) + ' s');
-    if (g.stages.encoder && g.stages.encoder !== 'ok') out.push('Encoder: CPU ' + Math.round(m.enc_cpu) + '% · ' + m.enc_fps + ' fps · loudness ' + m.audio_lufs.toFixed(1) + ' LKFS');
+    if (g.stages.cdn && g.stages.cdn !== 'ok') out.push({ kind: 'cdn', text: 'CDN 5xx ' + m.cdn_5xx.toFixed(2) + '% · cache hit ' + m.cdn_hit.toFixed(1) + '% · TTFB ' + Math.round(m.cdn_ttfb) + ' ms' });
+    if (g.stages.contribution && g.stages.contribution !== 'ok') out.push({ kind: 'contribution', text: 'Contribution: SRT loss ' + m.srt_loss.toFixed(2) + '% · RTT ' + Math.round(m.srt_rtt) + ' ms · bonded ' + m.bond_up + '/' + m.bond_total + ' modems' });
+    if (g.stages.viewers && g.stages.viewers !== 'ok') out.push({ kind: 'viewers', text: 'QoE: rebuffer ' + m.rebuffer.toFixed(2) + '% · failures ' + m.failures.toFixed(2) + '% · startup ' + m.startup.toFixed(1) + ' s' });
+    if (g.stages.encoder && g.stages.encoder !== 'ok') out.push({ kind: 'encoder', text: 'Encoder: CPU ' + Math.round(m.enc_cpu) + '% · ' + m.enc_fps + ' fps · loudness ' + m.audio_lufs.toFixed(1) + ' LKFS' });
     return out;
+  }
+  // Text-only view for JSON surfaces (Muse briefs, health API) — the pane
+  // renders buttons (alertHTML) so every alert is clickable into Muse.
+  function alertTexts(m, g) { return alertsFor(m, g).map(function (a) { return a.text; }); }
+  function alertHTML(key, a) {
+    return '<button type="button" class="ms-alert is-clickable" title="Ask Muse for a fix" onclick="MuseStreaming.askAlert(\'' + esc(key) + '\',\'' + a.kind + '\')"><span>' + esc(a.text) + '</span><span class="ms-alert-ask">Ask Muse →</span></button>';
   }
 
   /* ---------------- players (hls.js pool) ---------------- */
@@ -547,7 +553,7 @@
         '<button type="button" class="ms-btn" onclick="MuseIncidents.openNew(\'' + key + '\')">Log incident</button>' +
         '<button type="button" class="ms-btn ms-btn-primary" onclick="museaiAsk(\'How is the stream for ' + esc(nameOf(key)).replace(/'/g, '') + ' doing right now?\')">Ask Muse</button></div></div>';
     var alerts = g.m && g.overall !== 'off' ? alertsFor(g.m, g) : [];
-    var alertHTML = '<div class="ms-alerts" data-alerts="' + (programOf(key) ? programOf(key).id : '') + '">' + alerts.map(function (a) { return '<div class="ms-alert">' + esc(a) + '</div>'; }).join('') + '</div>';
+    var alertsHTML = '<div class="ms-alerts" data-alerts="' + (programOf(key) ? programOf(key).id : '') + '">' + alerts.map(function (a) { return alertHTML(key, a); }).join('') + '</div>';
     var ladder = '<div class="ms-table"><table><thead><tr><th>Rung</th><th>Resolution</th><th>fps</th><th>Codec / profile</th><th>Video</th></tr></thead><tbody>' +
       s.ladder.map(function (l) { return '<tr><td>' + l[0] + '</td><td>' + l[1] + '</td><td>' + l[2] + '</td><td>' + l[3] + '</td><td>' + l[4].toFixed(1) + ' Mbps</td></tr>'; }).join('') +
       '</tbody></table></div><p class="ms-note">Audio AAC-LC 128 kbps 48 kHz stereo on every rung · 2 s GOP, closed, IDR-aligned across rungs · CBR with 1.1× VBV.</p>';
@@ -555,7 +561,7 @@
       return '<li><label><input type="checkbox" ' + (r.checklist[i] ? 'checked ' : '') + 'onchange="MuseStreaming.tick(\'' + key + '\',' + i + ',this.checked)"><span class="ms-tminus">' + c[0] + '</span><span>' + esc(c[1]) + '</span></label></li>';
     }).join('') + '</ol>';
     var incHTML = root.MuseIncidents ? root.MuseIncidents.listHTML(incidents, { compact: true }) : '';
-    return '<div class="ms-wrap">' + head + alertHTML +
+    return '<div class="ms-wrap">' + head + alertsHTML +
       section('Stream monitors', '<div class="ms-grid">' + tiles + '</div>' +
         '<form class="ms-add" onsubmit="event.preventDefault();MuseStreaming.addStream(\'' + key + '\',this)"><input name="name" placeholder="Name (e.g. Program · clean)" aria-label="Stream name" required>' +
         '<input name="url" type="url" placeholder="HLS .m3u8 URL" aria-label="HLS (.m3u8) URL" required pattern="https://.+"><select name="role" aria-label="Role"><option value="program">Program</option><option value="backup">Backup</option><option value="iso">ISO / camera</option><option value="vertical">Vertical 9:16</option><option value="return">Return / confidence</option></select>' +
@@ -905,7 +911,7 @@
     var shows = keys().map(function (k) {
       var g = healthOf(k), live = liveOf(k);
       return { key: k, name: nameOf(k), state: stateOf(k), health: LEVEL_TXT[live ? g.overall : 'off'], viewers: g.m && live ? Math.round(g.m.viewers) : 0,
-        latency: g.m && live ? +g.m.latency.toFixed(1) : null, alerts: g.m && live ? alertsFor(g.m, g) : [], data_source: teleOfProgramHasSource(k) ? 'mixed' : 'demo' };
+        latency: g.m && live ? +g.m.latency.toFixed(1) : null, alerts: g.m && live ? alertTexts(g.m, g) : [], data_source: teleOfProgramHasSource(k) ? 'mixed' : 'demo' };
     });
     var open = []; try { open = root.MuseIncidents.all().filter(function (i) { return i.status === 'Open' || i.status === 'Monitoring'; }).map(function (i) { return { id: i.id, severity: i.severity, title: i.title, show: nameOf(i.production) }; }); } catch (e) {}
     return { ts: new Date().toISOString(), shows: shows, openIncidents: open };
@@ -1065,7 +1071,7 @@
         var chain = document.querySelector('[data-chain="' + id + '"]');
         if (chain) Object.keys(g.stages).forEach(function (s) { var c = chain.querySelector('[data-stage="' + s + '"]'); if (c) { c.className = 'ms-stage is-' + g.stages[s]; var d = c.querySelector('.ms-dot'); if (d) d.className = 'ms-dot is-' + g.stages[s]; } });
         var al = document.querySelector('[data-alerts="' + id + '"]');
-        if (al) al.innerHTML = alertsFor(m, g).map(function (a) { return '<div class="ms-alert">' + esc(a) + '</div>'; }).join('');
+        if (al) al.innerHTML = alertsFor(m, g).map(function (a) { return alertHTML(k, a); }).join('');
       });
     });
     // player measurements
@@ -1776,6 +1782,18 @@
       if (root.MuseIncidents && root.MuseIncidents.openNew) root.MuseIncidents.openNew(k);
     },
     openShow: function (key) { try { root.projSubTab[key] = 'streaming'; } catch (e) {} root.navGo(key); },
+    // Every stream alert is clickable: send Muse the live values plus the
+    // standing recommendation and ask it to apply the fix.
+    askAlert: function (key, kind) {
+      var pr = null, m = null, g = null;
+      try { pr = programOf(key); if (!pr) return; var t = teleFor(key, pr); m = t.m; g = grade(m, t.live); } catch (e) { return; }
+      var a = alertsFor(m, g).filter(function (x) { return x.kind === kind; })[0];
+      var an = null;
+      try { an = anomalies().filter(function (x) { return x.key === key && x.stage === kind; })[0] || null; } catch (e2) {}
+      var fix = an && an.recommendation && an.recommendation.kind && an.recommendation.kind !== 'none' ? 'Recommended fix: ' + an.recommendation.label + '.' : 'Recommend the best fix.';
+      var q = ('Live stream alert for ' + nameOf(key) + ' [' + kind + ']: ' + (a ? a.text : kind + ' needs attention') + '. ' + fix + ' Apply the fix.').replace(/'/g, '').replace(/"/g, '');
+      try { museaiAsk(q); } catch (e3) { try { if (root.toast) root.toast('Muse is not available here'); } catch (e4) {} }
+    },
     toggleAudio: function (e, slot, btn) {
       if (e && e.stopPropagation) e.stopPropagation();
       var p = players[slot]; if (!p) return;
@@ -1880,13 +1898,13 @@
           var ds = {}; ['encoder', 'contribution', 'cloud', 'origin', 'cdn', 'viewers'].forEach(function (sg) { ds[sg] = (t.src && t.src[sg]) || 'demo (simulated)'; });
           ds.player = 'measured in the browser (full QoE on HLS)';
           return { name: st.name, role: st.role, source: 'HLS', url: st.url, health: LEVEL_TXT[g.overall], stage_health: g.stages, data_source: ds,
-            telemetry: t.live ? roundAll(t.m) : 'off air', alerts: t.live ? alertsFor(t.m, g) : [],
+            telemetry: t.live ? roundAll(t.m) : 'off air', alerts: t.live ? alertTexts(t.m, g) : [],
             trend_last_3min: t.live ? { viewers: trend(t.hist.viewers), rebuffer_pct: trend(t.hist.rebuffer), srt_loss_pct: trend(t.hist.loss) } : null,
             measured_in_browser: slot ? measure(players[slot]) : 'not open on screen' };
         })
       };
     },
-    health: function (key) { var g = healthOf(key); return { state: stateOf(key), health: LEVEL_TXT[g.overall], viewers: g.m && liveOf(key) ? Math.round(g.m.viewers) : 0, alerts: g.m && liveOf(key) ? alertsFor(g.m, g) : [] }; }
+    health: function (key) { var g = healthOf(key); return { state: stateOf(key), health: LEVEL_TXT[g.overall], viewers: g.m && liveOf(key) ? Math.round(g.m.viewers) : 0, alerts: g.m && liveOf(key) ? alertTexts(g.m, g) : [] }; }
   };
   function roundAll(m) { var o = {}; Object.keys(m).forEach(function (k) { o[k] = typeof m[k] === 'number' ? Math.round(m[k] * 100) / 100 : m[k]; }); return o; }
   function trend(a) { if (!a.length) return null; return { now: Math.round(a[a.length - 1] * 100) / 100, min: Math.round(Math.min.apply(null, a) * 100) / 100, max: Math.round(Math.max.apply(null, a) * 100) / 100 }; }

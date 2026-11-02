@@ -540,11 +540,15 @@
     var show = a.show || '', thread = 'showcaller-' + show;
     if (t.slack) {
       var body = fixLine(a, result);
-      var r = await post('/api/omni/slack', { channel: t.slack, text: body, show: show });
+      var thr0 = null;
+      try { var _c0 = root.comms || []; for (var _j = 0; _j < _c0.length; _j++) { var _n = _c0[_j]; if (_n && ((_n.thread || _n.id) === thread) && _n.status === 'sent' && _n.ext_id) { thr0 = { ts: String(_n.ext_id) }; break; } } } catch (e0) {}
+      var bpost = { channel: t.slack, text: body, show: show };
+      if (thr0) bpost.thread_ts = thr0.ts;
+      var r = await post('/api/omni/slack', bpost);
       out.slack = r.ok ? { sent: true, ts: r.data.ts, path: r.data.path } : { sent: false, error: r.error };
       logOmni({ id: nextMsgId(), channel: 'teams', dir: 'out', from: 'Show Caller', to: String(t.slack),
         subject: '', body: body, ts: stamp(), linkType: 'production', linkId: show, prod: show, read: true,
-        thread: thread, ext_id: r.ok ? r.data.ts : '', ext_thread: '', status: r.ok ? 'sent' : 'failed',
+        thread: thread, ext_id: r.ok ? r.data.ts : '', ext_channel: r.ok ? (r.data.channel || '') : '', ext_thread: '', status: r.ok ? 'sent' : 'failed',
         error: r.ok ? '' : r.error, payload: { channel: 'teams', to: String(t.slack), body: body } });
     }
     if (t.mail && t.mail.length) {
@@ -564,10 +568,19 @@
     if (!rec || !rec.payload) return { ok: false, error: 'No stored payload for ' + msgId + '.' };
     var p = rec.payload, r;
     if (p.channel === 'gmail') r = await post('/api/omni/mail', { to: [].concat(p.to), subject: p.subject, body: p.body });
-    else r = await post('/api/omni/slack', { channel: p.to, text: p.body }); // 'teams' now; legacy 'slack' payloads land here too
+    else {
+      // Thread replies keep Omni threads and Slack threads as mirrors: join the
+      // newest sent message's Slack thread when this thread already has one.
+      var thr = null;
+      try { var _cl = root.comms || []; for (var _i = 0; _i < _cl.length; _i++) { var _m = _cl[_i]; if (_m && ((_m.thread || _m.id) === rec.thread) && _m.status === 'sent' && _m.ext_id) { thr = { ts: String(_m.ext_id) }; break; } } } catch (e) {}
+      var bolt = { channel: p.to, text: p.body };
+      if (thr) bolt.thread_ts = thr.ts;
+      r = await post('/api/omni/slack', bolt); // 'teams' now; legacy 'slack' payloads land here too
+    }
     if (r.ok) {
       rec.status = 'sent'; rec.error = '';
       rec.ext_id = p.channel === 'gmail' ? r.data.id : r.data.ts;
+      if (p.channel !== 'gmail' && r.data.channel) rec.ext_channel = r.data.channel;
       if (p.channel === 'gmail') rec.ext_thread = r.data.threadId || '';
       try { if (typeof root.saveComms === 'function') root.saveComms(); } catch (e) {}
       return { ok: true, id: msgId };

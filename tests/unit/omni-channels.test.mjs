@@ -38,6 +38,19 @@ test('drawer Send posts to the real Slack endpoint, not the console stub', () =>
   assert.ok(!fn.includes('sendTeamsNotification'), 'omniSendChat must not use the simulated stub');
   assert.ok(fn.includes("status") && fn.includes('failed'), 'omniSendChat must record send status');
   assert.ok(fn.includes('omniSlackChanFor(prod)'), 'drawer channel must follow the project name');
+  assert.ok(fn.includes('omniSlackThreadAnchor('), 'drawer send must join the thread when one exists');
+});
+
+test('Omni threads and Slack threads mirror each other both ways', () => {
+  const src = js('muse-app-b.js');
+  assert.ok(src.includes('function omniSlackThreadAnchor(thread)'), 'thread anchor helper must exist');
+  assert.ok(src.includes('function syncOmniThread(tk,manual)'), 'inbound sync must exist');
+  assert.ok(src.includes('Sync from Slack'), 'thread view must offer a manual sync');
+  assert.ok(src.includes('syncOmniThread(tk,false)'), 'opening a thread must pull new Slack replies');
+  assert.ok(src.includes("openCommsThread(tk,true)"), 'sync must re-render the visible thread without looping');
+  const sc = fs.readFileSync(path.join(ROOT, 'js', 'muse-showcaller.js'), 'utf8');
+  assert.ok(sc.includes('thread_ts'), 'Show Caller sends must join the Slack thread');
+  assert.ok(sc.includes('ext_channel'), 'sent messages must store the Slack channel id for sync');
 });
 
 test('drawer Slack channel is derived from the project name, never typed', () => {

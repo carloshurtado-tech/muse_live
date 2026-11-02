@@ -36,6 +36,9 @@ export async function onRequestPost(context) {
   const channel = String((body && body.channel) || '').slice(0, 80);
   const text = String((body && body.text) || '').slice(0, 4000);
   if (!channel || !text) return json({ ok: false, error: 'channel and text are required.' }, 400);
+  // Thread replies keep Omni threads and Slack threads as mirrors of each other.
+  // Webhook delivery cannot thread (no ts comes back), so threading needs the bot token.
+  const threadTs = typeof (body && body.thread_ts) === 'string' && /^\d{10,}\.\d{1,6}$/.test(body.thread_ts) ? body.thread_ts : '';
   const idem = String((body && (body.idempotencyKey || body.approvalId || body.id)) || '').slice(0, 120);
   const dedupeKey = idem ? 'omni:slack:' + idem : null;
   if (dedupeKey) {
@@ -49,7 +52,7 @@ export async function onRequestPost(context) {
       const r = await fetch('https://slack.com/api/chat.postMessage', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ channel, text, unfurl_links: false, unfurl_media: false }),
+        body: JSON.stringify(Object.assign({ channel, text, unfurl_links: false, unfurl_media: false }, threadTs ? { thread_ts: threadTs } : {})),
         signal: AbortSignal.timeout(15000),
       });
       j = await r.json();

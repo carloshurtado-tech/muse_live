@@ -8083,7 +8083,8 @@ function renderComms(){
 function setCommsSearchVal(v){commsFilter.q=v;renderComms();}
 
 /* thread detail modal */
-function openCommsThread(tk){loadCommsOnce();
+function openCommsThread(tk,noSync){loadCommsOnce();
+  var freshOpen=false;try{freshOpen=(window._commsOpenTk!==tk);window._commsOpenTk=tk;}catch(e){freshOpen=true;}
   var pool=(typeof permComms==='function')?permComms():comms;
   var msgs=pool.filter(function(m){return (m.thread||m.id)===tk;}).sort(function(a,b){return a.ts<b.ts?-1:1;});
   if(!msgs.length){if(comms.some(function(m){return (m.thread||m.id)===tk;}))toast('🔒 This thread is not visible to your role');else toast('Nothing in this thread yet — it may predate this browser\'s saved log.');return;}msgs.forEach(function(m){if(m.dir==='in')m.read=true;});saveComms();commsNavBadge();try{if(typeof omniFabBadge==='function')omniFabBadge();}catch(eFB){}
@@ -8098,7 +8099,8 @@ function openCommsThread(tk){loadCommsOnce();
   bx.innerHTML='<div class="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white flex-shrink-0">'+
       '<div class="min-w-0"><div class="flex items-center gap-2 flex-wrap"><h3 class="text-sm font-bold text-gray-900 truncate">'+esc(head.subject||(commsChannelName(head.channel)+' thread · '+head.from))+'</h3>'+commsPriorityPill(msgs.reduce(function(acc,m){var r={critical:0,high:1,normal:2};return (r[m.priority]<r[acc])?m.priority:acc;},'normal'))+'</div>'+
       '<button onclick="commsLinkGo(\''+head.linkType+'\',\''+head.linkId+'\')" class="text-[10px] font-bold text-blue-700 hover:underline">'+commsLinkIcon(head.linkType)+' Linked to '+esc(commsLinkLabel(head.linkType,head.linkId))+' →</button></div>'+
-      '<button onclick="closeCommsMsg()" class="text-gray-400 hover:text-gray-700 text-lg leading-none flex-shrink-0 ml-2">✕</button></div>'+
+      '<button onclick="syncOmniThread(\''+String(tk).replace(/'/g,'')+'\',true)" title="Pull new Slack replies into this thread" class="text-[10px] font-bold text-indigo-700 border border-indigo-200 rounded-lg px-2 py-1 hover:bg-indigo-50 flex-shrink-0 ml-2">Sync from Slack</button>'+
+      '<button onclick="closeCommsMsg()" class="text-gray-400 hover:text-gray-700 text-lg leading-none flex-shrink-0 ml-1">✕</button></div>'+
     '<div class="overflow-y-auto flex-1 p-4 space-y-3">'+bubbles+'</div>'+
     (head.channel==='toc'?
       '<div class="p-3 border-t border-gray-100 flex-shrink-0"><div class="flex items-center justify-center gap-2 text-[10px] text-gray-500 bg-gray-50 rounded-xl py-2.5"><span style="width:7px;height:7px;border-radius:1px;background:var(--live-red);display:inline-block"></span>System-generated TOC alert · acknowledge in the linked record</div></div>':
@@ -8109,8 +8111,9 @@ function openCommsThread(tk){loadCommsOnce();
       '</div>');
   ov.style.display='flex';
   if(document.querySelector('.view-pane.active')&&document.querySelector('.view-pane.active').id==='view-comms')renderComms();
+  if(freshOpen&&!noSync){try{setTimeout(function(){syncOmniThread(tk,false);},60);}catch(e){}}
 }
-function closeCommsMsg(){var ov=document.getElementById('commsMsgOverlay');if(ov)ov.style.display='none';}
+function closeCommsMsg(){try{window._commsOpenTk=null;}catch(e){}var ov=document.getElementById('commsMsgOverlay');if(ov)ov.style.display='none';}
 
 /* deep links */
 function commsOutlookLink(m){var to=encodeURIComponent(m.dir==='out'?m.to:(m.from.match(/<(.+?)>/)?m.from.match(/<(.+?)>/)[1]:m.from));
@@ -12966,12 +12969,57 @@ function omniSlackChanFor(prod){
   var s=''+n.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
   return '#'+(s||'ops-room');
 }
+/* Newest sent Slack message in a thread: its ts + channel anchor later sends
+   (and the inbound sync) to the same Slack thread. comms is newest-first. */
+function omniSlackThreadAnchor(thread){
+  try{
+    var list=(typeof comms!=='undefined')?comms:[];
+    for(var i=0;i<list.length;i++){var m=list[i];
+      if(m&&((m.thread||m.id)===thread)&&m.status==='sent'&&m.ext_id){return {ts:String(m.ext_id),channel:m.ext_channel||null};}
+    }
+  }catch(e){}
+  return null;
+}
+function omniSlackSyncUrl(a){return '/api/omni/slack-thread?channel='+encodeURIComponent(a.channel)+'&ts='+encodeURIComponent(a.ts);}
+/* Pull Slack thread replies into the Omni thread: replies from Slack appear
+   as inbound messages, deduped by Slack ts. Visible thread re-renders. */
+async function syncOmniThread(tk,manual){
+  var a=null;try{a=omniSlackThreadAnchor(tk);}catch(e){}
+  if(!a||!a.channel){if(manual)toast('No Slack thread linked yet — post from Omni first.');return;}
+  var res=null;
+  try{res=await (await fetch(omniSlackSyncUrl(a))).json();}catch(e){res=null;}
+  if(!res||!res.ok){
+    if(res&&res.configured===false){if(manual)toast('Slack is not connected.');return;}
+    if(manual)toast('Slack sync failed: '+((res&&res.error)||'network error'));
+    return;
+  }
+  var known={},prod='';
+  try{comms.forEach(function(m){if((m.thread||m.id)===tk){if(m.ext_id||m.ts)known[m.ext_id||m.ts]=1;if(!prod&&m.prod)prod=m.prod;}});}catch(e){}
+  var added=0;
+  (res.messages||[]).forEach(function(sm){
+    if(!sm||!sm.ts||known[sm.ts])return;
+    var d=new Date(parseFloat(sm.ts)*1000);
+    comms.push({id:'SLK-'+String(sm.ts).replace('.',''),channel:'teams',dir:'in',priority:'normal',
+      from:(sm.name||sm.user||'Slack'),to:'Ops Room',subject:'',body:String(sm.text||''),
+      ts:isNaN(d.getTime())?nowStamp():d.toISOString(),linkType:'production',linkId:prod,prod:prod,read:true,
+      thread:tk,ext_id:sm.ts,ext_thread:sm.thread_ts||'',status:'sent',error:''});
+    added++;
+  });
+  if(!added){if(manual)toast('Already up to date with Slack.');return;}
+  try{saveComms();}catch(e){}
+  var showing=false;
+  try{showing=!!(document.getElementById('commsMsgOverlay')&&document.getElementById('commsMsgOverlay').style.display==='flex'&&window._commsOpenTk===tk);}catch(e2){}
+  if(showing){try{openCommsThread(tk,true);}catch(e3){}}
+  else{try{commsNavBadge();}catch(e4){}try{if(typeof omniFabBadge==='function')omniFabBadge();}catch(e5){}}
+  if(manual)toast('Synced '+added+' new message'+(added>1?'s':'')+' from Slack.');
+}
 function omniSendChat(){
   var inp=document.getElementById('omniChatInput');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt){toast('Type a message first');return;}
   if(/^@?museai\b/i.test(txt)||/^\/museai\b/i.test(txt)){omniAskMuseAi(txt);return;}
   var prod=omniCurrentProd();
   var chan=omniSlackChanFor(prod);
+  var thr=null;try{thr=omniSlackThreadAnchor('T-omni-'+prod);}catch(e){}
   var nmax=9006;comms.forEach(function(m){var n=parseInt((m.id||'').replace('MSG-',''),10);if(n>nmax)nmax=n;});
   var rec={id:'MSG-'+(nmax+1),channel:'teams',dir:'out',priority:'normal',from:'Rowan Blake',to:chan,
     subject:'',body:txt,ts:nowStamp(),linkType:'production',linkId:prod,prod:prod,read:true,thread:'T-omni-'+prod,
@@ -12981,10 +13029,11 @@ function omniSendChat(){
   try{logEvent(prod,'💬 Omni ops-room message logged');saveState();}catch(e){}
   renderOmniDrawer();
   toast('Posting to '+chan+'\u2026');
-  fetch('/api/omni/slack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({channel:chan,text:txt,show:prod})})
+  var payload={channel:chan,text:txt,show:prod};if(thr)payload.thread_ts=thr.ts;
+  fetch('/api/omni/slack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
     .then(function(r){return r.json().then(function(j){return {status:r.status,body:j};});})
     .then(function(res){
-      if(res.body&&res.body.ok){rec.status='sent';rec.ext_id=res.body.ts||'';rec.error='';toast('Posted to '+chan);}
+      if(res.body&&res.body.ok){rec.status='sent';rec.ext_id=res.body.ts||'';rec.ext_channel=res.body.channel||chan;rec.error='';toast('Posted to '+chan);}
       else{rec.status='failed';rec.error=((res.body&&(res.body.error||''))||('HTTP '+res.status)).slice(0,160);toast('Slack post failed: '+rec.error);}
       try{saveComms();}catch(e0){}try{renderOmniDrawer();}catch(e1){}
     })

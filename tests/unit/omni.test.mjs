@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { onRequestPost as slackPost } from '../../functions/api/omni/slack.js';
+import { onRequestGet as slackThread } from '../../functions/api/omni/slack-thread.js';
 import { onRequestPost as mailPost } from '../../functions/api/omni/mail.js';
 import { memoryKV, memoryD1, ctx } from './helpers.mjs';
 
@@ -186,5 +187,61 @@ test('mail: dead refresh token fails closed with reconnect wording', async () =>
       body: { to: ['ops@example.com'], subject: 's', body: 'b' } }));
     assert.equal(r.status, 502);
     assert.ok((await r.json()).error.includes('Reconnect'));
+  } finally { m.done(); }
+});
+
+test('slack: thread_ts joins the same Slack thread', async () => {
+  let sent = null;
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => { sent = JSON.parse(init.body); return Response.json({ ok: true, ts: '1.3', channel: 'C9' }); };
+  try {
+    const r = await slackPost(ctx('/api/omni/slack', { method: 'POST', env: { SLACK_BOT_TOKEN: 'x', MUSE_KV: memoryKV() }, user: TEAM,
+      body: { channel: 'C9', text: 'follow-up', thread_ts: '1720000000.000100' } }));
+    assert.equal(r.status, 200);
+    assert.equal(sent.thread_ts, '1720000000.000100');
+    assert.deepEqual(await r.json(), { ok: true, ts: '1.3', channel: 'C9', path: 'bot' });
+  } finally { globalThis.fetch = real; }
+});
+
+test('slack: malformed thread_ts is dropped, never forwarded', async () => {
+  let sent = null;
+  const real = globalThis.fetch;
+  globalThis.fetch = async (url, init) => { sent = JSON.parse(init.body); return Response.json({ ok: true, ts: '1.4', channel: 'C9' }); };
+  try {
+    const r = await slackPost(ctx('/api/omni/slack', { method: 'POST', env: { SLACK_BOT_TOKEN: 'x', MUSE_KV: memoryKV() }, user: TEAM,
+      body: { channel: 'C9', text: 'top-level', thread_ts: 'not-a-ts' } }));
+    assert.equal(r.status, 200);
+    assert.ok(!('thread_ts' in sent));
+  } finally { globalThis.fetch = real; }
+});
+
+test('slack-thread: replies map to Omni messages', async () => {
+  const m = mockFetch([[ /conversations\.replies/, 200, { ok: true, messages: [
+    { ts: '1720000000.000100', text: 'root post', user: 'U1' },
+    { ts: '1720000000.000200', text: 'copy that', user: 'U2', thread_ts: '1720000000.000100', username: 'Sam' },
+  ] } ]]);
+  try {
+    const r = await slackThread(ctx('/api/omni/slack-thread?channel=C012AB345CD&ts=1720000000.000100', { env: { SLACK_BOT_TOKEN: 'x' }, user: TEAM }));
+    assert.equal(r.status, 200);
+    assert.deepEqual(await r.json(), { ok: true, channel: 'C012AB345CD', messages: [
+      { ts: '1720000000.000100', thread_ts: '1720000000.000100', user: 'U1', name: '', text: 'root post' },
+      { ts: '1720000000.000200', thread_ts: '1720000000.000100', user: 'U2', name: 'Sam', text: 'copy that' },
+    ] });
+  } finally { m.done(); }
+});
+
+test('slack-thread: signed out, unconfigured, bad params, and Slack errors stay clean', async () => {
+  const noUser = await slackThread(ctx('/api/omni/slack-thread?channel=C012AB345CD&ts=1720000000.000100', { env: { SLACK_BOT_TOKEN: 'x' } }));
+  assert.equal(noUser.status, 401);
+  const noToken = await slackThread(ctx('/api/omni/slack-thread?channel=C012AB345CD&ts=1720000000.000100', { env: {}, user: TEAM }));
+  assert.equal(noToken.status, 503);
+  assert.equal((await noToken.json()).configured, false);
+  const bad = await slackThread(ctx('/api/omni/slack-thread?channel=nope&ts=x', { env: { SLACK_BOT_TOKEN: 'x' }, user: TEAM }));
+  assert.equal(bad.status, 400);
+  const m = mockFetch([[ /conversations\.replies/, 200, { ok: false, error: 'missing_scope<script>' } ]]);
+  try {
+    const r = await slackThread(ctx('/api/omni/slack-thread?channel=C012AB345CD&ts=1720000000.000100', { env: { SLACK_BOT_TOKEN: 'x' }, user: TEAM }));
+    assert.equal(r.status, 502);
+    assert.ok(!(await r.json()).error.includes('<'));
   } finally { m.done(); }
 });

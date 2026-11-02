@@ -10330,7 +10330,7 @@ function finCockpitHTML(scope){var isAll=(scope==='all');var t=finAgg(scope);var
     finKpiTile('Est. Final Cost',$fmt(t.efc),$fmt(t.actual)+' actual · '+$fmt(t.committed)+' committed','text-blue-700')+
     finKpiTile('Gross Margin',$fmt(t.margin),finPct(t.marginPct)+' margin',t.margin>=0?'text-emerald-700':'text-red-600')+
     finKpiTile('Budget Variance',(t.variance>=0?'+':'')+$fmt(t.variance),t.variance>=0?'under budget':'over budget',t.variance>=0?'text-emerald-700':'text-red-600')+
-    finKpiTile('Open AP',$fmt(t.openAP),apA.n+' invoice(s)','text-amber-600')+
+    '<div onclick="setFinTab(\''+scope+'\',\'ap\')" title="Open Accounts Payable — '+apA.n+' open invoice(s)" class="bg-white rounded-2xl p-3.5 border border-gray-200/60" style="box-shadow:0 4px 20px rgba(0,0,0,.03);cursor:pointer"><p class="text-[8px] font-bold uppercase tracking-wider text-gray-400">Open AP</p><p class="text-xl font-bold mono text-amber-600 leading-tight mt-1">'+$fmt(t.openAP)+'</p><p class="text-[9px] text-gray-500 mt-0.5">'+apA.n+' invoice(s) →</p></div>'+
     finKpiTile('Open AR',$fmt(t.ar),arA.n+' invoice(s)','text-purple-700')+'</div>';
   var glmax=gl.reduce(function(m,r){return Math.max(m,r.efc,r.budget);},1);
   var glBars=gl.filter(function(r){return r.budget||r.efc;}).map(function(r){var over=r.variance<0;
@@ -10380,7 +10380,7 @@ function _finAgeTag(age){if(age<=0)return '<span class="text-[8px] font-bold tex
   var c=age<=30?'text-gray-600 bg-gray-100 border-gray-200':(age<=60?'text-amber-700 bg-amber-50 border-amber-200':(age<=90?'text-orange-700 bg-orange-50 border-orange-200':'text-red-700 bg-red-50 border-red-200'));
   return '<span class="text-[8px] font-bold '+c+' border rounded px-1">'+age+'d</span>';}
 function finAPHTML(scope){var b=finAPAging(scope);var items=b.items.slice().sort(function(a,c){return c.__age-a.__age;});
-  var rows=items.map(function(v){return '<tr class="hover:bg-gray-50 border-b border-gray-100 cursor-pointer" onclick="openProjFinance(\''+v.prod+'\')">'+
+  var rows=items.map(function(v){return '<tr class="hover:bg-gray-50 border-b border-gray-100 cursor-pointer" title="Open '+esc(v.id)+' — '+esc(v.vendor)+' '+$fmt(v.amount)+'" onclick="openFinDoc(\'inv\',\''+v.id+'\')">'+
     '<td class="py-2 pl-2 mono text-[10px] text-gray-500">'+esc(v.id)+'</td>'+
     '<td class="py-2 text-[11px] font-semibold text-gray-900">'+esc(v.vendor)+'</td>'+
     '<td class="py-2 text-[10px] text-gray-600">'+esc(prodName(v.prod))+'</td>'+

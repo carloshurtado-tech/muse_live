@@ -1300,7 +1300,10 @@ function renderNavRail(){
     if(id==='comms'&&omniN)badge=_navRailBadge(omniN,'red');
     if(id==='schedule'&&schedConflicts)badge=_navRailBadge(schedConflicts,'live');
     var onNav=(active===id)||(id==='telemetry'&&!!window._museTeleFocus);
-    return '<button type="button" data-nav="'+id+'" class="nav-rail-btn'+(onNav?' is-active':'')+'" onclick="navGo(\''+id+'\')" title="'+label.replace(/"/g,'&quot;')+'" aria-label="'+label.replace(/"/g,'&quot;')+'" aria-current="'+(onNav?'page':'false')+'">'+
+    // Finance with overdue AP goes straight to the Accounts Payable tab — the bubble names its origin.
+    var go=(id==='finance'&&apN)?'navGoFin()':('navGo(\''+id+'\')');
+    var tip=(id==='finance'&&apN)?(apN+' overdue AP invoice'+(apN>1?'s':'')+' — open Accounts Payable'):(id==='comms'&&omniN)?(omniN+' unread critical — open Omni'):label.replace(/"/g,'&quot;');
+    return '<button type="button" data-nav="'+id+'" class="nav-rail-btn'+(onNav?' is-active':'')+'" onclick="'+go+'" title="'+tip+'" aria-label="'+tip+'" aria-current="'+(onNav?'page':'false')+'">'+
       '<span class="nav-rail-ico">'+_navSvg(icon)+'</span><span class="nav-rail-label">'+label+'</span>'+badge+'</button>';
   }).join('')+
     '<button type="button" data-nav="glasses" class="nav-rail-btn" onclick="window.open(\'/glasses/\',\'_blank\',\'noopener\')" title="Glasses — Meta Ray-Ban Display companion" aria-label="Open the Meta Ray-Ban Display companion app">'+
@@ -1364,6 +1367,10 @@ function toggleNavProjects(){
   var list=document.getElementById('navRailProdList');
   if(folder){folder.classList.toggle('is-open',open);folder.setAttribute('aria-expanded',open?'true':'false');}
   if(list)list.classList.toggle('is-open',open);
+}
+function navGoFin(){
+  try{if(typeof finWsTab!=='undefined')finWsTab['all']='ap';}catch(e){}
+  navGo('finance');
 }
 function navGo(view){
   window._museTeleFocus=false;
@@ -2613,6 +2620,8 @@ function setProjTab(key,tab){
   }
   var y=window.scrollY||window.pageYOffset||0;
   var x=window.scrollX||window.pageXOffset||0;
+  // Finance tab with overdue invoices opens on Accounts Payable — unless a tab was already chosen.
+  if(tab==='finance'&&typeof finWsTab!=='undefined'&&!finWsTab[key]){try{if(typeof finOverdueList==='function'&&finOverdueList(key).length)finWsTab[key]='ap';}catch(e){}}
   projSubTab[key]=tab;
   renderProjectView(key);
   try{window.scrollTo(x,y);}catch(e){}

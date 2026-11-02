@@ -35,6 +35,27 @@
   .display { position: absolute; top: 50%; left: 50%; width: 600px; height: 600px; transform-origin: center; background: #000; overflow: hidden; }
   #glassesRoot { width: 600px; height: 600px; position: relative; }
   .hint { position: absolute; left: 24px; bottom: 20px; font-size: 13px; color: #ffffffcc; background: rgba(0,0,0,.45); padding: 8px 12px; border-radius: 9999px; }
+  /* Talk to Muse: voice + text, answered inside the lens (glance mode). */
+  .talk { width: min(1180px, 100%); margin: 14px auto 0; background: #101216; border: 1px solid var(--line); border-radius: 20px; padding: 14px 16px; }
+  .talk-row { display: flex; gap: 10px; align-items: center; }
+  .talk-row input { flex: 1; min-width: 0; background: #000; border: 1px solid var(--line); color: var(--ink); border-radius: 9999px; padding: 11px 16px; font: 400 14px/1.3 inherit; font-family: inherit; outline: none; }
+  .talk-row input:focus { border-color: var(--accent); }
+  .talk-btn { flex: none; border: 1px solid var(--line); background: #1c1f26; color: var(--ink); border-radius: 9999px; padding: 11px 16px; font: 600 13px/1 inherit; font-family: inherit; cursor: pointer; }
+  .talk-btn:hover { border-color: var(--accent); }
+  .talk-btn.primary { background: var(--accent); border-color: var(--accent); color: #00101f; }
+  .talk-btn[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #00101f; }
+  .talk-btn:disabled { opacity: .5; cursor: default; }
+  .alerts { display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 12px; }
+  .alerts button { border: 1px solid rgba(38,148,254,.45); background: rgba(38,148,254,.12); color: #cfe6ff; border-radius: 9999px; padding: 8px 13px; font: 600 12.5px/1.2 inherit; font-family: inherit; cursor: pointer; text-align: left; }
+  .alerts button:hover { background: rgba(38,148,254,.25); }
+  .talk-status { min-height: 20px; margin: 8px 2px 0; font-size: 12.5px; color: var(--ink2); }
+  .talk-status.err { color: #ff8a9a; }
+  /* In-lens answer card: what the wearer sees and hears. */
+  .lenscard { position: absolute; left: 50%; bottom: 7%; transform: translateX(-50%); width: 82%; max-height: 72%; overflow: auto; background: rgba(8,10,14,.88); border: 1px solid rgba(255,255,255,.22); border-radius: 18px; padding: 14px 16px; z-index: 5; text-align: left; }
+  .lenscard[hidden] { display: none; }
+  .lenscard-q { font-size: 12px; font-weight: 700; color: #9ecbff; margin: 0 0 6px; }
+  .lenscard-a { font-size: 14.5px; line-height: 1.45; color: #fff; margin: 0; white-space: pre-wrap; }
+  .lenscard-x { position: absolute; top: 6px; right: 10px; border: 0; background: none; color: #cfd3d9; font-size: 15px; cursor: pointer; padding: 4px; }
   .pad { position: absolute; right: 24px; bottom: 20px; display: grid; grid-template-columns: repeat(3, 44px); grid-template-rows: repeat(3, 44px); gap: 6px; }
   .pad button { border: 0; border-radius: 9999px; background: rgba(0,0,0,.55); color: #fff; font-size: 16px; cursor: pointer; box-shadow: inset 0 0 0 1px var(--line); }
   .pad button:hover { background: rgba(38,148,254,.35); }
@@ -62,10 +83,12 @@
 </header>
 <main>
   <div class="stage" id="stage">
-    <img class="scene" src="./scene.jpg" alt="Broadcast compound outside a live event venue">
+    <img class="scene" src="./scene-connect.jpg" alt="Meta Connect keynote: packed arena, glowing stage and infinity-loop screen">
     <div class="tint" aria-hidden="true"></div>
     <div class="lens" id="lens">
-      <div class="display" id="display" role="application" aria-label="Muse glasses app, 600 by 600 display"><div id="glassesRoot"></div></div>
+      <div class="display" id="display" role="application" aria-label="Muse glasses app, 600 by 600 display"><div id="glassesRoot"></div>
+        <div class="lenscard" id="lensCard" hidden><button type="button" class="lenscard-x" id="lensX" aria-label="Dismiss answer">✕</button><p class="lenscard-q" id="lensQ"></p><p class="lenscard-a" id="lensA"></p></div>
+      </div>
     </div>
     <div class="rim" aria-hidden="true"></div>
     <div class="hint" id="hint">Arrows = EMG swipe · Enter = pinch · Esc = back</div>
@@ -79,6 +102,20 @@
     </div>
   </div>
 </main>
+<section class="talk" aria-label="Talk to Muse">
+  <div class="alerts" role="group" aria-label="Live questions for Muse">
+    <button type="button" data-q="Any TX conflicts right now?">Any TX conflicts?</button>
+    <button type="button" data-q="What is at risk across Muse Live?">What's at risk?</button>
+    <button type="button" data-q="How is every live stream doing?">Stream health?</button>
+  </div>
+  <div class="talk-row">
+    <button type="button" class="talk-btn" id="micBtn" aria-pressed="false" title="Talk (microphone)">🎙 Talk</button>
+    <input id="talkInput" type="text" placeholder="Ask Muse — weather on location, cameras, readiness…" autocomplete="off" aria-label="Ask Muse">
+    <button type="button" class="talk-btn primary" id="sendBtn">Ask</button>
+    <button type="button" class="talk-btn" id="voiceBtn" aria-pressed="true" title="Spoken replies on/off">🔊 Voice</button>
+  </div>
+  <p class="talk-status" id="talkStatus">Muse answers in glance mode — short, from this browser's live Muse Live data.</p>
+</section>
 <footer>
   <span><b>Muse Live</b> · live broadcast &amp; streaming agent · data refreshes every 5 s from the desktop app</span>
   <span>Keyboard: <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd> <kbd>Enter</kbd> <kbd>Esc</kbd></span>
@@ -104,6 +141,81 @@
     b.addEventListener('mousedown', function (e) { e.preventDefault(); }); // keep focus inside the app
     b.addEventListener('click', function () { send(b.getAttribute('data-key')); });
   });
+
+  /* ---------------- Talk to Muse (glance mode: short answers, live snapshot) ---------------- */
+  var talkInput = document.getElementById('talkInput'), sendBtn = document.getElementById('sendBtn'),
+    micBtn = document.getElementById('micBtn'), voiceBtn = document.getElementById('voiceBtn'),
+    talkStatus = document.getElementById('talkStatus'),
+    lensCard = document.getElementById('lensCard'), lensQ = document.getElementById('lensQ'), lensA = document.getElementById('lensA');
+  var voiceOn = true, asking = false, guestReady = null;
+  function status(msg, err) { talkStatus.textContent = msg; talkStatus.classList.toggle('err', !!err); }
+  // Live snapshot: whatever this browser's Muse Live desktop app has persisted
+  // (same origin, so its localStorage is visible here) — never invented.
+  function buildSnapshot() {
+    var snap = { at: new Date().toISOString(), source: 'glasses companion (same-browser Muse Live data)' };
+    function read(k) { try { var v = window.localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+    var sched = read('muselive_schedule_v1');
+    if (sched && Array.isArray(sched.bookings)) {
+      var live = sched.bookings.filter(function (b) { return b.status !== 'Released'; });
+      snap.scheduleBookings = live.length;
+      snap.holds = live.filter(function (b) { return b.status === 'Hold' || b.status === 'Tentative'; }).length;
+    }
+    var stream = read('muselive_stream_v1');
+    if (stream) snap.streamOverrides = Object.keys(stream).filter(function (k) { return stream[k] && stream[k].state; }).map(function (k) { return k + '=' + stream[k].state; });
+    var npc = read('muselive_npc_v1');
+    if (Array.isArray(npc)) snap.npcEvents = npc.filter(function (e) { return !e.dismissed && e.participate !== false; }).map(function (e) { return (e.id || '') + ' ' + (e.title || '') + ' @' + (e.venue || ''); });
+    if (!sched && !stream && !npc) snap.note = 'No desktop Muse Live data in this browser yet — open the desktop app first for grounded answers.';
+    return JSON.stringify(snap);
+  }
+  function ensureGuest() {
+    if (!guestReady) guestReady = fetch('/api/auth/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: '{}' }).then(function (r) { return r.ok; }, function () { return false; });
+    return guestReady;
+  }
+  function showAnswer(q, text) {
+    lensQ.textContent = q; lensA.textContent = text; lensCard.hidden = false;
+    if (voiceOn && 'speechSynthesis' in window) {
+      try { window.speechSynthesis.cancel(); var u = new SpeechSynthesisUtterance(String(text).slice(0, 420)); u.rate = 1.05; window.speechSynthesis.speak(u); } catch (e) {}
+    }
+  }
+  function ask(q) {
+    q = String(q || '').trim(); if (!q || asking) return;
+    asking = true; sendBtn.disabled = true; status('Muse is thinking…');
+    ensureGuest().then(function () {
+      return fetch('/api/museai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
+        body: JSON.stringify({ question: q, snapshot: buildSnapshot(), mode: 'glance' }) });
+    }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (res) {
+      asking = false; sendBtn.disabled = false;
+      if (res.ok && res.j && res.j.ok && res.j.message) { status('Answered from live data · ' + new Date().toLocaleTimeString() + (voiceOn ? ' · speaking' : '')); showAnswer(q, res.j.message); }
+      else { status('Muse is unavailable (' + ((res.j && res.j.error) || 'network error') + ').', true); }
+    }).catch(function (e) { asking = false; sendBtn.disabled = false; status('Could not reach Muse: ' + (e && e.message ? e.message : e), true); });
+  }
+  sendBtn.onclick = function () { ask(talkInput.value); talkInput.value = ''; };
+  talkInput.addEventListener('keydown', function (e) { if (e.key === 'Enter') { ask(talkInput.value); talkInput.value = ''; } });
+  document.querySelectorAll('.alerts button').forEach(function (b) { b.addEventListener('click', function () { ask(b.getAttribute('data-q')); }); });
+  document.getElementById('lensX').onclick = function () { lensCard.hidden = true; try { window.speechSynthesis.cancel(); } catch (e) {} };
+  voiceBtn.onclick = function () { voiceOn = !voiceOn; voiceBtn.setAttribute('aria-pressed', String(voiceOn)); if (!voiceOn) { try { window.speechSynthesis.cancel(); } catch (e) {} } status(voiceOn ? 'Spoken replies on.' : 'Spoken replies off — answers appear in the lens.'); };
+  // Microphone: Web Speech API where the browser offers it (needs HTTPS/localhost + permission).
+  (function () {
+    var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Rec) { micBtn.disabled = true; micBtn.title = 'Voice input is not offered by this browser — type instead.'; return; }
+    var rec = null;
+    micBtn.onclick = function () {
+      if (rec) { try { rec.stop(); } catch (e) {} return; }
+      try {
+        rec = new Rec(); rec.lang = 'en-US'; rec.interimResults = true; rec.maxAlternatives = 1;
+        micBtn.setAttribute('aria-pressed', 'true'); status('Listening… speak now.');
+        rec.onresult = function (e) {
+          var txt = '', fin = false;
+          for (var i = e.resultIndex; i < e.results.length; i++) { txt += e.results[i][0].transcript; if (e.results[i].isFinal) fin = true; }
+          talkInput.value = txt;
+          if (fin) { try { rec.stop(); } catch (x) {} }
+        };
+        rec.onend = function () { rec = null; micBtn.setAttribute('aria-pressed', 'false'); var q = talkInput.value.trim(); if (q) { ask(q); talkInput.value = ''; } else status('Did not catch that — try again or type.'); };
+        rec.onerror = function (e) { rec = null; micBtn.setAttribute('aria-pressed', 'false'); status('Microphone unavailable (' + (e.error || 'blocked') + ') — type instead.', true); };
+        rec.start();
+      } catch (e) { rec = null; status('Microphone unavailable — type instead.', true); }
+    };
+  })();
 </script>
 </body>
 </html>

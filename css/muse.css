@@ -2624,6 +2624,13 @@ html.dark .omni-drawer{background:var(--glass-bg-strong);border-left-color:var(-
 #omniDrawerBody{flex:1 1 auto;overflow-y:auto;min-height:0;}
 #omniDrawerFoot{flex-shrink:0;}
 .omni-drawer>div:first-child{flex-shrink:0;}
+/* An open drawer never buries a dialog: the drawer stays put, centered
+   overlays shift left by the drawer width. commsMsgOverlay already pads. */
+@media (min-width:900px){
+  body.museai-open div[id$="Overlay"]:not(#commsMsgOverlay):not(.cadv-overlay):not(.pano-overlay):not(#pcadOverlay),
+  body.omni-open div[id$="Overlay"]:not(#commsMsgOverlay):not(.cadv-overlay):not(.pano-overlay):not(#pcadOverlay){padding-right:436px !important;}
+  body.museai-open .ms-modal,body.omni-open .ms-modal{padding-right:436px;}
+}
 .omni-tabbtn{flex:1;font-size:10px;font-weight:700;padding:7px 4px;border-radius:9px;color:#65676B;background:transparent;transition:all .15s;}
 .omni-tabbtn:hover{color:#1C1E21;}
 

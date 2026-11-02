@@ -16,6 +16,10 @@ test('nav rail has a glasses icon', () => {
 
 test('nav rail links Glasses to the companion app in a new tab', () => {
   assert.ok(src.includes("data-nav=\"glasses\""), 'rail must include a Glasses entry');
-  assert.ok(src.includes("window.open(\\'/glasses/\\',\\'_blank\\',\\'noopener\\')"), 'Glasses must open /glasses/ in a new tab');
+  assert.ok(src.includes("window.open(\\'/glasses/preview.html\\',\\'_blank\\',\\'noopener\\')"), 'Glasses must open the rich preview in a new tab');
   assert.ok(!src.includes("navGo('glasses')"), 'Glasses is not an in-app view and must not route through navGo');
+});
+
+test('nav rail seats Glasses directly under Dashboard', () => {
+  assert.ok(src.includes("primItems.splice(1,0,glassesBtn)"), 'Glasses must splice in at index 1, not append last');
 });

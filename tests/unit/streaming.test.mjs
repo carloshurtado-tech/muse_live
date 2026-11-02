@@ -30,6 +30,19 @@ test('wall carries no show program decoders, only the test multiviewer', () => {
   assert.match(html, /availability by show/, 'text-only SLO table stays');
 });
 
+test('wall lists every live program so the On-air count matches', () => {
+  const win = makeWin({
+    MuseDemo: { stateFor: () => 'LIVE' },
+    productions: { a: { name: 'Alpha' }, b: { name: 'Beta' }, c: { name: 'Gamma' } },
+    order: ['a', 'b', 'c'],
+  });
+  const html = renderWallHTML(win);
+  assert.equal((html.match(/ms-live-row/g) || []).length, 3, 'one row per live program');
+  assert.match(html, /Live programs · 3/);
+  assert.match(html, /MuseStreaming\.openShow\('b'\)/, 'rows open the show stream');
+  assert.doesNotMatch(html, /data-hls-slot="wall:/, 'rows mount no decoders');
+});
+
 test('project plan tiles stay clickable and secondary tiles are poster-first', () => {
   const win = makeWin();
   const html = win.MuseStreaming.paneHTML('museaitour');

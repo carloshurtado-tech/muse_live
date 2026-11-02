@@ -4042,7 +4042,8 @@ html.dark .ms-alert{color:#FF8A9A;}
 .ms-slate b{font-size:13px;font-weight:700;opacity:.92;}
 .ms-slate span{font-size:10px;letter-spacing:.08em;text-transform:uppercase;opacity:.6;}
 .ms-screen.is-playing .ms-slate{display:none;}
-.ms-osd{position:absolute;top:6px;left:6px;display:inline-flex;align-items:center;gap:4px;z-index:2;}
+.ms-osd{position:absolute;top:6px;left:6px;right:44px;display:inline-flex;align-items:center;gap:4px;z-index:2;min-width:0;overflow:hidden;}
+.ms-osd .ms-test-kind{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
 .ms-health{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:600;color:#fff;background:rgba(5,5,5,.45);padding:2px 6px;border-radius:999px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
 .ms-audio{position:absolute;top:6px;right:6px;z-index:2;width:30px;height:30px;border-radius:999px;background:rgba(255,255,255,.14);color:#fff;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.22);backdrop-filter:blur(6px) saturate(1.2);-webkit-backdrop-filter:blur(6px) saturate(1.2);transition:background .15s ease, transform .15s ease;}
 .ms-ccbtn{position:absolute;left:6px;bottom:6px;z-index:2;height:22px;padding:0 8px;border-radius:6px;background:rgba(0,0,0,.55);color:#fff;font-size:10px;font-weight:800;letter-spacing:.04em;border:1px solid rgba(255,255,255,.25);cursor:pointer;}
@@ -4163,6 +4164,17 @@ html.dark .ms-modal .ms-src.is-live{color:#4ade80;}
 .ms-cap-main{display:flex;align-items:baseline;gap:8px;min-width:0;}
 .ms-cap-main b{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ms-cap-main span{font-size:12px;color:var(--ms-ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* Test-feed captions: title wraps instead of truncating to "NAS…"/"Red B…". */
+.ms-test .ms-cap-main{flex-direction:column;align-items:stretch;gap:2px;}
+.ms-test .ms-cap-main b{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+/* Live-program rows on the wall: text rows, never decoders. */
+.ms-live-list{display:flex;flex-direction:column;gap:8px;}
+.ms-live-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:var(--ms-soft);box-shadow:0 0 0 1px var(--ms-line);min-width:0;}
+.ms-live-dot{width:9px;height:9px;border-radius:9999px;background:#E41E3F;box-shadow:0 0 8px #E41E3F;flex:none;}
+.ms-live-main{display:flex;flex-direction:column;min-width:0;flex:1;}
+.ms-live-main b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ms-live-main span{font-size:12px;color:var(--ms-ink-2);}
+.ms-live-row .ms-btn{flex:none;}
 .ms-cap-kpis{display:flex;gap:12px;font-size:12px;color:var(--ms-ink-2);flex-wrap:wrap;}
 .ms-cap-kpis b{color:var(--ms-ink);font-variant-numeric:tabular-nums;}
 .ms-meas{font:11.5px/1.35 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ms-ink-2);overflow-wrap:anywhere;}
@@ -4681,7 +4693,7 @@ html.dark .ms-test-badge.is-external{color:#fff;}
 .ms-test-health.is-up{color:var(--ms-green,#1E7B34);}
 .ms-test-health.is-down{color:var(--ms-red,#D21F3C);font-weight:700;}
 .ms-screen.is-down .ms-slate{background:linear-gradient(160deg,#3a1218,#0a0b0f);}
-.ms-retry{position:absolute;z-index:2;left:14px;bottom:44px;font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;border:0;cursor:pointer;color:#fff;background:var(--ms-blue,#0866FF);}
+.ms-retry{position:absolute;z-index:2;left:50%;top:50%;transform:translate(-50%,-50%);font-size:12px;font-weight:700;padding:6px 14px;border-radius:8px;border:0;cursor:pointer;color:#fff;background:var(--ms-blue,#0866FF);}
 html.dark .ms-retry{background:#0A58CA;}
 .ms-retry:hover{filter:brightness(1.1);}
 .ms-test-qoe{font-size:11px;color:var(--ms-ink-2,#65676B);margin-top:2px;font-variant-numeric:tabular-nums;}

@@ -605,11 +605,25 @@
         sorted.map(function (k) { var o = sloFor(k), e = o.event, mo = o.last_30_days;
           return '<tr><td><button type="button" class="ms-link" onclick="MuseStreaming.openShow(\'' + k + '\')">' + esc(nameOf(k)) + '</button></td><td>' + badge(stateOf(k)) + '</td><td>' + (e ? e.availability_pct.toFixed(2) + '%' : '—') + '</td><td>' + (e ? '<span class="ms-dot is-' + e.status + '"></span> ' + budgetTxt(e) : '—') + '</td><td>' + mo.availability_pct.toFixed(3) + '%</td><td><span class="ms-dot is-' + mo.status + '"></span> ' + budgetTxt(mo) + '</td></tr>'; }).join('') +
         '</tbody></table></div><p class="ms-note">Error budget from incident reports (viewer-visible seconds, or duration × share of viewers affected) plus degradation measured this session.</p>') +
+      liveProgramsHTML() +
       testFeedsHTML() +
     '</div>';
   }
   function testFeedsHTML() {
     try { return root.MuseTestFeeds ? root.MuseTestFeeds.sectionHTML() : ''; } catch (e) { return ''; }
+  }
+  // Live programs on the wall as rows (never decoders): the On-air count and
+  // this list come from the same liveOf() filter, so they always agree.
+  // Opening a show mounts its single on-demand player — wall stays cheap.
+  function liveProgramsHTML() {
+    var ks = keys().filter(liveOf);
+    if (!ks.length) return '';
+    var rows = ks.map(function (k) {
+      var v = '—'; try { var g = healthOf(k); if (g && g.m && g.m.viewers) v = fmtN(g.m.viewers); } catch (e) {}
+      return '<div class="ms-live-row"><span class="ms-live-dot" aria-hidden="true"></span><div class="ms-live-main"><b>' + esc(nameOf(k)) + '</b><span>' + esc(stateOf(k)) + ' · ' + v + ' viewers</span></div>' +
+        '<button type="button" class="ms-btn ms-btn-soft" onclick="MuseStreaming.openShow(\'' + k + '\')">Open stream →</button></div>';
+    }).join('');
+    return '<section class="ms-card"><div class="ms-card-h"><h3>Live programs · ' + ks.length + '</h3><span class="ms-sub">The shows on air right now — open a show to watch (one player on demand)</span></div><div class="ms-live-list">' + rows + '</div></section>';
   }
   function dashHTML() { return ''; } // dashboard carries no streams (wall only)
 

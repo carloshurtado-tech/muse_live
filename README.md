@@ -41,7 +41,7 @@
 
 Built for the **Meta Global AI Developer Hackathon** (Oct 27 – Nov 4, 2026), Indie track, theme **Build for Your World** — the world here is live broadcast operations.
 
-> **Judges start here.** Everything below was built in the hackathon window: commits dated **Oct 27, Oct 31, Nov 1, or Nov 2, 2026** — nothing backdated. Verify it yourself: `git log --since=2026-10-26` reproduces the full in-window history (63 commits at time of writing). Nothing else in this demo is claimed as new.
+> **Judges start here.** Everything below was built in the hackathon window: commits dated **Oct 27, Oct 31, Nov 1, or Nov 2, 2026** — nothing backdated. Verify it yourself: `git log --since=2026-10-26` reproduces the full in-window history (65 commits at time of writing). Nothing else in this demo is claimed as new.
 
 ### How it was built
 
@@ -75,6 +75,7 @@ Built on a 2015 13-inch MacBook Pro (2.9 GHz dual-core i5, 8 GB RAM, Intel Iris 
 | 20 | Wall count locked to one helper + Reset states; stream alerts clickable into Muse with live values | `js/muse-streaming.js`, `css/muse.css` | `df6cd26`, `79dc6ac` | KPI, rows and dashboard stat can't disagree; JSON surfaces unchanged |
 | 21 | Popups shift clear of the open drawer; Glasses under Dashboard; glasses Talk-to-Muse voice+text; monitors open the theater at one size with Ask Muse | `css/muse.css`, `js/muse-app-a.js`, `js/muse-streaming.js`, `glasses/` | `faf75ea`, `e3b16a5` | Drawer transform untouched; theater prompt carries telemetry + open issues |
 | 22 | Notices open their solution + delete from the panel; dashboard grid rebalanced; glasses `?incident=` demo flow (Ask Muse → Approve failover → All clear) | `js/muse-proactive.js`, `js/muse-app-a.js`, `glasses-src/`, `glasses/`, `tests/unit/snapshot.test.mjs` | `f4c89ea`, `da733e4` | Tag-balance regression test; 331 unit green; fresh glasses bundles deployed |
+| 23 | `@muse` in Omni: ask Muse in the ops-room thread, then Everyone (mirrored to the shared Slack thread + filed in history) or Only me (stays local) | `js/muse-app-b.js`, `tests/unit/omni-muse.test.mjs` | `9764f13` | Mention stripped before asking; pending/sending/shared/private states inline; 334 unit green |
 
 History mechanics, not features: `41786a6` reverts `main` to `034f158` (undoing the `f5c7ff2` merge); `ff34f64` then re-applies the Day 2–7 work. `6190c09`/`6f2d6b7` record the private→public decision trail. `d17cba9`/`86b7c1e` are local tweaks and rebuild triggers. `98a6f80`/`e44223c`/`c33687a` were a superseded demo-overlay experiment, fully reverted by `734545d` — none of that code is in the tree.
 

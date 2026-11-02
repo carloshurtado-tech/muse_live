@@ -1248,6 +1248,7 @@ function _navSvg(name){
     streams:'<rect x="2" y="5" width="20" height="14" rx="2.5"/><path d="M10 9.5v5l4.5-2.5z"/><path d="M6 2.5l2 2.5M18 2.5l-2 2.5"/>',
     incidents:'<path d="M12 3 2.5 19.5h19z"/><path d="M12 10v4.5M12 17.2v.01"/>',
     folder:'<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+    glasses:'<rect x="2.5" y="9" width="7.5" height="6" rx="3"/><rect x="14" y="9" width="7.5" height="6" rx="3"/><path d="M10 12h4"/><path d="M2.5 10.5 1.5 7M21.5 10.5l1-3.5"/>',
     command:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>'
   }[name]||'';
   return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';
@@ -1301,7 +1302,10 @@ function renderNavRail(){
     var onNav=(active===id)||(id==='telemetry'&&!!window._museTeleFocus);
     return '<button type="button" data-nav="'+id+'" class="nav-rail-btn'+(onNav?' is-active':'')+'" onclick="navGo(\''+id+'\')" title="'+label.replace(/"/g,'&quot;')+'" aria-label="'+label.replace(/"/g,'&quot;')+'" aria-current="'+(onNav?'page':'false')+'">'+
       '<span class="nav-rail-ico">'+_navSvg(icon)+'</span><span class="nav-rail-label">'+label+'</span>'+badge+'</button>';
-  }).join('')+(npcN?
+  }).join('')+
+    '<button type="button" data-nav="glasses" class="nav-rail-btn" onclick="window.open(\'/glasses/\',\'_blank\',\'noopener\')" title="Glasses — Meta Ray-Ban Display companion" aria-label="Open the Meta Ray-Ban Display companion app">'+
+      '<span class="nav-rail-ico">'+_navSvg('glasses')+'</span><span class="nav-rail-label">Glasses</span></button>'+
+    (npcN?
     '<button type="button" data-nav="schedule" class="nav-rail-btn nav-rail-btn-warn" onclick="navGo(\'schedule\');MuseSchedule.openFor(\'\',\'conflicts\')" title="⚠ '+npcN+' conflict'+(npcN>1?'s':'')+'" aria-label="Conflicts">'+
       '<span class="nav-rail-ico"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>'+
       '<span class="nav-rail-label">Conflicts</span>'+_navRailBadge(npcN,'live')+'</button>':'');

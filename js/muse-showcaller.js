@@ -542,10 +542,10 @@
       var body = fixLine(a, result);
       var r = await post('/api/omni/slack', { channel: t.slack, text: body, show: show });
       out.slack = r.ok ? { sent: true, ts: r.data.ts, path: r.data.path } : { sent: false, error: r.error };
-      logOmni({ id: nextMsgId(), channel: 'slack', dir: 'out', from: 'Show Caller', to: String(t.slack),
+      logOmni({ id: nextMsgId(), channel: 'teams', dir: 'out', from: 'Show Caller', to: String(t.slack),
         subject: '', body: body, ts: stamp(), linkType: 'production', linkId: show, prod: show, read: true,
         thread: thread, ext_id: r.ok ? r.data.ts : '', ext_thread: '', status: r.ok ? 'sent' : 'failed',
-        error: r.ok ? '' : r.error, payload: { channel: 'slack', to: String(t.slack), body: body } });
+        error: r.ok ? '' : r.error, payload: { channel: 'teams', to: String(t.slack), body: body } });
     }
     if (t.mail && t.mail.length) {
       var to = [].concat(t.mail), subject = 'Show Caller fix — ' + show, mbody = fixLine(a, result);
@@ -563,11 +563,11 @@
     try { (root.comms || []).forEach(function (m) { if (m.id === msgId) rec = m; }); } catch (e) {}
     if (!rec || !rec.payload) return { ok: false, error: 'No stored payload for ' + msgId + '.' };
     var p = rec.payload, r;
-    if (p.channel === 'slack') r = await post('/api/omni/slack', { channel: p.to, text: p.body });
-    else r = await post('/api/omni/mail', { to: [].concat(p.to), subject: p.subject, body: p.body });
+    if (p.channel === 'gmail') r = await post('/api/omni/mail', { to: [].concat(p.to), subject: p.subject, body: p.body });
+    else r = await post('/api/omni/slack', { channel: p.to, text: p.body }); // 'teams' now; legacy 'slack' payloads land here too
     if (r.ok) {
       rec.status = 'sent'; rec.error = '';
-      rec.ext_id = p.channel === 'slack' ? r.data.ts : r.data.id;
+      rec.ext_id = p.channel === 'gmail' ? r.data.id : r.data.ts;
       if (p.channel === 'gmail') rec.ext_thread = r.data.threadId || '';
       try { if (typeof root.saveComms === 'function') root.saveComms(); } catch (e) {}
       return { ok: true, id: msgId };

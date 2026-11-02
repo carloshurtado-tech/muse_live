@@ -7956,7 +7956,7 @@ var comms=[
   ts:'2026-06-15 23:59',linkType:'production',linkId:'museaitour',prod:'museaitour',read:true,thread:'T-ledger'}]
 
 function saveComms(){try{localStorage.setItem('muselive_comms_v1',JSON.stringify(comms));}catch(e){}}
-function loadComms(){try{var r=localStorage.getItem('muselive_comms_v1');if(r){var l=JSON.parse(r);if(Array.isArray(l))comms=l;}}catch(e){}}
+function loadComms(){try{var r=localStorage.getItem('muselive_comms_v1');if(r){var l=JSON.parse(r);if(Array.isArray(l)){l.forEach(function(m){if(m&&m.channel==='slack')m.channel='teams';});comms=l;}}}catch(e){}}
 var _commsLoaded=false;function loadCommsOnce(){if(_commsLoaded)return;_commsLoaded=true;loadComms();}
 /* ---- link-target resolution: human label for a (type,id) ---- */
 function commsLinkLabel(t,id){
@@ -8086,7 +8086,7 @@ function setCommsSearchVal(v){commsFilter.q=v;renderComms();}
 function openCommsThread(tk){loadCommsOnce();
   var pool=(typeof permComms==='function')?permComms():comms;
   var msgs=pool.filter(function(m){return (m.thread||m.id)===tk;}).sort(function(a,b){return a.ts<b.ts?-1:1;});
-  if(!msgs.length){if(comms.some(function(m){return (m.thread||m.id)===tk;}))toast('🔒 This thread is not visible to your role');return;}msgs.forEach(function(m){if(m.dir==='in')m.read=true;});saveComms();commsNavBadge();
+  if(!msgs.length){if(comms.some(function(m){return (m.thread||m.id)===tk;}))toast('🔒 This thread is not visible to your role');else toast('Nothing in this thread yet — it may predate this browser\'s saved log.');return;}msgs.forEach(function(m){if(m.dir==='in')m.read=true;});saveComms();commsNavBadge();try{if(typeof omniFabBadge==='function')omniFabBadge();}catch(eFB){}
   var ov=document.getElementById('commsMsgOverlay');var bx=document.getElementById('commsMsgBox');if(!ov||!bx)return;
   var head=msgs[0];
   var bubbles=msgs.map(function(m){var out=m.dir==='out';
@@ -12782,6 +12782,7 @@ function markInboundCommsRead(){
     vis.forEach(function(m){if(m.dir==='in')m.read=true;});
     if(typeof saveComms==='function')saveComms();
     try{commsNavBadge();}catch(eN){}
+    try{if(typeof omniFabBadge==='function')omniFabBadge();}catch(eF){}
   }catch(e){}
 }
 
@@ -12885,7 +12886,12 @@ function omniChatFootHTML(){
   var bar=pend?'<div class="mb-2 p-2 rounded-lg border border-gray-200 bg-gray-50 text-[10px]">Muse can write this into Muse Live: <b>'+esc(omniDescribeAction(pact,(pend&&pend.prod)||omniCurrentProd()))+'</b>. '+
     '<button type="button" onclick="omniMuseAiConfirm()" class="ml-1 text-[10px] font-bold text-white bg-gray-900 rounded px-2 py-0.5">Confirm</button> '+
     '<button type="button" onclick="omniMuseAiCancel()" class="text-[10px] font-bold border border-gray-300 rounded px-2 py-0.5">Cancel</button></div>':'';
-  return bar+'<div class="flex items-center gap-2">'+
+  var prod=omniCurrentProd();
+  var chan=omniSlackChan(prod);
+  return bar+'<div class="flex items-center gap-2 mb-2">'+
+    '<span class="text-[9px] font-bold uppercase tracking-wider text-gray-400 flex-shrink-0">Slack</span>'+
+    '<input id="omniSlackChan" class="omni-input flex-1" style="padding-top:6px;padding-bottom:6px" placeholder="#ops-room for this show" value="'+esc(chan)+'">'+
+    '</div><div class="flex items-center gap-2">'+
     '<input id="omniChatInput" class="omni-input flex-1" placeholder="Message ops, or ask Muse…" onkeydown="if(event.key===\'Enter\')omniSendChat()">'+
     '<button type="button" onclick="omniAskMuseAi()" class="text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0" style="background:#0866FF">Muse</button>'+
     '<button onclick="omniSendChat()" class="omni-send text-[10px] font-bold text-white rounded-lg px-3 py-2 flex-shrink-0">Send</button></div>';
@@ -12948,19 +12954,39 @@ function omniMuseAiCancel(){
   omniPushOps((pend&&pend.prod)||omniCurrentProd(),'Muse','Cancelled — no write.','in');
   renderOmniDrawer();
 }
+/* Per-show Slack channel for the drawer Send button (local setting; the real
+   post goes to /api/omni/slack, which needs SLACK_BOT_TOKEN or SLACK_WEBHOOK_URL). */
+var OMNI_SLACK_KEY='muselive_omni_slack_v1';
+function omniSlackTargets(){try{return JSON.parse(localStorage.getItem(OMNI_SLACK_KEY)||'{}')||{};}catch(e){return {};}}
+function omniSlackChan(prod){return omniSlackTargets()[prod]||'';}
+function omniSlackChanSave(prod,ch){try{var t=omniSlackTargets();if(ch)t[prod]=ch;else delete t[prod];localStorage.setItem(OMNI_SLACK_KEY,JSON.stringify(t));}catch(e){}}
 function omniSendChat(){
   var inp=document.getElementById('omniChatInput');if(!inp)return;
   var txt=(inp.value||'').trim();if(!txt){toast('Type a message first');return;}
   if(/^@?museai\b/i.test(txt)||/^\/museai\b/i.test(txt)){omniAskMuseAi(txt);return;}
   var prod=omniCurrentProd();
+  var chanEl=document.getElementById('omniSlackChan');
+  var chan=chanEl?String(chanEl.value||'').trim():'';
+  if(!chan)chan=omniSlackChan(prod);
+  if(chan&&chanEl)omniSlackChanSave(prod,chan);
   var nmax=9006;comms.forEach(function(m){var n=parseInt((m.id||'').replace('MSG-',''),10);if(n>nmax)nmax=n;});
-  comms.unshift({id:'MSG-'+(nmax+1),channel:'teams',dir:'out',priority:'normal',from:'Rowan Blake',to:'Ops Room',
-    subject:'',body:txt,ts:nowStamp(),linkType:'production',linkId:prod,prod:prod,read:true,thread:'T-omni-'+prod});
+  var rec={id:'MSG-'+(nmax+1),channel:'teams',dir:'out',priority:'normal',from:'Rowan Blake',to:chan||'Ops Room',
+    subject:'',body:txt,ts:nowStamp(),linkType:'production',linkId:prod,prod:prod,read:true,thread:'T-omni-'+prod,
+    status:chan?'queued':'local',error:''};
+  comms.unshift(rec);
   saveComms();inp.value='';
-  /* exercise the Graph stub so IT can watch the exact payload in the console */
-  try{sendTeamsNotification('ops-room-'+prod,txt);}catch(e){}
   try{logEvent(prod,'💬 Omni ops-room message logged');saveState();}catch(e){}
-  renderOmniDrawer();toast('Message logged');
+  renderOmniDrawer();
+  if(!chan){toast('Saved locally — add this show\u2019s Slack channel above to post it to Slack.');return;}
+  toast('Posting to '+chan+'\u2026');
+  fetch('/api/omni/slack',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({channel:chan,text:txt,show:prod})})
+    .then(function(r){return r.json().then(function(j){return {status:r.status,body:j};});})
+    .then(function(res){
+      if(res.body&&res.body.ok){rec.status='sent';rec.ext_id=res.body.ts||'';rec.error='';toast('Posted to '+chan);}
+      else{rec.status='failed';rec.error=((res.body&&(res.body.error||''))||('HTTP '+res.status)).slice(0,160);toast('Slack post failed: '+rec.error);}
+      try{saveComms();}catch(e0){}try{renderOmniDrawer();}catch(e1){}
+    })
+    .catch(function(e){rec.status='failed';rec.error=String((e&&e.message)||e).slice(0,160);try{saveComms();}catch(x0){}toast('Slack post failed: '+rec.error);try{renderOmniDrawer();}catch(x1){}});
 }
 
 /* ---- TAB 2 · Email & Alerts — priority mail, ECRs, schedule change log ---- */

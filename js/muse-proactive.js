@@ -81,7 +81,7 @@
         '<div class="mp-text ma-md">' + md(item.text) + '</div>' +
         (item.rec ? '<p class="mp-rec">I recommend: <b>' + esc(item.rec.label) + '</b>. Nothing changes until you confirm.</p>' : '') +
         '<div class="ma-card-btns mp-btns">' + btns + '</div></div></div>';
-    m.appendChild(el);
+    m.insertBefore(el, m.firstChild); // newest first: the latest "Muse noticed" sits on top
     syncPanel();
   }
   function finish(id, html) {
@@ -114,8 +114,23 @@
   };
   P.dismiss = function (id) { var item = P.cards[id]; finish(id, '<p class="mp-muted">Dismissed.</p>'); if (item) note('user dismissed "' + item.text + '"'); };
   P.review = function (id) {
+    var item = P.cards[id];
     finish(id, '<p class="mp-muted">Opened the conflicts panel.</p>');
-    try { root.navGo('schedule'); setTimeout(function () { try { if (root.setSchedTab) root.setSchedTab('muse'); if (root.MuseSchedule && root.MuseSchedule.panel) root.MuseSchedule.panel('conflicts'); } catch (e) {} }, 150); } catch (e) {}
+    try {
+      root.navGo('schedule');
+      setTimeout(function () {
+        try {
+          if (root.setSchedTab) root.setSchedTab('muse');
+          var MS = root.MuseSchedule;
+          if (MS) {
+            // Land on the exact conflict from the card — the same Conflicts UI
+            // with its Move / Push / Open buttons — instead of the bare panel.
+            if (item && item.conflictIds && item.conflictIds.length && typeof MS.focusConflict === 'function') MS.focusConflict(item.conflictIds);
+            else if (typeof MS.panel === 'function') MS.panel('conflicts');
+          }
+        } catch (e) {}
+      }, 150);
+    } catch (e) {}
     try { if (root.matchMedia && root.matchMedia('(max-width: 767px)').matches && root.museaiOpen) root.toggleMuseAi(); } catch (e) {}
   };
   P.draft = function (id) {
@@ -203,7 +218,7 @@
           var LABEL = { 'double-booking': ['double-booking', 'double-bookings'], turnaround: ['crew turnaround under 10 h', 'crew turnarounds under 10 h'], overtime: ['day over 12 h', 'days over 12 h'] };
           var parts = Object.keys(by).map(function (k) { var l = LABEL[k] || [k, k]; return by[k] + ' ' + (by[k] > 1 ? l[1] : l[0]); });
           var top = cs.filter(function (c) { return c.kind === 'double-booking'; })[0] || cs[0];
-          raise({ id: 'cf|' + sig, kind: 'conflicts', show: 'Muse Schedule', level: by['double-booking'] ? 'crit' : 'warn',
+          raise({ id: 'cf|' + sig, kind: 'conflicts', show: 'Muse Schedule', level: by['double-booking'] ? 'crit' : 'warn', conflictIds: (top.ids || []).slice(),
             short: cs.length + ' scheduling conflict' + (cs.length > 1 ? 's' : '') + ' in Muse Schedule',
             text: '**' + cs.length + ' scheduling conflict' + (cs.length > 1 ? 's' : '') + '** in Muse Schedule: ' + parts.join(', ') + '.\n\nMost urgent: ' + clipText(top.text, 180) });
         }

@@ -223,7 +223,7 @@ test('15. approve executes the reassign and files the Slack send in Omni', async
   assert.equal(JSON.stringify(saved), JSON.stringify([['b2', { res: 'crk6' }]]));
   await new Promise((done) => setTimeout(done, 20)); // let the fire-and-forget notify land
   assert.equal(comms.length, 1);
-  assert.equal(comms[0].channel, 'slack');
+  assert.equal(comms[0].channel, 'teams'); // canonical in-app Slack channel: 'slack' hid the message from every Slack surface
   assert.equal(comms[0].status, 'sent');
   assert.equal(comms[0].ext_id, 'ts1');
   assert.equal(comms[0].thread, 'showcaller-demo');

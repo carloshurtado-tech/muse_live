@@ -767,7 +767,7 @@
       return '<aside class="sc-panel" aria-label="Conflicts"><div class="sc-panel-h"><h3>Conflicts <span>' + cf.length + '</span></h3><button type="button" class="sc-icon-btn" onclick="MuseSchedule.panel(null)" aria-label="Close">✕</button></div>' +
         (cf.length ? cf.map(function (c, i) {
           var fx = fixesFor(c);
-          return '<div class="sc-cf is-' + c.kind + '"><p class="sc-cf-k">' + ({ 'double-booking': 'Double-booking', turnaround: 'Crew rest', overtime: 'Maximum day', unavailable: 'Unavailable' })[c.kind] + ' · ' + esc(c.res) + '</p><p>' + esc(c.text) + '</p><div class="sc-cf-btns">' +
+          return '<div class="sc-cf is-' + c.kind + '" data-cf="' + c.ids.join(',') + '"><p class="sc-cf-k">' + ({ 'double-booking': 'Double-booking', turnaround: 'Crew rest', overtime: 'Maximum day', unavailable: 'Unavailable' })[c.kind] + ' · ' + esc(c.res) + '</p><p>' + esc(c.text) + '</p><div class="sc-cf-btns">' +
             fx.map(function (f, j) { return '<button type="button" class="sc-btn sc-btn-primary" onclick="MuseSchedule.fix(' + i + ',' + j + ')">' + esc(f.label) + '</button>'; }).join('') +
             '<button type="button" class="sc-btn" onclick="MuseSchedule.openEditor(\'' + c.ids[c.ids.length - 1] + '\')">Open</button></div></div>';
         }).join('') : '<p class="sc-empty">No conflicts. Every resource, crew rest period and shift length is within limits.</p>') + advisoriesHTML() + '</aside>';
@@ -1266,6 +1266,20 @@
     openFor: function (key, panel) {
       ui.mode = null; ui.prod = key || ''; ui.panel = panel || null; ui.anchor = null;
       try { root.switchView('schedule'); root.setSchedTab('muse'); } catch (e) {}
+    },
+    focusConflict: function (ids) {
+      // Open the Conflicts panel on one exact conflict (from a Muse card) and
+      // flash it — the same UI with the same Move / Push / Open buttons.
+      ui.mode = null; ui.panel = 'conflicts';
+      try { renderInto(document.getElementById('scheduleGantt')); } catch (e) {}
+      try {
+        var el = document.querySelector('.sc-cf[data-cf="' + (ids || []).join(',') + '"]');
+        if (el) {
+          el.scrollIntoView({ block: 'center' });
+          el.style.outline = '2px solid #0866FF'; el.style.outlineOffset = '2px';
+          setTimeout(function () { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (e2) {} }, 2600);
+        }
+      } catch (e3) {}
     },
     focusRes: function (name) { ui.mode = null; ui.focusRes = name; ui.prod = ''; ui.type = ''; try { root.switchView('schedule'); root.setSchedTab('muse'); } catch (e) {} },
     ready: function () { ensure(); return true; },

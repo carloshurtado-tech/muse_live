@@ -31,7 +31,41 @@
     { sel: '.ms-page-h h1', text: 'Live Streams' },
     { sel: '#msTestFeeds h3', text: 'Test feeds' },
     { sel: 'h3', text: 'Show Caller proposes' },
+    // Theater modal sections (js/muse-streaming.js): per-stream telemetry,
+    // Stream Check vision, and captions each carry the marker.
+    { sel: '.ms-modal-sec h4', text: 'Player · live measurements' },
+    { sel: '.ms-modal-sec h4', text: 'Stream input · live telemetry' },
+    { sel: '.ms-modal-sec h4', text: 'Stream Check · vision' },
+    { sel: '#msModalCapSec h4', text: 'Captions · Muse Voice Transcribe' },
+    // Survey workspace (js/muse-app-b.js): report headings.
+    { sel: 'h3', text: 'Site Survey' },
+    { sel: 'h3', text: 'Survey Log & Findings' },
+    { sel: 'h3', text: 'Survey Report' },
+    { sel: 'h4', text: 'Shadow Map' },
   ];
+
+  // Buttons matched by a unique onclick hook plus exact visible text, so
+  // only the intended control is ever marked.
+  var BUTTON_HOOKS = [
+    // Survey workspace tab strip (surveyViewStrip in js/muse-app-b.js).
+    { sel: 'button[onclick*="surveySetView"]', texts: ['Shadow Map', 'Site Gallery', 'CAD', '360°'] },
+    // Techbook PDF export (js/muse-app-a.js): rebuilt in-window with the
+    // Show Bible appendix (35bc358).
+    { sel: 'button[onclick*="downloadTechbook"]', texts: ['Techbook PDF'] },
+  ];
+
+  function markHookedButtons(scope) {
+    if (!scope.querySelectorAll) return;
+    for (var k = 0; k < BUTTON_HOOKS.length; k++) {
+      var hook = BUTTON_HOOKS[k];
+      var btns = scope.querySelectorAll(hook.sel);
+      for (var i = 0; i < btns.length; i++) {
+        var b = btns[i];
+        var t = (b.textContent || '').replace(/\s+/g, ' ').trim();
+        if (hook.texts.indexOf(t) >= 0) markOne(b);
+      }
+    }
+  }
 
   function markOne(el) {
     if (!el || el.querySelector(':scope > .hk-dot')) return;
@@ -51,6 +85,7 @@
         if (t.indexOf(DYNAMIC[d].text) === 0) markOne(h);
       }
     }
+    markHookedButtons(scope);
   }
 
   function start() {

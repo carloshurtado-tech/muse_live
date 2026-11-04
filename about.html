@@ -124,7 +124,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
           <span class="video-note">Watch the demo · 4K fullscreen</span>
         </button>
       </div>
-      <p class="video-cap">Demo video — click to play in fullscreen at the highest available quality (up to 4K). Also on <a href="https://youtu.be/AivANsi4Bvs" target="_blank" rel="noopener">YouTube</a>.</p>
+      <p class="video-cap">Demo video — click to play in fullscreen at the highest available quality (up to 4K), captions off. Also on <a href="https://youtu.be/AivANsi4Bvs" target="_blank" rel="noopener">YouTube</a>.</p>
     </div>
     <div class="cta">
       <a class="btn" href="/#/dashboard">Open Muse Live</a>
@@ -356,9 +356,10 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
   var VIDEO_ID = 'AivANsi4Bvs';
   var VOLUME = 85;
   var wrap = document.getElementById('demoVideo');
+  var slot = document.getElementById('demoVideoSlot');
   var btn = document.getElementById('demoVideoBtn');
-  if (!wrap || !btn) return;
-  var started = false, player = null, apiQueue = [], apiLoading = false;
+  if (!wrap || !slot || !btn) return;
+  var started = false;
 
   function requestFullscreen(el){
     try{
@@ -370,27 +371,8 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     }catch(e){}
   }
 
-  function loadApi(cb){
-    if (window.YT && window.YT.Player) { cb(); return; }
-    apiQueue.push(cb);
-    if (apiLoading) return;
-    apiLoading = true;
-    var tag = document.createElement('script');
-    tag.src = 'https://www.youtube.com/iframe_api';
-    tag.async = true;
-    var first = document.getElementsByTagName('script')[0];
-    first.parentNode.insertBefore(tag, first);
-    var prev = window.onYouTubeIframeAPIReady;
-    window.onYouTubeIframeAPIReady = function(){
-      if (prev) { try{ prev(); }catch(e){} }
-      var q = apiQueue; apiQueue = [];
-      q.forEach(function(fn){ try{ fn(); }catch(e){} });
-    };
-  }
-
   /* Best available quality, preferring 4K, at 85% volume. */
-  function applyPlayback(){
-    if (!player) return;
+  function applyPlayback(player){
     try{ player.setVolume(VOLUME); }catch(e){}
     try{
       var levels = player.getAvailableQualityLevels ? player.getAvailableQualityLevels() : [];
@@ -401,31 +383,37 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     }catch(e){}
   }
 
-  function createPlayer(){
-    loadApi(function(){
-      player = new YT.Player('demoVideoSlot', {
-        videoId: VIDEO_ID,
-        host: 'https://www.youtube-nocookie.com',
-        width: '100%', height: '100%',
-        playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1, vq: 'hd2160', enablejsapi: 1 },
-        events: {
-          onReady: function(){
-            try{
-              var f = player.getIframe();
-              f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
-              f.setAttribute('allowfullscreen', '');
-              f.setAttribute('title', 'Muse Live demo video');
-            }catch(e){}
-            applyPlayback();
-            try{ player.playVideo(); }catch(e){}
-            setTimeout(applyPlayback, 1500);
-          },
-          onStateChange: function(ev){
-            if (window.YT && ev.data === window.YT.PlayerState.PLAYING) applyPlayback();
+  /* Attach the IFrame API to the already-playing iframe for volume + quality. */
+  function enhanceWithApi(iframe){
+    function hook(){
+      if (!(window.YT && window.YT.Player)) return false;
+      try{
+        var player = new YT.Player(iframe, {
+          events: {
+            onReady: function(){
+              applyPlayback(player);
+              try{ player.playVideo(); }catch(e){}
+              setTimeout(function(){ applyPlayback(player); }, 1500);
+            },
+            onStateChange: function(ev){
+              if (ev.data === window.YT.PlayerState.PLAYING) applyPlayback(player);
+            }
           }
-        }
-      });
-    });
+        });
+      }catch(e){}
+      return true;
+    }
+    if (hook()) return;
+    var tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.async = true;
+    var first = document.getElementsByTagName('script')[0];
+    first.parentNode.insertBefore(tag, first);
+    var prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function(){
+      if (prev) { try{ prev(); }catch(e){} }
+      hook();
+    };
   }
 
   btn.addEventListener('click', function(){
@@ -433,7 +421,17 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     started = true;
     requestFullscreen(wrap); /* in the click gesture so fullscreen is granted */
     btn.remove();
-    createPlayer();
+    /* Insert the player iframe directly so playback starts immediately;
+       no playsinline so iPhones take over fullscreen natively too. */
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://www.youtube-nocookie.com/embed/' + VIDEO_ID +
+      '?autoplay=1&rel=0&modestbranding=1&vq=hd2160&cc_load_policy=0&enablejsapi=1' +
+      '&origin=' + encodeURIComponent(location.origin);
+    iframe.title = 'Muse Live demo video';
+    iframe.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+    iframe.setAttribute('allowfullscreen', '');
+    slot.appendChild(iframe);
+    enhanceWithApi(iframe);
   });
 })();
 </script>

@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <a href="https://muse-live.pages.dev"><img src="https://img.shields.io/badge/%E2%96%B6%20Explore%20the%20live%20app-0866FF?style=for-the-badge" alt="Explore the live app"></a>
+  <a href="https://muse-live.pages.dev/#/dashboard"><img src="https://img.shields.io/badge/%E2%96%B6%20Explore%20the%20live%20app-0866FF?style=for-the-badge" alt="Explore the live app"></a>
   <a href="https://muse-live.pages.dev/about"><img src="https://img.shields.io/badge/How%20it%E2%80%99s%20built-1C2B33?style=for-the-badge" alt="How it's built"></a>
   <a href="#hackathon-build-new-work-since-oct-26-2026"><img src="https://img.shields.io/badge/Hackathon_build-new_work_since_Oct_26-FF5C00?style=for-the-badge" alt="Hackathon build: new work since Oct 26, 2026"></a>
 </p>
@@ -26,6 +26,11 @@
   <img src="https://img.shields.io/badge/API-Meta_Model_API-0866FF?style=flat-square" alt="Meta Model API">
   <img src="https://img.shields.io/badge/a11y-WCAG_2.1_AA-1E7B34?style=flat-square" alt="WCAG 2.1 AA, axe-checked">
   <img src="https://img.shields.io/badge/license-GPL--3.0-1E7B34?style=flat-square" alt="License: GPL-3.0">
+</p>
+
+<p align="center">
+  <a href="https://youtu.be/AivANsi4Bvs"><img src="https://i.ytimg.com/vi/AivANsi4Bvs/maxresdefault.jpg" width="880" alt="Muse Live demo video — click to watch on YouTube"></a><br>
+  <sub>▶ Watch the demo video (4K) · also embedded click-to-play on <a href="https://muse-live.pages.dev/about">How it's built</a></sub>
 </p>
 
 <p align="center">

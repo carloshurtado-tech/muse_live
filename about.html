@@ -41,6 +41,21 @@ header.top .brand img{height:22px;width:auto;}
 h1{margin:0 0 14px;font-size:clamp(32px,5vw,48px);line-height:1.08;letter-spacing:-.02em;}
 .lede{margin:0 0 24px;max-width:720px;font-size:19px;color:var(--ink-2);}
 .cta{display:flex;flex-wrap:wrap;gap:10px;}
+.video{margin:0 0 26px;max-width:880px;}
+.video-frame{position:relative;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line);}
+.video-frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0;}
+.video-slot{position:absolute;inset:0;}
+.video-facade{position:absolute;inset:0;width:100%;height:100%;padding:0;border:0;background:#000;cursor:pointer;}
+.video-facade img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.video-facade::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.45),transparent 40%);}
+.video-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:76px;height:76px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,.45);}
+.video-play svg{width:30px;height:30px;fill:var(--accent-ink);margin-left:4px;}
+.video-facade:hover .video-play{filter:brightness(1.1);}
+.video-note{position:absolute;left:14px;bottom:12px;z-index:1;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.6);padding:4px 12px;border-radius:999px;}
+.video-cap{margin:10px 2px 0;font-size:13px;color:var(--ink-3);}
+.video:fullscreen{background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.video:fullscreen .video-frame{width:100%;max-width:100%;aspect-ratio:auto;flex:1;border-radius:0;box-shadow:none;}
+.video:fullscreen .video-cap{display:none;}
 section{padding:36px 0;border-top:1px solid var(--line);}
 h2{margin:0 0 6px;font-size:26px;letter-spacing:-.01em;}
 .sub{margin:0 0 22px;color:var(--ink-3);max-width:720px;}
@@ -92,7 +107,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
 <div class="wrap">
   <header class="top">
     <a class="brand" href="/"><img src="assets/brand/meta-mark-animated.svg" alt="" width="34" height="22">Muse Live</a>
-    <a class="btn" href="/">Open the live demo</a>
+    <a class="btn" href="/#/dashboard">Open Muse Live</a>
   </header>
 
   <main>
@@ -100,8 +115,19 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     <p class="eyebrow">How it’s built</p>
     <h1>One place to plan, stream and learn from every live event</h1>
     <p class="lede">Muse Live is an operations platform for live events that are both broadcast and streamed: the plan of record for every show, end-to-end stream health from encoder to viewer, blameless incident reports, a resource scheduler, and Muse, an AI agent that can read all of it and propose changes for a human to confirm.</p>
+    <div class="video" id="demoVideo">
+      <div class="video-frame">
+        <div class="video-slot" id="demoVideoSlot"></div>
+        <button class="video-facade" id="demoVideoBtn" type="button" aria-label="Play the Muse Live demo video in fullscreen">
+          <img src="https://i.ytimg.com/vi/AivANsi4Bvs/maxresdefault.jpg" alt="Muse Live demo video thumbnail" loading="lazy" onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/AivANsi4Bvs/hqdefault.jpg';">
+          <span class="video-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+          <span class="video-note">Watch the demo · 4K fullscreen</span>
+        </button>
+      </div>
+      <p class="video-cap">Demo video — click to play in fullscreen at the highest available quality (up to 4K). Also on <a href="https://youtu.be/AivANsi4Bvs" target="_blank" rel="noopener">YouTube</a>.</p>
+    </div>
     <div class="cta">
-      <a class="btn" href="/">Open Muse Live</a>
+      <a class="btn" href="/#/dashboard">Open Muse Live</a>
       <a class="btn ghost" href="https://github.com/carloshurtado-tech/muse_live" target="_blank" rel="noopener">Source on GitHub</a>
       <a class="btn" href="#hackathon-build" style="background:#FF5C00">Hackathon build: new since Oct 26</a>
     </div>
@@ -316,6 +342,7 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
       <li>Google Analytics (<code>G-35PR2RKJ51</code>) is consent-gated: analytics storage defaults to <b>denied</b> and the tag is skipped entirely on <code>localhost</code> / <code>127.0.0.1</code>. No analytics hit is sent until consent is granted.</li>
       <li>First-party product telemetry (<code>js/muse-observe.js</code> → <code>/api/observe</code>) runs only for signed-in sessions. It counts errors, views and Muse questions (never question text) into daily aggregates (KV, 120-day expiry); admins read them at <code>/ops/health.html</code>.</li>
       <li>Audio for captions and frames for Stream Check are sent to the Meta Model API only when you use those features. See <a href="THIRD_PARTY_NOTICES.md">Third-party notices</a>.</li>
+      <li>The demo video above loads nothing from YouTube until you press play: the thumbnail is a static image, and the player (via <code>youtube-nocookie.com</code>) is created only on click. Playing it is subject to Google's <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</li>
     </ul>
   </section>
   </main>
@@ -324,5 +351,91 @@ footer{padding:28px 0 48px;border-top:1px solid var(--line);font-size:13px;color
     Muse Live is a concept demo by Carlos Hurtado and is not affiliated with or endorsed by Meta. Meta, Ray-Ban, Instagram, WhatsApp and Muse are trademarks of their owners. Event recordings belong to their owners. · <a href="THIRD_PARTY_NOTICES.md">Third-party notices</a>
   </footer>
 </div>
+<script>
+(function(){
+  var VIDEO_ID = 'AivANsi4Bvs';
+  var VOLUME = 85;
+  var wrap = document.getElementById('demoVideo');
+  var btn = document.getElementById('demoVideoBtn');
+  if (!wrap || !btn) return;
+  var started = false, player = null, apiQueue = [], apiLoading = false;
+
+  function requestFullscreen(el){
+    try{
+      if (document.fullscreenElement || document.webkitFullscreenElement) return;
+      var p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' })
+        : el.webkitRequestFullscreen ? el.webkitRequestFullscreen()
+        : null;
+      if (p && p.catch) p.catch(function(){});
+    }catch(e){}
+  }
+
+  function loadApi(cb){
+    if (window.YT && window.YT.Player) { cb(); return; }
+    apiQueue.push(cb);
+    if (apiLoading) return;
+    apiLoading = true;
+    var tag = document.createElement('script');
+    tag.src = 'https://www.youtube.com/iframe_api';
+    tag.async = true;
+    var first = document.getElementsByTagName('script')[0];
+    first.parentNode.insertBefore(tag, first);
+    var prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function(){
+      if (prev) { try{ prev(); }catch(e){} }
+      var q = apiQueue; apiQueue = [];
+      q.forEach(function(fn){ try{ fn(); }catch(e){} });
+    };
+  }
+
+  /* Best available quality, preferring 4K, at 85% volume. */
+  function applyPlayback(){
+    if (!player) return;
+    try{ player.setVolume(VOLUME); }catch(e){}
+    try{
+      var levels = player.getAvailableQualityLevels ? player.getAvailableQualityLevels() : [];
+      var want = ['hd2160', 'hd1440', 'hd1080', 'hd720'];
+      for (var i = 0; i < want.length; i++){
+        if (!levels.length || levels.indexOf(want[i]) !== -1){ player.setPlaybackQuality(want[i]); break; }
+      }
+    }catch(e){}
+  }
+
+  function createPlayer(){
+    loadApi(function(){
+      player = new YT.Player('demoVideoSlot', {
+        videoId: VIDEO_ID,
+        host: 'https://www.youtube-nocookie.com',
+        width: '100%', height: '100%',
+        playerVars: { autoplay: 1, rel: 0, modestbranding: 1, playsinline: 1, vq: 'hd2160', enablejsapi: 1 },
+        events: {
+          onReady: function(){
+            try{
+              var f = player.getIframe();
+              f.setAttribute('allow', 'autoplay; encrypted-media; picture-in-picture; fullscreen');
+              f.setAttribute('allowfullscreen', '');
+              f.setAttribute('title', 'Muse Live demo video');
+            }catch(e){}
+            applyPlayback();
+            try{ player.playVideo(); }catch(e){}
+            setTimeout(applyPlayback, 1500);
+          },
+          onStateChange: function(ev){
+            if (window.YT && ev.data === window.YT.PlayerState.PLAYING) applyPlayback();
+          }
+        }
+      });
+    });
+  }
+
+  btn.addEventListener('click', function(){
+    if (started) return;
+    started = true;
+    requestFullscreen(wrap); /* in the click gesture so fullscreen is granted */
+    btn.remove();
+    createPlayer();
+  });
+})();
+</script>
 </body>
 </html>

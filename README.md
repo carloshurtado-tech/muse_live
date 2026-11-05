@@ -93,7 +93,7 @@ History mechanics, not features: `41786a6` reverts `main` to `034f158` (undoing 
 
 Live broadcast runs on scar-tissue judgment. The failure modes are cross-module: an encoder dies *while* a camera operator is double-booked *while* the backup path is promised to another show — and no single human watches schedule, streams, crew, equipment, and comms at once. Muse Live is the one place that does, with an agent that proposes the fix and a human who decides.
 
-**Carlos Hurtado** designed and built Muse Live: product, front end, edge functions, the Muse agent, tests, and deployment. [GitHub](https://github.com/carloshurtado-tech)
+**Muse Live was designed and built by Carlos Hurtado**, Technical Manager for live-event production technology at NBCUniversal (Telemundo) — 15+ years delivering World Cups, Olympics, and live award shows across IP, fiber, satellite, REMI, and bonded cellular. The streaming plans, signal flows, and incident reports in this demo are the artifacts of that work. [GitHub](https://github.com/carloshurtado-tech)
 
 | Without Muse | With Muse |
 |---|---|

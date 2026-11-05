@@ -33,7 +33,7 @@
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
 /index.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate
-  Link: </css/muse.css?v=20261105-074d>; rel=preload; as=style
+  Link: </css/muse.css?v=20261105-07sw>; rel=preload; as=style
 
 /*.html
   Cache-Control: public, max-age=60, s-maxage=120, must-revalidate

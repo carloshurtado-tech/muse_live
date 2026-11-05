@@ -12941,6 +12941,12 @@ function omniPushOps(prod, from, body, dir){
   if(!OMNI_OPS_CHAT[prod])OMNI_OPS_CHAT[prod]=[];
   OMNI_OPS_CHAT[prod].push({from:from,body:body,ts:(typeof nowStamp==='function'?nowStamp().slice(11,16):''),dir:dir||'in'});
 }
+/* Rules-engine fallback for Omni @muse, mirroring the drawer and search panel:
+   the built-in Muse Live rules answer when live Spark is unreachable. */
+function omniMuseFallback(q){
+  try{ if(typeof museaiAnswer==='function'){ var a=museaiAnswer(q); if(a) return a; } }catch(e){}
+  return 'Could not reach live Muse. Try the Muse rail.';
+}
 function omniAskMuseAi(preset){
   var inp=document.getElementById('omniChatInput');
   var txt=(preset||(inp&&inp.value)||'').trim();
@@ -12952,7 +12958,11 @@ function omniAskMuseAi(preset){
   if(inp)inp.value='';
   omniPushOps(prod,'Muse','Thinking…','in');
   renderOmniDrawer();
-  var ask=(typeof MuseAiMuseAi!=='undefined'&&MuseAiMuseAi.ask)?MuseAiMuseAi.ask(txt):Promise.reject();
+  /* Same contract as the drawer and the search panel: live Spark first, the
+     built-in rules answer when the model can't be reached — never a dead end. */
+  var ask=(typeof MuseAiMuseAi!=='undefined'&&MuseAiMuseAi.ask)
+    ?MuseAiMuseAi.ask(txt).catch(function(){return omniMuseFallback(txt);})
+    :Promise.resolve(omniMuseFallback(txt));
   ask.then(function(ans){
     var list=OMNI_OPS_CHAT[prod]||[];
     if(list.length&&list[list.length-1].from==='Muse'&&list[list.length-1].body==='Thinking…')list.pop();

@@ -20,6 +20,12 @@ test('Muse answers carry a pending visibility choice', () => {
   assert.ok(src.includes('museQ=txt'), 'the question must be kept for the shared post');
 });
 
+test('Omni @muse falls back to rules instead of dead-ending', () => {
+  assert.ok(src.includes('omniMuseFallback'), 'Omni must have a rules fallback');
+  assert.ok(src.includes('.catch(function(){return omniMuseFallback(txt);})'), 'a rejected model ask must fall back to the rules answer');
+  assert.ok(src.includes("typeof museaiAnswer==='function'"), 'the fallback must use the built-in rules engine');
+});
+
 test('answer card offers Everyone / Only me and mirrors on Everyone', () => {
   assert.ok(src.includes('Everyone can see'), 'must offer the everyone choice');
   assert.ok(src.includes('Only me'), 'must offer the private choice');
